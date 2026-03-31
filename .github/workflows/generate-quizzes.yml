@@ -76,3 +76,11 @@ print(json.dumps(topics, ensure_ascii=False))
           else
             node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER"
           fi
+
+      - name: 保存生成文件（备用）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiz-${{ strategy.job-index }}
+          path: scripts/data/*.json
+          retention-days: 7
