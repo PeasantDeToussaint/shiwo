@@ -3,21 +3,9 @@ name: 生成测验
 on:
   workflow_dispatch:
     inputs:
-      topic_1:
-        description: '主题 1'
+      topics:
+        description: '测验主题，每行一个'
         required: true
-      topic_2:
-        description: '主题 2'
-        required: false
-      topic_3:
-        description: '主题 3'
-        required: false
-      topic_4:
-        description: '主题 4'
-        required: false
-      topic_5:
-        description: '主题 5'
-        required: false
       provider:
         description: 'AI 提供商'
         required: true
@@ -45,26 +33,21 @@ jobs:
 
       - name: 生成测验
         env:
-          ZHIPU_API_KEY:    ${{ secrets.ZHIPU_API_KEY }}
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          GEMINI_API_KEY:   ${{ secrets.GEMINI_API_KEY }}
+          ZHIPU_API_KEY:     ${{ secrets.ZHIPU_API_KEY }}
+          DEEPSEEK_API_KEY:  ${{ secrets.DEEPSEEK_API_KEY }}
+          GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          WX_APPID:         ${{ secrets.WX_APPID }}
-          WX_APPSECRET:     ${{ secrets.WX_APPSECRET }}
-          WX_CLOUD_ENV:     ${{ secrets.WX_CLOUD_ENV }}
+          WX_APPID:          ${{ secrets.WX_APPID }}
+          WX_APPSECRET:      ${{ secrets.WX_APPSECRET }}
+          WX_CLOUD_ENV:      ${{ secrets.WX_CLOUD_ENV }}
         run: |
           PROVIDER="${{ github.event.inputs.provider }}"
 
-          run_topic() {
-            local topic="$1"
-            if [ -n "$topic" ]; then
-              echo "▶ 生成：$topic"
-              node scripts/generate-quiz.js --topic="$topic" --provider="$PROVIDER"
-            fi
-          }
-
-          run_topic "${{ github.event.inputs.topic_1 }}"
-          run_topic "${{ github.event.inputs.topic_2 }}"
-          run_topic "${{ github.event.inputs.topic_3 }}"
-          run_topic "${{ github.event.inputs.topic_4 }}"
-          run_topic "${{ github.event.inputs.topic_5 }}"
+          while IFS= read -r topic; do
+            topic="$(echo "$topic" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+            [ -z "$topic" ] && continue
+            echo "▶ 生成：$topic"
+            node scripts/generate-quiz.js --topic="$topic" --provider="$PROVIDER"
+          done <<'TOPICS'
+          ${{ github.event.inputs.topics }}
+          TOPICS
