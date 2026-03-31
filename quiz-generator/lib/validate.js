@@ -16,6 +16,23 @@ const SCORING_FAMILIES = new Set([
   'level-band',
 ]);
 
+function normalizeResultName(name) {
+  return String(name || '')
+    .replace(/["']/g, '')
+    .replace(/\s+/g, '')
+    .trim();
+}
+
+function nameSimilarity(a, b) {
+  const x = normalizeResultName(a);
+  const y = normalizeResultName(b);
+  if (!x || !y) return 0;
+  if (x === y) return 1;
+  if (x.includes(y) || y.includes(x)) return 0.95;
+  const overlap = [...new Set([...x].filter(ch => y.includes(ch)))].length;
+  return overlap / Math.max(x.length, y.length);
+}
+
 function validateArchitecture(architecture) {
   const errors = [];
   const scoringFamily = architecture?.scoringFamily;
@@ -62,6 +79,11 @@ function validateArchitecture(architecture) {
 
   const dimSet = new Set(dimensions);
   const resultNameSet = new Set(results.map(r => r?.name).filter(Boolean));
+  const normalizedNames = results.map(r => normalizeResultName(r?.name)).filter(Boolean);
+  const duplicateNames = normalizedNames.filter((n, i) => normalizedNames.indexOf(n) !== i);
+  if (duplicateNames.length > 0) {
+    errors.push(`results contain duplicate names: ${Array.from(new Set(duplicateNames)).join('、')}`);
+  }
   for (const [i, spec] of dimensionSpecs.entries()) {
     if (!spec?.dimension || spec.dimension !== dimensions[i]) {
       errors.push(`dimensionSpecs[${i}].dimension must exactly match dimensions[${i}]`);
@@ -181,10 +203,7 @@ function validateOutlineStructure(outline, architecture) {
     const archNames = architecture.results.map(r => String(r?.name || "")).filter(Boolean);
     const outlineTitles = results.map(r => String(r?.title || "")).filter(Boolean);
     const unmatched = outlineTitles.filter(title => {
-      // Accept if any architecture name contains the outline title, or vice versa
-      return !archNames.some(archName =>
-        archName.includes(title) || title.includes(archName)
-      );
+      return !archNames.some(archName => nameSimilarity(archName, title) >= 0.6);
     });
     if (unmatched.length > 0) {
       errors.push(

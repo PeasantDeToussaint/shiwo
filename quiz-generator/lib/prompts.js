@@ -155,6 +155,49 @@ function buildResultTemplate(resultFields, resultType) {
 }
 
 /**
+ * Normalize person/item names for fuzzy comparisons.
+ */
+function normalizeResultName(name) {
+  return String(name || "")
+    .replace(/[""'']/g, "")
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function nameSimilarity(a, b) {
+  const x = normalizeResultName(a);
+  const y = normalizeResultName(b);
+  if (!x || !y) return 0;
+  if (x === y) return 1;
+  if (x.includes(y) || y.includes(x)) return 0.95;
+  const overlap = [...new Set([...x].filter(ch => y.includes(ch)))].length;
+  return overlap / Math.max(x.length, y.length);
+}
+
+/**
+ * Post-process repair: normalize and dedupe architecture result names.
+ * Duplicate exact names are dropped; obvious quote/whitespace corruption is removed.
+ */
+function repairArchitectureResults(architecture) {
+  if (!Array.isArray(architecture?.results)) return;
+  const deduped = [];
+  const seen = new Set();
+  for (const r of architecture.results) {
+    if (!r) continue;
+    if (typeof r.name === "string") r.name = normalizeResultName(r.name);
+    const key = normalizeResultName(r?.name);
+    if (!key) continue;
+    if (seen.has(key)) {
+      console.log(`     [repair] duplicate result "${r.name}" removed from architecture`);
+      continue;
+    }
+    seen.add(key);
+    deduped.push(r);
+  }
+  architecture.results = deduped;
+}
+
+/**
  * Post-process repair: clamp dimensionSpecs anchors to the actual results list.
  *
  * Models routinely pick anchor names from domain knowledge (e.g. 夏冬, 蒙挚)
@@ -170,12 +213,12 @@ function repairArchitectureAnchors(architecture) {
   const results = Array.isArray(architecture?.results) ? architecture.results : [];
   if (results.length === 0) return;
 
-  const validNames = results.map(r => String(r?.name || "")).filter(Boolean);
+  const validNames = results.map(r => normalizeResultName(r?.name)).filter(Boolean);
 
   // Levenshtein-free fuzzy: returns the best valid name for a given anchor string,
   // or null if nothing is close enough.
   function bestMatch(anchor) {
-    const a = String(anchor || "").trim();
+    const a = normalizeResultName(anchor);
     if (!a) return null;
     // Exact match
     if (validNames.includes(a)) return a;
@@ -417,6 +460,7 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 - highAnchorResults / lowAnchorResults 必须从 results 里选，作为语义锚点。后续所有出题、profileHints、结果写作都必须与这些锚点一致。【强制一致性】如果一个结果出现在某维度的 highAnchorResults 里，它的 profileHints 里该维度必须是 "high"；如果出现在 lowAnchorResults 里，必须是 "low"。不一致的情况会被系统发现并丢弃，请生成时自行检查。
 - forbiddenInterpretations 必须明确写出这个维度不能被偷换成什么。例如：若维度是“公义优先”，则禁止误读成“有野心”“有立场”“行动果断”。
 - resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
+- resultType=figure 时：所有结果 name 必须两两不同，严禁重复同一人物；必须使用该作品/领域里公认的标准写法，禁止错别字、昵称替代、近似拼写（如把「沈眉庄」写成「沈眉眉」）
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
 - resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
 - profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异，并且必须服从 dimensionSpecs 的高低定义与锚点，不可自行偷换维度含义`;
@@ -433,17 +477,21 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
       if (spec && architecture.dimensions[i]) spec.dimension = architecture.dimensions[i];
     });
   }
+  repairArchitectureResults(architecture);
   repairArchitectureAnchors(architecture);
 
   // Repair orphaned dimensions: every dimension must have at least one result as primaryDimension.
   // If a dimension has none, reassign the result whose profileHints scores it highest.
   if (Array.isArray(architecture.dimensions) && Array.isArray(architecture.results)) {
     const usedDims = new Set(architecture.results.map(r => r?.primaryDimension).filter(Boolean));
+    const reassigned = new Set();
     for (const dim of architecture.dimensions) {
       if (usedDims.has(dim)) continue;
       // Pick the result with the "high" hint for this dim that doesn't already own it,
       // falling back to any unowned result.
-      const candidates = architecture.results.filter(r => r?.primaryDimension !== dim);
+      const candidates = architecture.results.filter(r =>
+        r?.primaryDimension !== dim && !reassigned.has(normalizeResultName(r?.name))
+      );
       const best = candidates.sort((a, b) => {
         const rank = h => h === "high" ? 0 : h === "medium" ? 1 : 2;
         return rank((a.profileHints || {})[dim]) - rank((b.profileHints || {})[dim]);
@@ -452,6 +500,7 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
         console.log(`     [repair] orphan dim "${dim}": primaryDimension assigned to "${best.name}"`);
         best.primaryDimension = dim;
         usedDims.add(dim);
+        reassigned.add(normalizeResultName(best.name));
       }
     }
   }
