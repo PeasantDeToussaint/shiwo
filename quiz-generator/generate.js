@@ -11,7 +11,7 @@ const fs   = require("fs");
 const path = require("path");
 
 const config = require("./lib/config");
-const { createClient } = require("./lib/ai");
+const { createClient, configure: configureAI } = require("./lib/ai");
 const { sleep, withRetry } = require("./lib/http");
 const { inferHintsFromTopic, generateArchitecture, generateOutline, generateOutlineProfiles, generateQuestions, generateResults } = require("./lib/prompts");
 const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, spreadProfiles, enforceUniquePeaks } = require("./lib/assemble");
@@ -54,6 +54,7 @@ if (!ESTIMATE) {
 }
 
 const aiClient = PROVIDER && MODEL ? createClient(PROVIDER, MODEL) : null;
+if (aiClient) configureAI(PROVIDER, MODEL); // initialize legacy callAI path used by eval.js
 
 // ── Build hint block ─────────────────────────────────────────────
 const AUTO_HINTS = inferHintsFromTopic(TOPIC_ARG);
