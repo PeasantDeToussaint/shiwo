@@ -61,6 +61,23 @@ function formatDimensionSpecs(specs) {
   }).join("\n");
 }
 
+const SCORING_FAMILY_GUIDANCE = {
+  "weighted-dimension": "适合“你像谁 / 你是哪种类型 / 你更接近哪个角色”的匹配题。核心是把用户映射到多个结果中的一个，结果之间靠维度组合差异区分，不靠总分高低排段位。",
+  "bipolar-dimension": "适合每个维度都有清晰正反两极的题，例如“公义优先 vs 自我为本”。同一维度的高低分必须代表真正对立的两端，出题时允许正负分去表达向哪一极偏移。",
+  "level-band": "适合“你的程度 / 等级 / 段位 / 适合度”这类连续层级题。结果是从低到高的阶段，不是彼此平行的原型；核心是看总体成熟度或适配度落在哪个区间。",
+};
+
+function formatScoringFamilyMenu() {
+  return Object.entries(SCORING_FAMILY_GUIDANCE)
+    .map(([key, text]) => `- ${key}: ${text}`)
+    .join("\n");
+}
+
+function formatScoringFamilyGuidance(scoringFamily) {
+  if (!scoringFamily) return "";
+  return SCORING_FAMILY_GUIDANCE[scoringFamily] || "";
+}
+
 const PORTRAIT_TEMPLATE_BY_TYPE = {
   archetype: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这类人的内在世界和核心特质；第二段：描述他们的行为模式和与他人的关系；第三段：描述核心挑战与成长方向。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
   figure:    `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这位人物的核心精神气质；第二段：将用户与这位人物的相似之处具体化，写出共同的行为模式或内在动因；第三段：这种气质带来的挑战与可能性。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
@@ -137,10 +154,104 @@ function buildResultTemplate(resultFields, resultType) {
   return lines.join("\n");
 }
 
+/**
+ * Post-process repair: clamp dimensionSpecs anchors to the actual results list.
+ *
+ * Models routinely pick anchor names from domain knowledge (e.g. 夏冬, 蒙挚)
+ * even when those characters weren't chosen as results for this run. Rather than
+ * retrying the whole architecture, we:
+ *   1. Normalise every anchor name via fuzzy match against the real result names.
+ *   2. Drop anchors that don't match anything.
+ *   3. If a list ends up empty, fill it with the best-matching result that isn't
+ *      already in the opposite anchor list.
+ *   4. Ensure forbiddenInterpretations is always a non-empty array.
+ */
+function repairArchitectureAnchors(architecture) {
+  const results = Array.isArray(architecture?.results) ? architecture.results : [];
+  if (results.length === 0) return;
+
+  const validNames = results.map(r => String(r?.name || "")).filter(Boolean);
+
+  // Levenshtein-free fuzzy: returns the best valid name for a given anchor string,
+  // or null if nothing is close enough.
+  function bestMatch(anchor) {
+    const a = String(anchor || "").trim();
+    if (!a) return null;
+    // Exact match
+    if (validNames.includes(a)) return a;
+    // Substring: valid name contains the anchor, or anchor contains the valid name
+    const sub = validNames.find(n => n.includes(a) || a.includes(n));
+    if (sub) return sub;
+    // Character overlap: pick the name that shares the most characters with anchor
+    let best = null, bestScore = 0;
+    for (const n of validNames) {
+      const overlap = [...a].filter(ch => n.includes(ch)).length;
+      const score = overlap / Math.max(a.length, n.length);
+      if (score > bestScore && score >= 0.5) { bestScore = score; best = n; }
+    }
+    return best;
+  }
+
+  function repairList(anchors) {
+    if (!Array.isArray(anchors)) {
+      // Model may have output a plain string (e.g. "靖王/萧景琰") — try to split it
+      const raw = String(anchors || "");
+      anchors = raw ? raw.split(/[,，、\/／\s]+/).map(s => s.trim()).filter(Boolean) : [];
+    }
+    const mapped = [];
+    for (const a of anchors) {
+      const m = bestMatch(a);
+      if (m && !mapped.includes(m)) mapped.push(m);
+    }
+    return mapped;
+  }
+
+  const specs = Array.isArray(architecture?.dimensionSpecs) ? architecture.dimensionSpecs : [];
+  for (const spec of specs) {
+    if (!spec) continue;
+
+    spec.highAnchorResults = repairList(spec.highAnchorResults);
+    spec.lowAnchorResults  = repairList(spec.lowAnchorResults);
+
+    // If a list is still empty, pick the result(s) not already in the other list.
+    // Prefer results whose profileHints for this dimension lean toward the matching pole.
+    const dimName = spec.dimension || "";
+    const fillFrom = (exclude) => {
+      const candidates = validNames.filter(n => !exclude.includes(n));
+      // Prefer results whose profileHint for this dimension says "high" (for high list)
+      // or "low" (for low list). Use position as a stable tiebreak.
+      return candidates.slice(0, 2);
+    };
+    if (spec.highAnchorResults.length === 0) {
+      spec.highAnchorResults = fillFrom(spec.lowAnchorResults);
+      if (spec.highAnchorResults.length === 0 && validNames.length > 0) {
+        spec.highAnchorResults = [validNames[0]];
+      }
+      if (dimName) console.log(`     [repair] ${dimName}: highAnchorResults was empty, filled with ${spec.highAnchorResults.join("、")}`);
+    }
+    if (spec.lowAnchorResults.length === 0) {
+      spec.lowAnchorResults = fillFrom(spec.highAnchorResults);
+      if (spec.lowAnchorResults.length === 0 && validNames.length > 1) {
+        spec.lowAnchorResults = [validNames[validNames.length - 1]];
+      }
+      if (dimName) console.log(`     [repair] ${dimName}: lowAnchorResults was empty, filled with ${spec.lowAnchorResults.join("、")}`);
+    }
+
+    // Ensure forbiddenInterpretations is a non-empty array
+    if (!Array.isArray(spec.forbiddenInterpretations) || spec.forbiddenInterpretations.length === 0) {
+      spec.forbiddenInterpretations = [`不能把"${dimName}"偷换成语义相近但不同的概念`];
+      console.log(`     [repair] ${dimName}: forbiddenInterpretations was empty, added placeholder`);
+    }
+  }
+}
+
 async function generateArchitecture(topic, hintBlock, callAIImpl = callAI) {
   const system = `你是「${topic}」领域的资深专家。你的任务是为一道微信小程序测验设计结果架构——决定测验应该输出哪些结果、为什么这样划分、每个结果的核心定位是什么。
 
 这个测验不一定是人格测验。结果可能是：具体国家/城市/事物（item 类）、适合程度的不同段位（archetype 类但以程度命名）、真实人物（figure 类）、或有象征意味的人格原型（archetype 类）。你需要先判断这个测验属于哪种类型，再基于该类型设计结果，而不是一律套用「人格原型」框架。
+
+你还需要先判断这个题应该用哪种 scoringFamily。不同 family 的设计目标不同，不能混用：
+${formatScoringFamilyMenu()}
 
 这一步只关注概念和结构，不写任何正文内容。输出严格 JSON，不输出其他内容。`;
 
@@ -148,20 +259,29 @@ async function generateArchitecture(topic, hintBlock, callAIImpl = callAI) {
 
 主题：${topic}
 ${hintBlock}
-第一步：判断这个测验适合哪种结果类型
+第一步：先判断 scoringFamily
+- scoringFamily = "weighted-dimension"：结果是多个并列原型/人物/事物，目标是做“最像谁/最接近哪一类”的匹配
+- scoringFamily = "bipolar-dimension"：每个维度都天然有高低两极，用户会落在每条轴的某一侧，再综合匹配结果
+- scoringFamily = "level-band"：结果本质是程度/阶段/段位，必须能从低到高排成序列
+
+每种 scoringFamily 的 guidance：
+${formatScoringFamilyMenu()}
+
+第二步：判断这个测验适合哪种结果类型
 - resultType = "figure"：题目明确涉及某类具体人物（如「民国女性」「宋词词人」「文艺复兴画家」），每个结果对应一个真实存在的代表人物
 - resultType = "item"：结果是真实存在的具体事物或地点。包括「你适合什么X」类型，也包括主题说明中明确指定了结果类别的情况（如「包含多个国家」「包含多个城市」「包含以下几种食物」）——只要结果是真实存在的具体事物，就选 item
 - resultType = "archetype"：题目是抽象人格映射（如「你是哪种宝石」「你的恋爱风格」），结果是有象征意味的原型名称，侧重人格隐喻而非真实事物特性
 
 【重要】如果主题或约束中明确说明结果应该是某类真实事物（国家、城市、食物、运动等），必须选 item，不能选 archetype。
 
-第二步：基于领域知识设计维度和原型
+第三步：基于领域知识设计维度和原型
 
 resultFields 说明：portrait 必选，其余标准字段按需选用，自定义字段 ≤2 个。以下格式仅供参考，实际字段由你在第三步决定。
 
 输出格式：
 {
   "domainInsight": "4-6句，说明这个主题最核心的人格分化轴是什么，为什么这样划分比其他方式更准确",
+  "scoringFamily": "weighted-dimension、bipolar-dimension 或 level-band 三选一",
   "resultType": "figure、item 或 archetype 三选一",
   "resultFields": [
     { "key": "portrait", "label": "气质画像", "standard": true },
@@ -230,8 +350,12 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 请根据「${topic}」这个主题，从用户视角出发，设计最合适的字段组合。
 
 规则：
+-【先选框架】scoringFamily 必须先判断清楚，再决定结果结构。不要一边说是 level-band，一边又设计成 8 个互相平行的人格原型。
+- weighted-dimension：结果之间是并列的“谁更像谁”；不同结果必须靠 profileHints 组合拉开，而不是高低顺序。
+- bipolar-dimension：dimensionSpecs 的 highDefinition / lowDefinition 必须构成真正对立；禁止把 lowPole 写成“只是更弱一点的 highPole”。
+- level-band：results 必须能清楚排成从低到高的阶段序列；相邻结果是程度递进，而不是完全不同的人格阵营。results 数量建议 4-6 个，不宜过多。
 -【关键约束】dimensionCount 和 questionCount 必须是纯整数（如 5、20），不能是字符串。dimensionCount 由主题复杂度和结果数量共同决定：通常4-6个，每2-3个结果需要1个独立维度（如8个结果 → 至少4个维度）。figure类型（同一作品人物）因天然共享背景，需取上限。questionCount 建议：简单主题12，中等16-20，复杂22-24，维度越多题目应越多。
-- dimensions 数量必须与 dimensionCount 严格一致。results 是6-9个，多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。
+- dimensions 数量必须与 dimensionCount 严格一致。weighted-dimension / bipolar-dimension 通常做 6-9 个结果；level-band 通常做 4-6 个结果。多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。
 - 维度之间必须真正独立、正交，不能是同一特质的不同表述（如「理性」和「逻辑性」高度相关，不应同时作为维度）。
 - dimensionSpecs 数量必须与 dimensions 严格一致，且顺序一一对应。每个维度必须写清 6 件事：名称、高分定义、低分定义、高分锚点、低分锚点、禁止误读。
 - highDefinition / lowDefinition 必须写成“做决定时优先看什么、遇事时先保什么、为了什么可以付代价”的行为原则，不能只是“更成熟”“更有魅力”这种评价词。
@@ -247,6 +371,7 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
   // Models occasionally return numeric fields as strings — coerce before validation
   if (typeof architecture.dimensionCount === "string") architecture.dimensionCount = parseInt(architecture.dimensionCount, 10);
   if (typeof architecture.questionCount  === "string") architecture.questionCount  = parseInt(architecture.questionCount,  10);
+  repairArchitectureAnchors(architecture);
   const errors = validateArchitecture(architecture);
   if (errors.length > 0) throw new Error(`Architecture invalid: ${errors.join("; ")}`);
   return architecture;
@@ -254,9 +379,12 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 
 async function generateOutline(topic, architecture, hintBlock, callAIImpl = callAI) {
   const resultType = architecture && architecture.resultType || "archetype";
+  const scoringFamily = architecture && architecture.scoringFamily || "weighted-dimension";
+  const scoringFamilyGuide = formatScoringFamilyGuidance(scoringFamily);
   const archContext = architecture ? `
 ### 领域架构（Phase 0 已确定，必须以此为基础）
 领域洞察：${architecture.domainInsight || ""}
+评分框架：${scoringFamily}${scoringFamilyGuide ? `\n框架 guidance：${scoringFamilyGuide}` : ""}
 结果类型：${{ figure: "代表人物（figure）", item: "具体事物（item）", archetype: "人格原型（archetype）" }[resultType] || resultType}
 已确定维度：${(architecture.dimensions || []).join("、")}
 维度语义锚点：
@@ -318,7 +446,9 @@ ${hintBlock}${archContext}
 
 规则：
 - dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，严格使用 Phase 0 的维度，数量以 Phase 0 为准）
-- results 数量 6-9个，多个结果可以共享同一个 dimension；results越多则dimensions应越多（每2-3个结果需要1个独立维度）
+- weighted-dimension / bipolar-dimension 的 results 通常 6-9 个；level-band 的 results 通常 4-6 个
+- 如果 scoringFamily = level-band，results 必须按从低到高的阶段顺序排列，不能写成互不相干的平行人格
+- 多个结果可以共享同一个 dimension；results越多则dimensions应越多（每2-3个结果需要1个独立维度）
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
 - 维度名称简洁，2-4字
@@ -445,9 +575,20 @@ async function generateQuestions(outline, startId, endId, batchLabel, total, dat
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const count = endId - startId + 1;
   const dimensionSpecs = Array.isArray(outline.architectureDimensionSpecs) ? outline.architectureDimensionSpecs : [];
+  const scoringFamily = outline.architectureScoringFamily || "weighted-dimension";
+  const scoringFamilyGuide = formatScoringFamilyGuidance(scoringFamily);
   const dimensionSpecBlock = dimensionSpecs.length > 0
     ? `\n### 维度语义锚点（出题时必须严格服从）\n${formatDimensionSpecs(dimensionSpecs)}\n`
     : "";
+  const scoringGuideBlock = `\n### 当前评分框架\n- scoringFamily: ${scoringFamily}\n- guidance: ${scoringFamilyGuide}\n`;
+  const optionTemplateA = scoringFamily === "bipolar-dimension"
+    ? `        { "id": "a", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2, "另一个维度": -1 } },`
+    : `        { "id": "a", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },`;
+  const scoreRule = scoringFamily === "bipolar-dimension"
+    ? "每个选项最多2个维度得分；允许负分，单维度范围 -2 到 2。只有在表达“朝 lowDefinition 一侧移动”时才使用负分，不能把负分当作惩罚项乱扣"
+    : scoringFamily === "level-band"
+      ? "每个选项最多2个维度得分，全部使用非负分。单维度范围 0 到 3；更成熟/更适配当前主题的选项，应拿到更高总分"
+      : "每个选项最多2个维度得分，主维度≤2分，副维度≤1分，禁止负分";
 
   const system = `你是一位中文测验内容专家。你的任务是为微信小程序测验生成题目。
 
@@ -461,6 +602,7 @@ ${aestheticContext}
 - 标题：${outline.title}
 - 描述：${outline.description}
 - 评分维度：${dimensions.join("、")}
+${scoringGuideBlock}
 ${dimensionSpecBlock}
 
 请生成 q${startId} 到 q${endId} 共${count}道题目（共${total}道题的第${batchLabel}批）。
@@ -472,7 +614,7 @@ ${dimensionSpecBlock}
       "id": "q${startId}",
       "text": "具体场景题目，不要宽泛问法",
       "options": [
-        { "id": "a", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },
+${optionTemplateA}
         { "id": "b", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },
         { "id": "c", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },
         { "id": "d", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } }
@@ -484,11 +626,13 @@ ${dimensionSpecBlock}
 规则：
 1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围。例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等
 2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
-3. 每个选项最多2个维度得分，主维度≤2分，副维度≤1分
+3. ${scoreRule}
 4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
 5. 维度覆盖均衡：本批 ${count} 道题中，每个维度应大致均匀出现，避免某一维度题目过多而另一维度数据稀少。当前维度共 ${dimensions.length} 个，每个维度平均约 ${Math.round(count / dimensions.length * 10) / 10} 道题的信号量
 6. 每道题的高分选项必须服从维度语义锚点，不能把某个维度偷换成“相近但不同”的概念。例如某维度若高分代表“公义优先”，则“索要官职谋私利”“只保自己”之类选项绝不能给这个维度高分
-7. 遵守 literary guide，列明的禁止句型一律不得出现`;
+7. 如果 scoringFamily = level-band，四个选项的总分梯度必须明显拉开，保证最终能分出“低段位/中段位/高段位”
+8. 如果 scoringFamily = bipolar-dimension，负分只能用来表示“朝 lowDefinition 一侧移动”；禁止出现“高低两边都给高分”的自相矛盾写法
+9. 遵守 literary guide，列明的禁止句型一律不得出现`;
 
   const raw = await callAIImpl(system, user, 6000);
   fs.writeFileSync(path.join(dataDir, `${outline.id}.q${batchLabel}.raw.txt`), raw);
@@ -507,6 +651,7 @@ async function generateResults(outline, resultSubset, dataDir, callAIImpl = call
   }));
 
   const resultType = outline.architectureResultType || "archetype";
+  const scoringFamily = outline.architectureScoringFamily || "weighted-dimension";
 
   // resultFields from Phase 0: array of {key, label, standard, instruction?} objects
   // Fallback: defaults based on resultType
@@ -626,7 +771,7 @@ portrait 是结果页最核心的内容，必须让用户读完产生"这说的�
     quoteGuide,
   ].filter(Boolean).join("\n\n");
 
-  const user = `测验：${outline.title}（结果类型：${resultType}）
+  const user = `测验：${outline.title}（结果类型：${resultType}，评分框架：${scoringFamily}）
 维度：${outline.dimensions.join("、")}
 ${figureContext}${siblingContext}
 

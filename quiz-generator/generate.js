@@ -123,7 +123,9 @@ async function main() {
       process.exit(1);
     }
   }
+  if (architecture && !architecture.scoringFamily) architecture.scoringFamily = "weighted-dimension";
   console.log(`     ✓  dimensions:  ${(architecture.dimensions || []).join(" / ")}`);
+  console.log(`     ✓  scoring:     ${architecture.scoringFamily}`);
   console.log(`     ✓  archetypes:  ${(architecture.results || []).map(r => r.name).join(" / ")}`);
   console.log(`     (${endPhase("0-architecture")}s)`);
 
@@ -156,6 +158,7 @@ async function main() {
         outline.architectureResultType = architecture.resultType || "archetype";
         outline.architectureResultFields = architecture.resultFields || null;
         outline.architectureDimensionSpecs = architecture.dimensionSpecs || null;
+        outline.architectureScoringFamily = architecture.scoringFamily || "weighted-dimension";
       }
       // Phase 1b: numeric profiles are code-generated from architecture profileHints.
       // This removes the most failure-prone step from the model pipeline.
@@ -167,6 +170,9 @@ async function main() {
       console.error("❌  Outline failed:", err.message); process.exit(1);
     }
   }
+  if (architecture && !outline.architectureScoringFamily) {
+    outline.architectureScoringFamily = architecture.scoringFamily || "weighted-dimension";
+  }
   console.log(`     ✓  id:         ${outline.id}`);
   console.log(`        title:      ${outline.title}`);
   console.log(`        dimensions: ${outline.dimensions.join(" / ")}`);
@@ -175,7 +181,8 @@ async function main() {
 
   const outlineProfileWarnings = validateDimensionProfiles(
     outline.results.map(r => ({ id: r.id, dimension_profile: r.dimension_profile })),
-    outline.dimensions
+    outline.dimensions,
+    { scoringType: outline.architectureScoringFamily || architecture.scoringFamily || "weighted-dimension" }
   );
   printWarnings("outline profiles", outlineProfileWarnings);
   assertNoCriticalWarnings("outline profiles", outlineProfileWarnings);
@@ -208,7 +215,11 @@ async function main() {
         console.log(`     ✓  got ${qs.length} questions`);
         if (i < Q_BATCHES.length - 1) await sleep(4000);
       }
-      const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions);
+      const questionWarnings = validateQuestions(
+        phaseQuestions,
+        outline.dimensions,
+        { scoringType: outline.architectureScoringFamily || architecture.scoringFamily || "weighted-dimension" }
+      );
       printWarnings("questions", questionWarnings);
       assertNoCriticalWarnings("questions", questionWarnings);
       return phaseQuestions;
@@ -257,7 +268,11 @@ async function main() {
   startPhase("4-assemble");
   const quiz = assembleQuiz(outline, allQuestions, dedupedResults);
 
-  const finalProfileWarnings = validateDimensionProfiles(quiz.results, quiz.scoring.dimensions);
+  const finalProfileWarnings = validateDimensionProfiles(
+    quiz.results,
+    quiz.scoring.dimensions,
+    { scoringType: quiz.scoring.type || "weighted-dimension" }
+  );
   printWarnings("final profiles", finalProfileWarnings);
   assertNoCriticalWarnings("final profiles", finalProfileWarnings);
   const finalQuizValidation = validateFinalQuiz(quiz);

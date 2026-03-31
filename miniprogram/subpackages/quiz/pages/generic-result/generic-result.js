@@ -112,6 +112,7 @@ Page({
   _buildBars(quiz, normalized) {
     if (!normalized) return [];
     const dimensions = (quiz.scoring || {}).dimensions || [];
+    const scoringType = (quiz.scoring || {}).type || "weighted-dimension";
     const axesMap = {};
     ((quiz.scoring || {}).dimensionAxes || []).forEach(a => {
       axesMap[a.dimension] = a;
@@ -119,16 +120,39 @@ Page({
     const bars = dimensions.map((dim) => {
       const { id, label } = this._dimEntry(dim);
       const axis = axesMap[id] || {};
-      const pct = Math.round((normalized[id] || 0) * 100);
+      const value = normalized[id];
+      if (scoringType === "bipolar-dimension") {
+        const safe = typeof value === "number" ? Math.max(0, Math.min(1, value)) : 0.5;
+        const highPct = Math.round(safe * 100);
+        const lowPct = 100 - highPct;
+        const dominantSide = highPct >= lowPct ? "high" : "low";
+        const fillPct = Math.round(Math.abs(safe - 0.5) * 100);
+        return {
+          centered: true,
+          label,
+          pct: dominantSide === "high" ? highPct : lowPct,
+          dominantLabel: dominantSide === "high" ? label : (axis.lowPole || "低极"),
+          dominantPct: dominantSide === "high" ? highPct : lowPct,
+          dominantSide,
+          fillPct,
+          fillLeft: dominantSide === "high" ? 50 : Math.max(0, 50 - fillPct),
+          axisLabel: axis.axisLabel || "",
+          lowPole: axis.lowPole || "",
+          insight: axis.insight || "",
+        };
+      }
       return {
         label,
-        pct,
+        pct: Math.round((value || 0) * 100),
         axisLabel: axis.axisLabel || "",
         lowPole:   axis.lowPole || "",
         insight:   axis.insight || "",
       };
     });
-    bars.sort((a, b) => b.pct - a.pct);
+    bars.sort((a, b) => {
+      if (a.centered || b.centered) return (b.fillPct || 0) - (a.fillPct || 0);
+      return (b.pct || 0) - (a.pct || 0);
+    });
     if (bars.length > 0) bars[0].dominant = true;
     return bars;
   },
@@ -198,9 +222,11 @@ Page({
   // "user" = user's actual normalized scores; "profile" = result's dimension_profile.
   // If no user data available, falls back to profile-only (user === profile).
   _buildRadarData(quiz, normalized, ranked, result) {
+    const scoringType = ((quiz || {}).scoring || {}).type || "weighted-dimension";
     const dimensions = ((quiz || {}).scoring || {}).dimensions || [];
     const empty = { user: [], profile: [] };
 
+    if (scoringType === "bipolar-dimension" || scoringType === "level-band") return empty;
     if (dimensions.length < RADAR_MIN_AXES) return empty;
 
     const resultProfile = (result || {}).dimension_profile || null;

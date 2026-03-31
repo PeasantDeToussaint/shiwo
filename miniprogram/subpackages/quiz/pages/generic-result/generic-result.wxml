@@ -83,9 +83,17 @@
                 <text wx:if="{{item.axisLabel}}" class="gr-bar-axis">{{item.axisLabel}}</text>
                 <text class="gr-bar-label {{item.dominant ? 'gr-bar-label-dominant' : ''}}">{{item.label}}</text>
               </view>
-              <text class="gr-bar-pct">{{item.pct}}%</text>
+              <text wx:if="{{item.centered}}" class="gr-bar-pct">{{item.dominantLabel}} {{item.dominantPct}}%</text>
+              <text wx:else class="gr-bar-pct">{{item.pct}}%</text>
             </view>
-            <view class="gr-bar-track">
+            <view wx:if="{{item.centered}}" class="gr-bar-track gr-bar-track-centered">
+              <view class="gr-bar-center-line" />
+              <view
+                class="gr-bar-fill gr-bar-fill-centered {{item.dominant ? 'gr-bar-fill-dominant' : ''}}"
+                style="width: {{item.fillPct}}%; left: {{item.fillLeft}}%;"
+              />
+            </view>
+            <view wx:else class="gr-bar-track">
               <view class="gr-bar-fill {{item.dominant ? 'gr-bar-fill-dominant' : ''}}" style="width: {{item.pct}}%;" />
             </view>
             <view wx:if="{{item.lowPole}}" class="gr-bar-poles">

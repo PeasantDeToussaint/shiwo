@@ -19,6 +19,8 @@
 const { scoreTwoPhaseArchetype } = require("./scoreTwoPhaseArchetype");
 const { scoreBigFive } = require("./scoreBigFive");
 const { scoreMBTI } = require("./scoreMBTI");
+const { scoreBipolarDimension } = require("./scoreBipolarDimension");
+const { scoreLevelBand } = require("./scoreLevelBand");
 
 /**
  * @param {Object} quiz
@@ -36,6 +38,14 @@ function scoreGeneric(quiz, answers) {
 
   if (quiz.scoring && quiz.scoring.type === "mbti") {
     return scoreMBTI(quiz, answers);
+  }
+
+  if (quiz.scoring && quiz.scoring.type === "bipolar-dimension") {
+    return scoreBipolarDimension(quiz, answers);
+  }
+
+  if (quiz.scoring && quiz.scoring.type === "level-band") {
+    return scoreLevelBand(quiz, answers);
   }
 
   const dimensions = quiz.scoring.dimensions || [];

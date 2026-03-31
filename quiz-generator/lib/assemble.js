@@ -168,6 +168,7 @@ function normalizeOutlineToArchitecture(outline, architecture) {
 }
 
 function assembleQuiz(outline, questions, results) {
+  const scoringType = outline.architectureScoringFamily || "weighted-dimension";
   const simplifiedDimensions = simplifyDimensions(outline.dimensions);
   const dimMap = {};
   outline.dimensions.forEach((d, i) => { dimMap[d] = simplifiedDimensions[i]; });
@@ -193,6 +194,7 @@ function assembleQuiz(outline, questions, results) {
 
   const fullResults = results.map(r => {
     const orig = origById[r.id] || {};
+    const resultIndex = outline.results.findIndex(item => item.id === r.id);
 
     // dimension_profile comes from Phase 1 outline (domain-expert generated, cross-calibrated).
     // Phase 3 results no longer carry it. Fallback: dominant=0.65, others=0.12.
@@ -234,6 +236,9 @@ function assembleQuiz(outline, questions, results) {
       destiny:     r.destiny,
       dimension_profile: profile,
     };
+    if (scoringType === "level-band" && resultIndex >= 0) {
+      assembled.bandIndex = resultIndex;
+    }
     // Strip undefined standard fields rather than keeping them as null
     for (const key of ["strengths", "weaknesses", "temperament", "situation", "lifeAdvice", "destiny", "boldQuote"]) {
       if (assembled[key] == null) delete assembled[key];
@@ -243,6 +248,36 @@ function assembleQuiz(outline, questions, results) {
     if (Array.isArray(r.extras) && r.extras.length > 0) assembled.extras = normalizeResultExtras(r.extras, r.id);
     return assembled;
   });
+
+  const scoring = {
+    type:       scoringType,
+    dimensions: simplifiedDimensions,
+    dimensionAxes: (outline.dimensionAxes || []).map(a => ({
+      dimension: dimMap[a.dimension] || a.dimension,
+      axisLabel: a.axisLabel,
+      lowPole:   a.lowPole,
+      insight:   a.insight || "",
+    })),
+  };
+
+  if (scoringType === "level-band") {
+    const count = Math.max(1, outline.results.length);
+    scoring.bands = outline.results.map((r, idx) => {
+      const min = parseFloat((idx / count).toFixed(2));
+      const max = idx === count - 1 ? 1 : parseFloat((((idx + 1) / count) - 0.01).toFixed(2));
+      return {
+        resultId: r.id,
+        rank: idx,
+        min,
+        max: idx === count - 1 ? 1 : Math.max(min, max),
+      };
+    });
+  } else {
+    scoring.results = outline.results.map(r => ({
+      id:        r.id,
+      dimension: dimMap[r.dimension] || r.dimension,
+    }));
+  }
 
   return {
     id:               outline.id,
@@ -255,20 +290,7 @@ function assembleQuiz(outline, questions, results) {
     estimatedMinutes: Math.max(5, Math.round((questions.length * 0.4))),
     questionPage:     "/subpackages/quiz/pages/generic-question/generic-question",
     resultPage:       "/subpackages/quiz/pages/generic-result/generic-result",
-    scoring: {
-      type:       "weighted-dimension",
-      dimensions: simplifiedDimensions,
-      dimensionAxes: (outline.dimensionAxes || []).map(a => ({
-        dimension: dimMap[a.dimension] || a.dimension,
-        axisLabel: a.axisLabel,
-        lowPole:   a.lowPole,
-        insight:   a.insight || "",
-      })),
-      results:    outline.results.map(r => ({
-        id:        r.id,
-        dimension: dimMap[r.dimension] || r.dimension,
-      })),
-    },
+    scoring,
     questions: remappedQuestions,
     results:   fullResults,
   };

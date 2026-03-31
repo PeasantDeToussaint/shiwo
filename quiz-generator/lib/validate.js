@@ -10,12 +10,23 @@ const STANDARD_FIELD_KEYS = new Set([
   'situation', 'lifeAdvice', 'destiny',
 ]);
 
+const SCORING_FAMILIES = new Set([
+  'weighted-dimension',
+  'bipolar-dimension',
+  'level-band',
+]);
+
 function validateArchitecture(architecture) {
   const errors = [];
+  const scoringFamily = architecture?.scoringFamily;
   const dimensionCount = architecture?.dimensionCount;
   const dimensions = Array.isArray(architecture?.dimensions) ? architecture.dimensions : [];
   const dimensionSpecs = Array.isArray(architecture?.dimensionSpecs) ? architecture.dimensionSpecs : [];
   const results = Array.isArray(architecture?.results) ? architecture.results : [];
+
+  if (!SCORING_FAMILIES.has(scoringFamily)) {
+    errors.push(`scoringFamily must be one of ${Array.from(SCORING_FAMILIES).join(", ")} (got ${JSON.stringify(scoringFamily)})`);
+  }
 
   if (!Number.isInteger(dimensionCount)) {
     errors.push(`dimensionCount must be an integer (got ${JSON.stringify(dimensionCount)})`);
@@ -34,6 +45,12 @@ function validateArchitecture(architecture) {
   }
   if (results.length === 0) {
     errors.push("results missing or empty");
+  }
+  if (scoringFamily === "level-band" && (results.length < 4 || results.length > 6)) {
+    errors.push(`level-band results.length should be 4-6 (got ${results.length})`);
+  }
+  if ((scoringFamily === "weighted-dimension" || scoringFamily === "bipolar-dimension") && (results.length < 6 || results.length > 9)) {
+    errors.push(`${scoringFamily} results.length should be 6-9 (got ${results.length})`);
   }
 
   const dimSet = new Set(dimensions);
@@ -192,6 +209,7 @@ function collectDominanceIssues(results, dimensions) {
 function validateFinalQuiz(quiz) {
   const errors = [];
   const warnings = [];
+  const scoringType = quiz?.scoring?.type || "weighted-dimension";
 
   for (const d of (quiz?.scoring?.dimensions || [])) {
     if (!d) errors.push("empty dimension label");
@@ -236,24 +254,29 @@ function validateFinalQuiz(quiz) {
     }
   }
 
-  const profileIssues = collectProfileSimilarityIssues(quiz.results || [], quiz?.scoring?.dimensions || []);
-  for (const issue of profileIssues) {
-    const msg = `${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)})`;
-    if (issue.severe) errors.push(msg);
-    else warnings.push(msg);
-  }
+  if (scoringType !== "level-band") {
+    const profileIssues = collectProfileSimilarityIssues(quiz.results || [], quiz?.scoring?.dimensions || []);
+    for (const issue of profileIssues) {
+      const msg = `${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)})`;
+      if (issue.severe) errors.push(msg);
+      else warnings.push(msg);
+    }
 
-  for (const issue of collectDominanceIssues(quiz.results || [], quiz?.scoring?.dimensions || [])) {
-    errors.push(issue);
+    for (const issue of collectDominanceIssues(quiz.results || [], quiz?.scoring?.dimensions || [])) {
+      errors.push(issue);
+    }
   }
 
   return { errors, warnings };
 }
 
-function validateQuestions(questions, dimensions) {
+function validateQuestions(questions, dimensions, options = {}) {
   const warnings = [];
   const dimSet = new Set(dimensions);
   const seenIds = new Set();
+  const scoringType = options.scoringType || "weighted-dimension";
+  const minScore = scoringType === "bipolar-dimension" ? -2 : 0;
+  const maxScore = 3;
 
   for (const q of questions) {
     if (seenIds.has(q.id)) warnings.push(`Duplicate question id: ${q.id}`);
@@ -273,7 +296,9 @@ function validateQuestions(questions, dimensions) {
         // Allow abbreviated dimension names (e.g. "传统" matching "传统与现代")
         const matched = dimSet.has(dim) || dimensions.some(d => d.startsWith(dim) || dim.startsWith(d.slice(0, 2)));
         if (!matched) warnings.push(`${q.id}.${o.id}: unknown dimension "${dim}" (valid: ${dimensions.join(", ")})`);
-        if (typeof val !== "number" || val < 0 || val > 3) warnings.push(`${q.id}.${o.id}: score ${val} out of range [0,3] for "${dim}"`);
+        if (typeof val !== "number" || val < minScore || val > maxScore) {
+          warnings.push(`${q.id}.${o.id}: score ${val} out of range [${minScore},${maxScore}] for "${dim}"`);
+        }
       }
     }
   }
@@ -302,9 +327,10 @@ function validateResults(results, dimensions, resultFields) {
   return warnings;
 }
 
-function validateDimensionProfiles(results, dimensions) {
+function validateDimensionProfiles(results, dimensions, options = {}) {
   const warnings = [];
   const dimSet = new Set(dimensions);
+  const scoringType = options.scoringType || "weighted-dimension";
 
   for (const r of results) {
     const profile = r.dimension_profile;
@@ -320,12 +346,14 @@ function validateDimensionProfiles(results, dimensions) {
     }
   }
 
-  for (const issue of collectProfileSimilarityIssues(results, dimensions)) {
-    warnings.push(`${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)}), users may cluster`);
-  }
+  if (scoringType !== "level-band") {
+    for (const issue of collectProfileSimilarityIssues(results, dimensions)) {
+      warnings.push(`${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)}), users may cluster`);
+    }
 
-  for (const issue of collectDominanceIssues(results, dimensions)) {
-    warnings.push(issue);
+    for (const issue of collectDominanceIssues(results, dimensions)) {
+      warnings.push(issue);
+    }
   }
 
   return warnings;

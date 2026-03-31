@@ -41,6 +41,7 @@ describe("validation", () => {
 
   it("requires dimensionSpecs with valid anchor results", () => {
     const errors = validateArchitecture({
+      scoringFamily: "weighted-dimension",
       dimensionCount: 2,
       dimensions: ["公义优先", "明面直行"],
       dimensionSpecs: [
@@ -69,6 +70,26 @@ describe("validation", () => {
     });
 
     expect(errors.some(err => err.includes('highAnchorResults contains unknown result "不存在的人"'))).toBe(true);
+  });
+
+  it("allows negative scores for bipolar-dimension", () => {
+    const warnings = validateQuestions(
+      [
+        {
+          id: "q1",
+          text: "题目",
+          options: [
+            { id: "a", scores: { "公义优先": 2, "明面直行": -1 } },
+            { id: "b", scores: { "公义优先": -3 } },
+          ],
+        },
+      ],
+      ["公义优先", "明面直行"],
+      { scoringType: "bipolar-dimension" }
+    );
+
+    expect(warnings.some(w => w.includes('score -1 out of range'))).toBe(false);
+    expect(warnings.some(w => w.includes('score -3 out of range'))).toBe(true);
   });
 
   it("rejects corrupted final output and fake quotes", () => {

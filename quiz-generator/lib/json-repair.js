@@ -122,7 +122,7 @@ function normalizeJSONCandidate(candidate) {
     "token","verse","verseSource","boldQuote","title","subtitle",
     "insight","nameContext","coreIdentity","distinctiveFeature",
     "domainInsight","figureContext","axisLabel","lowPole",
-    "eyebrow","instruction","dimension","name","resultType",
+    "eyebrow","instruction","dimension","name","resultType","scoringFamily",
     "highDefinition","lowDefinition",
   ];
   for (const f of STRING_FIELDS) {
