@@ -122,6 +122,8 @@ function normalizeJSONCandidate(candidate) {
     "token","verse","verseSource","boldQuote","title","subtitle",
     "insight","nameContext","coreIdentity","distinctiveFeature",
     "domainInsight","figureContext","axisLabel","lowPole",
+    "eyebrow","instruction","dimension","name","resultType",
+    "highDefinition","lowDefinition",
   ];
   for (const f of STRING_FIELDS) {
     const re = new RegExp(`("${f}"\\s*:\\s*)([^"\\s{\\[\\d\\-ntf][^"\\n]*?)(")`, "g");
