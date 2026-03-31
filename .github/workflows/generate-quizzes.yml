@@ -37,6 +37,36 @@ on:
       topic_10:
         description: '主题 10'
         required: false
+      topic_11:
+        description: '主题 11'
+        required: false
+      topic_12:
+        description: '主题 12'
+        required: false
+      topic_13:
+        description: '主题 13'
+        required: false
+      topic_14:
+        description: '主题 14'
+        required: false
+      topic_15:
+        description: '主题 15'
+        required: false
+      topic_16:
+        description: '主题 16'
+        required: false
+      topic_17:
+        description: '主题 17'
+        required: false
+      topic_18:
+        description: '主题 18'
+        required: false
+      topic_19:
+        description: '主题 19'
+        required: false
+      topic_20:
+        description: '主题 20'
+        required: false
       hint:
         description: '硬性约束（所有主题共用，可选）'
         required: false
@@ -50,6 +80,9 @@ on:
           - deepseek
           - gemini
           - anthropic
+      model:
+        description: 'AI 模型（留空使用提供商默认值）'
+        required: false
 
 jobs:
   setup:
@@ -71,16 +104,26 @@ jobs:
           T8:  ${{ github.event.inputs.topic_8 }}
           T9:  ${{ github.event.inputs.topic_9 }}
           T10: ${{ github.event.inputs.topic_10 }}
+          T11: ${{ github.event.inputs.topic_11 }}
+          T12: ${{ github.event.inputs.topic_12 }}
+          T13: ${{ github.event.inputs.topic_13 }}
+          T14: ${{ github.event.inputs.topic_14 }}
+          T15: ${{ github.event.inputs.topic_15 }}
+          T16: ${{ github.event.inputs.topic_16 }}
+          T17: ${{ github.event.inputs.topic_17 }}
+          T18: ${{ github.event.inputs.topic_18 }}
+          T19: ${{ github.event.inputs.topic_19 }}
+          T20: ${{ github.event.inputs.topic_20 }}
         run: python3 .github/scripts/parse_topics.py
 
   generate:
     needs: setup
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     strategy:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 3
 
     steps:
       - name: 检出代码
@@ -107,21 +150,61 @@ jobs:
           WX_CLOUD_ENV:      ${{ secrets.WX_CLOUD_ENV }}
           TOPIC:             ${{ matrix.topic }}
           PROVIDER:          ${{ github.event.inputs.provider }}
+          MODEL:             ${{ github.event.inputs.model }}
           HINT:              ${{ github.event.inputs.hint }}
         run: |
           touch /tmp/before_generate
-          if [ -n "$HINT" ]; then
-            node quiz-generator/generate.js --topic="$TOPIC" --provider="$PROVIDER" --hint="$HINT"
-          else
-            node quiz-generator/generate.js --topic="$TOPIC" --provider="$PROVIDER"
-          fi
-          mkdir -p /tmp/quiz-output
-          find scripts/data -name "*.json" -newer /tmp/before_generate -exec cp {} /tmp/quiz-output/ \;
 
-      - name: 保存生成文件（备用）
+          ARGS="--topic=\"$TOPIC\" --provider=\"$PROVIDER\""
+          [ -n "$MODEL" ] && ARGS="$ARGS --model=\"$MODEL\""
+          [ -n "$HINT" ]  && ARGS="$ARGS --hint=\"$HINT\""
+
+          eval node quiz-generator/generate.js $ARGS
+
+          mkdir -p /tmp/quiz-output
+          find scripts/data -name "*.json" -newer /tmp/before_generate \
+            -exec cp {} /tmp/quiz-output/ \;
+
+      - name: 保存结果（topic 级别备份）
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: quiz-${{ strategy.job-index }}
+          name: quiz-topic-${{ strategy.job-index }}
           path: /tmp/quiz-output/*.json
+          if-no-files-found: ignore
           retention-days: 7
+
+  collect:
+    needs: generate
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 下载所有 topic 的结果
+        uses: actions/download-artifact@v4
+        with:
+          pattern: quiz-topic-*
+          merge-multiple: true
+          path: /tmp/all-quizzes
+
+      - name: 生成汇总报告
+        run: |
+          count=$(ls /tmp/all-quizzes/*.json 2>/dev/null | wc -l)
+          echo "## 批量生成结果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "共生成 **${count}** 个测验" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$count" -gt 0 ]; then
+            echo "| 文件 |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|" >> $GITHUB_STEP_SUMMARY
+            for f in /tmp/all-quizzes/*.json; do
+              echo "| $(basename $f) |" >> $GITHUB_STEP_SUMMARY
+            done
+          fi
+
+      - name: 上传合并结果包
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiz-results-all
+          path: /tmp/all-quizzes/
+          if-no-files-found: ignore
+          retention-days: 30

@@ -1,6 +1,6 @@
 import os, json
 
-keys = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10"]
+keys = [f"T{i}" for i in range(1, 21)]
 topics = [os.environ.get(k, "").strip() for k in keys if os.environ.get(k, "").strip()]
 output = "matrix={\"topic\":" + json.dumps(topics, ensure_ascii=False) + "}\n"
 
