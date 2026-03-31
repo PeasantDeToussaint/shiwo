@@ -286,30 +286,39 @@ function assembleQuiz(outline, questions, results) {
  * highest-valued dimension by a small increment until it becomes the leader.
  */
 function enforceUniquePeaks(results, dimensions, boost = 0.08) {
-  const clamp = (v) => parseFloat(Math.min(0.95, Math.max(0.05, v)).toFixed(2));
+  // Ceiling is 0.99 (not 0.95) so we can always break a ceiling tie by boosting
+  // one result above a competitor that is clamped at the model's natural max (0.95).
+  const clamp = (v) => parseFloat(Math.min(0.99, Math.max(0.05, v)).toFixed(2));
 
   // A result must be the STRICT unique leader on at least one dimension
-  // (i.e. strictly greater than every other result on that dimension).
-  // Using >= (ties allowed) is insufficient: a tied leader can still be
-  // Pareto-dominated on all remaining dimensions.
+  // (strictly greater than every other result on that dimension).
   const hasStrictPeak = (result) => {
     const p = result.dimension_profile;
+    if (!p) return false;
     return dimensions.some(d =>
       results.every(other => other === result || (other.dimension_profile?.[d] || 0) < (p[d] || 0))
     );
   };
 
-  // Repeat until stable — a single-pass boost may still leave ties
-  for (let pass = 0; pass < results.length; pass++) {
+  // Iterate up to results×dimensions passes. Each pass tries every result that
+  // still lacks a strict peak. When boosting, try each dimension in descending
+  // order of the result's own score, skipping any already at the ceiling — this
+  // avoids infinite loops when the first-choice dimension is stuck at 0.99.
+  for (let pass = 0; pass < results.length * dimensions.length; pass++) {
     let changed = false;
     for (const result of results) {
       const p = result.dimension_profile;
-      if (!p) continue;
-      if (!hasStrictPeak(result)) {
-        const bestDim = dimensions.reduce((best, d) =>
-          (p[d] || 0) > (p[best] || 0) ? d : best, dimensions[0]);
-        p[bestDim] = clamp((p[bestDim] || 0) + boost);
-        changed = true;
+      if (!p || hasStrictPeak(result)) continue;
+
+      const sorted = [...dimensions].sort((a, b) => (p[b] || 0) - (p[a] || 0));
+      for (const d of sorted) {
+        const prev = parseFloat(((p[d] || 0)).toFixed(2));
+        const next = clamp(prev + boost);
+        if (next > prev) {
+          p[d] = next;
+          changed = true;
+          break; // re-evaluate hasStrictPeak on next pass
+        }
       }
     }
     if (!changed) break;
