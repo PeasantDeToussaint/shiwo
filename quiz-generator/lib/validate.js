@@ -91,6 +91,15 @@ function validateArchitecture(architecture) {
       }
     }
   }
+  // Every dimension must be claimed as primaryDimension by at least one result.
+  // An unclaimed dimension can never be the peak for any result → it's a dead dimension
+  // that wastes question real estate without driving any result separation.
+  const primaryDimUsed = new Set(results.map(r => r?.primaryDimension).filter(Boolean));
+  for (const dim of dimensions) {
+    if (!primaryDimUsed.has(dim)) {
+      errors.push(`dimension "${dim}" has no result with it as primaryDimension — every dimension must anchor at least one result`);
+    }
+  }
   return errors;
 }
 

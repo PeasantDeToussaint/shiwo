@@ -73,6 +73,20 @@ function looksLikeQuoteContent(text) {
   return false;
 }
 
+// Known generic Buddhist/philosophical koan patterns that cannot be authentically
+// attributed to a specific fictional drama character.
+const GENERIC_VERSE_PATTERNS = [
+  /菩提本无树/, /明镜亦非台/, /本来无一物/, /何处惹尘埃/,
+  /色即是空/,   /空即是色/,   /诸行无常/,   /诸法无我/,
+  /刻那即永恒/, /万法归一/,   /一念放下/,   /随缘自在/,
+  /当下即圆满/, /心若菩提/,   /心无挂碍/,
+];
+
+function looksLikeGenericVerse(verse) {
+  if (!verse || typeof verse !== "string") return false;
+  return GENERIC_VERSE_PATTERNS.some(p => p.test(verse));
+}
+
 function normalizeResultExtras(extras, resultId) {
   if (!Array.isArray(extras)) return extras;
   return extras.map((e) => {
@@ -219,12 +233,17 @@ function assembleQuiz(outline, questions, results) {
       ? portraitFragments.join("\n\n")
       : (r.portrait || "");
 
+    const verse = orig.verse || r.verse;
+    if (verse && looksLikeGenericVerse(verse)) {
+      console.warn(`     [dbg] ⚠ ${orig.id || r.id}.verse: "${verse}" matches a generic philosophical/Buddhist pattern — this is unlikely to be a character-specific quote`);
+    }
+
     const assembled = {
       id:                orig.id || r.id,
       title:             orig.title || r.title,
       subtitle:          orig.subtitle || r.subtitle,
       token:             orig.token || r.token,
-      verse:             orig.verse || r.verse,
+      verse,
       verseSource:       orig.verseSource || r.verseSource,
       boldQuote:         r.boldQuote || null,
       portrait: normalizePortraitText(portrait),
@@ -474,7 +493,7 @@ function applyProfilesFromHints(results, dimensions, architecture) {
 module.exports = {
   spreadProfiles, enforceUniquePeaks, applyProfilesFromHints,
   DIMENSION_MAP, simplifyDimensions,
-  normalizePortraitText, looksLikeQuoteContent,
+  normalizePortraitText, looksLikeQuoteContent, looksLikeGenericVerse,
   normalizeResultExtras, findObviousTextCorruption,
   normalizeStrengthsWeaknesses, normalizeDimensionKey,
   normalizeOutlineToArchitecture, assembleQuiz,

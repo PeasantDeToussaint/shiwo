@@ -258,6 +258,31 @@ function repairArchitectureAnchors(architecture) {
       spec.forbiddenInterpretations = [`不能把"${dimName}"偷换成语义相近但不同的概念`];
       console.log(`     [repair] ${dimName}: forbiddenInterpretations was empty, added placeholder`);
     }
+
+    // Enforce profileHints consistency with anchor assignments.
+    // A result that anchors the HIGH end of a dimension must not have a "low" profileHint for it,
+    // and a result that anchors the LOW end must not have a "high" profileHint for it.
+    // This prevents the deterministic profile converter from baking in semantically wrong values.
+    for (const name of spec.highAnchorResults) {
+      const result = results.find(r => String(r?.name || "") === name);
+      if (result?.profileHints) {
+        const current = result.profileHints[dimName];
+        if (current === "low") {
+          result.profileHints[dimName] = "high";
+          console.log(`     [repair] ${name}.profileHints[${dimName}]: "low" → "high" (is highAnchor)`);
+        }
+      }
+    }
+    for (const name of spec.lowAnchorResults) {
+      const result = results.find(r => String(r?.name || "") === name);
+      if (result?.profileHints) {
+        const current = result.profileHints[dimName];
+        if (current === "high") {
+          result.profileHints[dimName] = "low";
+          console.log(`     [repair] ${name}.profileHints[${dimName}]: "high" → "low" (is lowAnchor)`);
+        }
+      }
+    }
   }
 }
 
@@ -413,7 +438,7 @@ ${(architecture.results || []).map(r =>
 你的任务是将上述原型转化为正式测验结构：
 - title 以原型名称为核心${ resultType === "figure" ? "（可以是「林徽因式」或直接是人物名）" : resultType === "item" ? "（直接使用事物名称，如「柴犬」「攀岩」）" : "（如「翡翠」「猫系恋人」）" }
 - token 是与该原型强关联的意象或象征物
-${ resultType === "figure" ? "- verse 优先选该人物自己写的诗词或评价该人物的名句，若无合适则用现代引言" : resultType === "item" ? "- verse 是一句与该事物直接相关的 quote：可以是现代诗、科学家/作家/设计师的名言、电影台词、歌词、甚至一句能精准描绘该事物特质的文学句子——来源不限，但内容必须与该具体事物高度相关，禁止使用泛人生感怀的句子。除非主题明确涉及古典文化，否则禁止使用古诗词" : "- verse 是一句与该原型气质高度契合的 quote：优先选现代名言、电影台词、歌词、现代诗、作家金句，来源不限但必须贴合原型气质。除非主题明确涉及古典文化（如唐诗、宋词、古代人物），否则禁止使用古诗词" }
+${ resultType === "figure" ? `- verse 的来源必须与该人物强绑定——有两种合规路径：\n  路径A（优先）：该人物在作品中说过的原话/台词，或该人物自己写的诗词/文字（verseSource 填角色名或 IP 名）\n  路径B（备选）：历史上真实评价过该人物的名言，或能精准描述该人物气质的经典句（verseSource 必须填真实出处）\n  ❌ 严禁：把佛教偈语、哲学名言、泛人生格言挂在角色名下当 verse——这类句子谁都能用，毫无辨识度\n  ❌ 严禁：如果人物是戏剧/小说虚构角色，不可将该 IP 以外的古诗词当作该角色的 verse，除非该角色在剧中有引用这句诗的情节` : resultType === "item" ? "- verse 是一句与该事物直接相关的 quote：可以是现代诗、科学家/作家/设计师的名言、电影台词、歌词、甚至一句能精准描绘该事物特质的文学句子——来源不限，但内容必须与该具体事物高度相关，禁止使用泛人生感怀的句子。除非主题明确涉及古典文化，否则禁止使用古诗词" : "- verse 是一句与该原型气质高度契合的 quote：优先选现代名言、电影台词、歌词、现代诗、作家金句，来源不限但必须贴合原型气质。除非主题明确涉及古典文化（如唐诗、宋词、古代人物），否则禁止使用古诗词" }
 - dimension_profile 必须基于 profileHints 数值化（high=0.60-0.80，medium=0.30-0.55，low=0.08-0.25）
 - 不要改变原型对应的维度划分和核心身份
 ` : "";
@@ -649,7 +674,8 @@ ${optionTemplateA}
 6. 每道题的高分选项必须服从维度语义锚点，不能把某个维度偷换成“相近但不同”的概念。例如某维度若高分代表“公义优先”，则“索要官职谋私利”“只保自己”之类选项绝不能给这个维度高分
 7. 如果 scoringFamily = level-band，四个选项的总分梯度必须明显拉开，保证最终能分出“低段位/中段位/高段位”
 8. 如果 scoringFamily = bipolar-dimension，负分只能用来表示“朝 lowDefinition 一侧移动”；禁止出现“高低两边都给高分”的自相矛盾写法
-9. 遵守 literary guide，列明的禁止句型一律不得出现`;
+9. 遵守 literary guide，列明的禁止句型一律不得出现
+10. 场景类型必须多样：同一类场景结构（如"他人遭难/被陷害，是否出手相救"、"朝堂/团队内部站队"、"义利冲突取舍"、"私下独处时的内心选择"、"面对权威压力"）在所有 ${total} 道题中不得超过 3 道。选项中"明哲保身"或等义表达（独善其身、静观其变、不表态、避而远之）在整套 ${total} 道题里至多出现 3 次`;
 
   const raw = await callAIImpl(system, user, 6000);
   fs.writeFileSync(path.join(dataDir, `${outline.id}.q${batchLabel}.raw.txt`), raw);
