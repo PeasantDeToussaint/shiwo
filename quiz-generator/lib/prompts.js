@@ -552,7 +552,13 @@ ${hintBlock}${archContext}
 - title 好标题的标准：读起来有内容质感，要点出这个题材最独特的东西。例如「琅琊榜」这个 IP 的核心张力是"身份、权谋与情义的取舍"，好标题应该从这个独特性出发，而不是套用「分身」「镜像」等通用模板词
 - 结果要有辨识度，用户看到标题就能感知「这说的是我吗」`;
 
+  const rawStem = String(topic || "outline")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "outline";
+  const rawPath = path.join(dataDir, `${rawStem}.outline.raw.txt`);
   const raw = await callAIImpl(system, user, 4500);
+  fs.writeFileSync(rawPath, raw);
   const outline = normalizeOutlineToArchitecture(extractJSON(raw), architecture);
   const errors = validateOutlineStructure(outline, architecture);
   if (errors.length > 0) throw new Error(`Outline invalid: ${errors.join("; ")}`);

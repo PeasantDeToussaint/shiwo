@@ -191,6 +191,17 @@ function normalizeJSONCandidate(candidate) {
   candidate = escapeNewlinesInStrings(candidate);
   candidate = removeTrailingCommas(candidate);
 
+  // Fix JSON-ish single-quoted keys/values:
+  //   { 'title': 'foo' } -> { "title": "foo" }
+  candidate = candidate.replace(
+    /([{,]\s*)'([^'\n]+?)'(\s*:)/g,
+    (_, pre, key, colon) => `${pre}"${key}"${colon}`
+  );
+  candidate = candidate.replace(
+    /(:\s*)'([^'\n]*?)'(\s*[,}\]])/g,
+    (_, prefix, val, suffix) => `${prefix}"${val.replace(/"/g, '\\"')}"${suffix}`
+  );
+
   // Fix unquoted JSON keys: { key: "v" } or , key: "v"  →  { "key": "v" }
   // Only matches ASCII identifiers and common Chinese key names.
   candidate = candidate.replace(
