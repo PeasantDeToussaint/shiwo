@@ -112,16 +112,14 @@ function validateOutlineStructure(outline, architecture) {
     errors.push(`dimensionAxes.length (${axes.length}) must equal dimensions.length (${dimensions.length})`);
   }
 
-  if (title && /(角色匹配|人物匹配|角色测试|人物测试|角色相似度|人物相似度)$/.test(title)) {
+  // Generic title patterns: formulaic endings that add no creative value
+  if (title && /(角色匹配|人物匹配|角色测试|人物测试|角色相似度|人物相似度|分身|镜像|人格镜像|角色镜像|人物镜像|哪个角色|哪位角色|人物测|角色测)/.test(title)) {
     errors.push(`outline.title too generic: "${title}"`);
   }
-  if (title && /^琅琊榜角色$/.test(title)) {
-    errors.push(`outline.title too generic: "${title}"`);
-  }
-  if (subtitle && /(找到你的剧中分身|看看你像谁|测出你的角色|寻找你的剧中化身)/.test(subtitle)) {
+  if (subtitle && /(找到你的剧中分身|看看你像谁|测出你的角色|寻找你的剧中化身|测测你是谁|你是哪个)/.test(subtitle)) {
     errors.push(`outline.subtitle too generic: "${subtitle}"`);
   }
-  if (eyebrow && /(角色测试|角色原型测试|权谋中的你|江湖知己)/.test(eyebrow)) {
+  if (eyebrow && /(角色测试|角色原型测试|权谋中的你|江湖知己|人物测试|剧中分身)/.test(eyebrow)) {
     errors.push(`outline.eyebrow too generic: "${eyebrow}"`);
   }
   for (const axis of axes) {
