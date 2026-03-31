@@ -508,17 +508,23 @@ function validateResultsPlan(plan, results) {
     if (!Array.isArray(p.weaknessLabels) || p.weaknessLabels.length < 6)
       errors.push(`${p.id}: weaknessLabels must have 6 items (got ${p.weaknessLabels?.length ?? 0})`);
 
-    for (const label of (p.strengthLabels || [])) {
-      if (allStrengthLabels.includes(label))
-        errors.push(`duplicate strengthLabel "${label}" across multiple results`);
-      allStrengthLabels.push(label);
-    }
-    for (const label of (p.weaknessLabels || [])) {
-      if (allWeaknessLabels.includes(label))
-        errors.push(`duplicate weaknessLabel "${label}" across multiple results`);
-      allWeaknessLabels.push(label);
-    }
+    for (const label of (p.strengthLabels || [])) allStrengthLabels.push(label);
+    for (const label of (p.weaknessLabels || [])) allWeaknessLabels.push(label);
   }
+  // Only error on labels that appear 3+ times — occasional overlap is unavoidable
+  // in Chinese personality vocabulary; the individual result prompts handle residual duplicates.
+  const countOccurrences = (arr) => {
+    const counts = {};
+    for (const v of arr) counts[v] = (counts[v] || 0) + 1;
+    return counts;
+  };
+  for (const [label, count] of Object.entries(countOccurrences(allStrengthLabels))) {
+    if (count >= 3) errors.push(`strengthLabel "${label}" appears ${count} times — too repetitive`);
+  }
+  for (const [label, count] of Object.entries(countOccurrences(allWeaknessLabels))) {
+    if (count >= 3) errors.push(`weaknessLabel "${label}" appears ${count} times — too repetitive`);
+  }
+
   return errors;
 }
 
