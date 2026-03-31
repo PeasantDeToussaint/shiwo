@@ -64,16 +64,19 @@ jobs:
           PROVIDER:          ${{ github.event.inputs.provider }}
           HINT:              ${{ github.event.inputs.hint }}
         run: |
+          touch /tmp/before_generate
           if [ -n "$HINT" ]; then
             node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER" --hint="$HINT"
           else
             node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER"
           fi
+          mkdir -p /tmp/quiz-output
+          find scripts/data -name "*.json" -newer /tmp/before_generate -exec cp {} /tmp/quiz-output/ \;
 
       - name: 保存生成文件（备用）
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: quiz-${{ strategy.job-index }}
-          path: scripts/data/*.json
+          path: /tmp/quiz-output/*.json
           retention-days: 7
