@@ -259,29 +259,43 @@ function repairArchitectureAnchors(architecture) {
       console.log(`     [repair] ${dimName}: forbiddenInterpretations was empty, added placeholder`);
     }
 
-    // Enforce profileHints consistency with anchor assignments.
-    // A result that anchors the HIGH end of a dimension must not have a "low" profileHint for it,
-    // and a result that anchors the LOW end must not have a "high" profileHint for it.
-    // This prevents the deterministic profile converter from baking in semantically wrong values.
-    for (const name of spec.highAnchorResults) {
+    // Cross-check anchor lists against profileHints.
+    // profileHints are set result-by-result (the AI focused on one character at a time) and are
+    // more reliable than anchor assignments (where the model reasons across the whole cast at once).
+    // Strategy: if an anchor entry contradicts the result's profileHint for this dimension,
+    // REMOVE the entry from the anchor list — do NOT change the profileHint.
+    // The fill-from-hints logic below will then place the semantically correct results.
+    const beforeHigh = spec.highAnchorResults.length;
+    spec.highAnchorResults = spec.highAnchorResults.filter(name => {
       const result = results.find(r => String(r?.name || "") === name);
-      if (result?.profileHints) {
-        const current = result.profileHints[dimName];
-        if (current === "low") {
-          result.profileHints[dimName] = "high";
-          console.log(`     [repair] ${name}.profileHints[${dimName}]: "low" → "high" (is highAnchor)`);
-        }
+      const hint = result?.profileHints?.[dimName];
+      if (hint === "low") {
+        console.log(`     [repair] ${name} removed from ${dimName} highAnchorResults — profileHints says "${hint}"`);
+        return false;
       }
+      return true;
+    });
+    const beforeLow = spec.lowAnchorResults.length;
+    spec.lowAnchorResults = spec.lowAnchorResults.filter(name => {
+      const result = results.find(r => String(r?.name || "") === name);
+      const hint = result?.profileHints?.[dimName];
+      if (hint === "high") {
+        console.log(`     [repair] ${name} removed from ${dimName} lowAnchorResults — profileHints says "${hint}"`);
+        return false;
+      }
+      return true;
+    });
+
+    // If filtering emptied a list, the fill-from-hints logic above will repopulate it correctly.
+    if (spec.highAnchorResults.length === 0 && beforeHigh > 0) {
+      spec.highAnchorResults = fillFromHints(spec.lowAnchorResults, "high");
+      if (spec.highAnchorResults.length === 0 && validNames.length > 0) spec.highAnchorResults = [validNames[0]];
+      console.log(`     [repair] ${dimName}: highAnchorResults refilled with ${spec.highAnchorResults.join("、")} after contradiction removal`);
     }
-    for (const name of spec.lowAnchorResults) {
-      const result = results.find(r => String(r?.name || "") === name);
-      if (result?.profileHints) {
-        const current = result.profileHints[dimName];
-        if (current === "high") {
-          result.profileHints[dimName] = "low";
-          console.log(`     [repair] ${name}.profileHints[${dimName}]: "high" → "low" (is lowAnchor)`);
-        }
-      }
+    if (spec.lowAnchorResults.length === 0 && beforeLow > 0) {
+      spec.lowAnchorResults = fillFromHints(spec.highAnchorResults, "low");
+      if (spec.lowAnchorResults.length === 0 && validNames.length > 1) spec.lowAnchorResults = [validNames[validNames.length - 1]];
+      console.log(`     [repair] ${dimName}: lowAnchorResults refilled with ${spec.lowAnchorResults.join("、")} after contradiction removal`);
     }
   }
 }
@@ -396,11 +410,11 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 - bipolar-dimension：dimensionSpecs 的 highDefinition / lowDefinition 必须构成真正对立；禁止把 lowPole 写成“只是更弱一点的 highPole”。
 - level-band：results 必须能清楚排成从低到高的阶段序列；相邻结果是程度递进，而不是完全不同的人格阵营。results 数量建议 4-6 个，不宜过多。
 -【关键约束】dimensionCount 和 questionCount 必须是纯整数（如 5、20），不能是字符串。dimensionCount 由主题复杂度和结果数量共同决定：通常4-6个，每2-3个结果需要1个独立维度（如8个结果 → 至少4个维度）。figure类型（同一作品人物）因天然共享背景，需取上限。questionCount 建议：简单主题12，中等16-20，复杂22-24，维度越多题目应越多。
-- dimensions 数量必须与 dimensionCount 严格一致。weighted-dimension / bipolar-dimension 通常做 6-9 个结果；level-band 通常做 4-6 个结果。多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。
+- dimensions 数量必须与 dimensionCount 严格一致。weighted-dimension / bipolar-dimension 通常做 6-9 个结果；level-band 通常做 4-6 个结果。多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。【强制】每一个维度都必须至少有一个结果以它为 primaryDimension——不能有"没人认领"的孤立维度。如果你有 5 个维度但只有 8 个结果，必须确保这 8 个结果的 primaryDimension 覆盖全部 5 个维度（可以多个结果共享同一维度，但不能有维度无人认领）。
 - 维度之间必须真正独立、正交，不能是同一特质的不同表述（如「理性」和「逻辑性」高度相关，不应同时作为维度）。
 - dimensionSpecs 数量必须与 dimensions 严格一致，且顺序一一对应。每个维度必须写清 6 件事：名称、高分定义、低分定义、高分锚点、低分锚点、禁止误读。
 - highDefinition / lowDefinition 必须写成“做决定时优先看什么、遇事时先保什么、为了什么可以付代价”的行为原则，不能只是“更成熟”“更有魅力”这种评价词。
-- highAnchorResults / lowAnchorResults 必须从 results 里选，作为语义锚点。后续所有出题、profileHints、结果写作都必须与这些锚点一致。
+- highAnchorResults / lowAnchorResults 必须从 results 里选，作为语义锚点。后续所有出题、profileHints、结果写作都必须与这些锚点一致。【强制一致性】如果一个结果出现在某维度的 highAnchorResults 里，它的 profileHints 里该维度必须是 "high"；如果出现在 lowAnchorResults 里，必须是 "low"。不一致的情况会被系统发现并丢弃，请生成时自行检查。
 - forbiddenInterpretations 必须明确写出这个维度不能被偷换成什么。例如：若维度是“公义优先”，则禁止误读成“有野心”“有立场”“行动果断”。
 - resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
