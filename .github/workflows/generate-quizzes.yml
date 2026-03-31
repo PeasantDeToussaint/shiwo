@@ -6,6 +6,9 @@ on:
       topics:
         description: '测验主题，用 | 分隔，例如：主题A|主题B|主题C'
         required: true
+      hint:
+        description: '硬性约束（可选），如：结果必须是真实国家名称，resultType必须是item'
+        required: false
       provider:
         description: 'AI 提供商'
         required: true
@@ -29,12 +32,12 @@ jobs:
         env:
           TOPICS: ${{ github.event.inputs.topics }}
         run: |
-          topics_json=$(printf '%s' "$TOPICS" \
-            | tr '|' '\n' \
-            | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' \
-            | grep -v '^$' \
-            | jq -R '.' \
-            | jq -sc '.')
+          topics_json=$(python3 -c "
+import os, json
+raw = os.environ['TOPICS']
+topics = [t.strip() for t in raw.split('|') if t.strip()]
+print(json.dumps(topics, ensure_ascii=False))
+")
           echo "matrix={\"topic\":$topics_json}" >> "$GITHUB_OUTPUT"
 
   # Job 2: one VM per topic, all run in parallel
@@ -66,5 +69,10 @@ jobs:
           WX_CLOUD_ENV:      ${{ secrets.WX_CLOUD_ENV }}
           TOPIC:             ${{ matrix.topic }}
           PROVIDER:          ${{ github.event.inputs.provider }}
+          HINT:              ${{ github.event.inputs.hint }}
         run: |
-          node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER"
+          if [ -n "$HINT" ]; then
+            node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER" --hint="$HINT"
+          else
+            node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER"
+          fi
