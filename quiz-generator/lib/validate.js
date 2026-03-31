@@ -14,6 +14,7 @@ function validateArchitecture(architecture) {
   const errors = [];
   const dimensionCount = architecture?.dimensionCount;
   const dimensions = Array.isArray(architecture?.dimensions) ? architecture.dimensions : [];
+  const dimensionSpecs = Array.isArray(architecture?.dimensionSpecs) ? architecture.dimensionSpecs : [];
   const results = Array.isArray(architecture?.results) ? architecture.results : [];
 
   if (!Number.isInteger(dimensionCount)) {
@@ -25,11 +26,40 @@ function validateArchitecture(architecture) {
   if (Number.isInteger(dimensionCount) && dimensions.length !== dimensionCount) {
     errors.push(`dimensions.length (${dimensions.length}) must equal dimensionCount (${dimensionCount})`);
   }
+  if (dimensionSpecs.length === 0) {
+    errors.push("dimensionSpecs missing or empty");
+  }
+  if (dimensionSpecs.length > 0 && dimensionSpecs.length !== dimensions.length) {
+    errors.push(`dimensionSpecs.length (${dimensionSpecs.length}) must equal dimensions.length (${dimensions.length})`);
+  }
   if (results.length === 0) {
     errors.push("results missing or empty");
   }
 
   const dimSet = new Set(dimensions);
+  const resultNameSet = new Set(results.map(r => r?.name).filter(Boolean));
+  for (const [i, spec] of dimensionSpecs.entries()) {
+    if (!spec?.dimension || spec.dimension !== dimensions[i]) {
+      errors.push(`dimensionSpecs[${i}].dimension must exactly match dimensions[${i}]`);
+    }
+    if (!spec?.highDefinition) errors.push(`${spec?.dimension || `dimensionSpecs[${i}]`}: highDefinition missing`);
+    if (!spec?.lowDefinition) errors.push(`${spec?.dimension || `dimensionSpecs[${i}]`}: lowDefinition missing`);
+    if (!Array.isArray(spec?.highAnchorResults) || spec.highAnchorResults.length === 0) {
+      errors.push(`${spec?.dimension || `dimensionSpecs[${i}]`}: highAnchorResults missing or empty`);
+    }
+    if (!Array.isArray(spec?.lowAnchorResults) || spec.lowAnchorResults.length === 0) {
+      errors.push(`${spec?.dimension || `dimensionSpecs[${i}]`}: lowAnchorResults missing or empty`);
+    }
+    if (!Array.isArray(spec?.forbiddenInterpretations) || spec.forbiddenInterpretations.length === 0) {
+      errors.push(`${spec?.dimension || `dimensionSpecs[${i}]`}: forbiddenInterpretations missing or empty`);
+    }
+    for (const name of (spec?.highAnchorResults || [])) {
+      if (!resultNameSet.has(name)) errors.push(`${spec.dimension}: highAnchorResults contains unknown result "${name}"`);
+    }
+    for (const name of (spec?.lowAnchorResults || [])) {
+      if (!resultNameSet.has(name)) errors.push(`${spec.dimension}: lowAnchorResults contains unknown result "${name}"`);
+    }
+  }
   for (const r of results) {
     if (!r?.primaryDimension || !dimSet.has(r.primaryDimension)) {
       errors.push(`${r?.conceptId || r?.name || "result"}: primaryDimension must be one of dimensions`);
@@ -53,10 +83,29 @@ function validateOutlineStructure(outline, architecture) {
   const axes = Array.isArray(outline?.dimensionAxes) ? outline.dimensionAxes : [];
   const results = Array.isArray(outline?.results) ? outline.results : [];
   const dimSet = new Set(dimensions);
+  const title = String(outline?.title || "").trim();
+  const subtitle = String(outline?.subtitle || "").trim();
+  const eyebrow = String(outline?.eyebrow || "").trim();
 
   if (dimensions.length === 0) errors.push("outline.dimensions missing or empty");
+  if (!title) errors.push("outline.title missing or empty");
+  if (!subtitle) errors.push("outline.subtitle missing or empty");
+  if (!eyebrow) errors.push("outline.eyebrow missing or empty");
   if (axes.length !== dimensions.length) {
     errors.push(`dimensionAxes.length (${axes.length}) must equal dimensions.length (${dimensions.length})`);
+  }
+
+  if (title && /(角色匹配|人物匹配|角色测试|人物测试|角色相似度|人物相似度)$/.test(title)) {
+    errors.push(`outline.title too generic: "${title}"`);
+  }
+  if (title && /^琅琊榜角色$/.test(title)) {
+    errors.push(`outline.title too generic: "${title}"`);
+  }
+  if (subtitle && /(找到你的剧中分身|看看你像谁|测出你的角色|寻找你的剧中化身)/.test(subtitle)) {
+    errors.push(`outline.subtitle too generic: "${subtitle}"`);
+  }
+  if (eyebrow && /(角色测试|角色原型测试|权谋中的你|江湖知己)/.test(eyebrow)) {
+    errors.push(`outline.eyebrow too generic: "${eyebrow}"`);
   }
   for (const axis of axes) {
     if (!dimSet.has(axis.dimension)) {

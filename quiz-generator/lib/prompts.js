@@ -44,6 +44,23 @@ function inferHintsFromTopic(topic) {
   return autoHints;
 }
 
+function formatDimensionSpecs(specs) {
+  if (!Array.isArray(specs) || specs.length === 0) return "";
+  return specs.map((spec) => {
+    const highAnchors = Array.isArray(spec.highAnchorResults) ? spec.highAnchorResults.join("、") : "";
+    const lowAnchors = Array.isArray(spec.lowAnchorResults) ? spec.lowAnchorResults.join("、") : "";
+    const forbidden = Array.isArray(spec.forbiddenInterpretations) ? spec.forbiddenInterpretations.join("、") : "";
+    return [
+      `- 【${spec.dimension}】`,
+      `  高分定义：${spec.highDefinition || ""}`,
+      `  低分定义：${spec.lowDefinition || ""}`,
+      `  高分锚点：${highAnchors}`,
+      `  低分锚点：${lowAnchors}`,
+      `  禁止误读：${forbidden}`,
+    ].join("\n");
+  }).join("\n");
+}
+
 const PORTRAIT_TEMPLATE_BY_TYPE = {
   archetype: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这类人的内在世界和核心特质；第二段：描述他们的行为模式和与他人的关系；第三段：描述核心挑战与成长方向。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
   figure:    `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这位人物的核心精神气质；第二段：将用户与这位人物的相似之处具体化，写出共同的行为模式或内在动因；第三段：这种气质带来的挑战与可能性。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
@@ -154,6 +171,16 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
   "dimensionCount": 5,
   "questionCount": 20,
   "dimensions": ["维度1", "维度2", "更多维度按需补足，必须与dimensionCount数量一致。每个维度名称必须2-4字，不要用与/和连接两个概念"],
+  "dimensionSpecs": [
+    {
+      "dimension": "维度1",
+      "highDefinition": "这个维度高分到底意味着什么。要写成决策标准或行为原则，不要写抽象夸奖",
+      "lowDefinition": "这个维度低分到底意味着什么。必须与 highDefinition 构成真正对立",
+      "highAnchorResults": ["最能代表这个维度高分的2个结果名称"],
+      "lowAnchorResults": ["最能代表这个维度低分的2个结果名称"],
+      "forbiddenInterpretations": ["这个维度最容易被误解成什么", "再写1-2条禁止误读"]
+    }
+  ],
   "results": [
     {
       "conceptId": "c1",
@@ -206,10 +233,14 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 -【关键约束】dimensionCount 和 questionCount 必须是纯整数（如 5、20），不能是字符串。dimensionCount 由主题复杂度和结果数量共同决定：通常4-6个，每2-3个结果需要1个独立维度（如8个结果 → 至少4个维度）。figure类型（同一作品人物）因天然共享背景，需取上限。questionCount 建议：简单主题12，中等16-20，复杂22-24，维度越多题目应越多。
 - dimensions 数量必须与 dimensionCount 严格一致。results 是6-9个，多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。
 - 维度之间必须真正独立、正交，不能是同一特质的不同表述（如「理性」和「逻辑性」高度相关，不应同时作为维度）。
+- dimensionSpecs 数量必须与 dimensions 严格一致，且顺序一一对应。每个维度必须写清 6 件事：名称、高分定义、低分定义、高分锚点、低分锚点、禁止误读。
+- highDefinition / lowDefinition 必须写成“做决定时优先看什么、遇事时先保什么、为了什么可以付代价”的行为原则，不能只是“更成熟”“更有魅力”这种评价词。
+- highAnchorResults / lowAnchorResults 必须从 results 里选，作为语义锚点。后续所有出题、profileHints、结果写作都必须与这些锚点一致。
+- forbiddenInterpretations 必须明确写出这个维度不能被偷换成什么。例如：若维度是“公义优先”，则禁止误读成“有野心”“有立场”“行动果断”。
 - resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
 - resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
-- profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异`;
+- profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异，并且必须服从 dimensionSpecs 的高低定义与锚点，不可自行偷换维度含义`;
 
   const raw = await callAIImpl(system, user, 2500);
   const architecture = extractJSON(raw);
@@ -228,6 +259,8 @@ async function generateOutline(topic, architecture, hintBlock, callAIImpl = call
 领域洞察：${architecture.domainInsight || ""}
 结果类型：${{ figure: "代表人物（figure）", item: "具体事物（item）", archetype: "人格原型（archetype）" }[resultType] || resultType}
 已确定维度：${(architecture.dimensions || []).join("、")}
+维度语义锚点：
+${formatDimensionSpecs(architecture.dimensionSpecs || [])}
 已确定原型：
 ${(architecture.results || []).map(r =>
   `- 【${r.name}】（主导维度：${r.primaryDimension}）\n  背景：${r.nameContext || ""}\n  核心身份：${r.coreIdentity}\n  维度倾向：${JSON.stringify(r.profileHints || {})}`
@@ -254,9 +287,9 @@ ${hintBlock}${archContext}
 输出格式：
 {
   "id": "kebab-case英文id，与主题语义对应",
-  "title": "中文标题，20字以内",
-  "subtitle": "副标题，口语感，15字以内",
-  "eyebrow": "短标签，3-8字，英文或中文",
+  "title": "中文标题，20字以内。必须像正式成品标题，不可只是把主题改写成「X角色」「X测试」「X匹配」",
+  "subtitle": "副标题，15字以内。必须点出用户为什么会想测，不可只是「找到你的剧中分身」「看看你像谁」这类空泛句",
+  "eyebrow": "短标签，3-8字，英文或中文。要有世界观气质，不可只是泛泛的「角色测试」「权谋中的你」",
   "description": "测验介绍，80-120字，说清楚这个测验测什么、为什么有意义",
   "aestheticContext": "2-4句，描述题目应具备的氛围、场景感、意象来源。例如：「题目应发生在宋代文人的生活场景中：书房、酒楼、送别渡口、月夜独处。选项语言可带有词牌意象，但不能脱离真实人格选择。」后续题目和结果生成会直接使用这段描述约束场景风格。",
   "dimensions": ["维度A", "维度B", "维度C", "维度D"],
@@ -291,6 +324,16 @@ ${hintBlock}${archContext}
 - 维度名称简洁，2-4字
 - axisLabel 是这条轴的"类别名"，lowPole 是该维度的反面特质
 - insight 必须是具体的、有画面感的描述，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌
+- 若 Phase 0 提供了 dimensionSpecs，dimensionAxes 的语义必须与之严格一致，不能把某个维度偷偷改写成别的意思
+- 不得违背 Phase 0 的高低定义、锚点人物和 forbiddenInterpretations；若某维度高分锚点是靖王、低分锚点是誉王，就不能在后续结构里把誉王写成该维度高分代表
+- quiz 的 title / subtitle / eyebrow 必须认真分工：
+  1. title 负责“成品感”和识别度，读起来像一个真正会被点开的测验标题
+  2. subtitle 负责“心理钩子”，要点出用户想知道的自我映射，不可只是重复 title
+  3. eyebrow 负责“世界观气质”，应来自该题材的核心氛围、关系张力或人物命运感
+- 禁止使用过泛包装：
+  1. title 禁止仅为「${topic}角色」「${topic}人物匹配」「${topic}测试」「你和${topic}哪个角色最相似」的轻微改写
+  2. subtitle 禁止使用「找到你的剧中分身」「看看你像谁」「测出你的角色」等空泛模板
+  3. eyebrow 禁止使用「角色测试」「角色原型测试」「权谋中的你」「江湖知己」等可套在任何作品上的词
 - 结果要有辨识度，用户看到标题就能感知「这说的是我吗」`;
 
   const raw = await callAIImpl(system, user, 4500);
@@ -401,6 +444,10 @@ async function generateQuestions(outline, startId, endId, batchLabel, total, dat
   const dimensions = outline.dimensions;
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const count = endId - startId + 1;
+  const dimensionSpecs = Array.isArray(outline.architectureDimensionSpecs) ? outline.architectureDimensionSpecs : [];
+  const dimensionSpecBlock = dimensionSpecs.length > 0
+    ? `\n### 维度语义锚点（出题时必须严格服从）\n${formatDimensionSpecs(dimensionSpecs)}\n`
+    : "";
 
   const system = `你是一位中文测验内容专家。你的任务是为微信小程序测验生成题目。
 
@@ -414,6 +461,7 @@ ${aestheticContext}
 - 标题：${outline.title}
 - 描述：${outline.description}
 - 评分维度：${dimensions.join("、")}
+${dimensionSpecBlock}
 
 请生成 q${startId} 到 q${endId} 共${count}道题目（共${total}道题的第${batchLabel}批）。
 
@@ -439,7 +487,8 @@ ${aestheticContext}
 3. 每个选项最多2个维度得分，主维度≤2分，副维度≤1分
 4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
 5. 维度覆盖均衡：本批 ${count} 道题中，每个维度应大致均匀出现，避免某一维度题目过多而另一维度数据稀少。当前维度共 ${dimensions.length} 个，每个维度平均约 ${Math.round(count / dimensions.length * 10) / 10} 道题的信号量
-6. 遵守 literary guide，列明的禁止句型一律不得出现`;
+6. 每道题的高分选项必须服从维度语义锚点，不能把某个维度偷换成“相近但不同”的概念。例如某维度若高分代表“公义优先”，则“索要官职谋私利”“只保自己”之类选项绝不能给这个维度高分
+7. 遵守 literary guide，列明的禁止句型一律不得出现`;
 
   const raw = await callAIImpl(system, user, 6000);
   fs.writeFileSync(path.join(dataDir, `${outline.id}.q${batchLabel}.raw.txt`), raw);

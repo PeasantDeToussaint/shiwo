@@ -155,6 +155,7 @@ async function main() {
         outline.architectureResults = architecture.results;
         outline.architectureResultType = architecture.resultType || "archetype";
         outline.architectureResultFields = architecture.resultFields || null;
+        outline.architectureDimensionSpecs = architecture.dimensionSpecs || null;
       }
       // Phase 1b: numeric profiles are code-generated from architecture profileHints.
       // This removes the most failure-prone step from the model pipeline.
