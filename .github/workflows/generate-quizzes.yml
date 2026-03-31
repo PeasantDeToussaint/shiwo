@@ -191,14 +191,14 @@ jobs:
         with:
           pattern: quiz-topic-*
           merge-multiple: true
-          path: scripts/data
+          path: scripts/data/pipelined_materials
 
       - name: 提交到仓库
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add scripts/data/*.json
+          git add scripts/data/pipelined_materials/*.json
           count=$(git diff --cached --name-only | wc -l)
 
           if [ "$count" -eq 0 ]; then
@@ -210,16 +210,16 @@ jobs:
 
       - name: 生成汇总报告
         run: |
-          count=$(ls scripts/data/*.json 2>/dev/null | wc -l)
-          new=$(git diff HEAD~1 --name-only 2>/dev/null | grep "scripts/data/" | wc -l || echo "?")
+          count=$(ls scripts/data/pipelined_materials/*.json 2>/dev/null | wc -l)
+          new=$(git diff HEAD~1 --name-only 2>/dev/null | grep "scripts/data/pipelined_materials/" | wc -l || echo "?")
           echo "## 批量生成结果" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "本次新增 **${new}** 个 / 仓库共 **${count}** 个测验" >> $GITHUB_STEP_SUMMARY
+          echo "本次新增 **${new}** 个 / 文件夹共 **${count}** 个测验" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ "$new" -gt 0 ] 2>/dev/null; then
             echo "| 新增文件 |" >> $GITHUB_STEP_SUMMARY
             echo "|----------|" >> $GITHUB_STEP_SUMMARY
-            git diff HEAD~1 --name-only 2>/dev/null | grep "scripts/data/" | while read f; do
+            git diff HEAD~1 --name-only 2>/dev/null | grep "scripts/data/pipelined_materials/" | while read f; do
               echo "| $(basename $f) |" >> $GITHUB_STEP_SUMMARY
             done
           fi
