@@ -491,15 +491,17 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 你是这个领域的专家，请基于「用户最关心什么」来决定结果页的字段构成。
 
 ### 标准字段（按需选用，用 standard: true 标记）
-这些字段有固定的生成格式，全部可选，只选对这个主题有意义的：
-- portrait：三段人格画像
+这些字段有默认生成格式，全部可选，只选对这个主题有意义的：
+- portrait：三段深度画像（必选）
 - strengths：6条优势
 - weaknesses：6条局限
 - temperament：气质描述
 - situation：核心张力
 - lifeAdvice：给用户的行动建议
 - destiny：诗意命运收尾
-不要全选，根据主题和用户需求挑选最合适的组合。
+
+不要全选。对于标准字段，如果你认为默认格式对这个主题不够精准，可以额外提供 instruction 字段来覆盖默认写法。例如：
+{ "key": "portrait", "label": "气质画像", "standard": true, "instruction": "三段，第一段描述测验者与这个国家的气质共鸣，第二段写具体行为联结，第三段写挑战与代价" }
 
 ### 两个或以上自定义字段（用 standard: false 标记，自行设计）
 如果这个主题的用户有标准字段以外的核心关注点，可以增加自定义字段。
@@ -717,7 +719,11 @@ function buildResultTemplate(resultFields, resultType) {
 
   for (const f of resultFields) {
     if (standardKeys.has(f.key)) {
-      lines.push(templates[f.key] + ",");
+      // If Phase 0 provided a custom instruction for a standard field, use it over the default template
+      const override = f.instruction
+        ? `  "${f.key}": "按如下要求撰写：${f.instruction.replace(/"/g, '\\"')}"`
+        : templates[f.key];
+      lines.push(override + ",");
     } else {
       customFields.push(f);
     }
@@ -818,10 +824,10 @@ portrait 是结果页最核心的内容，必须让用户读完产生"这说的�
 5. **禁止套话**：不用"你是一个xxx的人""你拥有xxx的特质"这种句式开头；不写"在人生的旅途中"之类的空泛过渡。` : "";
 
   const portraitStructure = {
-    item: `## 结构：先介绍事物，再写人格共鸣
-- portrait【第一段，150-200字】：用感官语言介绍事物本身——物理特质（颜色/光泽/硬度/产地/形成机制）、历史渊源、在人类文明中的位置与象征意义。写得让读者先对这个事物产生真实的迷恋与好奇。
-- portrait【第二段，150-200字】：描述拥有这种气质的人——不是性格标签，而是具体的行为场景和内在体验。他们在什么时候会被误解？他们私下里怎么处理情绪？他们在关系里的真实状态是什么？
-- portrait【第三段，150-200字】：写出这种气质的张力与代价——美丽背后的孤独，稀有性带来的距离感，光芒背后必须承担的重量。要具体，不要泛泛而谈。`,
+    item: `## 结构：以人格匹配为核心，而非介绍事物本身
+- portrait【第一段，150-200字】：描述测验者身上哪些具体特质——不是标签，而是行为场景和内在体验——让他们与这个结果产生联结。写得让用户感到"这说的是我"。
+- portrait【第二段，150-200字】：将这个结果（事物/国家/地方）的文化或精神特质与用户的内在世界对应起来——不是介绍它，而是解释为什么它们之间会产生共鸣，这种共鸣是什么质地的。
+- portrait【第三段，150-200字】：写出这种匹配在现实中的张力——用户在这里/与这个事物相遇会获得什么，同时又要承担什么代价或面对什么挑战。`,
     figure: `## 结构：先介绍人物，再写人格共鸣
 - portrait【第一段，150-200字】：介绍人物的真实生平与历史定位——代表事件、名言警句、所处时代的重量。让读者感受到这个人的存在感和历史厚度。
 - portrait【第二段，150-200字】：写这个人物的内在气质与处世哲学——他/她如何面对命运、做出选择、处理关系，以及他们身上哪些东西让后人反复回望。
