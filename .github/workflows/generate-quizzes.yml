@@ -178,33 +178,48 @@ jobs:
     needs: generate
     runs-on: ubuntu-latest
     if: always()
+    permissions:
+      contents: write
     steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: 下载所有 topic 的结果
         uses: actions/download-artifact@v4
         with:
           pattern: quiz-topic-*
           merge-multiple: true
-          path: /tmp/all-quizzes
+          path: scripts/data
+
+      - name: 提交到仓库
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add scripts/data/*.json
+          count=$(git diff --cached --name-only | wc -l)
+
+          if [ "$count" -eq 0 ]; then
+            echo "没有新文件，跳过提交。"
+          else
+            git commit -m "chore: add $count generated quiz(zes) [skip ci]"
+            git push
+          fi
 
       - name: 生成汇总报告
         run: |
-          count=$(ls /tmp/all-quizzes/*.json 2>/dev/null | wc -l)
+          count=$(ls scripts/data/*.json 2>/dev/null | wc -l)
+          new=$(git diff HEAD~1 --name-only 2>/dev/null | grep "scripts/data/" | wc -l || echo "?")
           echo "## 批量生成结果" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "共生成 **${count}** 个测验" >> $GITHUB_STEP_SUMMARY
+          echo "本次新增 **${new}** 个 / 仓库共 **${count}** 个测验" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "$count" -gt 0 ]; then
-            echo "| 文件 |" >> $GITHUB_STEP_SUMMARY
-            echo "|------|" >> $GITHUB_STEP_SUMMARY
-            for f in /tmp/all-quizzes/*.json; do
+          if [ "$new" -gt 0 ] 2>/dev/null; then
+            echo "| 新增文件 |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|" >> $GITHUB_STEP_SUMMARY
+            git diff HEAD~1 --name-only 2>/dev/null | grep "scripts/data/" | while read f; do
               echo "| $(basename $f) |" >> $GITHUB_STEP_SUMMARY
             done
           fi
-
-      - name: 上传合并结果包
-        uses: actions/upload-artifact@v4
-        with:
-          name: quiz-results-all
-          path: /tmp/all-quizzes/
-          if-no-files-found: ignore
-          retention-days: 30
