@@ -67,16 +67,15 @@ function validateOutlineStructure(outline, architecture) {
     if (!r?.dimension || !dimSet.has(r.dimension)) {
       errors.push(`${r?.id || r?.title || "result"}: dimension must be one of outline.dimensions`);
     }
-    if (!r?.dimension_profile) {
-      errors.push(`${r?.id || r?.title || "result"}: missing dimension_profile`);
-      continue;
-    }
-    const keys = Object.keys(r.dimension_profile);
-    for (const d of dimensions) {
-      if (!keys.includes(d)) errors.push(`${r?.id || r?.title || "result"}: dimension_profile missing "${d}"`);
-    }
-    for (const k of keys) {
-      if (!dimSet.has(k)) errors.push(`${r?.id || r?.title || "result"}: dimension_profile has unknown dimension "${k}"`);
+    // dimension_profile is added in a separate phase — skip profile checks here
+    if (r?.dimension_profile) {
+      const keys = Object.keys(r.dimension_profile);
+      for (const d of dimensions) {
+        if (!keys.includes(d)) errors.push(`${r?.id || r?.title || "result"}: dimension_profile missing "${d}"`);
+      }
+      for (const k of keys) {
+        if (!dimSet.has(k)) errors.push(`${r?.id || r?.title || "result"}: dimension_profile has unknown dimension "${k}"`);
+      }
     }
   }
 
