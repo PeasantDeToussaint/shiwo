@@ -1,0 +1,86 @@
+name: 生成测验
+
+on:
+  workflow_dispatch:
+    inputs:
+      topics:
+        description: '测验主题，用 | 分隔，例如：主题A|主题B|主题C'
+        required: true
+      hint:
+        description: '硬性约束（可选），如：结果必须是真实国家名称，resultType必须是item'
+        required: false
+      provider:
+        description: 'AI 提供商'
+        required: true
+        default: 'zhipu'
+        type: choice
+        options:
+          - zhipu
+          - deepseek
+          - gemini
+          - anthropic
+
+jobs:
+  # Job 1: parse the multiline input into a JSON array for the matrix
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.parse.outputs.matrix }}
+    steps:
+      - name: 解析主题列表
+        id: parse
+        env:
+          TOPICS: ${{ github.event.inputs.topics }}
+        run: |
+          topics_json=$(python3 -c "
+import os, json
+raw = os.environ['TOPICS']
+topics = [t.strip() for t in raw.split('|') if t.strip()]
+print(json.dumps(topics, ensure_ascii=False))
+")
+          echo "matrix={\"topic\":$topics_json}" >> "$GITHUB_OUTPUT"
+
+  # Job 2: one VM per topic, all run in parallel
+  generate:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+      fail-fast: false   # if one topic fails, others keep running
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 生成测验
+        env:
+          ZHIPU_API_KEY:     ${{ secrets.ZHIPU_API_KEY }}
+          DEEPSEEK_API_KEY:  ${{ secrets.DEEPSEEK_API_KEY }}
+          GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WX_APPID:          ${{ secrets.WX_APPID }}
+          WX_APPSECRET:      ${{ secrets.WX_APPSECRET }}
+          WX_CLOUD_ENV:      ${{ secrets.WX_CLOUD_ENV }}
+          TOPIC:             ${{ matrix.topic }}
+          PROVIDER:          ${{ github.event.inputs.provider }}
+          HINT:              ${{ github.event.inputs.hint }}
+        run: |
+          if [ -n "$HINT" ]; then
+            node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER" --hint="$HINT"
+          else
+            node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER"
+          fi
+
+      - name: 保存生成文件（备用）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiz-${{ strategy.job-index }}
+          path: scripts/data/*.json
+          retention-days: 7
