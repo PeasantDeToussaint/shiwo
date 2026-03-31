@@ -13,7 +13,7 @@ const path = require("path");
 const config = require("./lib/config");
 const { createClient } = require("./lib/ai");
 const { sleep, withRetry } = require("./lib/http");
-const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestions, generateResults } = require("./lib/prompts");
+const { inferHintsFromTopic, generateArchitecture, generateOutline, generateOutlineProfiles, generateQuestions, generateResults } = require("./lib/prompts");
 const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, spreadProfiles, enforceUniquePeaks } = require("./lib/assemble");
 const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
 const { evaluateQuiz, printEvalReport } = require("./lib/eval");
@@ -137,17 +137,12 @@ async function main() {
   } else {
     try {
       outline = await withRetry("outline", () => generateOutline(TOPIC_ARG, architecture, HINT_BLOCK, aiClient.callAI), 4, 5000);
-      // Simplify dimensions
+      // Simplify dimensions before profile generation so profiles use canonical keys
       const origDims = [...outline.dimensions];
       outline.dimensions = simplifyDimensions(outline.dimensions);
       const dimSimplifyMap = {};
       origDims.forEach((d, i) => { dimSimplifyMap[d] = outline.dimensions[i]; });
       for (const r of outline.results) {
-        if (r.dimension_profile) {
-          const remapped = {};
-          for (const [k, v] of Object.entries(r.dimension_profile)) remapped[dimSimplifyMap[k] || k] = v;
-          r.dimension_profile = remapped;
-        }
         if (r.dimension) r.dimension = dimSimplifyMap[r.dimension] || r.dimension;
       }
       if (outline.dimensionAxes) {
@@ -160,6 +155,9 @@ async function main() {
         outline.architectureResultType = architecture.resultType || "archetype";
         outline.architectureResultFields = architecture.resultFields || null;
       }
+      // Phase 1b: dedicated profile generation — model sees all results at once
+      // and reasons globally about Pareto-safe numeric profiles
+      await withRetry("outline-profiles", () => generateOutlineProfiles(outline, architecture, aiClient.callAI), 3, 4000);
       spreadProfiles(outline.results, outline.dimensions);
       enforceUniquePeaks(outline.results, outline.dimensions);
       saveCheckpoint(TOPIC_ARG, "phase1-outline", outline);

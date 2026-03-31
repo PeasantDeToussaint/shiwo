@@ -276,15 +276,12 @@ ${hintBlock}${archContext}
       "subtitle": "结果副标题，12字以内",
       "token": "象征物或象征词，4字以内",
       "verse": "见上方 verse 规则（优先现代名言/电影台词/歌词/现代诗，非古典主题禁止用古诗词）",
-      "verseSource": "出处或作者",
-      "dimension_profile": {
-        "维度A": 0.0,
-        "维度B": 0.0,
-        "更多维度按已确定 dimensions 继续补齐，必须覆盖所有维度": 0.0
-      }
+      "verseSource": "出处或作者"
     }
   ]
 }
+
+注意：dimension_profile 数值将由独立步骤生成，本步骤不需要输出。
 
 规则：
 - dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，严格使用 Phase 0 的维度，数量以 Phase 0 为准）
@@ -294,24 +291,70 @@ ${hintBlock}${archContext}
 - 维度名称简洁，2-4字
 - axisLabel 是这条轴的"类别名"，lowPole 是该维度的反面特质
 - insight 必须是具体的、有画面感的描述，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌
-- 结果要有辨识度，用户看到标题就能感知「这说的是我吗」
-
-dimension_profile 规则（这是最重要的部分，直接决定结果准确性）：
-- 若 Phase 0 提供了 profileHints（high/medium/low），必须以此为基础转换为数值：high=0.60-0.80，medium=0.30-0.55，low=0.08-0.25
-- 所有维度都必须出现在每个 profile 中，key 与 dimensions 完全一致
-- 禁止任何维度设为 1.0 或 0.0（避免极端化）
-- 不同结果的 profile 必须有显著差异，确保每个结果在某几个维度上有独特的高低组合
-- 任意两个结果至少要在一个维度上拉开 ≥0.15 的差距；如果两个结果 profile 很像，必须主动重写其中一个
-- 检查 Pareto 支配：如果结果 A 在所有维度上均 ≥ 结果 B（且至少一个维度严格 >），则无论用户如何作答，B 永远不会被选中。必须确保每个结果至少在一个维度上是所有结果中数值最高的
-- profile 设计完成后自我检验：① 是否有两个结果过于相似？② 是否有某个结果在所有维度上都被另一个结果超越？③ 是否会导致大多数用户聚集在同一个结果？`;
+- 结果要有辨识度，用户看到标题就能感知「这说的是我吗」`;
 
   const raw = await callAIImpl(system, user, 4500);
   const outline = normalizeOutlineToArchitecture(extractJSON(raw), architecture);
-  if (outline.dimensions && outline.results) {
-    spreadProfiles(outline.results, outline.dimensions);
-  }
   const errors = validateOutlineStructure(outline, architecture);
   if (errors.length > 0) throw new Error(`Outline invalid: ${errors.join("; ")}`);
+  return outline;
+}
+
+async function generateOutlineProfiles(outline, architecture, callAIImpl = callAI) {
+  const dimensions = outline.dimensions;
+  const results = outline.results;
+  const archResults = architecture?.results || [];
+
+  const resultLines = results.map((r, i) => {
+    const archR = archResults[i] || {};
+    const hints = archR.profileHints || {};
+    return `- ${r.id}「${r.title}」  主导维度：${r.dimension}  参考倾向：${JSON.stringify(hints)}`;
+  }).join("\n");
+
+  const dimList = dimensions.map(d => `「${d}」`).join("、");
+  const profileTemplate = results
+    .map(r => `    "${r.id}": { ${dimensions.map(d => `"${d}": 0.00`).join(", ")} }`)
+    .join(",\n");
+
+  const system = `你是测验数据设计专家，专门为人格测验的结果设计精确的维度权重分布。输出严格 JSON，不输出其他内容。`;
+
+  const user = `为以下测验结果设计 dimension_profile 数值。
+
+维度（共 ${dimensions.length} 个）：${dimList}
+
+各结果：
+${resultLines}
+
+输出格式：
+{
+  "profiles": {
+${profileTemplate}
+  }
+}
+
+设计规则：
+1. 以"参考倾向"为起点：high → 0.60-0.80，medium → 0.30-0.55，low → 0.08-0.25。若参考倾向的维度名称与测验维度不完全一致，按主导维度和结果特质判断。
+2. 每个结果在其主导维度上的值必须严格大于所有其他结果（唯一最高）——这是保证该结果数学上可达的必要条件。
+3. 任意两个结果至少在一个维度上差距 ≥ 0.15。
+4. 禁止任何维度值为 1.0 或 0.0。
+5. 每个 profile 必须包含全部 ${dimensions.length} 个维度，key 与以下完全一致：${dimList}。
+6. 输出前逐一核查：为每个结果找到它在所有结果中独占最高分的维度；若找不到，调整数值直到找到为止。`;
+
+  const raw = await callAIImpl(system, user, 2000);
+  const parsed = extractJSON(raw);
+  if (!parsed?.profiles) throw new Error("Profile step: missing 'profiles' field");
+
+  const missingIds = results.filter(r => !parsed.profiles[r.id]).map(r => r.id);
+  if (missingIds.length > 0) throw new Error(`Profile step: missing profiles for ${missingIds.join(", ")}`);
+
+  for (const result of results) {
+    const profile = parsed.profiles[result.id];
+    if (!profile) continue;
+    result.dimension_profile = {};
+    for (const dim of dimensions) {
+      result.dimension_profile[dim] = typeof profile[dim] === "number" ? profile[dim] : 0.3;
+    }
+  }
   return outline;
 }
 
@@ -559,6 +602,6 @@ ${buildResultTemplate(resultFields, resultType)}
 
 module.exports = {
   inferHintsFromTopic, buildResultTemplate,
-  generateArchitecture, generateOutline, generateQuestions, generateResults,
+  generateArchitecture, generateOutline, generateOutlineProfiles, generateQuestions, generateResults,
   PORTRAIT_TEMPLATE_BY_TYPE, STANDARD_FIELD_TEMPLATES,
 };
