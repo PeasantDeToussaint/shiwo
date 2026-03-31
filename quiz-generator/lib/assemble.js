@@ -288,20 +288,31 @@ function assembleQuiz(outline, questions, results) {
 function enforceUniquePeaks(results, dimensions, boost = 0.08) {
   const clamp = (v) => parseFloat(Math.min(0.95, Math.max(0.05, v)).toFixed(2));
 
-  for (const result of results) {
+  // A result must be the STRICT unique leader on at least one dimension
+  // (i.e. strictly greater than every other result on that dimension).
+  // Using >= (ties allowed) is insufficient: a tied leader can still be
+  // Pareto-dominated on all remaining dimensions.
+  const hasStrictPeak = (result) => {
     const p = result.dimension_profile;
-    if (!p) continue;
-
-    const isLeaderOnAny = dimensions.some(d =>
-      results.every(other => other === result || (other.dimension_profile?.[d] || 0) <= (p[d] || 0))
+    return dimensions.some(d =>
+      results.every(other => other === result || (other.dimension_profile?.[d] || 0) < (p[d] || 0))
     );
+  };
 
-    if (!isLeaderOnAny) {
-      // Find the dimension where this result comes closest to leading
-      const bestDim = dimensions.reduce((best, d) =>
-        (p[d] || 0) > (p[best] || 0) ? d : best, dimensions[0]);
-      p[bestDim] = clamp((p[bestDim] || 0) + boost);
+  // Repeat until stable — a single-pass boost may still leave ties
+  for (let pass = 0; pass < results.length; pass++) {
+    let changed = false;
+    for (const result of results) {
+      const p = result.dimension_profile;
+      if (!p) continue;
+      if (!hasStrictPeak(result)) {
+        const bestDim = dimensions.reduce((best, d) =>
+          (p[d] || 0) > (p[best] || 0) ? d : best, dimensions[0]);
+        p[bestDim] = clamp((p[bestDim] || 0) + boost);
+        changed = true;
+      }
     }
+    if (!changed) break;
   }
   return results;
 }
