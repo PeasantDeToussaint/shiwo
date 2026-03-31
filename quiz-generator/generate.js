@@ -215,11 +215,25 @@ async function main() {
         console.log(`     ✓  got ${qs.length} questions`);
         if (i < Q_BATCHES.length - 1) await sleep(4000);
       }
-      const questionWarnings = validateQuestions(
-        phaseQuestions,
-        outline.dimensions,
-        { scoringType: outline.architectureScoringFamily || architecture.scoringFamily || "weighted-dimension" }
-      );
+      const scoringType = outline.architectureScoringFamily || architecture.scoringFamily || "weighted-dimension";
+      // For non-bipolar families the model sometimes emits -1 despite the prompt forbidding it.
+      // -1 semantically means "no contribution to this dimension" → clamp to 0 before validation.
+      if (scoringType !== "bipolar-dimension") {
+        let clamped = 0;
+        for (const q of phaseQuestions) {
+          for (const opt of (q.options || [])) {
+            if (!opt.scores) continue;
+            for (const [dim, val] of Object.entries(opt.scores)) {
+              if (typeof val === "number" && val < 0) {
+                opt.scores[dim] = 0;
+                clamped++;
+              }
+            }
+          }
+        }
+        if (clamped > 0) console.log(`     [repair] clamped ${clamped} negative score(s) to 0 (scoringType: ${scoringType})`);
+      }
+      const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions, { scoringType });
       printWarnings("questions", questionWarnings);
       assertNoCriticalWarnings("questions", questionWarnings);
       return phaseQuestions;
