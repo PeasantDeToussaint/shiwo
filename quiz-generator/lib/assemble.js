@@ -285,13 +285,9 @@ function assembleQuiz(outline, questions, results) {
  * Strategy: if a result is not the sole leader on any dimension, boost its
  * highest-valued dimension by a small increment until it becomes the leader.
  */
-function enforceUniquePeaks(results, dimensions, boost = 0.08) {
-  // Ceiling is 0.99 (not 0.95) so we can always break a ceiling tie by boosting
-  // one result above a competitor that is clamped at the model's natural max (0.95).
-  const clamp = (v) => parseFloat(Math.min(0.99, Math.max(0.05, v)).toFixed(2));
+function enforceUniquePeaks(results, dimensions, boost = 0.04) {
+  const clamp = (v) => parseFloat(Math.min(0.95, Math.max(0.05, v)).toFixed(2));
 
-  // A result must be the STRICT unique leader on at least one dimension
-  // (strictly greater than every other result on that dimension).
   const hasStrictPeak = (result) => {
     const p = result.dimension_profile;
     if (!p) return false;
@@ -300,24 +296,37 @@ function enforceUniquePeaks(results, dimensions, boost = 0.08) {
     );
   };
 
-  // Iterate up to results×dimensions passes. Each pass tries every result that
-  // still lacks a strict peak. When boosting, try each dimension in descending
-  // order of the result's own score, skipping any already at the ceiling — this
-  // avoids infinite loops when the first-choice dimension is stuck at 0.99.
-  for (let pass = 0; pass < results.length * dimensions.length; pass++) {
+  for (let pass = 0; pass < results.length * 2; pass++) {
     let changed = false;
     for (const result of results) {
       const p = result.dimension_profile;
       if (!p || hasStrictPeak(result)) continue;
 
-      const sorted = [...dimensions].sort((a, b) => (p[b] || 0) - (p[a] || 0));
-      for (const d of sorted) {
-        const prev = parseFloat(((p[d] || 0)).toFixed(2));
-        const next = clamp(prev + boost);
-        if (next > prev) {
-          p[d] = next;
+      const targetDim = dimensions.includes(result.dimension) ? result.dimension : dimensions[0];
+      const maxOther = Math.max(
+        ...results
+          .filter(other => other !== result)
+          .map(other => other.dimension_profile?.[targetDim] || 0)
+      );
+
+      if ((p[targetDim] || 0) <= maxOther) {
+        const desired = clamp(Math.min(0.95, maxOther + boost));
+        if (desired > (p[targetDim] || 0)) {
+          p[targetDim] = desired;
           changed = true;
-          break; // re-evaluate hasStrictPeak on next pass
+        }
+      }
+
+      // If the target dimension is already at ceiling and still tied, nudge tied
+      // competitors down slightly instead of inflating unrelated dimensions.
+      const tied = results.filter(other =>
+        other !== result && (other.dimension_profile?.[targetDim] || 0) >= (p[targetDim] || 0)
+      );
+      if (tied.length > 0) {
+        for (const other of tied) {
+          const prev = other.dimension_profile[targetDim] || 0;
+          other.dimension_profile[targetDim] = clamp(prev - 0.03);
+          if (other.dimension_profile[targetDim] !== prev) changed = true;
         }
       }
     }
@@ -329,7 +338,7 @@ function enforceUniquePeaks(results, dimensions, boost = 0.08) {
 function spreadProfiles(results, dimensions, minDiff = 0.16) {
   const clamp = (v) => parseFloat(Math.max(0.05, Math.min(0.95, v)).toFixed(2));
 
-  for (let pass = 0; pass < 10; pass++) {
+  for (let pass = 0; pass < 4; pass++) {
     let changed = false;
     for (let i = 0; i < results.length; i++) {
       for (let j = i + 1; j < results.length; j++) {
@@ -340,23 +349,23 @@ function spreadProfiles(results, dimensions, minDiff = 0.16) {
         const maxDiff = Math.max(...dimensions.map(d => Math.abs((a[d] || 0) - (b[d] || 0))));
         if (maxDiff >= minDiff) continue;
 
-        // Find the dimension with the biggest existing difference to nudge
-        let bestDim = dimensions[0], bestGap = -1;
-        for (const d of dimensions) {
-          const gap = Math.abs((a[d] || 0) - (b[d] || 0));
-          if (gap > bestGap) { bestGap = gap; bestDim = d; }
-        }
+        const aDim = dimensions.includes(results[i].dimension) ? results[i].dimension : dimensions[0];
+        const bDim = dimensions.includes(results[j].dimension) ? results[j].dimension : dimensions[0];
+        const needed = parseFloat(((minDiff - maxDiff) / 2 + 0.01).toFixed(2));
 
-        // Push them apart on that dimension
-        const needed = (minDiff - bestGap) / 2 + 0.02;
-        if ((a[bestDim] || 0) >= (b[bestDim] || 0)) {
-          a[bestDim] = clamp((a[bestDim] || 0) + needed);
-          b[bestDim] = clamp((b[bestDim] || 0) - needed);
-        } else {
-          a[bestDim] = clamp((a[bestDim] || 0) - needed);
-          b[bestDim] = clamp((b[bestDim] || 0) + needed);
+        const aPrevHigh = a[aDim] || 0;
+        const bPrevHigh = b[bDim] || 0;
+        a[aDim] = clamp(aPrevHigh + needed);
+        b[bDim] = clamp(bPrevHigh + needed);
+        if (a[aDim] !== aPrevHigh || b[bDim] !== bPrevHigh) changed = true;
+
+        if (aDim !== bDim) {
+          const aPrevLow = a[bDim] || 0;
+          const bPrevLow = b[aDim] || 0;
+          a[bDim] = clamp(aPrevLow - needed);
+          b[aDim] = clamp(bPrevLow - needed);
+          if (a[bDim] !== aPrevLow || b[bDim] !== bPrevHigh || b[aDim] !== bPrevLow) changed = true;
         }
-        changed = true;
       }
     }
     if (!changed) break;
@@ -371,6 +380,7 @@ function applyProfilesFromHints(results, dimensions, architecture) {
   const RANGES = { high: [0.66, 0.80], medium: [0.34, 0.50], low: [0.10, 0.22] };
   const archResults = (architecture && architecture.results) || [];
   const normalize = (s) => String(s || "").replace(/\s+/g, "").replace(/[轴重度力感性]$/g, "");
+  const clamp = (v) => parseFloat(Math.min(0.95, Math.max(0.05, v)).toFixed(2));
   const stableUnit = (seed) => {
     let hash = 2166136261;
     for (let i = 0; i < seed.length; i++) {
@@ -406,6 +416,35 @@ function applyProfilesFromHints(results, dimensions, architecture) {
 
       const seed = `${result.id}|${dim}|${hint}|${i}`;
       result.dimension_profile[dim] = pickValue(hint, seed);
+    }
+  }
+
+  // If multiple results share the same primary dimension, give each one a stable
+  // secondary signature so they do not collapse into near-duplicates or dominate
+  // one another on all remaining dimensions.
+  const groups = new Map();
+  for (const result of results) {
+    const key = dimensions.includes(result.dimension) ? result.dimension : dimensions[0];
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(result);
+  }
+  for (const [primaryDim, group] of groups.entries()) {
+    if (group.length <= 1) continue;
+    const secondaryDims = dimensions.filter(d => d !== primaryDim);
+    for (let idx = 0; idx < group.length; idx++) {
+      const result = group[idx];
+      const p = result.dimension_profile;
+      const upDim = secondaryDims[idx % secondaryDims.length];
+      const downDim = secondaryDims[(idx + 1) % secondaryDims.length];
+      for (const dim of secondaryDims) {
+        if (dim === upDim) {
+          p[dim] = clamp(Math.max(p[dim] || 0, 0.55));
+        } else if (dim === downDim) {
+          p[dim] = clamp(Math.min(p[dim] || 0, 0.12));
+        } else {
+          p[dim] = clamp(Math.min(p[dim] || 0, 0.42));
+        }
+      }
     }
   }
 }

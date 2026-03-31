@@ -3,7 +3,10 @@ const {
   normalizeOutlineToArchitecture,
   assembleQuiz,
   applyProfilesFromHints,
+  spreadProfiles,
+  enforceUniquePeaks,
 } = require("../lib/assemble");
+const { validateDimensionProfiles } = require("../lib/validate");
 
 describe("assemble helpers", () => {
   it("simplifies long dimension labels consistently", () => {
@@ -127,5 +130,35 @@ describe("assemble helpers", () => {
     expect(results[0].dimension_profile["智谋深"]).toBeGreaterThan(results[0].dimension_profile["情义重"]);
     expect(results[1].dimension_profile["行动力"]).toBeGreaterThan(results[1].dimension_profile["智谋深"]);
     expect(results[0].dimension_profile).not.toEqual(results[1].dimension_profile);
+  });
+
+  it("keeps cleanup passes from collapsing many profiles to identical ceilings", () => {
+    const dimensions = ["权谋取向", "情感立场", "行事风格", "处世态度", "理想高度"];
+    const results = [
+      { id: "r1", dimension: "权谋取向" },
+      { id: "r2", dimension: "情感立场" },
+      { id: "r3", dimension: "行事风格" },
+      { id: "r4", dimension: "处世态度" },
+      { id: "r5", dimension: "理想高度" },
+      { id: "r6", dimension: "行事风格" },
+      { id: "r7", dimension: "权谋取向" },
+      { id: "r8", dimension: "情感立场" },
+    ];
+    const architecture = {
+      results: results.map((r, i) => ({
+        primaryDimension: r.dimension,
+        profileHints: Object.fromEntries(
+          dimensions.map(d => [d, d === r.dimension ? "high" : (i % 2 === 0 ? "low" : "medium")])
+        ),
+      })),
+    };
+
+    applyProfilesFromHints(results, dimensions, architecture);
+    spreadProfiles(results, dimensions);
+    enforceUniquePeaks(results, dimensions);
+
+    const warnings = validateDimensionProfiles(results, dimensions);
+    expect(warnings.some(w => w.includes("max diff 0.00"))).toBe(false);
+    expect(warnings.some(w => w.includes("dominated by"))).toBe(false);
   });
 });
