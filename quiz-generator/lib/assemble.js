@@ -364,8 +364,38 @@ function spreadProfiles(results, dimensions, minDiff = 0.16) {
   return results;
 }
 
+// Programmatic fallback: convert architecture profileHints (high/medium/low) into
+// numeric dimension_profiles when AI-based profile generation fails or returns garbage.
+function applyProfilesFromHints(results, dimensions, architecture) {
+  const RANGES = { high: [0.62, 0.78], medium: [0.32, 0.52], low: [0.10, 0.23] };
+  const rand = (min, max) => parseFloat((min + Math.random() * (max - min)).toFixed(2));
+  const archResults = (architecture && architecture.results) || [];
+
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+    const archResult = archResults[i] || {};
+    const hints = archResult.profileHints || {};
+
+    result.dimension_profile = {};
+    for (const dim of dimensions) {
+      // Match hint by exact key, then by prefix/suffix stripping
+      let hint = hints[dim];
+      if (!hint) {
+        const normalDim = dim.replace(/[轴重度力感性]$/g, "");
+        const found = Object.entries(hints).find(([k]) =>
+          k === dim || k.replace(/[轴重度力感性]$/g, "") === normalDim ||
+          k.startsWith(dim) || dim.startsWith(k.replace(/[轴重度力感性]$/g, ""))
+        );
+        hint = found ? found[1] : "medium";
+      }
+      const [min, max] = RANGES[hint] || RANGES.medium;
+      result.dimension_profile[dim] = rand(min, max);
+    }
+  }
+}
+
 module.exports = {
-  spreadProfiles, enforceUniquePeaks,
+  spreadProfiles, enforceUniquePeaks, applyProfilesFromHints,
   DIMENSION_MAP, simplifyDimensions,
   normalizePortraitText, looksLikeQuoteContent,
   normalizeResultExtras, findObviousTextCorruption,
