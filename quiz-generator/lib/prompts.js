@@ -350,10 +350,49 @@ ${profileTemplate}
   for (const result of results) {
     const profile = parsed.profiles[result.id];
     if (!profile) continue;
-    result.dimension_profile = {};
-    for (const dim of dimensions) {
-      result.dimension_profile[dim] = typeof profile[dim] === "number" ? profile[dim] : 0.3;
+
+    // Count how many dimensions have actual numeric values (not fallback)
+    const matched = dimensions.filter(d => typeof profile[d] === "number");
+    if (matched.length < dimensions.length) {
+      // Try case-insensitive / whitespace-stripped key lookup before falling back
+      const normalised = {};
+      for (const [k, v] of Object.entries(profile)) {
+        normalised[k.trim().replace(/\s+/g, "")] = v;
+      }
+      const recheckMatched = dimensions.filter(d => typeof normalised[d.trim().replace(/\s+/g, "")] === "number");
+      if (recheckMatched.length < Math.ceil(dimensions.length * 0.5)) {
+        throw new Error(
+          `Profile step: model returned wrong dimension keys for ${result.id}. ` +
+          `Expected: ${dimensions.join(", ")}. Got: ${Object.keys(profile).join(", ")}`
+        );
+      }
+      result.dimension_profile = {};
+      for (const dim of dimensions) {
+        const key = dim.trim().replace(/\s+/g, "");
+        result.dimension_profile[dim] = typeof normalised[key] === "number" ? normalised[key] : 0.3;
+      }
+    } else {
+      result.dimension_profile = {};
+      for (const dim of dimensions) {
+        result.dimension_profile[dim] = profile[dim];
+      }
     }
+  }
+
+  // Sanity-check: if all profiles are identical (max pairwise diff = 0), the model
+  // returned useless data — throw so the retry mechanism kicks in
+  let maxDiff = 0;
+  for (let i = 0; i < results.length; i++) {
+    for (let j = i + 1; j < results.length; j++) {
+      const a = results[i].dimension_profile || {};
+      const b = results[j].dimension_profile || {};
+      for (const d of dimensions) {
+        maxDiff = Math.max(maxDiff, Math.abs((a[d] || 0) - (b[d] || 0)));
+      }
+    }
+  }
+  if (maxDiff < 0.01) {
+    throw new Error("Profile step: all profiles are identical — model likely returned wrong keys or zeroes");
   }
   return outline;
 }
