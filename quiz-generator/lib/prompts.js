@@ -627,7 +627,7 @@ ${profileTemplate}
   return outline;
 }
 
-async function generateQuestions(outline, startId, endId, batchLabel, total, dataDir, callAIImpl = callAI) {
+async function generateQuestions(outline, startId, endId, batchLabel, total, dataDir, callAIImpl = callAI, previousQuestions = []) {
   const dimensions = outline.dimensions;
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const count = endId - startId + 1;
@@ -639,8 +639,8 @@ async function generateQuestions(outline, startId, endId, batchLabel, total, dat
     : "";
   const scoringGuideBlock = `\n### 当前评分框架\n- scoringFamily: ${scoringFamily}\n- guidance: ${scoringFamilyGuide}\n`;
   const optionTemplateA = scoringFamily === "bipolar-dimension"
-    ? `        { "id": "a", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2, "另一个维度": -1 } },`
-    : `        { "id": "a", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },`;
+    ? `        { "id": "a", "text": "选项文本", "scores": { "维度": 2, "另一个维度": -1 } },`
+    : `        { "id": "a", "text": "选项文本", "scores": { "维度": 2 } },`;
   const scoreRule = scoringFamily === "bipolar-dimension"
     ? "每个选项最多2个维度得分；允许负分，单维度范围 -2 到 2。只有在表达“朝 lowDefinition 一侧移动”时才使用负分，不能把负分当作惩罚项乱扣"
     : scoringFamily === "level-band"
@@ -655,13 +655,17 @@ ${aestheticContext}
 ### 输出格式
 严格输出一个 JSON 对象，只包含 "questions" 字段（${count}道题的数组，id从q${startId}到q${endId}）。不要输出其他内容，直接输出 JSON。`;
 
+  const usedScenesBlock = previousQuestions.length > 0
+    ? `\n### 已生成题目场景（本批禁止重复这些场景结构）\n${previousQuestions.map((q, i) => `${i + 1}. ${q.text}`).join("\n")}\n`
+    : "";
+
   const user = `测验信息：
 - 标题：${outline.title}
 - 描述：${outline.description}
 - 评分维度：${dimensions.join("、")}
 ${scoringGuideBlock}
 ${dimensionSpecBlock}
-
+${usedScenesBlock}
 请生成 q${startId} 到 q${endId} 共${count}道题目（共${total}道题的第${batchLabel}批）。
 
 输出格式：
@@ -669,18 +673,18 @@ ${dimensionSpecBlock}
   "questions": [
     {
       "id": "q${startId}",
-      "text": "具体场景题目，不要宽泛问法",
+      "text": "【场景铺陈 30-50字】+【问题抛出 10-20字】，合计 40-70字。先用感官细节（光线/声音/气味/神情/动作）把读者带入现场，再抛出问题。禁止只用一句话直接问"你会怎么做"。示例：「烛火将熄，你与他对坐已久，他忽然低声说了一句你早已知道答案却一直不敢正视的话。窗外有雨，案上的茶早就凉了。你抬起头……」",
       "options": [
 ${optionTemplateA}
-        { "id": "b", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },
-        { "id": "c", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },
-        { "id": "d", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } }
+        { "id": "b", "text": "选项文本", "scores": { "维度": 2 } },
+        { "id": "c", "text": "选项文本", "scores": { "维度": 2 } },
+        { "id": "d", "text": "选项文本", "scores": { "维度": 2 } }
       ]
     }
   ]
 }
 
-【题型分配要求】本批 ${count} 道题必须覆盖多种题型，禁止全部使用"遭遇危机→如何行动"格式：
+【题型分配要求】本批 ${count} 道题必须覆盖多种题型：
 
 ① 细节感知题：不问"你怎么做"，问"你先注意到什么"/"你的第一感受是"。例：「宴席散场，你和一个平日疏远的人都没走，两人都没开口。你首先感到的是……」
 ② 喜好本能题：无压力场景下的真实偏好，问"你更愿意"/"你更享受哪种"。例：「如果有一整天在这个世界里自由支配，你最想做的是……」
@@ -691,7 +695,7 @@ ${optionTemplateA}
 本批 ${count} 道题中，至少 ${Math.max(1, Math.floor(count * 0.4))} 道必须属于②③④⑤之一，不能全是危机行动类。
 
 规则：
-1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围。例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等
+1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围。例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等。每道题 text 字段 40 字以上，先渲染场景氛围，再收尾抛问；禁止只有一句话的纯白描问法
 2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
 3. ${scoreRule}
 4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
@@ -711,7 +715,7 @@ ${optionTemplateA}
   return parsed.questions;
 }
 
-async function generateResults(outline, resultSubset, dataDir, callAIImpl = callAI) {
+async function generateResults(outline, resultSubset, dataDir, callAIImpl = callAI, previousResults = []) {
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const stub = resultSubset.map(r => ({
     id: r.id, title: r.title, subtitle: r.subtitle,
@@ -789,6 +793,17 @@ ${aestheticContext}
       }).join("\n")
     : "";
 
+  // Summaries of results already written in earlier batches — avoid repeating themes/labels
+  const writtenContext = previousResults.length > 0
+    ? `\n### 已生成结果摘要（禁止在本次生成中重复使用相同的 strengths/weaknesses 标签或 portrait 开篇角度）\n` +
+      previousResults.map(r => {
+        const sLabels = (r.strengths || []).map(s => s.label).join("、");
+        const wLabels = (r.weaknesses || []).map(w => w.label).join("、");
+        const portraitOpen = (r.portrait || "").slice(0, 30);
+        return `- 【${r.title}】strengths标签：${sLabels}；weaknesses标签：${wLabels}；portrait开篇：「${portraitOpen}…」`;
+      }).join("\n")
+    : "";
+
   const hasField = key => resultFields.some(f => f.key === key);
 
   const portraitDepthGuide = hasField("portrait") ? `
@@ -841,7 +856,7 @@ portrait 是结果页最核心的内容，必须让用户读完产生"这说的�
 
   const user = `测验：${outline.title}（结果类型：${resultType}，评分框架：${scoringFamily}）
 维度：${outline.dimensions.join("、")}
-${figureContext}${siblingContext}
+${figureContext}${siblingContext}${writtenContext}
 
 ${contentGuide}
 

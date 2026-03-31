@@ -149,6 +149,14 @@ function validateOutlineStructure(outline, architecture) {
       for (const k of keys) {
         if (!dimSet.has(k)) errors.push(`${r?.id || r?.title || "result"}: dimension_profile has unknown dimension "${k}"`);
       }
+      // r.dimension (used for routing) must match the profile's peak dimension
+      if (r?.dimension && dimSet.has(r.dimension)) {
+        const peakDim = keys.reduce((best, k) =>
+          (r.dimension_profile[k] > (r.dimension_profile[best] ?? -Infinity)) ? k : best, keys[0]);
+        if (peakDim && peakDim !== r.dimension) {
+          errors.push(`${r?.id || r?.title || "result"}: dimension="${r.dimension}" but profile peak is "${peakDim}" (${r.dimension_profile[peakDim]}) — routing will be wrong`);
+        }
+      }
     }
   }
 
@@ -253,8 +261,6 @@ function validateFinalQuiz(quiz) {
     for (const o of (q.options || [])) {
       const textIssue = findObviousTextCorruption(o.text);
       if (textIssue) errors.push(`${q.id}.${o.id}: corrupted option text (${textIssue})`);
-      const reactionIssue = findObviousTextCorruption(o.reaction);
-      if (reactionIssue) errors.push(`${q.id}.${o.id}: corrupted reaction text (${reactionIssue})`);
     }
   }
 

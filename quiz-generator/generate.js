@@ -210,7 +210,7 @@ async function main() {
       const phaseQuestions = [];
       for (const [i, { startId, endId, label }] of Q_BATCHES.entries()) {
         console.log(`\n📝  [2/3] Questions q${startId}-q${endId} (batch ${label}/${Q_BATCHES.length})...`);
-        const qs = await withRetry(`questions-${label}`, () => generateQuestions(outline, startId, endId, label, Q_TOTAL, DATA_DIR, aiClient.callAI));
+        const qs = await withRetry(`questions-${label}`, () => generateQuestions(outline, startId, endId, label, Q_TOTAL, DATA_DIR, aiClient.callAI, phaseQuestions));
         phaseQuestions.push(...qs);
         console.log(`     ✓  got ${qs.length} questions`);
         if (i < Q_BATCHES.length - 1) await sleep(4000);
@@ -261,7 +261,7 @@ async function main() {
       const allResults = [];
       for (const [i, subset] of R_BATCHES.entries()) {
         console.log(`\n✍️   [3/3] Results batch ${i + 1}/${R_BATCHES.length} (${subset.length} results)...`);
-        const rs = await withRetry(`results-${i + 1}`, () => generateResults(outline, subset, DATA_DIR, aiClient.callAI), 5, 3000);
+        const rs = await withRetry(`results-${i + 1}`, () => generateResults(outline, subset, DATA_DIR, aiClient.callAI, allResults), 5, 3000);
         allResults.push(...rs);
         console.log(`     ✓  got ${rs.length} results`);
         if (i < R_BATCHES.length - 1) await sleep(4000);
