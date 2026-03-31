@@ -18,9 +18,29 @@ on:
           - anthropic
 
 jobs:
-  generate:
+  # Job 1: parse the multiline input into a JSON array for the matrix
+  setup:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    outputs:
+      matrix: ${{ steps.parse.outputs.matrix }}
+    steps:
+      - name: 解析主题列表
+        id: parse
+        run: |
+          topics_json=$(echo "${{ github.event.inputs.topics }}" \
+            | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' \
+            | grep -v '^$' \
+            | jq -R -s 'split("\n") | map(select(length > 0))' )
+          echo "matrix={\"topic\":$topics_json}" >> "$GITHUB_OUTPUT"
+
+  # Job 2: one VM per topic, all run in parallel
+  generate:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+      fail-fast: false   # if one topic fails, others keep running
 
     steps:
       - name: 检出代码
@@ -31,7 +51,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 生成测验
+      - name: 生成「${{ matrix.topic }}」
         env:
           ZHIPU_API_KEY:     ${{ secrets.ZHIPU_API_KEY }}
           DEEPSEEK_API_KEY:  ${{ secrets.DEEPSEEK_API_KEY }}
@@ -41,13 +61,6 @@ jobs:
           WX_APPSECRET:      ${{ secrets.WX_APPSECRET }}
           WX_CLOUD_ENV:      ${{ secrets.WX_CLOUD_ENV }}
         run: |
-          PROVIDER="${{ github.event.inputs.provider }}"
-
-          while IFS= read -r topic; do
-            topic="$(echo "$topic" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-            [ -z "$topic" ] && continue
-            echo "▶ 生成：$topic"
-            node scripts/generate-quiz.js --topic="$topic" --provider="$PROVIDER"
-          done <<'TOPICS'
-          ${{ github.event.inputs.topics }}
-          TOPICS
+          node scripts/generate-quiz.js \
+            --topic="${{ matrix.topic }}" \
+            --provider="${{ github.event.inputs.provider }}"
