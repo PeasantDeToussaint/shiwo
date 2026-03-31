@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       topics:
-        description: '测验主题，每行一个'
+        description: '测验主题，用 | 分隔，例如：主题A|主题B|主题C'
         required: true
       provider:
         description: 'AI 提供商'
@@ -30,6 +30,7 @@ jobs:
           TOPICS: ${{ github.event.inputs.topics }}
         run: |
           topics_json=$(printf '%s' "$TOPICS" \
+            | tr '|' '\n' \
             | grep -v '^[[:space:]]*$' \
             | jq -R -s 'split("\n") | map(ltrimstr(" ") | rtrimstr(" ")) | map(select(length > 0))' )
           echo "matrix={\"topic\":$topics_json}" >> "$GITHUB_OUTPUT"
