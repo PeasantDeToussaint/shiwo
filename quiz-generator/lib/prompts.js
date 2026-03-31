@@ -421,11 +421,18 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 - resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
 - profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异，并且必须服从 dimensionSpecs 的高低定义与锚点，不可自行偷换维度含义`;
 
-  const raw = await callAIImpl(system, user, 2500);
+  const raw = await callAIImpl(system, user, 4500);
   const architecture = extractJSON(raw);
   // Models occasionally return numeric fields as strings — coerce before validation
   if (typeof architecture.dimensionCount === "string") architecture.dimensionCount = parseInt(architecture.dimensionCount, 10);
   if (typeof architecture.questionCount  === "string") architecture.questionCount  = parseInt(architecture.questionCount,  10);
+  // Positionally align dimensionSpecs[i].dimension with dimensions[i] — the model
+  // sometimes rephrases the name slightly, causing a mismatch in validation.
+  if (Array.isArray(architecture.dimensions) && Array.isArray(architecture.dimensionSpecs)) {
+    architecture.dimensionSpecs.forEach((spec, i) => {
+      if (spec && architecture.dimensions[i]) spec.dimension = architecture.dimensions[i];
+    });
+  }
   repairArchitectureAnchors(architecture);
   const errors = validateArchitecture(architecture);
   if (errors.length > 0) throw new Error(`Architecture invalid: ${errors.join("; ")}`);
