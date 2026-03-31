@@ -206,6 +206,13 @@ function repairArchitectureAnchors(architecture) {
     return mapped;
   }
 
+  // Build a lookup: resultName → profileHints object, for semantically-guided filling
+  const hintsByName = {};
+  for (const r of results) {
+    const name = String(r?.name || "");
+    if (name) hintsByName[name] = r.profileHints || {};
+  }
+
   const specs = Array.isArray(architecture?.dimensionSpecs) ? architecture.dimensionSpecs : [];
   for (const spec of specs) {
     if (!spec) continue;
@@ -213,28 +220,37 @@ function repairArchitectureAnchors(architecture) {
     spec.highAnchorResults = repairList(spec.highAnchorResults);
     spec.lowAnchorResults  = repairList(spec.lowAnchorResults);
 
-    // If a list is still empty, pick the result(s) not already in the other list.
-    // Prefer results whose profileHints for this dimension lean toward the matching pole.
     const dimName = spec.dimension || "";
-    const fillFrom = (exclude) => {
-      const candidates = validNames.filter(n => !exclude.includes(n));
-      // Prefer results whose profileHint for this dimension says "high" (for high list)
-      // or "low" (for low list). Use position as a stable tiebreak.
-      return candidates.slice(0, 2);
+
+    // Fill empty anchor lists using profileHints so we pick semantically correct results,
+    // not just whoever hasn't been used yet.
+    const hintRank = (name, wantedHint) => {
+      const hint = (hintsByName[name] || {})[dimName];
+      if (hint === wantedHint) return 0;
+      if (hint === "medium")   return 1;
+      return 2; // opposite pole — least preferred
     };
+
+    const fillFromHints = (exclude, wantedHint) => {
+      return validNames
+        .filter(n => !exclude.includes(n))
+        .sort((a, b) => hintRank(a, wantedHint) - hintRank(b, wantedHint))
+        .slice(0, 2);
+    };
+
     if (spec.highAnchorResults.length === 0) {
-      spec.highAnchorResults = fillFrom(spec.lowAnchorResults);
+      spec.highAnchorResults = fillFromHints(spec.lowAnchorResults, "high");
       if (spec.highAnchorResults.length === 0 && validNames.length > 0) {
         spec.highAnchorResults = [validNames[0]];
       }
-      if (dimName) console.log(`     [repair] ${dimName}: highAnchorResults was empty, filled with ${spec.highAnchorResults.join("、")}`);
+      console.log(`     [repair] ${dimName}: highAnchorResults filled with ${spec.highAnchorResults.join("、")} (from profileHints)`);
     }
     if (spec.lowAnchorResults.length === 0) {
-      spec.lowAnchorResults = fillFrom(spec.highAnchorResults);
+      spec.lowAnchorResults = fillFromHints(spec.highAnchorResults, "low");
       if (spec.lowAnchorResults.length === 0 && validNames.length > 1) {
         spec.lowAnchorResults = [validNames[validNames.length - 1]];
       }
-      if (dimName) console.log(`     [repair] ${dimName}: lowAnchorResults was empty, filled with ${spec.lowAnchorResults.join("、")}`);
+      console.log(`     [repair] ${dimName}: lowAnchorResults filled with ${spec.lowAnchorResults.join("、")} (from profileHints)`);
     }
 
     // Ensure forbiddenInterpretations is a non-empty array
