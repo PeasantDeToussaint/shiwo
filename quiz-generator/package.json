@@ -1,0 +1,19 @@
+{
+  "name": "mytype-quiz-generator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "generate": "node generate.js",
+    "upload": "node upload.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "vitest": "^3.1.1"
+  }
+}

@@ -90,6 +90,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: quiz-generator/package-lock.json
+
+      - name: 安装依赖
+        run: cd quiz-generator && npm ci
 
       - name: 生成测验
         env:
@@ -106,9 +111,9 @@ jobs:
         run: |
           touch /tmp/before_generate
           if [ -n "$HINT" ]; then
-            node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER" --hint="$HINT"
+            node quiz-generator/generate.js --topic="$TOPIC" --provider="$PROVIDER" --hint="$HINT"
           else
-            node scripts/generate-quiz.js --topic="$TOPIC" --provider="$PROVIDER"
+            node quiz-generator/generate.js --topic="$TOPIC" --provider="$PROVIDER"
           fi
           mkdir -p /tmp/quiz-output
           find scripts/data -name "*.json" -newer /tmp/before_generate -exec cp {} /tmp/quiz-output/ \;

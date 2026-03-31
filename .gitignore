@@ -9,3 +9,7 @@ cloudfunctions/*/node_modules/
 .DS_Store
 *.local
 miniprogram/.tea/
+
+# Quiz generator checkpoints
+scripts/data/.checkpoints/
+scripts/data/*.raw.txt
