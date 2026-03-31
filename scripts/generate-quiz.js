@@ -510,6 +510,63 @@ function validateArchitecture(architecture) {
   return errors;
 }
 
+function normalizeDimensionKey(s) {
+  return String(s || "")
+    .replace(/\s+/g, "")
+    .replace(/[：:·•]/g, "")
+    .replace(/[与和及、\/／\-]/g, "")
+    .replace(/(主义|风格|精神|气质|取向|表达|态度|修养|变革|自主)$/g, "")
+    .trim();
+}
+
+function normalizeOutlineToArchitecture(outline, architecture) {
+  if (!architecture?.dimensions?.length || !Array.isArray(outline?.dimensions)) return outline;
+
+  const archDims = architecture.dimensions;
+  const outlineDims = outline.dimensions;
+  if (outlineDims.length !== archDims.length) return outline;
+
+  const dimMap = {};
+  for (let i = 0; i < outlineDims.length; i++) {
+    const from = outlineDims[i];
+    const to = archDims[i];
+    dimMap[from] = to;
+  }
+
+  for (const from of outlineDims) {
+    const normalizedFrom = normalizeDimensionKey(from);
+    const matched = archDims.find(d => normalizeDimensionKey(d) === normalizedFrom);
+    if (matched) dimMap[from] = matched;
+  }
+
+  outline.dimensions = [...archDims];
+
+  if (Array.isArray(outline.dimensionAxes)) {
+    outline.dimensionAxes = outline.dimensionAxes.map((axis, i) => ({
+      ...axis,
+      dimension: dimMap[axis.dimension] || archDims[i] || axis.dimension,
+    }));
+  }
+
+  if (Array.isArray(outline.results)) {
+    outline.results = outline.results.map((r, i) => {
+      const fallbackDim = architecture?.results?.[i]?.primaryDimension;
+      const next = { ...r };
+      if (next.dimension) next.dimension = dimMap[next.dimension] || fallbackDim || next.dimension;
+      if (next.dimension_profile && typeof next.dimension_profile === "object") {
+        const remapped = {};
+        for (const [k, v] of Object.entries(next.dimension_profile)) {
+          remapped[dimMap[k] || k] = v;
+        }
+        next.dimension_profile = remapped;
+      }
+      return next;
+    });
+  }
+
+  return outline;
+}
+
 function validateOutlineStructure(outline, architecture) {
   const errors = [];
   const dimensions = Array.isArray(outline?.dimensions) ? outline.dimensions : [];
@@ -548,6 +605,13 @@ function validateOutlineStructure(outline, architecture) {
     if (archDims.length !== dimensions.length || archDims.some((d, i) => d !== dimensions[i])) {
       errors.push(`outline dimensions must exactly match Phase 0 dimensions: ${archDims.join(" / ")}`);
     }
+  }
+
+  for (const issue of collectProfileSimilarityIssues(
+    results.map(r => ({ id: r.id, dimension_profile: r.dimension_profile })),
+    dimensions
+  )) {
+    errors.push(`${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)})`);
   }
 
   return errors;
@@ -602,11 +666,54 @@ function normalizePortraitText(text) {
   return normalized;
 }
 
+function looksLikeQuoteContent(text) {
+  if (!text || typeof text !== "string") return false;
+  const s = text.trim();
+  if (!s) return false;
+  if (/[“”"'「」]/.test(s)) return true;
+  if (/(——|—|-{2,}|出自|语录|曾说|说过|写道|《.+》)/.test(s)) return true;
+  // Very short aphorism-like lines can be accepted even without quote marks.
+  if (s.length >= 6 && s.length <= 30 && /[，。！？!?]/.test(s) && !/^(体现|表达|展现|映射|说明|揭示|象征|代表|意味着)/.test(s)) return true;
+  return false;
+}
+
+function normalizeResultExtras(extras, resultId) {
+  if (!Array.isArray(extras)) return extras;
+  return extras.map((e) => {
+    if (!e || typeof e !== "object") return e;
+    const normalized = { key: e.key, label: e.label, content: e.content };
+    if (normalized.key === "keyQuote" && /代表名言/.test(normalized.label || "") && !looksLikeQuoteContent(normalized.content)) {
+      console.warn(`     [dbg] ⚠ ${resultId}.extras[keyQuote]: content does not look like a real quote, relabeling to 精神注脚`);
+      normalized.label = "精神注脚";
+    }
+    return normalized;
+  });
+}
+
 function findObviousTextCorruption(text) {
   if (!text || typeof text !== "string") return null;
   if (/(更多维度按需补足|更多维度按已确定)/.test(text)) return "placeholder text leaked into final output";
   if (/([\u4e00-\u9fff])\1{2,}/.test(text)) return "same Chinese character repeated 3+ times";
   return null;
+}
+
+function collectProfileSimilarityIssues(results, dimensions) {
+  const issues = [];
+  for (let i = 0; i < results.length; i++) {
+    for (let j = i + 1; j < results.length; j++) {
+      const a = results[i].dimension_profile, b = results[j].dimension_profile;
+      if (!a || !b) continue;
+      const maxDiff = Math.max(...dimensions.map(d => Math.abs((a[d] || 0) - (b[d] || 0))));
+      if (maxDiff < 0.15) {
+        issues.push({
+          pair: `${results[i].id} ↔ ${results[j].id}`,
+          maxDiff,
+          severe: maxDiff < 0.12,
+        });
+      }
+    }
+  }
+  return issues;
 }
 
 function validateFinalQuiz(quiz) {
@@ -631,7 +738,7 @@ function validateFinalQuiz(quiz) {
   for (const r of (quiz.results || [])) {
     const portrait = normalizePortraitText(r.portrait);
     if (portrait && !portrait.includes("\n\n") && portrait.length > 180) {
-      warnings.push(`${r.id}: portrait still has no paragraph breaks`);
+      errors.push(`${r.id}: portrait still has no paragraph breaks`);
     }
     for (const field of ["title", "subtitle", "token", "verse", "verseSource", "temperament", "lifeAdvice", "destiny"]) {
       const issue = findObviousTextCorruption(r[field]);
@@ -645,6 +752,22 @@ function validateFinalQuiz(quiz) {
         if (descIssue) errors.push(`${r.id}.${listKey}[${i}].description: corrupted text (${descIssue})`);
       }
     }
+    for (const [i, extra] of (r.extras || []).entries()) {
+      const labelIssue = findObviousTextCorruption(extra?.label);
+      if (labelIssue) errors.push(`${r.id}.extras[${i}].label: corrupted text (${labelIssue})`);
+      const contentIssue = findObviousTextCorruption(extra?.content);
+      if (contentIssue) errors.push(`${r.id}.extras[${i}].content: corrupted text (${contentIssue})`);
+      if (extra?.key === "keyQuote" && /代表名言/.test(extra?.label || "") && !looksLikeQuoteContent(extra?.content)) {
+        errors.push(`${r.id}.extras[${i}]: label is 代表名言 but content does not look like a quote`);
+      }
+    }
+  }
+
+  const profileIssues = collectProfileSimilarityIssues(quiz.results || [], quiz?.scoring?.dimensions || []);
+  for (const issue of profileIssues) {
+    const msg = `${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)})`;
+    if (issue.severe) errors.push(msg);
+    else warnings.push(msg);
   }
 
   return { errors, warnings };
@@ -835,10 +958,11 @@ dimension_profile 规则（这是最重要的部分，直接决定结果准确�
 - 所有维度都必须出现在每个 profile 中，key 与 dimensions 完全一致
 - 禁止任何维度设为 1.0 或 0.0（避免极端化）
 - 不同结果的 profile 必须有显著差异，确保每个结果在某几个维度上有独特的高低组合
+- 任意两个结果至少要在一个维度上拉开 ≥0.15 的差距；如果两个结果 profile 很像，必须主动重写其中一个
 - profile 设计完成后自我检验：是否有两个结果过于相似？是否会导致大多数用户聚集在同一个结果？`;
 
   const raw = await callAI(system, user, 4500);
-  const outline = extractJSON(raw);
+  const outline = normalizeOutlineToArchitecture(extractJSON(raw), architecture);
   const errors = validateOutlineStructure(outline, architecture);
   if (errors.length > 0) throw new Error(`Outline invalid: ${errors.join("; ")}`);
   return outline;
@@ -1079,10 +1203,15 @@ portrait 是结果页最核心的内容，必须让用户读完产生"这说的�
     archetype: `- strengths/weaknesses label：带有该原型/角色的独特意象，不使用完全通用的人格词汇。`,
   }[resultType] || "") : "";
 
+  const quoteGuide = resultFields.some(f => f.key === "keyQuote") ? `
+- 如果输出 extras 里的 keyQuote，且 label 是「代表名言」，content 必须像真实引言：优先直接引用原话，并带引号、书名号、破折号作者/出处中的至少一种格式特征。
+- 如果你拿不准该人物是否有明确可考的名言，不要伪造“名言式总结”；请把 label 改成「精神注脚」或「人物侧写」，content 改写为概括性说明。` : "";
+
   const contentGuide = [
     portraitDepthGuide,
     hasField("portrait") ? (portraitStructure[resultType] || "") : "",
     swGuide,
+    quoteGuide,
   ].filter(Boolean).join("\n\n");
 
   const user = `测验：${outline.title}（结果类型：${resultType}）
@@ -1102,6 +1231,8 @@ ${buildResultTemplate(resultFields, resultType)}
 - 只生成格式中出现的字段，不要添加其他字段。
 - strengths 和 weaknesses 必须是对象数组，每项必须有 "label"（3-5字）和 "description"（2句话）两个字段，不能是纯字符串数组。
 - lifeAdvice 必须是字符串（string），不能是数组。
+- portrait 必须是三段结构；如果不是三段，就视为不合格。
+- 不同结果的 dimension_profile 虽然由 Phase 1 决定，但你的文字必须强化区分度，不能把两个结果写成只有措辞不同、人格几乎一样。
 - 遵守 literary guide，禁止出现被列明的句型。`;
 
   const raw = await callAI(system, user, 10000);
@@ -1214,16 +1345,8 @@ function validateDimensionProfiles(results, dimensions) {
     }
   }
 
-  // Check for overly similar profiles (cosine distance < threshold)
-  for (let i = 0; i < results.length; i++) {
-    for (let j = i + 1; j < results.length; j++) {
-      const a = results[i].dimension_profile, b = results[j].dimension_profile;
-      if (!a || !b) continue;
-      const maxDiff = Math.max(...dimensions.map(d => Math.abs((a[d] || 0) - (b[d] || 0))));
-      if (maxDiff < 0.15) {
-        warnings.push(`${results[i].id} ↔ ${results[j].id}: profiles too similar (max diff ${maxDiff.toFixed(2)}), users may cluster`);
-      }
-    }
+  for (const issue of collectProfileSimilarityIssues(results, dimensions)) {
+    warnings.push(`${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)}), users may cluster`);
   }
 
   return warnings;
@@ -1236,6 +1359,11 @@ function printWarnings(label, warnings) {
   }
   console.warn(`  ⚠   ${label}: ${warnings.length} issue(s):`);
   for (const w of warnings) console.warn(`       • ${w}`);
+}
+
+function assertNoCriticalWarnings(label, warnings) {
+  if (warnings.length === 0) return;
+  throw new Error(`${label} invalid: ${warnings.join("; ")}`);
 }
 
 function summarizeQuizForEvaluation(quiz) {
@@ -1253,7 +1381,9 @@ function summarizeQuizForEvaluation(quiz) {
     situation: r.situation || null,
     lifeAdvice: r.lifeAdvice || null,
     destiny: r.destiny || null,
-    extras: Array.isArray(r.extras) ? r.extras.map(e => ({ key: e.key, label: e.label, content: e.content })) : [],
+    extras: Array.isArray(r.extras)
+      ? normalizeResultExtras(r.extras, r.id).map(e => ({ key: e.key, label: e.label, content: e.content }))
+      : [],
   }));
 
   const sampleQuestions = (quiz.questions || []).slice(0, 4).map((q) => ({
@@ -1503,7 +1633,7 @@ function assembleQuiz(outline, questions, results) {
     }
     // Custom fields go exclusively into extras — any top-level non-standard keys the model
     // emits (e.g. career: null) are intentionally excluded by the whitelist above
-    if (Array.isArray(r.extras) && r.extras.length > 0) assembled.extras = r.extras;
+    if (Array.isArray(r.extras) && r.extras.length > 0) assembled.extras = normalizeResultExtras(r.extras, r.id);
     return assembled;
   });
 
@@ -1607,8 +1737,8 @@ async function main() {
     console.log(`     ✓  archetypes:  ${(architecture.results || []).map(r => r.name).join(" / ")}`);
     if (architecture.domainInsight) console.log(`        insight:     ${architecture.domainInsight.slice(0, 70)}...`);
   } catch (err) {
-    console.warn(`  ⚠   Architecture failed: ${err.message}. Proceeding without it.`);
-    architecture = null;
+    console.error("❌  Architecture failed:", err.message);
+    process.exit(1);
   }
   console.log(`     (${endPhase("0-architecture")}s)`);
 
@@ -1657,10 +1787,12 @@ async function main() {
   console.log(`     (${endPhase("1-outline")}s)`);
 
   // Validate outline dimension_profiles early
-  printWarnings("outline profiles", validateDimensionProfiles(
+  const outlineProfileWarnings = validateDimensionProfiles(
     outline.results.map(r => ({ id: r.id, dimension_profile: r.dimension_profile })),
     outline.dimensions
-  ));
+  );
+  printWarnings("outline profiles", outlineProfileWarnings);
+  assertNoCriticalWarnings("outline profiles", outlineProfileWarnings);
 
   await sleep(3000);
 
@@ -1677,22 +1809,21 @@ async function main() {
   console.log(`\n📝  Questions: ${Q_TOTAL} total, ${Q_BATCHES.length} batches`);
 
   startPhase("2-questions");
-  const allQuestions = [];
-  for (const [i, { startId, endId, label }] of Q_BATCHES.entries()) {
-    console.log(`\n📝  [2/3] Questions q${startId}-q${endId} (batch ${label}/${Q_BATCHES.length})...`);
-    try {
+  const allQuestions = await withRetry("questions-phase", async () => {
+    const phaseQuestions = [];
+    for (const [i, { startId, endId, label }] of Q_BATCHES.entries()) {
+      console.log(`\n📝  [2/3] Questions q${startId}-q${endId} (batch ${label}/${Q_BATCHES.length})...`);
       const qs = await withRetry(`questions-${label}`, () => generateQuestions(outline, startId, endId, label, Q_TOTAL));
-      allQuestions.push(...qs);
+      phaseQuestions.push(...qs);
       console.log(`     ✓  got ${qs.length} questions`);
-    } catch (err) {
-      console.error(`❌  Questions batch ${label} failed:`, err.message); process.exit(1);
+      if (i < Q_BATCHES.length - 1) await sleep(4000);
     }
-    if (i < Q_BATCHES.length - 1) await sleep(4000);
-  }
+    const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions);
+    printWarnings("questions", questionWarnings);
+    assertNoCriticalWarnings("questions", questionWarnings);
+    return phaseQuestions;
+  }, 3, 5000);
   console.log(`     (${endPhase("2-questions")}s)`);
-
-  // Validate questions
-  printWarnings("questions", validateQuestions(allQuestions, outline.dimensions));
 
   await sleep(4000);
 
@@ -1707,36 +1838,37 @@ async function main() {
   ).filter(b => b.length > 0);
 
   startPhase("3-results");
-  const allResults = [];
-  for (const [i, subset] of R_BATCHES.entries()) {
-    console.log(`\n✍️   [3/3] Results batch ${i + 1}/${R_BATCHES.length} (${subset.length} results)...`);
-    try {
+  const dedupedResults = await withRetry("results-phase", async () => {
+    const allResults = [];
+    for (const [i, subset] of R_BATCHES.entries()) {
+      console.log(`\n✍️   [3/3] Results batch ${i + 1}/${R_BATCHES.length} (${subset.length} results)...`);
       const rs = await withRetry(`results-${i + 1}`, () => generateResults(outline, subset), 5, 3000);
       allResults.push(...rs);
       console.log(`     ✓  got ${rs.length} results`);
-    } catch (err) {
-      console.error(`❌  Results batch ${i + 1} failed:`, err.message); process.exit(1);
+      if (i < R_BATCHES.length - 1) await sleep(4000);
     }
-    if (i < R_BATCHES.length - 1) await sleep(4000);
-  }
+
+    const seenResultIds = new Map();
+    for (const r of allResults) seenResultIds.set(r.id, r);
+    const deduped = outline.results.map(r => seenResultIds.get(r.id)).filter(Boolean);
+    if (allResults.length !== deduped.length)
+      console.log(`     [dbg] dedup: ${allResults.length} raw → ${deduped.length} unique results`);
+
+    const resultWarnings = validateResults(deduped, outline.dimensions, outline.architectureResultFields);
+    printWarnings("results content", resultWarnings);
+    assertNoCriticalWarnings("results content", resultWarnings);
+    return deduped;
+  }, 2, 5000);
   console.log(`     (${endPhase("3-results")}s)`);
-
-  // Deduplicate results by id, keeping the last successful generation
-  const seenResultIds = new Map();
-  for (const r of allResults) seenResultIds.set(r.id, r);
-  const dedupedResults = outline.results.map(r => seenResultIds.get(r.id)).filter(Boolean);
-  if (allResults.length !== dedupedResults.length)
-    console.log(`     [dbg] dedup: ${allResults.length} raw → ${dedupedResults.length} unique results`);
-
-  // Validate results content
-  printWarnings("results content", validateResults(dedupedResults, outline.dimensions, outline.architectureResultFields));
 
   // Assemble + save
   startPhase("4-assemble");
   const quiz = assembleQuiz(outline, allQuestions, dedupedResults);
 
   // Final validation on assembled quiz
-  printWarnings("final profiles", validateDimensionProfiles(quiz.results, quiz.scoring.dimensions));
+  const finalProfileWarnings = validateDimensionProfiles(quiz.results, quiz.scoring.dimensions);
+  printWarnings("final profiles", finalProfileWarnings);
+  assertNoCriticalWarnings("final profiles", finalProfileWarnings);
   const finalQuizValidation = validateFinalQuiz(quiz);
   printWarnings("final content", finalQuizValidation.warnings);
   if (finalQuizValidation.errors.length > 0) {
