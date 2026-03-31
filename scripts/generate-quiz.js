@@ -563,12 +563,91 @@ const DIMENSION_MAP = {
 };
 
 function simplifyDimensions(dimensions) {
-  return dimensions.map(d => {
-    if (DIMENSION_MAP[d]) return DIMENSION_MAP[d];
-    if (d.length > 4 && /[主义风格精神气质]$/.test(d)) return d.slice(0, 2);
-    if (d.length > 4) return d.slice(0, 4);
-    return d;
-  });
+  return dimensions.map(d => DIMENSION_MAP[d] || d);
+}
+
+function normalizePortraitText(text) {
+  if (!text || typeof text !== "string") return text;
+  let normalized = text.replace(/\r\n/g, "\n").trim();
+  if (!normalized) return normalized;
+
+  // If the model already emitted one-paragraph-per-line, upgrade to double-newline paragraphs.
+  if (normalized.includes("\n") && !normalized.includes("\n\n")) {
+    const parts = normalized.split("\n").map(s => s.trim()).filter(Boolean);
+    if (parts.length >= 2) return parts.join("\n\n");
+  }
+
+  // If there are no paragraph breaks, try to split a long portrait into 3 sentence groups.
+  if (!normalized.includes("\n\n")) {
+    const sentences = normalized.match(/[^。！？!?]+[。！？!?]?/g)?.map(s => s.trim()).filter(Boolean) || [];
+    if (sentences.length >= 6) {
+      const groups = [[], [], []];
+      const totalChars = sentences.reduce((sum, s) => sum + s.length, 0);
+      const target = Math.ceil(totalChars / 3);
+      let idx = 0;
+      let currentChars = 0;
+      for (const s of sentences) {
+        if (idx < 2 && currentChars >= target) {
+          idx++;
+          currentChars = 0;
+        }
+        groups[idx].push(s);
+        currentChars += s.length;
+      }
+      const paragraphs = groups.map(g => g.join("")).filter(Boolean);
+      if (paragraphs.length >= 2) return paragraphs.join("\n\n");
+    }
+  }
+
+  return normalized;
+}
+
+function findObviousTextCorruption(text) {
+  if (!text || typeof text !== "string") return null;
+  if (/(更多维度按需补足|更多维度按已确定)/.test(text)) return "placeholder text leaked into final output";
+  if (/([\u4e00-\u9fff])\1{2,}/.test(text)) return "same Chinese character repeated 3+ times";
+  return null;
+}
+
+function validateFinalQuiz(quiz) {
+  const errors = [];
+  const warnings = [];
+
+  for (const d of (quiz?.scoring?.dimensions || [])) {
+    if (!d) errors.push("empty dimension label");
+    if (/(更多维度按需补足|更多维度按已确定)/.test(d)) errors.push(`invalid dimension label "${d}"`);
+  }
+
+  for (const q of (quiz.questions || [])) {
+    if (findObviousTextCorruption(q.text)) errors.push(`${q.id}: corrupted question text`);
+    for (const o of (q.options || [])) {
+      const textIssue = findObviousTextCorruption(o.text);
+      if (textIssue) errors.push(`${q.id}.${o.id}: corrupted option text (${textIssue})`);
+      const reactionIssue = findObviousTextCorruption(o.reaction);
+      if (reactionIssue) errors.push(`${q.id}.${o.id}: corrupted reaction text (${reactionIssue})`);
+    }
+  }
+
+  for (const r of (quiz.results || [])) {
+    const portrait = normalizePortraitText(r.portrait);
+    if (portrait && !portrait.includes("\n\n") && portrait.length > 180) {
+      warnings.push(`${r.id}: portrait still has no paragraph breaks`);
+    }
+    for (const field of ["title", "subtitle", "token", "verse", "verseSource", "temperament", "lifeAdvice", "destiny"]) {
+      const issue = findObviousTextCorruption(r[field]);
+      if (issue) errors.push(`${r.id}.${field}: corrupted text (${issue})`);
+    }
+    for (const listKey of ["strengths", "weaknesses"]) {
+      for (const [i, item] of (r[listKey] || []).entries()) {
+        const labelIssue = findObviousTextCorruption(item?.label);
+        if (labelIssue) errors.push(`${r.id}.${listKey}[${i}].label: corrupted text (${labelIssue})`);
+        const descIssue = findObviousTextCorruption(item?.description);
+        if (descIssue) errors.push(`${r.id}.${listKey}[${i}].description: corrupted text (${descIssue})`);
+      }
+    }
+  }
+
+  return { errors, warnings };
 }
 
 // ── Format aesthetic context from outline ─────────────────────────
@@ -1409,7 +1488,7 @@ function assembleQuiz(outline, questions, results) {
       verse:             orig.verse || r.verse,
       verseSource:       orig.verseSource || r.verseSource,
       boldQuote:         r.boldQuote || null,
-      portrait,
+      portrait: normalizePortraitText(portrait),
       strengths:   normalizeStrengthsWeaknesses(r.strengths,  "strengths",  r.id),
       weaknesses:  normalizeStrengthsWeaknesses(r.weaknesses, "weaknesses", r.id),
       temperament: r.temperament,
@@ -1658,6 +1737,13 @@ async function main() {
 
   // Final validation on assembled quiz
   printWarnings("final profiles", validateDimensionProfiles(quiz.results, quiz.scoring.dimensions));
+  const finalQuizValidation = validateFinalQuiz(quiz);
+  printWarnings("final content", finalQuizValidation.warnings);
+  if (finalQuizValidation.errors.length > 0) {
+    console.error(`❌  Final content failed validation:`);
+    for (const err of finalQuizValidation.errors) console.error(`     • ${err}`);
+    process.exit(1);
+  }
 
   const filePath = path.join(DATA_DIR, `${quiz.id}.json`);
   fs.writeFileSync(filePath, JSON.stringify(quiz, null, 2));
