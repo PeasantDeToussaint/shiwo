@@ -49,8 +49,8 @@ function validateArchitecture(architecture) {
   if (scoringFamily === "level-band" && (results.length < 4 || results.length > 6)) {
     errors.push(`level-band results.length should be 4-6 (got ${results.length})`);
   }
-  if ((scoringFamily === "weighted-dimension" || scoringFamily === "bipolar-dimension") && (results.length < 6 || results.length > 9)) {
-    errors.push(`${scoringFamily} results.length should be 6-9 (got ${results.length})`);
+  if ((scoringFamily === "weighted-dimension" || scoringFamily === "bipolar-dimension") && (results.length < 6 || results.length > 12)) {
+    errors.push(`${scoringFamily} results.length should be 6-12 (got ${results.length})`);
   }
 
   const dimSet = new Set(dimensions);

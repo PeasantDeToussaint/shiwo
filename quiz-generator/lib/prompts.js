@@ -410,7 +410,7 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 - bipolar-dimension：dimensionSpecs 的 highDefinition / lowDefinition 必须构成真正对立；禁止把 lowPole 写成“只是更弱一点的 highPole”。
 - level-band：results 必须能清楚排成从低到高的阶段序列；相邻结果是程度递进，而不是完全不同的人格阵营。results 数量建议 4-6 个，不宜过多。
 -【关键约束】dimensionCount 和 questionCount 必须是纯整数（如 5、20），不能是字符串。dimensionCount 由主题复杂度和结果数量共同决定：通常4-6个，每2-3个结果需要1个独立维度（如8个结果 → 至少4个维度）。figure类型（同一作品人物）因天然共享背景，需取上限。questionCount 建议：简单主题12，中等16-20，复杂22-24，维度越多题目应越多。
-- dimensions 数量必须与 dimensionCount 严格一致。weighted-dimension / bipolar-dimension 通常做 6-9 个结果；level-band 通常做 4-6 个结果。多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。【强制】每一个维度都必须至少有一个结果以它为 primaryDimension——不能有"没人认领"的孤立维度。如果你有 5 个维度但只有 8 个结果，必须确保这 8 个结果的 primaryDimension 覆盖全部 5 个维度（可以多个结果共享同一维度，但不能有维度无人认领）。
+- dimensions 数量必须与 dimensionCount 严格一致。weighted-dimension / bipolar-dimension 通常做 6-12 个结果；level-band 通常做 4-6 个结果。多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。【强制】每一个维度都必须至少有一个结果以它为 primaryDimension——不能有"没人认领"的孤立维度。如果你有 5 个维度但只有 8 个结果，必须确保这 8 个结果的 primaryDimension 覆盖全部 5 个维度（可以多个结果共享同一维度，但不能有维度无人认领）。
 - 维度之间必须真正独立、正交，不能是同一特质的不同表述（如「理性」和「逻辑性」高度相关，不应同时作为维度）。
 - dimensionSpecs 数量必须与 dimensions 严格一致，且顺序一一对应。每个维度必须写清 6 件事：名称、高分定义、低分定义、高分锚点、低分锚点、禁止误读。
 - highDefinition / lowDefinition 必须写成“做决定时优先看什么、遇事时先保什么、为了什么可以付代价”的行为原则，不能只是“更成熟”“更有魅力”这种评价词。
@@ -502,7 +502,7 @@ ${hintBlock}${archContext}
 
 规则：
 - dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，严格使用 Phase 0 的维度，数量以 Phase 0 为准）
-- weighted-dimension / bipolar-dimension 的 results 通常 6-9 个；level-band 的 results 通常 4-6 个
+- weighted-dimension / bipolar-dimension 的 results 通常 6-12 个；level-band 的 results 通常 4-6 个
 - 如果 scoringFamily = level-band，results 必须按从低到高的阶段顺序排列，不能写成互不相干的平行人格
 - 多个结果可以共享同一个 dimension；results越多则dimensions应越多（每2-3个结果需要1个独立维度）
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
