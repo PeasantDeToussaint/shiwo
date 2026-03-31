@@ -125,7 +125,7 @@ function validateOutlineStructure(outline, architecture) {
   if (title && /(角色匹配|人物匹配|角色测试|人物测试|角色相似度|人物相似度|分身|镜像|人格镜像|角色镜像|人物镜像|哪个角色|哪位角色|人物测|角色测)/.test(title)) {
     errors.push(`outline.title too generic: "${title}"`);
   }
-  if (subtitle && /(找到你的剧中分身|看看你像谁|测出你的角色|寻找你的剧中化身|测测你是谁|你是哪个)/.test(subtitle)) {
+  if (subtitle && /(找到你的剧中分身|看看你像谁|测出你的角色|寻找你的剧中化身|测测你是谁|你是哪个|真实分身|剧中分身|角色分身|人格分身|分身)/.test(subtitle)) {
     errors.push(`outline.subtitle too generic: "${subtitle}"`);
   }
   if (eyebrow && /(角色测试|角色原型测试|权谋中的你|江湖知己|人物测试|剧中分身)/.test(eyebrow)) {
@@ -156,6 +156,31 @@ function validateOutlineStructure(outline, architecture) {
     const archDims = architecture.dimensions;
     if (archDims.length !== dimensions.length || archDims.some((d, i) => d !== dimensions[i])) {
       errors.push(`outline dimensions must exactly match Phase 0 dimensions: ${archDims.join(" / ")}`);
+    }
+  }
+
+  // Enforce that outline uses the same cast as Phase 0.
+  // The outline is allowed to shorten names (e.g. "霓凰郡主" → "霓凰") but must not
+  // silently swap in characters that weren't in the architecture at all.
+  if (architecture?.results?.length && results.length > 0) {
+    const archNames = architecture.results.map(r => String(r?.name || "")).filter(Boolean);
+    const outlineTitles = results.map(r => String(r?.title || "")).filter(Boolean);
+    const unmatched = outlineTitles.filter(title => {
+      // Accept if any architecture name contains the outline title, or vice versa
+      return !archNames.some(archName =>
+        archName.includes(title) || title.includes(archName)
+      );
+    });
+    if (unmatched.length > 0) {
+      errors.push(
+        `outline cast deviates from Phase 0 architecture — unrecognized result title(s): ${unmatched.join("、")}. ` +
+        `Phase 0 cast: ${archNames.join("、")}`
+      );
+    }
+    if (outlineTitles.length !== archNames.length) {
+      errors.push(
+        `outline result count (${outlineTitles.length}) must match Phase 0 result count (${archNames.length})`
+      );
     }
   }
 
