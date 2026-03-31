@@ -206,7 +206,7 @@ const LITERARY_GUIDE = `
 `;
 
 // ── HTTP helpers ─────────────────────────────────────────────────
-const HTTP_TIMEOUT_MS = 90000;
+const HTTP_TIMEOUT_MS = 180000;
 
 function httpGet(url) {
   return new Promise((resolve, reject) => {
@@ -363,14 +363,25 @@ function repairJSON(str) {
 }
 
 function escapeNewlinesInStrings(str) {
-  // Scan through JSON character by character; when inside a string value,
-  // replace literal newlines/tabs with their escape sequences
+  // Scan character-by-character; inside JSON string values:
+  // 1. Escape literal newlines/tabs
+  // 2. Remove backslashes before characters that are not valid JSON escape sequences
+  //    (models like Zhipu sometimes emit \很 or \。 which breaks JSON.parse)
+  const VALID_ESCAPE = new Set(['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u']);
   const out = [];
   let inString = false;
   let escaped = false;
   for (let i = 0; i < str.length; i++) {
     const c = str[i];
-    if (escaped) { out.push(c); escaped = false; continue; }
+    if (escaped) {
+      if (!VALID_ESCAPE.has(c)) {
+        // Drop the backslash that was already pushed; keep the character
+        out.pop();
+      }
+      out.push(c);
+      escaped = false;
+      continue;
+    }
     if (c === "\\" && inString) { out.push(c); escaped = true; continue; }
     if (c === '"') { inString = !inString; out.push(c); continue; }
     if (inString) {
@@ -428,9 +439,9 @@ function extractJSON(raw) {
   );
 
   try { return JSON.parse(jsonStr); } catch (_) {}
-  try { return JSON.parse(fixBracketMismatches(jsonStr)); } catch (_) {}
-  try { return JSON.parse(repairJSON(jsonStr)); } catch (_) {}
-  try { return JSON.parse(repairJSON(fixBracketMismatches(jsonStr))); } catch (e) {
+  try { const r = JSON.parse(fixBracketMismatches(jsonStr)); process.stderr.write("  [json] repaired via bracket fix\n"); return r; } catch (_) {}
+  try { const r = JSON.parse(repairJSON(jsonStr)); process.stderr.write("  [json] repaired via jsonrepair\n"); return r; } catch (_) {}
+  try { const r = JSON.parse(repairJSON(fixBracketMismatches(jsonStr))); process.stderr.write("  [json] repaired via bracket fix + jsonrepair\n"); return r; } catch (e) {
     throw new Error(`JSON parse failed after repair: ${e.message}`);
   }
 }
@@ -678,7 +689,7 @@ ${aestheticContext}
 1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围,例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等
 2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
 3. 每个选项最多2个维度得分，主维度≤2分，副维度≤1分
-4. 维度必须来自：${dimensions.join("、")}
+4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
 5. 遵守 literary guide，禁止句型不能出现`;
 
   const raw = await callAI(system, user, 6000);
@@ -692,33 +703,33 @@ ${aestheticContext}
 
 // ── Result template builder ───────────────────────────────────────
 const PORTRAIT_TEMPLATE_BY_TYPE = {
-  archetype: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段150-200字，合计不少于450字。第一段：描述这类人的内在世界和核心特质；第二段：描述他们的行为模式和与他人的关系；第三段：描述核心挑战与成长方向。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
-  figure:    `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段150-200字，合计不少于450字。第一段：描述这位人物的核心精神气质；第二段：将用户与这位人物的相似之处具体化，写出共同的行为模式或内在动因；第三段：这种气质带来的挑战与可能性。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
-  item:      `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段150-200字，合计不少于450字。【核心要求】不要描述这个事物/国家/地方本身，而要解释为什么测验者的人格特质与它产生共鸣。第一段：测验者身上哪些具体特质让他们与这个结果产生联结；第二段：这个结果的文化/精神特质如何与测验者的内在世界对应；第三段：这种匹配在现实中意味着什么，测验者会在这里/与这个事物产生什么样的体验。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+  archetype: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这类人的内在世界和核心特质；第二段：描述他们的行为模式和与他人的关系；第三段：描述核心挑战与成长方向。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+  figure:    `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这位人物的核心精神气质；第二段：将用户与这位人物的相似之处具体化，写出共同的行为模式或内在动因；第三段：这种气质带来的挑战与可能性。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+  item:      `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。不要描述事物本身，而要解释为什么测验者的人格与它产生共鸣。第一段：测验者身上哪些具体特质让他们与这个结果产生联结；第二段：这个结果的文化/精神特质如何与测验者的内在世界对应；第三段：这种匹配在现实中的张力与代价。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
 };
 
 const STANDARD_FIELD_TEMPLATES = {
   portrait: PORTRAIT_TEMPLATE_BY_TYPE.archetype, // default, overridden in buildResultTemplate
   strengths: `  "strengths": [
-    { "label": "3-5字标签，从该事物/人物/原型特质提炼", "description": "2-3句，包含可视化的行为场景" },
-    { "label": "同上", "description": "2-3句" },
-    { "label": "同上", "description": "2-3句" },
-    { "label": "同上", "description": "2-3句" },
-    { "label": "同上", "description": "2-3句" },
-    { "label": "同上", "description": "2-3句" }
+    { "label": "3-5字标签", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" }
   ]`,
   weaknesses: `  "weaknesses": [
-    { "label": "3-5字标签，来自阴影面", "description": "2-3句，写出具体摩擦和代价" },
-    { "label": "同上", "description": "2-3句" },
-    { "label": "同上", "description": "2-3句" },
-    { "label": "同上", "description": "2-3句" },
-    { "label": "同上", "description": "2-3句" },
-    { "label": "同上", "description": "2-3句" }
+    { "label": "3-5字标签", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" },
+    { "label": "同上", "description": "严格2句，共40-60字" }
   ]`,
-  temperament: `  "temperament": "2-3句感性直观的气质描述"`,
-  situation:   `  "situation": "1句，核心张力"`,
-  lifeAdvice:  `  "lifeAdvice": "1-2句直接建议"`,
-  destiny:     `  "destiny": "1句诗意收尾"`,
+  temperament: `  "temperament": "严格2句，共40-60字"`,
+  situation:   `  "situation": "严格1句，20-30字"`,
+  lifeAdvice:  `  "lifeAdvice": "严格1-2句，30-50字"`,
+  destiny:     `  "destiny": "严格1句，20-30字"`,
 };
 
 function buildResultTemplate(resultFields, resultType) {
@@ -818,6 +829,8 @@ async function generateResults(outline, resultSubset) {
 
   const system = `你是一位中文测验内容专家，擅长写有深度、有辨识度的结果描述。结果可能是人格原型、真实人物、具体事物或适合程度段位，写作方式应与结果类型匹配，不要把所有结果都写成人格分析的口吻。
 
+【字数硬约束】严格遵守每个字段的字数要求，不得超过上限。portrait 每段严格100-150字，三段共300-450字；strengths/weaknesses 每条 description 严格2句共40-60字；其他字段按格式说明控制。宁可精炼，不可冗长。
+
 ${LITERARY_GUIDE}
 ${aestheticContext}
 
@@ -838,7 +851,7 @@ ${aestheticContext}
 portrait 是结果页最核心的内容，必须让用户读完产生"这说的就是我"的共鸣感。
 
 ### 每段字数要求
-每段 150-200 字，三段合计不少于 450 字。禁止写空洞的概括句，每一句都必须承载具体信息。
+每段严格100-150字，三段合计300-450字。禁止写空洞的概括句，每一句都必须承载具体信息。
 
 ### 让用户"被发现"的写法技巧
 1. **命名内在体验**：说出用户感受到但从未能表达的内心状态。不写"你很敏感"，写"你常常在人群散去之后才意识到自己其实很疲惫，但你很少在当下说出来"。
@@ -849,17 +862,17 @@ portrait 是结果页最核心的内容，必须让用户读完产生"这说的�
 
   const portraitStructure = {
     item: `## 结构：以人格匹配为核心，而非介绍事物本身
-- portrait【第一段，150-200字】：描述测验者身上哪些具体特质——不是标签，而是行为场景和内在体验——让他们与这个结果产生联结。写得让用户感到"这说的是我"。
-- portrait【第二段，150-200字】：将这个结果（事物/国家/地方）的文化或精神特质与用户的内在世界对应起来——不是介绍它，而是解释为什么它们之间会产生共鸣，这种共鸣是什么质地的。
-- portrait【第三段，150-200字】：写出这种匹配在现实中的张力——用户在这里/与这个事物相遇会获得什么，同时又要承担什么代价或面对什么挑战。`,
+- portrait【第一段，100-150字】：描述测验者身上哪些具体特质——不是标签，而是行为场景和内在体验——让他们与这个结果产生联结。写得让用户感到"这说的是我"。
+- portrait【第二段，100-150字】：将这个结果（事物/国家/地方）的文化或精神特质与用户的内在世界对应起来——不是介绍它，而是解释为什么它们之间会产生共鸣，这种共鸣是什么质地的。
+- portrait【第三段，100-150字】：写出这种匹配在现实中的张力——用户在这里/与这个事物相遇会获得什么，同时又要承担什么代价或面对什么挑战。`,
     figure: `## 结构：先介绍人物，再写人格共鸣
-- portrait【第一段，150-200字】：介绍人物的真实生平与历史定位——代表事件、名言警句、所处时代的重量。让读者感受到这个人的存在感和历史厚度。
-- portrait【第二段，150-200字】：写这个人物的内在气质与处世哲学——他/她如何面对命运、做出选择、处理关系，以及他们身上哪些东西让后人反复回望。
-- portrait【第三段，150-200字】：用"被发现了"的方式写用户与此人的精神共鸣——命名用户继承了此人的哪种内在结构，以及这种结构带来的未竟之事或无法解决的命题。`,
+- portrait【第一段，100-150字】：介绍人物的真实生平与历史定位——代表事件、名言警句、所处时代的重量。让读者感受到这个人的存在感和历史厚度。
+- portrait【第二段，100-150字】：写这个人物的内在气质与处世哲学——他/她如何面对命运、做出选择、处理关系，以及他们身上哪些东西让后人反复回望。
+- portrait【第三段，100-150字】：用"被发现了"的方式写用户与此人的精神共鸣——命名用户继承了此人的哪种内在结构，以及这种结构带来的未竟之事或无法解决的命题。`,
     archetype: `## 结构：先介绍原型，再写人格共鸣
-- portrait【第一段，150-200字】：介绍这个原型/角色的来源、形象、在神话/文学/文化中的象征意义。即使用户不熟悉，读完也能感受到它的独特魅力。
-- portrait【第二段，150-200字】：从这个原型的象征气质出发，用具体行为场景描述拥有此人格的人——不是说他们"很xxx"，而是说他们在具体情境下会怎么做、怎么感受、怎么被他人误解。
-- portrait【第三段，150-200字】：写出这种原型气质的张力与局限，以及它赋予用户的核心命题——他们终其一生在与什么较劲？`,
+- portrait【第一段，100-150字】：介绍这个原型/角色的来源、形象、在神话/文学/文化中的象征意义。即使用户不熟悉，读完也能感受到它的独特魅力。
+- portrait【第二段，100-150字】：从这个原型的象征气质出发，用具体行为场景描述拥有此人格的人——不是说他们"很xxx"，而是说他们在具体情境下会怎么做、怎么感受、怎么被他人误解。
+- portrait【第三段，100-150字】：写出这种原型气质的张力与局限，以及它赋予用户的核心命题——他们终其一生在与什么较劲？`,
   };
 
   const swGuide = (hasField("strengths") || hasField("weaknesses")) ? ({
@@ -882,19 +895,24 @@ ${figureContext}
 
 ${contentGuide}
 
-结果列表（id/title/subtitle/token/verse/verseSource 必须原样保留）：
+【严格约束】本次只需生成以下 ${stub.length} 个结果，不要生成其他结果：
 ${JSON.stringify(stub, null, 2)}
 
-每个结果的输出格式：
+每个结果的输出格式（严格遵守，字段名和数据类型不得更改）：
 ${buildResultTemplate(resultFields, resultType)}
 
-只生成上方格式中出现的字段，不要添加其他字段。
-规则：遵守 literary guide，禁止出现被列明的句型。`;
+规则：
+- 只生成上方 ${stub.length} 个结果，不多不少。
+- 只生成格式中出现的字段，不要添加其他字段。
+- strengths 和 weaknesses 必须是对象数组，每项必须有 "label"（3-5字）和 "description"（2句话）两个字段，不能是纯字符串数组。
+- lifeAdvice 必须是字符串（string），不能是数组。
+- 遵守 literary guide，禁止出现被列明的句型。`;
 
   const raw = await callAI(system, user, 10000);
   const label = stub.map(r => r.id).join("-");
   const rawPath = path.join(DATA_DIR, `${outline.id}.r${label}.raw.txt`);
   fs.writeFileSync(rawPath, raw);
+  console.log(`     [dbg] raw response: ${raw.length} chars`);
 
   let parsed;
   try {
@@ -904,14 +922,29 @@ ${buildResultTemplate(resultFields, resultType)}
   }
   if (!parsed.results) {
     if (parsed.id && (parsed.portrait || parsed.strengths)) {
+      console.log(`     [dbg] model returned single object, wrapping in array`);
       parsed = { results: [parsed] };
     } else if (Array.isArray(parsed)) {
+      console.log(`     [dbg] model returned bare array, wrapping`);
       parsed = { results: parsed };
     }
   }
   if (!parsed.results || parsed.results.length === 0)
     throw new Error(`No results returned (raw saved to ${path.basename(rawPath)})`);
-  return parsed.results;
+
+  console.log(`     [dbg] model returned ${parsed.results.length} result(s), requested ${resultSubset.length} (${stub.map(r => r.id).join(",")})`);
+
+  // Keep only the results that were requested in this batch to prevent duplicates
+  const subsetIds = new Set(resultSubset.map(r => r.id));
+  const filtered = parsed.results.filter(r => subsetIds.has(r.id));
+  if (filtered.length === 0) {
+    console.warn(`     [dbg] ⚠ none of the returned IDs matched requested — falling back to first ${resultSubset.length}. Got: ${parsed.results.map(r=>r.id).join(",")}`);
+    return parsed.results.slice(0, resultSubset.length);
+  }
+  if (filtered.length !== parsed.results.length) {
+    console.log(`     [dbg] filtered ${parsed.results.length} → ${filtered.length} result(s) by subset IDs`);
+  }
+  return filtered;
 }
 
 // ── Validation ────────────────────────────────────────────────────
@@ -935,7 +968,9 @@ function validateQuestions(questions, dimensions) {
         continue;
       }
       for (const [dim, val] of Object.entries(o.scores)) {
-        if (!dimSet.has(dim)) warnings.push(`${q.id}.${o.id}: unknown dimension "${dim}" (valid: ${dimensions.join(", ")})`);
+        // Allow abbreviated dimension names (e.g. "传统" matching "传统与现代")
+        const matched = dimSet.has(dim) || dimensions.some(d => d.startsWith(dim) || dim.startsWith(d.slice(0, 2)));
+        if (!matched) warnings.push(`${q.id}.${o.id}: unknown dimension "${dim}" (valid: ${dimensions.join(", ")})`);
         if (typeof val !== "number" || val < 0 || val > 3) warnings.push(`${q.id}.${o.id}: score ${val} out of range [0,3] for "${dim}"`);
       }
     }
@@ -1016,8 +1051,8 @@ function summarizeQuizForEvaluation(quiz) {
     verse: r.verse,
     verseSource: r.verseSource,
     portrait: r.portrait || null,
-    strengths: Array.isArray(r.strengths) ? r.strengths.map(s => ({ label: s.label, description: s.description })) : [],
-    weaknesses: Array.isArray(r.weaknesses) ? r.weaknesses.map(w => ({ label: w.label, description: w.description })) : [],
+    strengths:  normalizeStrengthsWeaknesses(r.strengths,  "strengths",  r.id) || [],
+    weaknesses: normalizeStrengthsWeaknesses(r.weaknesses, "weaknesses", r.id) || [],
     temperament: r.temperament || null,
     situation: r.situation || null,
     lifeAdvice: r.lifeAdvice || null,
@@ -1178,6 +1213,27 @@ function printTimingSummary() {
 }
 
 // ── Assemble full quiz JSON ───────────────────────────────────────
+// Normalize strengths/weaknesses regardless of how the model formatted them:
+// - [{label, description}]  → kept as-is (correct)
+// - ["label1", "label2"]    → [{label, description: null}]
+// - "label1 label2 label3"  → split on space/comma/、, [{label, description: null}]
+function normalizeStrengthsWeaknesses(raw, fieldName, resultId) {
+  if (!raw) return raw;
+  if (Array.isArray(raw)) {
+    if (raw.length > 0 && typeof raw[0] === 'string') {
+      console.warn(`     [dbg] ⚠ ${resultId}.${fieldName}: model returned flat string array, converting to {label, description}`);
+      return raw.map(s => ({ label: s, description: null }));
+    }
+    return raw.map(s => ({ label: s.label, description: s.description }));
+  }
+  if (typeof raw === 'string') {
+    console.warn(`     [dbg] ⚠ ${resultId}.${fieldName}: model returned plain string "${raw.slice(0,40)}...", splitting`);
+    const items = raw.split(/[,，、\s]+/).map(s => s.trim()).filter(Boolean);
+    return items.map(s => ({ label: s, description: null }));
+  }
+  return raw;
+}
+
 function assembleQuiz(outline, questions, results) {
   const simplifiedDimensions = simplifyDimensions(outline.dimensions);
   const dimMap = {};
@@ -1188,7 +1244,13 @@ function assembleQuiz(outline, questions, results) {
     options: (q.options || []).map(o => {
       if (!o.scores) return o;
       const s = {};
-      Object.entries(o.scores).forEach(([k, v]) => { s[dimMap[k] || k] = v; });
+      Object.entries(o.scores).forEach(([k, v]) => {
+        // Exact match first; then fuzzy match for abbreviated dimension names
+        const mapped = dimMap[k]
+          || (() => { const full = outline.dimensions.find(d => d.startsWith(k) || k.startsWith(d.slice(0,2))); return full ? dimMap[full] : null; })()
+          || k;
+        s[mapped] = v;
+      });
       return { ...o, scores: s };
     }),
   }));
@@ -1231,12 +1293,12 @@ function assembleQuiz(outline, questions, results) {
       verseSource:       orig.verseSource || r.verseSource,
       boldQuote:         r.boldQuote || null,
       portrait,
-      strengths:         r.strengths,
-      weaknesses:        r.weaknesses,
-      temperament:       r.temperament,
-      situation:         r.situation,
-      lifeAdvice:        r.lifeAdvice,
-      destiny:           r.destiny,
+      strengths:   normalizeStrengthsWeaknesses(r.strengths,  "strengths",  r.id),
+      weaknesses:  normalizeStrengthsWeaknesses(r.weaknesses, "weaknesses", r.id),
+      temperament: r.temperament,
+      situation:   r.situation,
+      lifeAdvice:  Array.isArray(r.lifeAdvice) ? r.lifeAdvice.join("；") : r.lifeAdvice,
+      destiny:     r.destiny,
       dimension_profile: profile,
     };
     // Strip undefined standard fields rather than keeping them as null
@@ -1463,12 +1525,19 @@ async function main() {
   }
   console.log(`     (${endPhase("3-results")}s)`);
 
+  // Deduplicate results by id, keeping the last successful generation
+  const seenResultIds = new Map();
+  for (const r of allResults) seenResultIds.set(r.id, r);
+  const dedupedResults = outline.results.map(r => seenResultIds.get(r.id)).filter(Boolean);
+  if (allResults.length !== dedupedResults.length)
+    console.log(`     [dbg] dedup: ${allResults.length} raw → ${dedupedResults.length} unique results`);
+
   // Validate results content
-  printWarnings("results content", validateResults(allResults, outline.dimensions, outline.architectureResultFields));
+  printWarnings("results content", validateResults(dedupedResults, outline.dimensions, outline.architectureResultFields));
 
   // Assemble + save
   startPhase("4-assemble");
-  const quiz = assembleQuiz(outline, allQuestions, allResults);
+  const quiz = assembleQuiz(outline, allQuestions, dedupedResults);
 
   // Final validation on assembled quiz
   printWarnings("final profiles", validateDimensionProfiles(quiz.results, quiz.scoring.dimensions));
