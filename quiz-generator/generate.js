@@ -13,7 +13,7 @@ const path = require("path");
 const config = require("./lib/config");
 const { createClient, configure: configureAI } = require("./lib/ai");
 const { sleep, withRetry } = require("./lib/http");
-const { inferHintsFromTopic, generateArchitecture, generateOutline, generateOutlineProfiles, generateQuestions, generateResults } = require("./lib/prompts");
+const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestions, generateResults } = require("./lib/prompts");
 const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, spreadProfiles, enforceUniquePeaks, applyProfilesFromHints } = require("./lib/assemble");
 const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
 const { evaluateQuiz, printEvalReport } = require("./lib/eval");
@@ -156,26 +156,9 @@ async function main() {
         outline.architectureResultType = architecture.resultType || "archetype";
         outline.architectureResultFields = architecture.resultFields || null;
       }
-      // Phase 1b: dedicated profile generation — model sees all results at once
-      // and reasons globally about Pareto-safe numeric profiles
-      try {
-        await withRetry("outline-profiles", () => generateOutlineProfiles(outline, architecture, aiClient.callAI), 3, 4000);
-      } catch (profileErr) {
-        console.warn(`  ⚠   Profile AI failed (${profileErr.message}). Using hint-based fallback.`);
-      }
-      // Safety net: if profiles are missing or all identical after the AI step, convert
-      // profileHints from architecture to numeric values deterministically
-      const maxPairDiff = outline.results.reduce((mx, r, i) => {
-        for (let j = i + 1; j < outline.results.length; j++) {
-          const a = r.dimension_profile || {}, b = outline.results[j].dimension_profile || {};
-          for (const d of outline.dimensions) mx = Math.max(mx, Math.abs((a[d] || 0) - (b[d] || 0)));
-        }
-        return mx;
-      }, 0);
-      if (maxPairDiff < 0.01) {
-        console.warn("  ⚠   Profiles were identical or missing — applying hint-based fallback.");
-        applyProfilesFromHints(outline.results, outline.dimensions, architecture);
-      }
+      // Phase 1b: numeric profiles are code-generated from architecture profileHints.
+      // This removes the most failure-prone step from the model pipeline.
+      applyProfilesFromHints(outline.results, outline.dimensions, architecture);
       spreadProfiles(outline.results, outline.dimensions);
       enforceUniquePeaks(outline.results, outline.dimensions);
       saveCheckpoint(TOPIC_ARG, "phase1-outline", outline);

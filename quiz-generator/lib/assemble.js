@@ -364,32 +364,48 @@ function spreadProfiles(results, dimensions, minDiff = 0.16) {
   return results;
 }
 
-// Programmatic fallback: convert architecture profileHints (high/medium/low) into
-// numeric dimension_profiles when AI-based profile generation fails or returns garbage.
+// Deterministically convert architecture profileHints (high/medium/low) into
+// numeric dimension_profiles. This keeps AI responsible for semantic choices
+// (which dimensions are high/medium/low), while code owns the exact numbers.
 function applyProfilesFromHints(results, dimensions, architecture) {
-  const RANGES = { high: [0.62, 0.78], medium: [0.32, 0.52], low: [0.10, 0.23] };
-  const rand = (min, max) => parseFloat((min + Math.random() * (max - min)).toFixed(2));
+  const RANGES = { high: [0.66, 0.80], medium: [0.34, 0.50], low: [0.10, 0.22] };
   const archResults = (architecture && architecture.results) || [];
+  const normalize = (s) => String(s || "").replace(/\s+/g, "").replace(/[轴重度力感性]$/g, "");
+  const stableUnit = (seed) => {
+    let hash = 2166136261;
+    for (let i = 0; i < seed.length; i++) {
+      hash ^= seed.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0) / 4294967295;
+  };
+  const pickValue = (hint, seed) => {
+    const [min, max] = RANGES[hint] || RANGES.medium;
+    return parseFloat((min + stableUnit(seed) * (max - min)).toFixed(2));
+  };
 
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     const archResult = archResults[i] || {};
     const hints = archResult.profileHints || {};
+    const primaryDimension = normalize(archResult.primaryDimension || result.dimension);
 
     result.dimension_profile = {};
     for (const dim of dimensions) {
-      // Match hint by exact key, then by prefix/suffix stripping
+      const normalizedDim = normalize(dim);
       let hint = hints[dim];
       if (!hint) {
-        const normalDim = dim.replace(/[轴重度力感性]$/g, "");
-        const found = Object.entries(hints).find(([k]) =>
-          k === dim || k.replace(/[轴重度力感性]$/g, "") === normalDim ||
-          k.startsWith(dim) || dim.startsWith(k.replace(/[轴重度力感性]$/g, ""))
-        );
-        hint = found ? found[1] : "medium";
+        const found = Object.entries(hints).find(([k]) => {
+          const normalizedKey = normalize(k);
+          return normalizedKey === normalizedDim ||
+            normalizedKey.startsWith(normalizedDim) ||
+            normalizedDim.startsWith(normalizedKey);
+        });
+        hint = found ? found[1] : (normalizedDim === primaryDimension ? "high" : "medium");
       }
-      const [min, max] = RANGES[hint] || RANGES.medium;
-      result.dimension_profile[dim] = rand(min, max);
+
+      const seed = `${result.id}|${dim}|${hint}|${i}`;
+      result.dimension_profile[dim] = pickValue(hint, seed);
     }
   }
 }
