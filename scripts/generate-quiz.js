@@ -65,7 +65,7 @@ function inferProviderFromModel(model) {
 const AUTO_PROVIDER = ZHIPU_KEY ? "zhipu" : GEMINI_KEY ? "gemini" : DEEPSEEK_KEY ? "deepseek" : ANTHROPIC_KEY ? "anthropic" : null;
 const PROVIDER      = PROVIDER_ARG || inferProviderFromModel(MODEL_ARG) || AUTO_PROVIDER;
 const MODEL_DEFAULT = {
-  zhipu: "glm-4-plus",
+  zhipu: "glm-4.7",
   gemini: "gemini-3-flash-preview",
   deepseek: "deepseek-chat",
   anthropic: "claude-opus-4-5",
