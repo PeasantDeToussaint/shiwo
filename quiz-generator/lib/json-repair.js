@@ -220,7 +220,7 @@ function normalizeJSONCandidate(candidate) {
   ];
   for (const f of UNQUOTED_FIELDS) {
     candidate = candidate.replace(
-      new RegExp(`("${f}"\\s*:\\s*)(?!")([^,{}\\[\\]\\n]+)`, "g"),
+      new RegExp(`("${f}"\\s*:\\s*)([^\\s",{}\\[\\]\\n][^,{}\\[\\]\\n]*)`, "g"),
       (_, prefix, val) => `${prefix}"${val.trim()}"`
     );
   }

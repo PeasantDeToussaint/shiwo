@@ -139,7 +139,7 @@ async function main() {
     console.log("     (resumed from checkpoint)");
   } else {
     try {
-      outline = await withRetry("outline", () => generateOutline(TOPIC_ARG, architecture, HINT_BLOCK, aiClient.callAI), 4, 5000);
+      outline = await withRetry("outline", () => generateOutline(TOPIC_ARG, architecture, HINT_BLOCK, DATA_DIR, aiClient.callAI), 4, 5000);
       // Simplify dimensions before profile generation so profiles use canonical keys
       const origDims = [...outline.dimensions];
       outline.dimensions = simplifyDimensions(outline.dimensions);
