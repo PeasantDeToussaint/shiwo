@@ -275,6 +275,37 @@ function assembleQuiz(outline, questions, results) {
 }
 
 
+/**
+ * Ensure every result leads on at least one dimension — i.e. there exists some
+ * user score profile that would uniquely match it. Without this, a result can be
+ * "shadowed" by another even when not fully Pareto-dominated: whenever it would
+ * theoretically win on its best dimension, a different result with a higher value
+ * on that same dimension always beats it first.
+ *
+ * Strategy: if a result is not the sole leader on any dimension, boost its
+ * highest-valued dimension by a small increment until it becomes the leader.
+ */
+function enforceUniquePeaks(results, dimensions, boost = 0.08) {
+  const clamp = (v) => parseFloat(Math.min(0.95, Math.max(0.05, v)).toFixed(2));
+
+  for (const result of results) {
+    const p = result.dimension_profile;
+    if (!p) continue;
+
+    const isLeaderOnAny = dimensions.some(d =>
+      results.every(other => other === result || (other.dimension_profile?.[d] || 0) <= (p[d] || 0))
+    );
+
+    if (!isLeaderOnAny) {
+      // Find the dimension where this result comes closest to leading
+      const bestDim = dimensions.reduce((best, d) =>
+        (p[d] || 0) > (p[best] || 0) ? d : best, dimensions[0]);
+      p[bestDim] = clamp((p[bestDim] || 0) + boost);
+    }
+  }
+  return results;
+}
+
 function spreadProfiles(results, dimensions, minDiff = 0.16) {
   const clamp = (v) => parseFloat(Math.max(0.05, Math.min(0.95, v)).toFixed(2));
 
@@ -314,7 +345,7 @@ function spreadProfiles(results, dimensions, minDiff = 0.16) {
 }
 
 module.exports = {
-  spreadProfiles,
+  spreadProfiles, enforceUniquePeaks,
   DIMENSION_MAP, simplifyDimensions,
   normalizePortraitText, looksLikeQuoteContent,
   normalizeResultExtras, findObviousTextCorruption,

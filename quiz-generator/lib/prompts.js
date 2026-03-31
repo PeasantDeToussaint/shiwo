@@ -120,7 +120,7 @@ function buildResultTemplate(resultFields, resultType) {
   return lines.join("\n");
 }
 
-async function generateArchitecture(topic, hintBlock) {
+async function generateArchitecture(topic, hintBlock, callAIImpl = callAI) {
   const system = `你是「${topic}」领域的资深专家。你的任务是为一道微信小程序测验设计结果架构——决定测验应该输出哪些结果、为什么这样划分、每个结果的核心定位是什么。
 
 这个测验不一定是人格测验。结果可能是：具体国家/城市/事物（item 类）、适合程度的不同段位（archetype 类但以程度命名）、真实人物（figure 类）、或有象征意味的人格原型（archetype 类）。你需要先判断这个测验属于哪种类型，再基于该类型设计结果，而不是一律套用「人格原型」框架。
@@ -151,8 +151,8 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
     { "key": "lifeAdvice", "label": "行动建议", "standard": true },
     { "key": "customFieldKey", "label": "自定义标题", "standard": false, "instruction": "说明这个字段写什么、写多少字" }
   ],
-  "dimensionCount": "你决定的维度数量，整数。由你根据主题复杂度决定，通常为2-5个",
-  "questionCount": "你决定的题目数量，整数，建议范围：简单主题12题，中等主题16-20题，复杂多维主题22-24题",
+  "dimensionCount": "你决定的维度数量，整数。通常为4-6个。results越多维度应越多——原则上每2-3个结果需要1个独立维度（如8个结果 → 至少4个维度，9个结果 → 至少4-5个）。figure类型（同一作品中的人物）因人物天然共享背景与价值观，需取上限。维度之间必须真正独立、正交，不能是同一特质的不同表述",
+  "questionCount": "你决定的题目数量，整数，建议范围：简单主题12题，中等主题16-20题，复杂多维主题22-24题。维度越多题目应越多，保证每个维度有足够的题目覆盖",
   "dimensions": ["维度1", "维度2", "更多维度按需补足，必须与dimensionCount数量一致。每个维度名称必须2-4字，不要用与/和连接两个概念"],
   "results": [
     {
@@ -188,12 +188,12 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 不要全选。对于标准字段，如果你认为默认格式对这个主题不够精准，可以额外提供 instruction 字段来覆盖默认写法。例如：
 { "key": "portrait", "label": "气质画像", "standard": true, "instruction": "三段，第一段描述测验者与这个国家的气质共鸣，第二段写具体行为联结，第三段写挑战与代价" }
 
-### 两个或以上自定义字段（用 standard: false 标记，自行设计）
+### 自定义字段（可选，用 standard: false 标记，自行设计，≤2 个）
 如果这个主题的用户有标准字段以外的核心关注点，可以增加自定义字段。
 每个自定义字段需要提供：
 - key：英文 camelCase 字段名
 - label：显示给用户看的中文标题（4-8字）
-- instruction：告诉 AI 这个字段写什么、写多少字30-60字的说明）
+- instruction：告诉 AI 这个字段写什么、写多少字（30-60字的说明）
 
 示例（仅供参考，请根据实际主题决定）：
 - 宝石测验可能有：{ key: "gemScene", label: "适合场景", instruction: "50字，描述这颗宝石最适合在什么场合佩戴、搭配什么风格" }
@@ -203,21 +203,21 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 请根据「${topic}」这个主题，从用户视角出发，设计最合适的字段组合。
 
 规则：
--【关键约束】dimensionCount 由你根据主题复杂度决定；dimensions 数量必须与 dimensionCount 严格一致。results 是6-9个（视主题而定），与 dimensions 数量无关。多个结果可以共享同一个 primaryDimension。每个 primaryDimension 必须是 dimensions 数组里的某一项。
-- 维度数量不要机械固定；重点是维度彼此独立、可解释，并且足以区分这些结果。简单主题可用2个，复杂主题可到5个。
+-【关键约束】dimensionCount 由你根据主题复杂度和结果数量共同决定；dimensions 数量必须与 dimensionCount 严格一致。results 是6-9个（视主题而定），results越多则dimensions越多，确保每个结果都有足够的区分空间（每2-3个结果需要1个独立维度）。多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。
+- 维度之间必须真正独立、正交，不能是同一特质的不同表述（如「理性」和「逻辑性」高度相关，不应同时作为维度）。通常4个维度起，复杂主题可到6个。
 - resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
 - resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
 - profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异`;
 
-  const raw = await callAI(system, user, 2500);
+  const raw = await callAIImpl(system, user, 2500);
   const architecture = extractJSON(raw);
   const errors = validateArchitecture(architecture);
   if (errors.length > 0) throw new Error(`Architecture invalid: ${errors.join("; ")}`);
   return architecture;
 }
 
-async function generateOutline(topic, architecture, hintBlock) {
+async function generateOutline(topic, architecture, hintBlock, callAIImpl = callAI) {
   const resultType = architecture && architecture.resultType || "archetype";
   const archContext = architecture ? `
 ### 领域架构（Phase 0 已确定，必须以此为基础）
@@ -284,7 +284,7 @@ ${hintBlock}${archContext}
 
 规则：
 - dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，严格使用 Phase 0 的维度，数量以 Phase 0 为准）
-- results 数量 6-9个，与 dimensions 数量无关，多个结果可以共享同一个 dimension
+- results 数量 6-9个，多个结果可以共享同一个 dimension；results越多则dimensions应越多（每2-3个结果需要1个独立维度）
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
 - 维度名称简洁，2-4字
@@ -298,9 +298,10 @@ dimension_profile 规则（这是最重要的部分，直接决定结果准确�
 - 禁止任何维度设为 1.0 或 0.0（避免极端化）
 - 不同结果的 profile 必须有显著差异，确保每个结果在某几个维度上有独特的高低组合
 - 任意两个结果至少要在一个维度上拉开 ≥0.15 的差距；如果两个结果 profile 很像，必须主动重写其中一个
-- profile 设计完成后自我检验：是否有两个结果过于相似？是否会导致大多数用户聚集在同一个结果？`;
+- 检查 Pareto 支配：如果结果 A 在所有维度上均 ≥ 结果 B（且至少一个维度严格 >），则无论用户如何作答，B 永远不会被选中。必须确保每个结果至少在一个维度上是所有结果中数值最高的
+- profile 设计完成后自我检验：① 是否有两个结果过于相似？② 是否有某个结果在所有维度上都被另一个结果超越？③ 是否会导致大多数用户聚集在同一个结果？`;
 
-  const raw = await callAI(system, user, 4500);
+  const raw = await callAIImpl(system, user, 4500);
   const outline = normalizeOutlineToArchitecture(extractJSON(raw), architecture);
   if (outline.dimensions && outline.results) {
     spreadProfiles(outline.results, outline.dimensions);
@@ -310,12 +311,12 @@ dimension_profile 规则（这是最重要的部分，直接决定结果准确�
   return outline;
 }
 
-async function generateQuestions(outline, startId, endId, batchLabel, total, dataDir) {
+async function generateQuestions(outline, startId, endId, batchLabel, total, dataDir, callAIImpl = callAI) {
   const dimensions = outline.dimensions;
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const count = endId - startId + 1;
 
-  const system = `你是一位中文人格测验内容专家。你的任务是为微信小程序人格测验生成题目。
+  const system = `你是一位中文测验内容专家。你的任务是为微信小程序测验生成题目。
 
 ${LITERARY_GUIDE}
 ${aestheticContext}
@@ -347,13 +348,14 @@ ${aestheticContext}
 }
 
 规则：
-1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围,例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等
+1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围。例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等
 2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
 3. 每个选项最多2个维度得分，主维度≤2分，副维度≤1分
 4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
-5. 遵守 literary guide，禁止句型不能出现`;
+5. 维度覆盖均衡：本批 ${count} 道题中，每个维度应大致均匀出现，避免某一维度题目过多而另一维度数据稀少。当前维度共 ${dimensions.length} 个，每个维度平均约 ${Math.round(count / dimensions.length * 10) / 10} 道题的信号量
+6. 遵守 literary guide，列明的禁止句型一律不得出现`;
 
-  const raw = await callAI(system, user, 6000);
+  const raw = await callAIImpl(system, user, 6000);
   fs.writeFileSync(path.join(dataDir, `${outline.id}.q${batchLabel}.raw.txt`), raw);
 
   const parsed = extractJSON(raw);
@@ -362,7 +364,7 @@ ${aestheticContext}
   return parsed.questions;
 }
 
-async function generateResults(outline, resultSubset, dataDir) {
+async function generateResults(outline, resultSubset, dataDir, callAIImpl = callAI) {
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const stub = resultSubset.map(r => ({
     id: r.id, title: r.title, subtitle: r.subtitle,
@@ -427,6 +429,18 @@ ${aestheticContext}
       archResults.map(r => `- 主导维度「${r.primaryDimension}」→ 【${r.name}】：${r.nameContext || ""} / 核心：${r.coreIdentity || ""}`).join("\n")
     : "";
 
+  // Build a compact summary of all OTHER results so the model can differentiate
+  // even though it only writes one result per batch (R_BATCH_SIZE = 1).
+  const siblingResults = outline.results.filter(r => !resultSubset.some(s => s.id === r.id));
+  const siblingContext = siblingResults.length > 0
+    ? `\n### 其他结果概览（本次不写这些，但你的文字必须与它们有显著区分）\n` +
+      siblingResults.map(r => {
+        const arch = archResults.find(a => a.name === r.title || a.conceptId === r.id);
+        const identity = arch?.coreIdentity || r.subtitle || "";
+        return `- 【${r.title}】主导维度「${r.dimension}」${identity ? `：${identity}` : ""}`;
+      }).join("\n")
+    : "";
+
   const hasField = key => resultFields.some(f => f.key === key);
 
   const portraitDepthGuide = hasField("portrait") ? `
@@ -479,7 +493,7 @@ portrait 是结果页最核心的内容，必须让用户读完产生"这说的�
 
   const user = `测验：${outline.title}（结果类型：${resultType}）
 维度：${outline.dimensions.join("、")}
-${figureContext}
+${figureContext}${siblingContext}
 
 ${contentGuide}
 
@@ -498,7 +512,7 @@ ${buildResultTemplate(resultFields, resultType)}
 - 不同结果的 dimension_profile 虽然由 Phase 1 决定，但你的文字必须强化区分度，不能把两个结果写成只有措辞不同、人格几乎一样。
 - 遵守 literary guide，禁止出现被列明的句型。`;
 
-  const raw = await callAI(system, user, 10000);
+  const raw = await callAIImpl(system, user, 10000);
   const label = stub.map(r => r.id).join("-");
   const rawPath = path.join(dataDir, `${outline.id}.r${label}.raw.txt`);
   fs.writeFileSync(rawPath, raw);
@@ -528,8 +542,10 @@ ${buildResultTemplate(resultFields, resultType)}
   const subsetIds = new Set(resultSubset.map(r => r.id));
   const filtered = parsed.results.filter(r => subsetIds.has(r.id));
   if (filtered.length === 0) {
-    console.warn(`     [dbg] ⚠ none of the returned IDs matched requested — falling back to first ${resultSubset.length}. Got: ${parsed.results.map(r=>r.id).join(",")}`);
-    return parsed.results.slice(0, resultSubset.length);
+    throw new Error(
+      `None of the returned result IDs matched requested [${[...subsetIds].join(",")}]. ` +
+      `Got: [${parsed.results.map(r => r.id).join(",")}]. Raw saved to ${path.basename(rawPath)}`
+    );
   }
   if (filtered.length !== parsed.results.length) {
     console.log(`     [dbg] filtered ${parsed.results.length} → ${filtered.length} result(s) by subset IDs`);

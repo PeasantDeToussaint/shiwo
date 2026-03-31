@@ -116,6 +116,31 @@ function collectProfileSimilarityIssues(results, dimensions) {
   return issues;
 }
 
+/**
+ * Detect Pareto-dominated results: a result that is beaten by some other result
+ * on every single dimension. Such results are permanently unreachable — no user
+ * score distribution will ever produce them as the winner under cosine similarity
+ * or dot-product scoring.
+ */
+function collectDominanceIssues(results, dimensions) {
+  const issues = [];
+  for (let i = 0; i < results.length; i++) {
+    for (let j = 0; j < results.length; j++) {
+      if (i === j) continue;
+      const a = results[i].dimension_profile;
+      const b = results[j].dimension_profile;
+      if (!a || !b) continue;
+      const bDominatesA =
+        dimensions.every(d => (b[d] || 0) >= (a[d] || 0)) &&
+        dimensions.some(d =>  (b[d] || 0) >  (a[d] || 0));
+      if (bDominatesA) {
+        issues.push(`${results[i].id} is unreachable — dominated by ${results[j].id} on all dimensions`);
+      }
+    }
+  }
+  return issues;
+}
+
 function validateFinalQuiz(quiz) {
   const errors = [];
   const warnings = [];
@@ -168,6 +193,10 @@ function validateFinalQuiz(quiz) {
     const msg = `${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)})`;
     if (issue.severe) errors.push(msg);
     else warnings.push(msg);
+  }
+
+  for (const issue of collectDominanceIssues(quiz.results || [], quiz?.scoring?.dimensions || [])) {
+    errors.push(issue);
   }
 
   return { errors, warnings };
@@ -245,6 +274,10 @@ function validateDimensionProfiles(results, dimensions) {
 
   for (const issue of collectProfileSimilarityIssues(results, dimensions)) {
     warnings.push(`${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)}), users may cluster`);
+  }
+
+  for (const issue of collectDominanceIssues(results, dimensions)) {
+    warnings.push(issue);
   }
 
   return warnings;

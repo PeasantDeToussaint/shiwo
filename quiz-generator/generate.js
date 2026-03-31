@@ -11,10 +11,10 @@ const fs   = require("fs");
 const path = require("path");
 
 const config = require("./lib/config");
-const ai     = require("./lib/ai");
+const { createClient } = require("./lib/ai");
 const { sleep, withRetry } = require("./lib/http");
 const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestions, generateResults } = require("./lib/prompts");
-const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, spreadProfiles } = require("./lib/assemble");
+const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, spreadProfiles, enforceUniquePeaks } = require("./lib/assemble");
 const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
 const { evaluateQuiz, printEvalReport } = require("./lib/eval");
 const { uploadQuiz } = require("./lib/wechat");
@@ -53,7 +53,7 @@ if (!ESTIMATE) {
   if (keyErr) { console.error(`❌  ${keyErr}`); process.exit(1); }
 }
 
-ai.configure(PROVIDER, MODEL);
+const aiClient = PROVIDER && MODEL ? createClient(PROVIDER, MODEL) : null;
 
 // ── Build hint block ─────────────────────────────────────────────
 const AUTO_HINTS = inferHintsFromTopic(TOPIC_ARG);
@@ -115,7 +115,7 @@ async function main() {
     console.log("     (resumed from checkpoint)");
   } else {
     try {
-      architecture = await withRetry("architecture", () => generateArchitecture(TOPIC_ARG, HINT_BLOCK), 4, 5000);
+      architecture = await withRetry("architecture", () => generateArchitecture(TOPIC_ARG, HINT_BLOCK, aiClient.callAI), 4, 5000);
       saveCheckpoint(TOPIC_ARG, "phase0-architecture", architecture);
     } catch (err) {
       console.error("❌  Architecture failed:", err.message);
@@ -136,7 +136,7 @@ async function main() {
     console.log("     (resumed from checkpoint)");
   } else {
     try {
-      outline = await withRetry("outline", () => generateOutline(TOPIC_ARG, architecture, HINT_BLOCK), 4, 5000);
+      outline = await withRetry("outline", () => generateOutline(TOPIC_ARG, architecture, HINT_BLOCK, aiClient.callAI), 4, 5000);
       // Simplify dimensions
       const origDims = [...outline.dimensions];
       outline.dimensions = simplifyDimensions(outline.dimensions);
@@ -161,6 +161,7 @@ async function main() {
         outline.architectureResultFields = architecture.resultFields || null;
       }
       spreadProfiles(outline.results, outline.dimensions);
+      enforceUniquePeaks(outline.results, outline.dimensions);
       saveCheckpoint(TOPIC_ARG, "phase1-outline", outline);
     } catch (err) {
       console.error("❌  Outline failed:", err.message); process.exit(1);
@@ -202,7 +203,7 @@ async function main() {
       const phaseQuestions = [];
       for (const [i, { startId, endId, label }] of Q_BATCHES.entries()) {
         console.log(`\n📝  [2/3] Questions q${startId}-q${endId} (batch ${label}/${Q_BATCHES.length})...`);
-        const qs = await withRetry(`questions-${label}`, () => generateQuestions(outline, startId, endId, label, Q_TOTAL, DATA_DIR));
+        const qs = await withRetry(`questions-${label}`, () => generateQuestions(outline, startId, endId, label, Q_TOTAL, DATA_DIR, aiClient.callAI));
         phaseQuestions.push(...qs);
         console.log(`     ✓  got ${qs.length} questions`);
         if (i < Q_BATCHES.length - 1) await sleep(4000);
@@ -235,7 +236,7 @@ async function main() {
       const allResults = [];
       for (const [i, subset] of R_BATCHES.entries()) {
         console.log(`\n✍️   [3/3] Results batch ${i + 1}/${R_BATCHES.length} (${subset.length} results)...`);
-        const rs = await withRetry(`results-${i + 1}`, () => generateResults(outline, subset, DATA_DIR), 5, 3000);
+        const rs = await withRetry(`results-${i + 1}`, () => generateResults(outline, subset, DATA_DIR, aiClient.callAI), 5, 3000);
         allResults.push(...rs);
         console.log(`     ✓  got ${rs.length} results`);
         if (i < R_BATCHES.length - 1) await sleep(4000);
@@ -278,7 +279,7 @@ async function main() {
     console.log("\n🔎  [4.5/5] Quality evaluation...");
     startPhase("4.5-eval");
     try {
-      const evalResult = await withRetry("eval", () => evaluateQuiz(quiz), 2, 3000);
+      const evalResult = await withRetry("eval", () => evaluateQuiz(quiz, aiClient.callAI), 2, 3000);
       printEvalReport(evalResult);
       if (!evalResult.overall.passed && evalResult.overall.score < MIN_SCORE) {
         if (FORCE) {

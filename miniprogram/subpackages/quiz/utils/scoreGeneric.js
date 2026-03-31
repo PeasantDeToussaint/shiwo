@@ -11,7 +11,9 @@
  * Algorithm:
  *   1. Sum raw scores per dimension from user's answers
  *   2. Normalize to [0,1] range across all dimensions
- *   3. Find result whose dimension_profile has highest dot-product with normalized scores
+ *   3. Find result whose dimension_profile has highest cosine similarity with normalized scores
+ *      (cosine similarity removes magnitude bias — results with uniformly high profiles
+ *       no longer have a structural advantage over results with a single strong peak)
  */
 
 const { scoreTwoPhaseArchetype } = require("./scoreTwoPhaseArchetype");
@@ -73,14 +75,18 @@ function scoreGeneric(quiz, answers) {
   const normalized = {};
   dimensions.forEach((d) => (normalized[d] = raw[d] / total));
 
-  // 3. Match result
-  // 3. Score and rank all results
+  // 3. Rank results by cosine similarity between normalized user scores and each dimension_profile.
+  //    Cosine similarity = dot(user, profile) / (|user| * |profile|)
+  //    This removes magnitude bias: a profile with uniformly high values no longer
+  //    beats a sharply-peaked profile just because its sum is larger.
+  const userMag = Math.sqrt(dimensions.reduce((s, d) => s + (normalized[d] || 0) ** 2, 0)) || 1;
+
   const ranked = (quiz.results || [])
     .map((result) => {
       const profile = result.dimension_profile || {};
-      const score = Object.entries(profile).reduce((acc, [dim, weight]) => {
-        return acc + (normalized[dim] || 0) * weight;
-      }, 0);
+      const dot = Object.entries(profile).reduce((acc, [dim, w]) => acc + (normalized[dim] || 0) * w, 0);
+      const profileMag = Math.sqrt(Object.values(profile).reduce((s, v) => s + v * v, 0)) || 1;
+      const score = dot / (profileMag * userMag);
       return { resultId: result.id, title: result.title, score };
     })
     .sort((a, b) => b.score - a.score);
