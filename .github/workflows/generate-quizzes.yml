@@ -139,6 +139,9 @@ jobs:
       - name: 安装依赖
         run: cd quiz-generator && npm ci
 
+      - name: 错开启动（避免并发触发限流）
+        run: sleep $(( ${{ strategy.job-index }} * 45 ))
+
       - name: 生成测验
         env:
           ZHIPU_API_KEY:     ${{ secrets.ZHIPU_API_KEY }}
