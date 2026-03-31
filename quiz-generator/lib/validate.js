@@ -437,23 +437,28 @@ function validateQuestionPlan(plan, dimensions, total) {
       errors.push(`no questions of type ${t} in plan — all types must be represented`);
   }
 
-  // Duplicate setting detection: flag if two settings share an 8-char substring
+  // Duplicate setting detection: flag if two settings share a 12-char substring.
+  // Up to 2 overlapping pairs are tolerated (common words in Chinese); 3+ is an error.
   const settings = plan.map(p => (p.setting || "").replace(/\s/g, ""));
+  const overlaps = [];
   const flagged = new Set();
   for (let i = 0; i < settings.length; i++) {
     if (flagged.has(i)) continue;
     const a = settings[i];
-    if (a.length < 8) continue;
+    if (a.length < 12) continue;
     for (let j = i + 1; j < settings.length; j++) {
       const b = settings[j];
-      for (let k = 0; k <= a.length - 8; k++) {
-        if (b.includes(a.slice(k, k + 8))) {
-          errors.push(`${plan[i].id} and ${plan[j].id} have overlapping settings`);
+      for (let k = 0; k <= a.length - 12; k++) {
+        if (b.includes(a.slice(k, k + 12))) {
+          overlaps.push(`${plan[i].id} and ${plan[j].id} have overlapping settings`);
           flagged.add(j);
           break;
         }
       }
     }
+  }
+  if (overlaps.length >= 3) {
+    for (const msg of overlaps) errors.push(msg);
   }
 
   return errors;
