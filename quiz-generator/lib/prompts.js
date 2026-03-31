@@ -766,7 +766,8 @@ ${optionTemplateA}
 6. 如果 scoringFamily = level-band，四个选项总分梯度必须明显拉开
 7. 如果 scoringFamily = bipolar-dimension，负分只能表示朝 lowDefinition 一侧移动
 8. 遵守 literary guide，列明的禁止句型一律不得出现
-9. 选项中"明哲保身"及等义表达（独善其身、静观其变、置身事外）本批最多出现 2 次`;
+9. 选项中"明哲保身"及等义表达（独善其身、静观其变、置身事外）本批最多出现 2 次
+10. 每道题的主测维度（骨架已标注）：四个选项中至少 2 个必须给该维度打正分（≥1分），否则该题对主测维度毫无贡献`;
 
   const raw = await callAIImpl(system, user, 6000);
   fs.writeFileSync(path.join(dataDir, `${outline.id}.q${batchLabel}.raw.txt`), raw);
@@ -777,7 +778,51 @@ ${optionTemplateA}
   return parsed.questions;
 }
 
-async function generateResults(outline, resultSubset, dataDir, callAIImpl = callAI, previousResults = []) {
+async function generateResultsPlan(outline, callAIImpl = callAI) {
+  const results = outline.results;
+  const resultTitles = results
+    .map(r => `${r.id}「${r.title}」（主导维度：${r.dimension}）`)
+    .join("\n");
+
+  const system = `你是一位测验内容设计师，专门为结果页设计有辨识度的内容架构。输出严格 JSON，不输出其他内容。`;
+
+  const user = `为以下测验的 ${results.length} 个结果，预分配结果内容骨架。
+
+测验：${outline.title}
+各结果：
+${resultTitles}
+
+为每个结果分配：
+1. portraitAngle（1句，20-30字）：这个结果的 portrait 应从哪个切入角度写，必须与其他所有结果的角度完全不同
+2. strengthLabels（6个标签）：这个结果的6个优势标签，每个3-5字
+3. weaknessLabels（6个标签）：这个结果的6个局限标签，每个3-5字
+
+【强制约束】
+- 所有 ${results.length} 个结果的 strengthLabels 合计 ${results.length * 6} 个标签，不能有任何两个完全相同
+- 所有 ${results.length} 个结果的 weaknessLabels 合计 ${results.length * 6} 个标签，不能有任何两个完全相同
+- 标签必须体现该结果的独特气质，禁止通用标签（如"行动力强""情绪稳定""共情力""情感丰富"等）
+- 每个结果的 portraitAngle 必须完全不同，代入该人物/原型最具辨识度的心理处境或行为模式
+
+输出格式：
+{
+  "plan": [
+    {
+      "id": "r1",
+      "portraitAngle": "从X角度切入，写Y",
+      "strengthLabels": ["标签1", "标签2", "标签3", "标签4", "标签5", "标签6"],
+      "weaknessLabels": ["标签1", "标签2", "标签3", "标签4", "标签5", "标签6"]
+    }
+  ]
+}`;
+
+  const raw = await callAIImpl(system, user, 2000);
+  const parsed = extractJSON(raw);
+  if (!Array.isArray(parsed.plan) || parsed.plan.length < results.length)
+    throw new Error(`Expected ${results.length} result plans, got ${parsed.plan?.length ?? 0}`);
+  return parsed.plan.slice(0, results.length);
+}
+
+async function generateResults(outline, resultSubset, dataDir, callAIImpl = callAI, previousResults = [], resultsPlan = []) {
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const stub = resultSubset.map(r => ({
     id: r.id, title: r.title, subtitle: r.subtitle,
@@ -855,6 +900,25 @@ ${aestheticContext}
       }).join("\n")
     : "";
 
+  // Results plan: pre-assigned portrait angles and labels for uniqueness
+  const planByResultId = {};
+  for (const p of resultsPlan) { if (p?.id) planByResultId[p.id] = p; }
+  const planConstraintsBlock = resultSubset.map(r => {
+    const p = planByResultId[r.id];
+    if (!p) return null;
+    const sLabels = Array.isArray(p.strengthLabels) ? p.strengthLabels.join("、") : "";
+    const wLabels = Array.isArray(p.weaknessLabels) ? p.weaknessLabels.join("、") : "";
+    return [
+      `- 【${r.title}（${r.id}）】`,
+      `  portrait 切入角度：${p.portraitAngle || ""}`,
+      `  strengths labels 必须严格原文使用（按序）：${sLabels}`,
+      `  weaknesses labels 必须严格原文使用（按序）：${wLabels}`,
+    ].join("\n");
+  }).filter(Boolean).join("\n");
+  const planBlock = planConstraintsBlock
+    ? `\n### 内容骨架（必须严格遵守，标签必须原文使用，不得替换或自创）\n${planConstraintsBlock}\n`
+    : "";
+
   // Summaries of results already written in earlier batches — avoid repeating themes/labels
   const writtenContext = previousResults.length > 0
     ? `\n### 已生成结果摘要（禁止在本次生成中重复使用相同的 strengths/weaknesses 标签或 portrait 开篇角度）\n` +
@@ -918,7 +982,7 @@ portrait 是结果页最核心的内容，必须让用户读完产生"这说的�
 
   const user = `测验：${outline.title}（结果类型：${resultType}，评分框架：${scoringFamily}）
 维度：${outline.dimensions.join("、")}
-${figureContext}${siblingContext}${writtenContext}
+${figureContext}${siblingContext}${planBlock}${writtenContext}
 
 ${contentGuide}
 
@@ -981,6 +1045,7 @@ ${buildResultTemplate(resultFields, resultType)}
 module.exports = {
   inferHintsFromTopic, buildResultTemplate,
   generateArchitecture, generateOutline, generateOutlineProfiles,
-  generateQuestionPlan, generateQuestions, generateResults,
+  generateQuestionPlan, generateQuestions,
+  generateResultsPlan, generateResults,
   PORTRAIT_TEMPLATE_BY_TYPE, STANDARD_FIELD_TEMPLATES,
 };

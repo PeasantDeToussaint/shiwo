@@ -13,9 +13,9 @@ const path = require("path");
 const config = require("./lib/config");
 const { createClient, configure: configureAI } = require("./lib/ai");
 const { sleep, withRetry } = require("./lib/http");
-const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestionPlan, generateQuestions, generateResults } = require("./lib/prompts");
+const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestionPlan, generateQuestions, generateResultsPlan, generateResults } = require("./lib/prompts");
 const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, spreadProfiles, enforceUniquePeaks, applyProfilesFromHints } = require("./lib/assemble");
-const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, validateQuestionPlan, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
+const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, validateQuestionPlan, validateScoreMap, validateResultsPlan, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
 const { evaluateQuiz, printEvalReport } = require("./lib/eval");
 const { uploadQuiz } = require("./lib/wechat");
 const { saveCheckpoint, loadCheckpoint, clearCheckpoints } = require("./lib/checkpoint");
@@ -257,6 +257,12 @@ async function main() {
       const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions, { scoringType });
       printWarnings("questions", questionWarnings);
       assertNoCriticalWarnings("questions", questionWarnings);
+
+      // Score map: warn if a dimension is severely underrepresented in scoring opportunities
+      const scoreMapWarnings = validateScoreMap(phaseQuestions, outline.dimensions);
+      printWarnings("score map", scoreMapWarnings);
+      // Score imbalance is a warning only — don't fail generation over it
+
       return phaseQuestions;
     }, 3, 5000);
     saveCheckpoint(TOPIC_ARG, "phase2-questions", allQuestions);
@@ -264,6 +270,26 @@ async function main() {
   console.log(`     (${endPhase("2-questions")}s)`);
 
   await sleep(4000);
+
+  // Phase 3a: Results plan — pre-assign portrait angles and labels for all results in one call
+  startPhase("3a-rplan");
+  let resultsPlan = RESUME ? loadCheckpoint(TOPIC_ARG, "phase3a-rplan") : null;
+  if (resultsPlan) {
+    console.log(`\n📋  Results plan: resumed ${resultsPlan.length} items from checkpoint`);
+  } else {
+    console.log(`\n📋  [2.5/3] Generating results plan (${outline.results.length} results)...`);
+    resultsPlan = await withRetry("results-plan", async () => {
+      const plan = await generateResultsPlan(outline, aiClient.callAI);
+      const planErrors = validateResultsPlan(plan, outline.results);
+      if (planErrors.length > 0) throw new Error(`Results plan invalid: ${planErrors.join("; ")}`);
+      return plan;
+    }, 3, 5000);
+    saveCheckpoint(TOPIC_ARG, "phase3a-rplan", resultsPlan);
+  }
+  console.log(`     ✓  plan: ${resultsPlan.map(p => p.id).join(" ")}`);
+  console.log(`     (${endPhase("3a-rplan")}s)`);
+
+  await sleep(3000);
 
   // Phase 3: Results
   const rTotal      = outline.results.length;
@@ -282,7 +308,7 @@ async function main() {
       const allResults = [];
       for (const [i, subset] of R_BATCHES.entries()) {
         console.log(`\n✍️   [3/3] Results batch ${i + 1}/${R_BATCHES.length} (${subset.length} results)...`);
-        const rs = await withRetry(`results-${i + 1}`, () => generateResults(outline, subset, DATA_DIR, aiClient.callAI, allResults), 5, 3000);
+        const rs = await withRetry(`results-${i + 1}`, () => generateResults(outline, subset, DATA_DIR, aiClient.callAI, allResults, resultsPlan), 5, 3000);
         allResults.push(...rs);
         console.log(`     ✓  got ${rs.length} results`);
         if (i < R_BATCHES.length - 1) await sleep(4000);
