@@ -1,0 +1,91 @@
+<!--
+  Catalog Manager — scrollable list of quiz cards.
+  share-element on each card links to quiz-intro's matching key — Skyline
+  morphs the accent line into the intro divider during navigation.
+-->
+
+<!-- Custom nav bar -->
+<view class="fq-navbar" style="padding-top: {{statusBarHeight}}px;">
+  <view class="fq-back" bindtap="onBack">←</view>
+  <view class="fq-brand">
+    <text class="fq-brand-name">MYTYPE</text>
+    <text class="fq-brand-tagline">选一个题目，发现关于自己的某件事</text>
+  </view>
+</view>
+
+<scroll-view scroll-y class="fq-scroll" style="top: 0;">
+  <view class="fq-root" style="padding-top: calc({{statusBarHeight}}px + 140rpx);">
+
+    <!-- ── Card List ──────────────────────────────────────── -->
+    <view class="fq-list">
+      <view
+        wx:for="{{catalog}}"
+        wx:key="id"
+        wx:for-item="item"
+        class="fq-card motion-enter motion-stagger {{item.isAvailable === false ? 'fq-card-unavailable' : ''}}"
+        style="--stagger: {{240 + index * 100}}ms; {{item.themeStyle}}"
+        data-id="{{item.id}}"
+        data-available="{{item.isAvailable}}"
+        bindtap="onTapCard"
+      >
+        <!-- Skeleton shimmer — only while a bgImage is expected but not yet loaded -->
+        <view wx:if="{{item.bgImage && !item.bgImageDisplay}}" class="fq-skeleton">
+          <view class="fq-skeleton-shine" />
+        </view>
+
+        <!-- Full-bleed painting -->
+        <image
+          wx:if="{{item.bgImageDisplay}}"
+          src="{{item.bgImageDisplay}}"
+          mode="aspectFill"
+          class="fq-card-bg"
+        />
+
+        <!-- Gradient scrim: transparent top → dark bottom (photos only) -->
+        <view wx:if="{{item.hasImage}}" class="fq-card-scrim"></view>
+
+        <!-- Top row: tag + unavailable badge -->
+        <view class="fq-card-top">
+          <view class="fq-tag-row">
+            <text
+              wx:for="{{item.tags}}"
+              wx:key="*this"
+              wx:for-item="tag"
+              class="fq-tag"
+            >{{tag}}</text>
+          </view>
+          <text wx:if="{{item.isAvailable === false}}" class="fq-badge">即将开放</text>
+        </view>
+
+        <!-- Bottom content -->
+        <view class="fq-card-body">
+          <text class="fq-card-title">{{item.displayTitleZh || item.title}}</text>
+          <text class="fq-card-sub">{{item.subtitle}}</text>
+
+          <view class="fq-card-footer">
+            <share-element
+              wx:if="{{item.isAvailable !== false}}"
+              key="quiz-accent-{{item.id}}"
+              class="fq-card-accent-wrap"
+            >
+              <view class="fq-card-accent-bar" style="background: {{item.accentColor}};"></view>
+            </share-element>
+
+            <text wx:if="{{item.isAvailable !== false}}" class="fq-card-arrow">→</text>
+          </view>
+        </view>
+
+      </view>
+    </view>
+
+    <view class="fq-bottom-spacer"></view>
+  </view>
+</scroll-view>
+
+<!-- Snackbar -->
+<view
+  wx:if="{{snackbar.visible}}"
+  class="snackbar {{snackbar.leaving ? 'snackbar-out' : 'snackbar-in'}}"
+>
+  <text class="snackbar-label">{{snackbar.label}}</text>
+</view>

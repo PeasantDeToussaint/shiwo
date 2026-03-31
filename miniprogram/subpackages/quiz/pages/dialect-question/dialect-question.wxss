@@ -1,0 +1,164 @@
+/* ── Shell ────────────────────────────────────────────────── */
+.dq-shell {
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.dq-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1rpx solid var(--border);
+  padding-bottom: var(--space-4);
+}
+
+.dq-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-7) var(--space-3);
+}
+
+.dq-back {
+  font-size: 44rpx;
+  color: var(--text-secondary);
+  line-height: 1;
+  min-width: 60rpx;
+}
+
+.dq-category {
+  font-size: 24rpx;
+  letter-spacing: 0.14em;
+  color: var(--chapter-accent, #b8956a);
+}
+
+.dq-counter {
+  font-size: 24rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-align: right;
+  min-width: 60rpx;
+}
+
+.dq-progress-bar {
+  height: 2rpx;
+  background: var(--surface-2);
+  margin: 0 var(--space-7);
+}
+
+.dq-progress-fill {
+  height: 100%;
+  background: var(--chapter-accent, #b8956a);
+  transition: width 0.4s ease;
+}
+
+/* ── Scroll ───────────────────────────────────────────────── */
+.dq-scroll {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-top: calc(120rpx + env(safe-area-inset-top));
+  box-sizing: border-box;
+}
+
+@keyframes dq-fade-in {
+  from { opacity: 0; transform: translateY(24rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dq-fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-24rpx); }
+}
+
+.dq-enter { animation: dq-fade-in 0.28s ease both; }
+.dq-exit  { animation: dq-fade-out 0.2s ease both; }
+
+/* ── Card ─────────────────────────────────────────────────── */
+.dq-card {
+  padding: var(--space-20) var(--space-8) var(--space-8);
+}
+
+.dq-concept {
+  display: block;
+  font-size: 56rpx;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-5);
+}
+
+.dq-prompt {
+  display: block;
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+  margin-bottom: var(--space-10);
+}
+
+/* ── Full-width stacked options ───────────────────────────── */
+.dq-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.dq-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-7);
+  border: 1rpx solid var(--border);
+  background: var(--surface);
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.dq-option-check {
+  width: 28rpx;
+  height: 28rpx;
+  border: 2rpx solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dq-option-label {
+  font-size: 30rpx;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.dq-option-selected {
+  border-color: var(--chapter-accent, #b8956a);
+  background: var(--state-selected-bg, rgba(184,149,106,0.14));
+}
+
+.dq-option-selected .dq-option-check {
+  background: var(--chapter-accent, #b8956a);
+  border-color: var(--chapter-accent, #b8956a);
+}
+
+.dq-option-selected .dq-option-label {
+  color: var(--chapter-accent, #b8956a);
+}
+
+.dq-option-dim {
+  opacity: 0.3;
+}
+
+/* ── Bottom pad ───────────────────────────────────────────── */
+.dq-bottom-pad {
+  height: 160rpx;
+}

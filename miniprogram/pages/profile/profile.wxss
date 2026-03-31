@@ -1,0 +1,264 @@
+/* ─── Root ────────────────────────────────────────────────── */
+.pf-root {
+  min-height: 100vh;
+  background: var(--pageBg, #0d0d12);
+  color: var(--textPrimary, #e8e4d9);
+}
+
+/* ─── Navbar ──────────────────────────────────────────────── */
+.pf-navbar {
+  display: flex;
+  align-items: center;
+  padding-left: 40rpx;
+  padding-bottom: 16rpx;
+  background: var(--pageBg, #0d0d12);
+}
+
+.pf-back {
+  font-size: 48rpx;
+  color: var(--textSecondary, #888);
+  line-height: 1;
+  padding: 8rpx 0;
+}
+
+/* ─── Stats header ──────────────────────────────────────────── */
+.pf-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 10rpx;
+  padding: 32rpx 40rpx 64rpx;
+}
+
+.pf-stats-number {
+  font-size: 72rpx;
+  font-weight: 700;
+  letter-spacing: -2rpx;
+  color: var(--textPrimary, #e8e4d9);
+  line-height: 1;
+}
+
+.pf-stats-unit {
+  font-size: 28rpx;
+  color: var(--textSecondary, #888);
+  letter-spacing: 0.02em;
+}
+
+/* ─── Loading ───────────────────────────────────────────────── */
+.pf-loading {
+  display: flex;
+  justify-content: center;
+  padding: 80rpx 0;
+}
+
+.pf-loading-bar {
+  width: 40rpx;
+  height: 2rpx;
+  background: var(--textSecondary, #888);
+  opacity: 0.4;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 0.7; }
+}
+
+/* ─── Card collection ───────────────────────────────────────── */
+.pf-swiper {
+  width: 100%;
+  height: 480rpx;
+}
+
+.pf-swiper-item {
+  padding: 0 16rpx;
+}
+
+/* ─── Card 3-D wrapper ──────────────────────────────────────── */
+.pf-card-outer {
+  width: 100%;
+  height: 100%;
+  perspective: 1400rpx;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+.pf-card-inactive {
+  transform: scale(0.92);
+  opacity: 0.5;
+}
+
+.pf-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+}
+
+.pf-card-flipped {
+  transform: rotateY(180deg);
+}
+
+.pf-card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 28rpx;
+  border: 1px solid transparent;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+/* ─── Card front ────────────────────────────────────────────── */
+.pf-card-front {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48rpx;
+}
+
+.pf-card-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-card-result {
+  font-size: 52rpx;
+  font-weight: 700;
+  letter-spacing: -1rpx;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.pf-card-foot {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.pf-card-quiz {
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.04em;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-card-date {
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.02em;
+}
+
+/* ─── Card back ─────────────────────────────────────────────── */
+.pf-card-back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 56rpx 48rpx 52rpx;
+}
+
+.pf-card-back-top {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.pf-card-back-result {
+  font-size: 44rpx;
+  font-weight: 700;
+  letter-spacing: -1rpx;
+  line-height: 1.2;
+}
+
+.pf-card-back-quiz {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.04em;
+}
+
+.pf-card-back-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.pf-card-back-btn {
+  font-size: 28rpx;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.04em;
+  padding: 16rpx 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.pf-card-back-btn-dim {
+  color: rgba(255,255,255,0.4);
+}
+
+/* ─── Counter ───────────────────────────────────────────────── */
+.pf-counter {
+  display: block;
+  text-align: center;
+  font-size: 22rpx;
+  color: var(--textSecondary, #888);
+  letter-spacing: 0.08em;
+  margin-top: 36rpx;
+}
+
+/* ─── Empty state ───────────────────────────────────────────── */
+.pf-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 40rpx;
+  gap: 20rpx;
+}
+
+.pf-empty-title {
+  font-size: 32rpx;
+  color: var(--textSecondary, #888);
+  letter-spacing: 0.02em;
+}
+
+.pf-empty-link {
+  font-size: 28rpx;
+  color: var(--textPrimary, #e8e4d9);
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--textPrimary, #e8e4d9);
+  padding-bottom: 2rpx;
+}
+
+/* ─── Footer ────────────────────────────────────────────────── */
+.pf-footer {
+  padding: 88rpx 40rpx 0;
+}
+
+.pf-footer-motto {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.06em;
+  line-height: 1.8;
+}
+
+.pf-scroll-pad {
+  height: 80rpx;
+}
+
+/* ─── Motion helpers ─────────────────────────────────────────── */
+.motion-enter {
+  animation: fadeUp 0.5s ease both;
+}
+
+.motion-stagger {
+  animation-delay: var(--stagger, 0ms);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}

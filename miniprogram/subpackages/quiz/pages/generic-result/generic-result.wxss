@@ -1,0 +1,619 @@
+.gr-scroll {
+  height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Loading ──────────────────────────────────────────────── */
+.gr-loading {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gr-loading-bar {
+  width: 48rpx;
+  height: 2rpx;
+  background: var(--chapter-accent);
+  animation: loadPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes loadPulse {
+  0%, 100% { opacity: 0.3; transform: scaleX(1); }
+  50%       { opacity: 1;   transform: scaleX(2.4); }
+}
+
+/* ── Shell ────────────────────────────────────────────────── */
+.gr-shell {
+  min-height: 100vh;
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.gr-hero {
+  position: relative;
+  min-height: 680rpx;
+  overflow: hidden;
+}
+
+/* Hero image mode */
+.gr-hero-img-wrap {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 520rpx;
+  overflow: hidden;
+}
+
+.gr-hero-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.gr-hero-img-scrim {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 280rpx;
+  background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+}
+
+/* Hero gradient fallback (no image) */
+.gr-hero-gradient {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100%;
+  background: linear-gradient(160deg, var(--chapter-gradient-start) 0%, var(--bg) 100%);
+}
+
+/* Hero content overlay */
+.gr-hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 120rpx var(--space-14) var(--space-18);
+}
+
+/* ── Brand row ────────────────────────────────────────────── */
+.gr-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.gr-brand-name {
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--chapter-accent);
+  opacity: 0.9;
+}
+
+.gr-brand-dot {
+  font-size: 22rpx;
+  color: var(--chapter-accent);
+  opacity: 0.4;
+}
+
+.gr-brand-quiz {
+  font-size: 22rpx;
+  letter-spacing: 0.18em;
+  color: var(--chapter-accent);
+  opacity: 0.5;
+}
+
+/* ── Accent line ──────────────────────────────────────────── */
+.gr-accent-line {
+  width: 56rpx;
+  height: 1rpx;
+  background: var(--chapter-accent);
+  margin-bottom: var(--space-10);
+  transform-origin: left center;
+}
+
+/* ── Result identity ──────────────────────────────────────── */
+.gr-identity {
+  margin-bottom: var(--space-8);
+}
+
+.gr-title {
+  display: block;
+  font-size: 72rpx;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  line-height: 1.15;
+  margin-bottom: var(--space-4);
+}
+
+.gr-title-large {
+  font-size: 88rpx;
+  letter-spacing: 0.06em;
+}
+
+.gr-subtitle {
+  display: block;
+  font-size: 26rpx;
+  color: var(--chapter-accent);
+  letter-spacing: 0.26em;
+  opacity: 0.8;
+}
+
+.gr-token {
+  display: block;
+  margin-top: var(--space-6);
+  font-size: 32rpx;
+  font-weight: 300;
+  color: var(--chapter-accent);
+  letter-spacing: 0.52em;
+  opacity: 0.65;
+}
+
+/* ── Verse ────────────────────────────────────────────────── */
+.gr-verse {
+  margin-top: var(--space-10);
+  padding-top: var(--space-10);
+  border-top: 1rpx solid var(--divider);
+}
+
+.gr-verse-rule {
+  width: 24rpx;
+  height: 1rpx;
+  background: var(--chapter-accent);
+  opacity: 0.5;
+  margin-bottom: var(--space-8);
+}
+
+.gr-verse-text {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--text);
+  letter-spacing: 0.12em;
+  opacity: 0.88;
+  margin-bottom: var(--space-6);
+}
+
+.gr-verse-attr {
+  display: block;
+  font-size: 24rpx;
+  color: var(--chapter-accent);
+  letter-spacing: 0.14em;
+  opacity: 0.55;
+  text-align: right;
+}
+
+/* ── Content ──────────────────────────────────────────────── */
+.gr-content {
+  padding: var(--space-12) var(--space-14) var(--space-20);
+}
+
+/* ── Bold quote ──────────────────────────────────────────── */
+.gr-quote {
+  margin-bottom: var(--space-14);
+  padding: var(--space-10) var(--space-8);
+  border-left: 2rpx solid var(--chapter-accent);
+  background: rgba(255,255,255,0.02);
+}
+
+.gr-quote-mark {
+  display: block;
+  font-size: 56rpx;
+  line-height: 0.6;
+  color: var(--chapter-accent);
+  opacity: 0.4;
+  font-family: Georgia, serif;
+}
+
+.gr-quote-mark-close {
+  text-align: right;
+  margin-top: var(--space-4);
+}
+
+.gr-quote-text {
+  display: block;
+  font-size: 36rpx;
+  line-height: 1.9;
+  color: var(--text);
+  opacity: 0.88;
+  letter-spacing: 0.04em;
+  padding: var(--space-4) 0;
+}
+
+/* ── Sections ─────────────────────────────────────────────── */
+.gr-section {
+  margin-bottom: var(--space-16);
+}
+
+.gr-section-first {
+  margin-bottom: var(--space-18);
+  padding-bottom: var(--space-14);
+  border-bottom: 1rpx solid var(--divider);
+}
+
+.gr-label {
+  display: block;
+  font-size: 24rpx;
+  letter-spacing: 0.24em;
+  color: var(--chapter-accent);
+  margin-bottom: var(--space-6);
+  border-left: 2rpx solid var(--chapter-accent);
+  padding-left: var(--space-4);
+}
+
+.gr-body {
+  display: block;
+  font-size: 36rpx;
+  line-height: 2;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.gr-body-lead {
+  font-size: 40rpx;
+  color: var(--text);
+  letter-spacing: 0.06em;
+}
+
+/* ── Radar ────────────────────────────────────────────────── */
+.gr-radar-section {
+  margin-bottom: var(--space-14);
+  padding-bottom: var(--space-14);
+  border-bottom: 1rpx solid var(--divider);
+}
+
+.gr-radar-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: var(--space-10);
+  min-height: 260px;
+  opacity: 0.25;
+  transition: opacity 240ms ease;
+}
+
+.gr-radar-ready {
+  opacity: 1;
+}
+
+.gr-radar-canvas {
+  width: 240px;
+  height: 240px;
+  display: block;
+}
+
+/* ── Dimension bars ──────────────────────────────────────── */
+.gr-bars-section {
+  margin-bottom: var(--space-16);
+  padding-bottom: var(--space-14);
+  border-bottom: 1rpx solid var(--divider);
+}
+
+.gr-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+}
+
+.gr-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+}
+
+.gr-bar-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.gr-bar-meta-left {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.gr-bar-axis {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+.gr-bar-label {
+  font-size: 28rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.gr-bar-label-dominant {
+  color: var(--chapter-accent);
+  font-weight: 600;
+}
+
+.gr-bar-track {
+  width: 100%;
+  height: 6rpx;
+  background: var(--surface-2);
+  overflow: hidden;
+  border-radius: 3rpx;
+}
+
+.gr-bar-fill {
+  height: 100%;
+  background: var(--chapter-accent);
+  opacity: 0.45;
+  border-radius: 3rpx;
+  transition: width 600ms var(--ease-emphasis);
+}
+
+.gr-bar-fill-dominant {
+  opacity: 1;
+}
+
+.gr-bar-pct {
+  font-size: 26rpx;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+  font-family: var(--font-family-display);
+}
+
+.gr-bar-poles {
+  display: flex;
+  justify-content: space-between;
+}
+
+.gr-bar-pole-low,
+.gr-bar-pole-high {
+  font-size: 20rpx;
+  color: var(--text-tertiary);
+  opacity: 0.55;
+  letter-spacing: 0.04em;
+}
+
+.gr-bar-insight {
+  font-size: 24rpx;
+  line-height: 1.65;
+  color: var(--text-muted);
+  opacity: 0.7;
+  margin-top: var(--space-3);
+  letter-spacing: 0.02em;
+}
+
+.gr-bar-insight-dominant {
+  opacity: 1;
+  color: var(--text-secondary);
+}
+
+/* ── Traits ───────────────────────────────────────────────── */
+.gr-traits {
+  margin-bottom: var(--space-14);
+  padding-bottom: var(--space-14);
+  border-bottom: 1rpx solid var(--divider);
+}
+
+.gr-traits-weak {
+  margin-bottom: var(--space-18);
+}
+
+.gr-trait-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.gr-trait {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+}
+
+.gr-trait-dot {
+  flex-shrink: 0;
+  width: 6rpx;
+  height: 6rpx;
+  border-radius: 50%;
+  background: var(--chapter-accent);
+  margin-top: 16rpx;
+  opacity: 0.85;
+}
+
+.gr-trait-dot-weak {
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+
+.gr-trait-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.gr-trait-name {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+.gr-trait-desc {
+  font-size: 34rpx;
+  line-height: 1.9;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ── Attr block ──────────────────────────────────────────── */
+.gr-attr-block {
+  margin-bottom: var(--space-18);
+  border: 1rpx solid var(--border);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.gr-attr-item {
+  padding: var(--space-8);
+  border-bottom: 1rpx solid var(--divider);
+}
+
+.gr-attr-item:last-child {
+  border-bottom: none;
+}
+
+/* ── Destiny ─────────────────────────────────────────────── */
+.gr-destiny {
+  margin-top: var(--space-16);
+  margin-bottom: var(--space-14);
+  padding-top: var(--space-10);
+  border-top: 1rpx solid var(--divider);
+}
+
+.gr-destiny-text {
+  display: block;
+  font-size: 40rpx;
+  font-style: italic;
+  line-height: 2;
+  color: var(--text-secondary);
+  letter-spacing: 0.07em;
+  margin-top: var(--space-6);
+}
+
+/* ── Extras (domain-specific custom fields) ──────────────── */
+.gr-extras {
+  margin-top: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+}
+
+.gr-extra-item {
+  padding-top: var(--space-10);
+  border-top: 1rpx solid var(--divider);
+}
+
+/* ── Actions ─────────────────────────────────────────────── */
+.gr-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.gr-btn-share {
+  margin: 0;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  padding: var(--space-5) 0;
+  font-size: 30rpx;
+  letter-spacing: 0.14em;
+  text-align: center;
+  border: 1rpx solid var(--chapter-accent);
+  background: var(--chapter-accent);
+  color: #101010;
+  font-weight: 600;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.gr-btn-share::after {
+  display: none;
+}
+
+.gr-actions-row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.gr-btn-secondary,
+.gr-btn-tertiary {
+  flex: 1;
+  margin: 0;
+  padding: var(--space-5) 0;
+  font-size: 28rpx;
+  letter-spacing: 0.12em;
+  text-align: center;
+  border-radius: 0;
+  line-height: 1.5;
+}
+
+.gr-btn-secondary {
+  border: 1rpx solid var(--border);
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.gr-btn-tertiary {
+  border: 1rpx solid var(--border);
+  color: var(--text-muted);
+  background: transparent;
+}
+
+/* ── Other results index ─────────────────────────────────── */
+.gr-index {
+  margin-top: var(--space-14);
+  padding-top: var(--space-10);
+  border-top: 1rpx solid var(--border);
+}
+
+.gr-index-list {
+  margin-top: var(--space-6);
+}
+
+.gr-index-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid rgba(255,255,255,0.05);
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+
+.gr-index-item-current {
+  opacity: 1;
+}
+
+.gr-index-dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.gr-index-dot-on {
+  background: var(--chapter-accent);
+  box-shadow: 0 0 8rpx var(--chapter-accent);
+}
+
+.gr-index-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.gr-index-title {
+  font-size: 30rpx;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+.gr-index-token {
+  font-size: 22rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.gr-index-badge {
+  font-size: 20rpx;
+  color: var(--chapter-accent);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}

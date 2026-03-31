@@ -1,0 +1,21 @@
+{
+  "cloudPrefix": "cloud://cloudbase-4gadl6qo4a9aa95d.636c-cloudbase-4gadl6qo4a9aa95d-1415990507/",
+  "note": "Upload each local JPG to your cloud bucket, then set quiz bgImage to cloudPrefix + object name (same as filename). For 文史回溯 home tile use painting-history.png or replace with feature-wenshi-home-card.jpg uploaded under that name.",
+  "quizzes": [
+    { "quizId": "ancient-rome-decision-making", "localFile": "ancient-rome-decision-making.jpg" },
+    { "quizId": "which-ancient-greek-philosopher-resonates-with-you", "localFile": "which-ancient-greek-philosopher-resonates-with-you.jpg" },
+    { "quizId": "which-tang-poet-lives-in-your-heart", "localFile": "which-tang-poet-lives-in-your-heart.jpg" },
+    { "quizId": "which-school-of-thought-are-you", "localFile": "which-school-of-thought-are-you.jpg" },
+    { "quizId": "ming-dynasty-role-play", "localFile": "ming-dynasty-role-play.jpg" },
+    { "quizId": "mythical-creature-within", "localFile": "mythical-creature-within.jpg" },
+    { "quizId": "rebirth-journey-to-the-west-monarch", "localFile": "rebirth-journey-to-the-west-monarch.jpg" },
+    { "quizId": "game-of-thrones-character-analogy", "localFile": "game-of-thrones-character-analogy.jpg" },
+    { "quizId": "republican-era-business-mindset", "localFile": "republican-era-business-mindset.jpg" },
+    { "quizId": "which-japanese-sengoku-daimyo-are-you", "localFile": "which-japanese-sengoku-daimyo-are-you.jpg" }
+  ],
+  "homeFeature": {
+    "featureId": "history",
+    "localFile": "feature-wenshi-home-card.jpg",
+    "currentFeaturesJsKey": "painting-history.png"
+  }
+}

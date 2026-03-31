@@ -1,0 +1,11 @@
+# Secrets
+.env
+
+# Dependencies
+node_modules/
+cloudfunctions/*/node_modules/
+
+# WeChat DevTools
+.DS_Store
+*.local
+miniprogram/.tea/

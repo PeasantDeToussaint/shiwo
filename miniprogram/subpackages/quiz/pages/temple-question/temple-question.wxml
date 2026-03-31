@@ -1,0 +1,43 @@
+<view class="tq-shell" style="{{pageThemeStyle}}">
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <view class="tq-header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="tq-header-row">
+      <view class="tq-back" bindtap="onGoBack">‹</view>
+      <text class="tq-source">{{currentSource}}</text>
+      <text class="tq-counter">{{currentIndex + 1}} / {{totalCount}}</text>
+    </view>
+    <view class="tq-progress-bar">
+      <view class="tq-progress-fill" style="width: {{progress}}%;" />
+    </view>
+  </view>
+
+  <!-- ── Card ───────────────────────────────────────────────── -->
+  <scroll-view
+    scroll-y
+    class="tq-scroll {{transitioning ? 'tq-exit' : (cardEntering ? 'tq-enter' : '')}}"
+  >
+    <view class="tq-card" wx:if="{{currentQuestion}}">
+
+      <text class="tq-title">{{currentQuestion.title}}</text>
+      <text class="tq-prompt">{{currentQuestion.prompt}}</text>
+
+      <view class="tq-options">
+        <view
+          wx:for="{{currentQuestion.options}}"
+          wx:key="id"
+          wx:for-item="opt"
+          class="tq-option {{selectedOptionId === opt.id ? 'tq-option-selected' : ''}} {{confirming && selectedOptionId !== opt.id ? 'tq-option-dim' : ''}}"
+          data-option-id="{{opt.id}}"
+          bindtap="onSelectOption"
+        >
+          <view class="tq-option-dot" />
+          <text class="tq-option-label">{{opt.label}}</text>
+        </view>
+      </view>
+
+    </view>
+    <view class="tq-bottom-pad" />
+  </scroll-view>
+
+</view>

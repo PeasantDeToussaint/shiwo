@@ -1,0 +1,98 @@
+<view class="pf-root page-atmosphere">
+
+  <!-- Navbar -->
+  <view class="pf-navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="pf-back" bindtap="onBack">←</view>
+  </view>
+
+  <!-- Stats header -->
+  <view class="pf-stats motion-enter">
+    <text class="pf-stats-unit">你已完成</text>
+    <text class="pf-stats-number">{{quizCount}}</text>
+    <text class="pf-stats-unit">次探索</text>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="pf-loading">
+    <view class="pf-loading-bar" />
+  </view>
+
+  <!-- Card collection -->
+  <view wx:elif="{{hasCards}}" class="pf-collection motion-enter motion-stagger" style="--stagger: 80ms;">
+
+    <swiper
+      class="pf-swiper"
+      previous-margin="40rpx"
+      next-margin="40rpx"
+      current="{{cardIndex}}"
+      bindchange="onSwiperChange"
+    >
+      <swiper-item
+        wx:for="{{cards}}"
+        wx:key="quizId"
+        class="pf-swiper-item"
+      >
+        <view
+          class="pf-card-outer {{cardIndex === index ? '' : 'pf-card-inactive'}}"
+          bindtap="onTapCard"
+          data-idx="{{index}}"
+        >
+          <view class="pf-card-inner {{item.flipped ? 'pf-card-flipped' : ''}}">
+
+            <!-- Front -->
+            <view
+              class="pf-card-face pf-card-front"
+              style="background: linear-gradient(160deg, {{item.gradStart}} 0%, {{item.gradEnd}} 100%); border-color: {{item.accent}}22;"
+            >
+              <view class="pf-card-center">
+                <text class="pf-card-result" style="color: {{item.accent}};">{{item.resultTitle}}</text>
+              </view>
+
+              <view class="pf-card-foot">
+                <text class="pf-card-quiz">{{item.quizTitle}}</text>
+                <text class="pf-card-date">{{item.date}}</text>
+              </view>
+            </view>
+
+            <!-- Back -->
+            <view
+              class="pf-card-face pf-card-back"
+              style="background: linear-gradient(160deg, {{item.gradStart}} 0%, {{item.gradEnd}} 100%); border-color: {{item.accent}}22;"
+            >
+              <view class="pf-card-back-top">
+                <text class="pf-card-back-result" style="color: {{item.accent}};">{{item.resultTitle}}</text>
+                <text class="pf-card-back-quiz">{{item.quizTitle}}</text>
+              </view>
+
+              <view class="pf-card-back-actions" catchtap="">
+                <view class="pf-card-back-btn" catchtap="onViewResult" data-idx="{{index}}">
+                  查看完整报告
+                </view>
+                <view class="pf-card-back-btn pf-card-back-btn-dim" catchtap="onRetake" data-idx="{{index}}">
+                  再测一次
+                </view>
+              </view>
+            </view>
+
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+
+    <text class="pf-counter">{{cardIndex + 1}} / {{cardTotal}}</text>
+  </view>
+
+  <!-- Empty state -->
+  <view wx:elif="{{emptyState}}" class="pf-empty motion-enter motion-stagger" style="--stagger: 80ms;">
+
+    <text class="pf-empty-link" bindtap="onGoExplore">去完成一次测验</text>
+  </view>
+
+  <!-- Footer -->
+  <view class="pf-footer motion-enter motion-stagger" style="--stagger: 200ms;">
+    <text class="pf-footer-motto">在文学、历史与艺术里，遇见你自己</text>
+  </view>
+
+  <view class="pf-scroll-pad" />
+
+</view>

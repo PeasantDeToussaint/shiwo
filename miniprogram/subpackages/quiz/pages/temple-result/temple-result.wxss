@@ -1,0 +1,322 @@
+.tr-scroll {
+  height: 100vh;
+  background: var(--bg);
+}
+
+.tr-shell {
+  min-height: 100vh;
+  padding: 0 var(--space-8) var(--space-8);
+  box-sizing: border-box;
+}
+
+.motion-enter { opacity: 0; transform: translateY(20rpx); }
+.mounted .motion-enter { animation: tr-enter 0.5s ease both; }
+.mounted .motion-stagger { animation-delay: var(--stagger, 0ms); }
+
+@keyframes tr-enter {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.tr-hero {
+  padding: 120rpx 0 var(--space-8);
+  text-align: center;
+}
+
+.tr-eyebrow {
+  display: block;
+  font-size: 22rpx;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.tr-accent-line {
+  width: 60rpx;
+  height: 2rpx;
+  background: var(--chapter-accent, #c8a26e);
+  margin: 0 auto var(--space-7);
+}
+
+.tr-label {
+  display: block;
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-4);
+}
+
+.tr-temple-name {
+  display: block;
+  font-size: 88rpx;
+  font-weight: 700;
+  color: var(--chapter-accent, #c8a26e);
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  margin-bottom: var(--space-4);
+}
+
+.tr-location {
+  display: block;
+  font-size: 24rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+/* ── 签文 ─────────────────────────────────────────────────── */
+.tr-verse-wrap {
+  border-left: 3rpx solid var(--chapter-accent, #c8a26e);
+  padding: var(--space-5) var(--space-7);
+  margin-bottom: var(--space-8);
+}
+
+.tr-verse {
+  display: block;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  line-height: 2;
+  letter-spacing: 0.04em;
+}
+
+/* ── 五行 + 守护 ──────────────────────────────────────────── */
+.tr-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-7);
+  border: 1rpx solid var(--border);
+  margin-bottom: var(--space-8);
+}
+
+.tr-meta-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tr-meta-label {
+  font-size: 20rpx;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+
+.tr-meta-value {
+  font-size: 28rpx;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
+.tr-meta-divider {
+  width: 1rpx;
+  height: 60rpx;
+  background: var(--border);
+}
+
+/* ── 核心句 ───────────────────────────────────────────────── */
+.tr-core-quote {
+  padding: var(--space-6) var(--space-7);
+  background: var(--surface);
+  border: 1rpx solid var(--border);
+  margin-bottom: var(--space-8);
+}
+
+.tr-core-quote-text {
+  display: block;
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+}
+
+/* ── Sections ─────────────────────────────────────────────── */
+.tr-section {
+  margin-bottom: var(--space-8);
+}
+
+.tr-section-label {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 0.18em;
+  color: var(--chapter-accent, #c8a26e);
+  margin-bottom: var(--space-4);
+}
+
+.tr-body {
+  display: block;
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  line-height: 1.9;
+  letter-spacing: 0.03em;
+}
+
+.tr-body-dim { color: var(--text-muted); }
+
+/* ── 开运三件事 ───────────────────────────────────────────── */
+.tr-wuyun {
+  border: 1rpx solid var(--chapter-accent, #c8a26e);
+  padding: var(--space-7);
+  margin-bottom: var(--space-8);
+}
+
+.tr-wuyun-title {
+  display: block;
+  font-size: 22rpx;
+  letter-spacing: 0.18em;
+  color: var(--chapter-accent, #c8a26e);
+  margin-bottom: var(--space-6);
+}
+
+.tr-wuyun-item {
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+  margin-bottom: var(--space-5);
+}
+
+.tr-wuyun-item:last-child { margin-bottom: 0; }
+
+.tr-wuyun-tag {
+  font-size: 20rpx;
+  letter-spacing: 0.1em;
+  color: var(--chapter-accent, #c8a26e);
+  border: 1rpx solid var(--chapter-accent, #c8a26e);
+  padding: 4rpx 12rpx;
+  flex-shrink: 0;
+  margin-top: 6rpx;
+}
+
+.tr-wuyun-body {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  flex: 1;
+  letter-spacing: 0.03em;
+}
+
+/* ── 副缘寺庙 ─────────────────────────────────────────────── */
+.tr-sub-wrap {
+  margin-bottom: var(--space-8);
+}
+
+.tr-sub-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.tr-sub-line {
+  flex: 1;
+  height: 1rpx;
+  background: var(--border);
+}
+
+.tr-sub-label {
+  font-size: 22rpx;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.tr-sub-name {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-2);
+}
+
+.tr-sub-location {
+  display: block;
+  font-size: 22rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-4);
+}
+
+.tr-sub-verse {
+  display: block;
+  font-size: 24rpx;
+  color: var(--text-muted);
+  line-height: 1.8;
+  letter-spacing: 0.03em;
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+.tr-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.tr-share-btn {
+  background: var(--chapter-accent, #c8a26e);
+  color: #101010;
+  font-size: 28rpx;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  padding: var(--space-6) 0;
+  text-align: center;
+}
+
+.tr-actions-row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.tr-btn-secondary, .tr-btn-tertiary {
+  flex: 1;
+  padding: var(--space-5) 0;
+  font-size: 24rpx;
+  letter-spacing: 0.1em;
+  text-align: center;
+  border: 1rpx solid var(--border);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── 低置信度 ─────────────────────────────────────────────── */
+.tr-low-conf {
+  padding: 120rpx var(--space-8) var(--space-8);
+  text-align: center;
+}
+
+.tr-low-title {
+  display: block;
+  font-size: 88rpx;
+  font-weight: 700;
+  color: var(--chapter-accent, #c8a26e);
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-3);
+}
+
+.tr-low-location {
+  display: block;
+  font-size: 24rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-8);
+}
+
+.tr-low-msg {
+  display: block;
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  line-height: 2;
+  letter-spacing: 0.04em;
+  text-align: left;
+}
+
+/* ── Misc ─────────────────────────────────────────────────── */
+.tr-disclaimer {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  line-height: 1.6;
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.tr-bottom-pad { height: 120rpx; }

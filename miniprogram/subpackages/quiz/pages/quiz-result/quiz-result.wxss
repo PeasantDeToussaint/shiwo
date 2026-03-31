@@ -1,0 +1,315 @@
+/* ── Scroll container (Skyline requires explicit scroll-view) ─ */
+.result-scroll {
+  height: 100vh;
+  background: var(--bg);
+}
+
+.result-shell {
+  min-height: 100vh;
+  padding: 140rpx var(--space-8) var(--space-20);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* ── Reveal ───────────────────────────────────────────────── */
+.reveal { margin-bottom: var(--space-12); }
+
+.reveal-eyebrow {
+  display: block;
+  font-size: var(--font-caption);
+  letter-spacing: 0.22em;
+  color: var(--chapter-accent);
+  margin-bottom: var(--space-6);
+}
+
+.reveal-accent-line {
+  width: 64rpx;
+  height: 2rpx;
+  background: var(--chapter-accent);
+  margin: 0 auto var(--space-8);
+  transform-origin: left center;
+}
+
+.reveal-title {
+  display: block;
+  font-size: 80rpx;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-4);
+  font-family: var(--font-family-body);
+}
+
+.reveal-title-en {
+  display: block;
+  font-size: var(--font-small);
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  font-family: var(--font-family-display);
+}
+
+/* ── Body ─────────────────────────────────────────────────── */
+.result-body {
+  display: block;
+  font-size: var(--font-body);
+  line-height: 1.85;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-14);
+  text-align: left;
+}
+
+/* ── Dimensions ───────────────────────────────────────────── */
+.dims { margin-bottom: var(--space-12); text-align: left; }
+
+.dim-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.dim-label {
+  font-size: var(--font-small);
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  width: 48rpx;
+  flex-shrink: 0;
+}
+
+.dim-track {
+  flex: 1;
+  height: 8rpx;
+  background: var(--divider);
+  overflow: hidden;
+}
+
+.dim-fill {
+  height: 100%;
+  background: var(--chapter-accent);
+  transform-origin: left center;
+}
+
+.dim-percent {
+  font-size: var(--font-caption);
+  color: var(--text-tertiary);
+  letter-spacing: 0.06em;
+  width: 64rpx;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Tips ─────────────────────────────────────────────────── */
+.tips { margin-bottom: var(--space-14); text-align: left; }
+
+.tips-label {
+  display: block;
+  font-size: var(--font-caption);
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.tips-list { display: flex; gap: var(--space-4); flex-wrap: wrap; }
+
+.tip-item {
+  font-size: var(--font-small);
+  color: var(--text-secondary);
+  border: 1rpx solid var(--border);
+  padding: var(--space-2) var(--space-5);
+  letter-spacing: 0.08em;
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.card-gen-btn {
+  border: 1rpx solid var(--chapter-accent);
+  color: var(--chapter-accent);
+  font-size: 28rpx;
+  letter-spacing: 0.14em;
+  padding: var(--space-5) 0;
+  text-align: center;
+}
+
+/* ── Identity Card Overlay ────────────────────────────────── */
+.card-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.card-preview-wrap {
+  width: 600rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+/* ── Snapshot / Identity Card ─────────────────────────────── */
+.identity-card {
+  width: 600rpx;
+}
+
+.ic-bg {
+  width: 600rpx;
+  background:
+    radial-gradient(ellipse at 30% 20%, var(--chapter-gradient-start) 0%, transparent 55%),
+    var(--bg);
+  padding: 60rpx 48rpx 52rpx;
+  box-sizing: border-box;
+  border: 1rpx solid var(--border);
+}
+
+.ic-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 48rpx;
+}
+
+.ic-brand {
+  font-size: 22rpx;
+  letter-spacing: 0.26em;
+  color: var(--text-muted);
+  font-family: var(--font-family-display);
+}
+
+.ic-chapter {
+  font-size: 18rpx;
+  letter-spacing: 0.18em;
+  color: var(--text-tertiary);
+}
+
+.ic-accent-line {
+  width: 48rpx;
+  height: 2rpx;
+  background: var(--chapter-accent);
+  margin-bottom: 36rpx;
+}
+
+.ic-archetype-en {
+  display: block;
+  font-size: 52rpx;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  margin-bottom: 10rpx;
+  font-family: var(--font-family-display);
+}
+
+.ic-archetype {
+  display: block;
+  font-size: 26rpx;
+  color: var(--chapter-accent);
+  letter-spacing: 0.18em;
+  margin-bottom: 36rpx;
+}
+
+.ic-body-excerpt {
+  display: block;
+  font-size: 22rpx;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  margin-bottom: 40rpx;
+}
+
+.ic-dims { margin-bottom: 40rpx; }
+
+.ic-dim-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.ic-dim-label {
+  font-size: 20rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  width: 36rpx;
+  flex-shrink: 0;
+}
+
+.ic-dim-track {
+  flex: 1;
+  height: 4rpx;
+  background: var(--divider);
+}
+
+.ic-dim-fill {
+  height: 100%;
+  background: var(--chapter-accent);
+}
+
+.ic-dim-pct {
+  font-size: 18rpx;
+  color: var(--text-tertiary);
+  width: 52rpx;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ic-footer {
+  border-top: 1rpx solid var(--border);
+  padding-top: 28rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.ic-tagline {
+  font-size: 18rpx;
+  color: var(--text-tertiary);
+  letter-spacing: 0.1em;
+}
+
+.ic-copy {
+  font-size: 16rpx;
+  letter-spacing: 0.2em;
+  color: var(--text-tertiary);
+}
+
+/* ── Card action row ──────────────────────────────────────── */
+.card-save-row {
+  display: flex;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.card-save-btn {
+  flex: 1;
+  border: 1rpx solid var(--chapter-accent);
+  color: var(--chapter-accent);
+  font-size: 26rpx;
+  letter-spacing: 0.12em;
+  padding: var(--space-5) 0;
+  text-align: center;
+}
+
+.card-save-btn-loading { opacity: 0.5; }
+
+.card-close-btn {
+  flex: 1;
+  border: 1rpx solid var(--border);
+  color: var(--text-muted);
+  font-size: 26rpx;
+  letter-spacing: 0.12em;
+  padding: var(--space-5) 0;
+  text-align: center;
+}

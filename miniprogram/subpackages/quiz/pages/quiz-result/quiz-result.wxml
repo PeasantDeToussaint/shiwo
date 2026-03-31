@@ -1,0 +1,97 @@
+<scroll-view
+  scroll-y
+  class="result-scroll"
+  style="{{pageThemeStyle}}"
+>
+  <view class="result-shell page-atmosphere {{mounted ? 'mounted' : ''}}">
+
+    <!-- Reveal block -->
+    <view class="reveal motion-enter">
+      <text class="reveal-eyebrow motion-enter motion-stagger" style="--stagger: 60ms;">YOUR ARCHETYPE</text>
+      <view class="reveal-accent-line progress-grow motion-enter motion-stagger" style="--stagger: 100ms;"></view>
+      <text class="reveal-title motion-enter motion-stagger" style="--stagger: 160ms;">{{result.title}}</text>
+      <text class="reveal-title-en motion-enter motion-stagger" style="--stagger: 220ms;">{{result.titleEn}}</text>
+    </view>
+
+    <!-- Body copy -->
+    <text class="result-body motion-enter motion-stagger" style="--stagger: 280ms;">{{result.body}}</text>
+
+    <!-- Dimension breakdown -->
+    <view class="dims motion-enter motion-stagger" style="--stagger: 340ms;">
+      <view wx:for="{{dims}}" wx:key="id" class="dim-row">
+        <text class="dim-label">{{item.label}}</text>
+        <view class="dim-track">
+          <view class="dim-fill progress-grow" style="width: {{item.percent}}%;"></view>
+        </view>
+        <text class="dim-percent">{{item.percent}}%</text>
+      </view>
+    </view>
+
+    <!-- Tips -->
+    <view wx:if="{{result.tips}}" class="tips motion-enter motion-stagger" style="--stagger: 400ms;">
+      <text class="tips-label">共鸣人物</text>
+      <view class="tips-list">
+        <text wx:for="{{result.tips}}" wx:key="*this" class="tip-item">{{item}}</text>
+      </view>
+    </view>
+
+    <!-- Actions -->
+    <view class="result-actions motion-enter motion-stagger" style="--stagger: 460ms;">
+      <view class="card-gen-btn" bindtap="onGenerateCard">生成身份卡</view>
+      <button class="secondary-button" bindtap="onRetake">再测一次</button>
+      <button class="tertiary-button" bindtap="onBackHome">返回首页</button>
+    </view>
+
+  </view>
+</scroll-view>
+
+<!-- Identity card overlay — visible when showCard is true -->
+<view wx:if="{{showCard}}" class="card-overlay" bindtap="onCloseCard">
+
+  <!-- Tap to close, but don't close when tapping the card itself -->
+  <view class="card-preview-wrap" catchtap="noop">
+
+    <!-- snapshot captures everything inside this tag -->
+    <snapshot id="identity-card-snap" class="identity-card">
+      <view class="ic-bg" style="{{pageThemeStyle}}">
+
+        <view class="ic-top">
+          <text class="ic-brand">MYTYPE</text>
+          <text class="ic-chapter">{{quiz.eyebrow}}</text>
+        </view>
+
+        <view class="ic-accent-line"></view>
+
+        <text class="ic-archetype-en display-title">{{result.titleEn}}</text>
+        <text class="ic-archetype">{{result.title}}</text>
+
+        <text class="ic-body-excerpt">{{result.body}}</text>
+
+        <view class="ic-dims">
+          <view wx:for="{{dims}}" wx:key="id" class="ic-dim-row">
+            <text class="ic-dim-label">{{item.label}}</text>
+            <view class="ic-dim-track">
+              <view class="ic-dim-fill" style="width: {{item.percent}}%;"></view>
+            </view>
+            <text class="ic-dim-pct">{{item.percent}}%</text>
+          </view>
+        </view>
+
+        <view class="ic-footer">
+          <text class="ic-tagline">在文学、历史、艺术中寻找自己。</text>
+          <text class="ic-copy">MYTYPE © 2026</text>
+        </view>
+
+      </view>
+    </snapshot>
+
+    <view class="card-save-row">
+      <view
+        class="card-save-btn {{savingCard ? 'card-save-btn-loading' : ''}}"
+        bindtap="onSaveCard"
+      >{{savingCard ? "保存中…" : "保存到相册"}}</view>
+      <view class="card-close-btn" bindtap="onCloseCard">关闭</view>
+    </view>
+
+  </view>
+</view>

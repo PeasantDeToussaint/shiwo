@@ -1,0 +1,48 @@
+<view class="dq-shell" style="{{pageThemeStyle}}">
+
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <view class="dq-header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="dq-header-row">
+      <view class="dq-back" bindtap="onGoBack">‹</view>
+      <text class="dq-category">{{currentCategory}}</text>
+      <text class="dq-counter">{{currentIndex + 1}} / {{totalCount}}</text>
+    </view>
+    <view class="dq-progress-bar">
+      <view class="dq-progress-fill" style="width: {{progress}}%;" />
+    </view>
+  </view>
+
+  <!-- ── Card ───────────────────────────────────────────────── -->
+  <scroll-view
+    scroll-y
+    class="dq-scroll {{transitioning ? 'dq-exit' : (cardEntering ? 'dq-enter' : '')}}"
+  >
+    <view class="dq-card" wx:if="{{currentQuestion}}">
+
+      <!-- Concept label -->
+      <text class="dq-concept">{{currentQuestion.title}}</text>
+
+      <!-- Prompt -->
+      <text class="dq-prompt">{{currentQuestion.prompt}}</text>
+
+      <!-- Full-width stacked options -->
+      <view class="dq-options">
+        <view
+          wx:for="{{currentQuestion.options}}"
+          wx:key="id"
+          wx:for-item="opt"
+          class="dq-option {{selectedOptionId === opt.id ? 'dq-option-selected' : ''}} {{confirming && selectedOptionId !== opt.id ? 'dq-option-dim' : ''}}"
+          data-option-id="{{opt.id}}"
+          bindtap="onSelectOption"
+        >
+          <view class="dq-option-check" />
+          <text class="dq-option-label">{{opt.label}}</text>
+        </view>
+      </view>
+
+    </view>
+
+    <view class="dq-bottom-pad" />
+  </scroll-view>
+
+</view>

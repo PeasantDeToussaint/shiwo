@@ -1,0 +1,343 @@
+.pr-scroll {
+  height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Loading ──────────────────────────────────────────────── */
+.pr-loading {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pr-loading-bar {
+  width: 48rpx;
+  height: 2rpx;
+  background: var(--chapter-accent);
+  animation: prPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes prPulse {
+  0%, 100% { opacity: 0.3; transform: scaleX(1); }
+  50%       { opacity: 1;   transform: scaleX(2.4); }
+}
+
+/* ── Shell ────────────────────────────────────────────────── */
+.pr-shell {
+  min-height: 100vh;
+  opacity: 0;
+  transform: translateY(12rpx);
+  transition: opacity 420ms ease, transform 420ms ease;
+}
+
+.pr-shell.mounted {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.pr-header {
+  padding: 120rpx var(--space-14) var(--space-18);
+  background: linear-gradient(160deg, var(--chapter-gradient-start) 0%, var(--bg) 100%);
+  border-bottom: 1rpx solid var(--divider);
+}
+
+.pr-brand-stamp {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.pr-brand-name {
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--chapter-accent);
+  opacity: 0.9;
+}
+
+.pr-brand-dot {
+  font-size: 22rpx;
+  color: var(--chapter-accent);
+  opacity: 0.4;
+}
+
+.pr-brand-quiz {
+  font-size: 22rpx;
+  letter-spacing: 0.18em;
+  color: var(--chapter-accent);
+  opacity: 0.5;
+}
+
+.pr-accent-line {
+  width: 56rpx;
+  height: 1rpx;
+  background: var(--chapter-accent);
+  margin-bottom: var(--space-10);
+}
+
+.pr-name-block {
+  margin-bottom: var(--space-12);
+}
+
+.pr-title {
+  display: block;
+  font-size: 72rpx;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  line-height: 1.15;
+  margin-bottom: var(--space-4);
+}
+
+.pr-subtitle {
+  display: block;
+  font-size: 26rpx;
+  color: var(--chapter-accent);
+  letter-spacing: 0.16em;
+  opacity: 0.8;
+  margin-bottom: var(--space-4);
+}
+
+.pr-token {
+  display: inline-block;
+  font-size: 20rpx;
+  letter-spacing: 0.3em;
+  color: var(--chapter-accent);
+  opacity: 0.5;
+  margin-top: var(--space-2);
+}
+
+.pr-verse-hero {
+  margin-top: var(--space-8);
+}
+
+.pr-verse-rule {
+  width: 32rpx;
+  height: 1rpx;
+  background: var(--chapter-accent);
+  opacity: 0.4;
+  margin-bottom: var(--space-5);
+}
+
+.pr-verse-text {
+  display: block;
+  font-size: 28rpx;
+  color: var(--text);
+  line-height: 1.8;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-3);
+}
+
+.pr-verse-attr {
+  display: block;
+  font-size: 22rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+/* ── Content ──────────────────────────────────────────────── */
+.pr-content {
+  padding: var(--space-14) var(--space-14) var(--space-20);
+}
+
+.pr-section {
+  margin-bottom: var(--space-16);
+}
+
+.pr-section-label {
+  display: block;
+  font-size: 20rpx;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  color: var(--chapter-accent);
+  opacity: 0.7;
+  margin-bottom: var(--space-5);
+}
+
+.pr-section-body {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.9;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+}
+
+/* ── Fragrance Notes Card ─────────────────────────────────── */
+.pr-notes-card {
+  border: 1rpx solid var(--border);
+  padding: var(--space-8) var(--space-9);
+}
+
+.pr-notes-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-6);
+  padding: var(--space-5) 0;
+}
+
+.pr-notes-tier {
+  font-size: 20rpx;
+  letter-spacing: 0.2em;
+  color: var(--chapter-accent);
+  opacity: 0.6;
+  width: 60rpx;
+  flex-shrink: 0;
+}
+
+.pr-notes-val {
+  font-size: 26rpx;
+  color: var(--text);
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+  flex: 1;
+}
+
+.pr-notes-divider {
+  height: 1rpx;
+  background: var(--divider);
+  opacity: 0.6;
+}
+
+.pr-notes-family-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-7);
+  padding-top: var(--space-6);
+  border-top: 1rpx solid var(--divider);
+}
+
+.pr-notes-family-label {
+  font-size: 20rpx;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+}
+
+.pr-notes-family-val {
+  font-size: 22rpx;
+  letter-spacing: 0.1em;
+  color: var(--chapter-accent);
+  opacity: 0.8;
+}
+
+/* ── Recommendations ──────────────────────────────────────── */
+.pr-rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.pr-rec-item {
+  display: flex;
+  gap: var(--space-7);
+  padding: var(--space-8) var(--space-9);
+  border: 1rpx solid var(--border);
+  background: var(--surface-1);
+}
+
+.pr-rec-index {
+  font-size: 20rpx;
+  letter-spacing: 0.1em;
+  color: var(--chapter-accent);
+  opacity: 0.5;
+  padding-top: 4rpx;
+  width: 28rpx;
+  flex-shrink: 0;
+}
+
+.pr-rec-body {
+  flex: 1;
+}
+
+.pr-rec-head {
+  margin-bottom: var(--space-3);
+}
+
+.pr-rec-brand {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 0.22em;
+  color: var(--chapter-accent);
+  opacity: 0.75;
+  margin-bottom: var(--space-1);
+}
+
+.pr-rec-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+.pr-rec-notes {
+  display: block;
+  font-size: 22rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.pr-rec-desc {
+  display: block;
+  font-size: 26rpx;
+  line-height: 1.85;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+.pr-actions {
+  margin-top: var(--space-14);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.pr-share-btn {
+  width: 100%;
+  padding: var(--space-6) 0;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #101010;
+  background: var(--chapter-accent);
+  border-radius: 0;
+  border: none;
+  box-sizing: border-box;
+}
+
+.pr-actions-row {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.pr-secondary-btn,
+.pr-tertiary-btn {
+  flex: 1;
+  padding: var(--space-5) 0;
+  text-align: center;
+  font-size: 26rpx;
+  letter-spacing: 0.1em;
+  border-radius: 0;
+  box-sizing: border-box;
+  border: none;
+}
+
+.pr-secondary-btn {
+  color: var(--text-secondary);
+  background: var(--surface-2);
+}
+
+.pr-tertiary-btn {
+  color: var(--text-muted);
+  background: transparent;
+  border: 1rpx solid var(--border);
+}

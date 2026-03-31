@@ -1,0 +1,86 @@
+<view class="rc-shell" style="{{pageThemeStyle}}">
+
+  <!-- ── Fixed painting layer — no animation class, always static ── -->
+  <view class="rc-painting-layer">
+    <image
+      class="rc-painting"
+      src="{{paintingDisplay}}"
+      mode="aspectFill"
+      wx:if="{{paintingDisplay}}"
+      binderror="onPaintingError"
+    />
+    <view class="rc-painting-gradient" />
+  </view>
+
+  <!-- ── Fixed header: dark bg so text is always readable ─────── -->
+  <view class="rc-header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="rc-header-row">
+      <!-- Back button: always visible; on Q1 returns to intro -->
+      <view class="rc-back-btn" bindtap="onGoBack">‹</view>
+      <text class="rc-arc-label">{{currentAct}}</text>
+      <text class="rc-counter">{{currentIndex + 1}} / {{totalCount}}</text>
+    </view>
+    <view class="rc-progress-bar">
+      <view class="rc-progress-fill" style="width: {{progress}}%;" />
+    </view>
+  </view>
+
+  <!-- ── Scrollable content card ───────────────────────────────── -->
+  <!-- scroll-into-view resets to top only when scrollIntoViewId is set (on question change) -->
+  <scroll-view
+    scroll-y
+    scroll-into-view="{{scrollIntoViewId}}"
+    class="rc-scroll {{transitioning ? 'rc-scroll-exit' : (cardEntering ? 'rc-scroll-enter' : '')}}"
+  >
+    <!-- Anchor for scroll-to-top on question change -->
+    <view id="rc-top" />
+    <!-- Spacer pushes card below the painting -->
+    <view class="rc-painting-spacer" />
+
+    <view class="rc-card" wx:if="{{currentQuestion}}">
+
+      <!-- Scene source + title inside card, below painting -->
+      <view class="rc-scene-tag">
+        <text class="rc-source">{{currentQuestion.source}}</text>
+        <text class="rc-scene-title">{{currentQuestion.title}}</text>
+      </view>
+
+      <!-- Scene description -->
+      <text class="rc-scene-text" wx:if="{{currentQuestion.scene}}">{{currentQuestion.scene}}</text>
+
+      <!-- Divider -->
+      <view class="rc-divider" />
+
+      <!-- Question prompt -->
+      <text class="rc-prompt">{{currentQuestion.prompt}}</text>
+
+      <!-- Options -->
+      <view class="rc-options">
+        <view
+          wx:for="{{currentQuestion.options}}"
+          wx:key="id"
+          wx:for-item="opt"
+          class="rc-option interactive {{selectedOptionId === opt.id ? 'rc-option-selected' : ''}} {{confirming && selectedOptionId !== opt.id ? 'rc-option-dimmed' : ''}}"
+          data-option-id="{{opt.id}}"
+          bindtap="onSelectOption"
+        >
+          <view class="rc-option-bar" />
+          <text class="rc-option-label">{{opt.label}}</text>
+        </view>
+      </view>
+
+      <!-- Reaction text — only in DOM when actually showing -->
+      <view class="rc-reaction-wrap" wx:if="{{reaction && confirming}}">
+        <view class="rc-reaction-inner">
+          <text class="rc-reaction">{{reaction}}</text>
+        </view>
+        <view class="rc-continue-btn" bindtap="onContinue">继续</view>
+      </view>
+
+      <!-- Bottom breathing room -->
+      <view class="rc-bottom-spacer" />
+
+    </view>
+  </scroll-view>
+
+</view>

@@ -1,0 +1,103 @@
+<scroll-view scroll-y class="pr-scroll" style="{{pageThemeStyle}}">
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="pr-loading">
+    <view class="pr-loading-bar" />
+  </view>
+
+  <view wx:elif="{{result}}" class="pr-shell {{mounted ? 'mounted' : ''}}">
+
+    <!-- ── Header ──────────────────────────────────────────── -->
+    <view class="pr-header">
+      <view class="pr-brand-stamp">
+        <text class="pr-brand-name">MYTYPE</text>
+        <text class="pr-brand-dot">·</text>
+        <text class="pr-brand-quiz">{{quiz.eyebrow || quiz.title}}</text>
+      </view>
+      <view class="pr-accent-line" />
+      <view class="pr-name-block">
+        <text class="pr-title">{{result.title}}</text>
+        <text wx:if="{{result.subtitle}}" class="pr-subtitle">{{result.subtitle}}</text>
+      </view>
+      <view wx:if="{{result.verse}}" class="pr-verse-hero">
+        <view class="pr-verse-rule" />
+        <text class="pr-verse-text">{{result.verse}}</text>
+        <text class="pr-verse-attr">— {{result.verseSource}}</text>
+      </view>
+    </view>
+
+    <!-- ── Content ─────────────────────────────────────────── -->
+    <view class="pr-content">
+
+      <!-- 为什么是你 -->
+      <view class="pr-section">
+        <text class="pr-section-label">为什么是你</text>
+        <text class="pr-section-body">{{result.portrait}}</text>
+      </view>
+
+      <!-- 香调图谱 -->
+      <view wx:if="{{result.fragranceProfile}}" class="pr-section">
+        <text class="pr-section-label">香调图谱</text>
+        <view class="pr-notes-card">
+          <view class="pr-notes-row">
+            <text class="pr-notes-tier">前调</text>
+            <text class="pr-notes-val">{{result.fragranceProfile.topNotes}}</text>
+          </view>
+          <view class="pr-notes-divider" />
+          <view class="pr-notes-row">
+            <text class="pr-notes-tier">中调</text>
+            <text class="pr-notes-val">{{result.fragranceProfile.midNotes}}</text>
+          </view>
+          <view class="pr-notes-divider" />
+          <view class="pr-notes-row">
+            <text class="pr-notes-tier">后调</text>
+            <text class="pr-notes-val">{{result.fragranceProfile.baseNotes}}</text>
+          </view>
+          <view class="pr-notes-family-row">
+            <text class="pr-notes-family-label">香调家族</text>
+            <text class="pr-notes-family-val">{{result.fragranceProfile.family}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 推荐香水 -->
+      <view wx:if="{{result.recommendations && result.recommendations.length}}" class="pr-section">
+        <text class="pr-section-label">推荐香水</text>
+        <view class="pr-rec-list">
+          <view
+            wx:for="{{result.recommendations}}"
+            wx:key="name"
+            class="pr-rec-item"
+          >
+            <view class="pr-rec-index">{{index + 1}}</view>
+            <view class="pr-rec-body">
+              <view class="pr-rec-head">
+                <text class="pr-rec-brand">{{item.brand}}</text>
+                <text class="pr-rec-name">{{item.name}}</text>
+              </view>
+              <text class="pr-rec-notes">{{item.notes}}</text>
+              <text class="pr-rec-desc">{{item.description}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 佩戴场景 -->
+      <view wx:if="{{result.wearingTips}}" class="pr-section">
+        <text class="pr-section-label">佩戴场景</text>
+        <text class="pr-section-body">{{result.wearingTips}}</text>
+      </view>
+
+      <!-- Actions -->
+      <view class="pr-actions">
+        <button class="pr-share-btn" open-type="share">分享给朋友</button>
+        <view class="pr-actions-row">
+          <button class="pr-secondary-btn" bindtap="onRetake">再测一次</button>
+          <button class="pr-tertiary-btn" bindtap="onBackHome">返回首页</button>
+        </view>
+      </view>
+
+    </view>
+  </view>
+
+</scroll-view>

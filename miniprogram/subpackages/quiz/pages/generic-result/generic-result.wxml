@@ -1,0 +1,205 @@
+<scroll-view scroll-y class="gr-scroll" style="{{pageThemeStyle}}">
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="gr-loading">
+    <view class="gr-loading-bar" />
+  </view>
+
+  <view wx:elif="{{result}}" class="gr-shell {{mounted ? 'mounted' : ''}}">
+
+    <!-- ── Hero (screenshot-worthy area) ───────────────────── -->
+    <view class="gr-hero">
+
+      <!-- Card image (conditional) -->
+      <view wx:if="{{hasCardImage}}" class="gr-hero-img-wrap">
+        <image src="{{cardImageUrl}}" mode="aspectFill" class="gr-hero-img" />
+        <view class="gr-hero-img-scrim" />
+      </view>
+
+      <!-- Gradient fallback (no image) -->
+      <view wx:else class="gr-hero-gradient" />
+
+      <!-- Hero content overlay -->
+      <view class="gr-hero-content">
+
+        <!-- Brand row -->
+        <view class="gr-brand motion-enter motion-stagger" style="--stagger: 20ms;">
+          <text class="gr-brand-name">MYTYPE</text>
+          <text class="gr-brand-dot">·</text>
+          <text class="gr-brand-quiz">{{quiz.eyebrow || quiz.title}}</text>
+        </view>
+
+        <!-- Accent rule -->
+        <view class="gr-accent-line progress-grow motion-enter motion-stagger" style="--stagger: 60ms;" />
+
+        <!-- Result identity -->
+        <view class="gr-identity motion-enter motion-stagger" style="--stagger: 120ms;">
+          <text class="gr-title {{hasCardImage ? '' : 'gr-title-large'}}">{{result.title}}</text>
+          <text wx:if="{{result.subtitle}}" class="gr-subtitle">{{result.subtitle}}</text>
+          <text wx:if="{{result.token}}" class="gr-token">{{result.token}}</text>
+        </view>
+
+        <!-- Verse (conditional) -->
+        <view wx:if="{{hasVerse}}" class="gr-verse motion-enter motion-stagger" style="--stagger: 200ms;">
+          <view class="gr-verse-rule" />
+          <text class="gr-verse-text">{{result.verse}}</text>
+          <text class="gr-verse-attr">— {{result.verseSource}}</text>
+        </view>
+
+      </view>
+    </view>
+
+    <!-- ── Content ─────────────────────────────────────────── -->
+    <view class="gr-content">
+
+      <!-- Bold quote (conditional) -->
+      <view wx:if="{{hasBoldQuote}}" class="gr-quote motion-enter motion-stagger" style="--stagger: 60ms;">
+        <text class="gr-quote-mark">"</text>
+        <text class="gr-quote-text">{{result.boldQuote}}</text>
+        <text class="gr-quote-mark gr-quote-mark-close">"</text>
+      </view>
+
+      <!-- Portrait (always) -->
+      <view class="gr-section gr-section-first">
+        <text class="gr-label">画像</text>
+        <text class="gr-body gr-body-lead">{{result.portrait}}</text>
+      </view>
+
+      <!-- Radar (conditional) -->
+      <view wx:if="{{hasRadarData}}" class="gr-radar-section">
+        <text class="gr-label">维度分布</text>
+        <view class="gr-radar-wrap {{radarReady ? 'gr-radar-ready' : ''}}">
+          <canvas id="radarCanvas" canvas-id="radarCanvas" class="gr-radar-canvas" style="width:240px;height:240px;" />
+        </view>
+      </view>
+
+      <!-- Dimension bars (conditional) -->
+      <view wx:if="{{hasBars}}" class="gr-bars-section">
+        <text wx:if="{{!hasRadarData}}" class="gr-label">维度分布</text>
+        <view class="gr-bars">
+          <view wx:for="{{dimensionBars}}" wx:key="label" class="gr-bar-row">
+            <view class="gr-bar-meta">
+              <view class="gr-bar-meta-left">
+                <text wx:if="{{item.axisLabel}}" class="gr-bar-axis">{{item.axisLabel}}</text>
+                <text class="gr-bar-label {{item.dominant ? 'gr-bar-label-dominant' : ''}}">{{item.label}}</text>
+              </view>
+              <text class="gr-bar-pct">{{item.pct}}%</text>
+            </view>
+            <view class="gr-bar-track">
+              <view class="gr-bar-fill {{item.dominant ? 'gr-bar-fill-dominant' : ''}}" style="width: {{item.pct}}%;" />
+            </view>
+            <view wx:if="{{item.lowPole}}" class="gr-bar-poles">
+              <text class="gr-bar-pole-low">{{item.lowPole}}</text>
+              <text class="gr-bar-pole-high">{{item.label}}</text>
+            </view>
+            <text wx:if="{{item.insight}}" class="gr-bar-insight {{item.dominant ? 'gr-bar-insight-dominant' : ''}}">{{item.insight}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- Strengths (conditional) -->
+      <view wx:if="{{hasStrengths}}" class="gr-traits">
+        <text class="gr-label">你的强项</text>
+        <view class="gr-trait-list">
+          <view class="gr-trait" wx:for="{{result.strengths}}" wx:key="label">
+            <view class="gr-trait-dot" />
+            <view class="gr-trait-body">
+              <text class="gr-trait-name">{{item.label}}</text>
+              <text class="gr-trait-desc">{{item.description}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- Weaknesses (conditional) -->
+      <view wx:if="{{hasWeaknesses}}" class="gr-traits gr-traits-weak">
+        <text class="gr-label">你的短板</text>
+        <view class="gr-trait-list">
+          <view class="gr-trait" wx:for="{{result.weaknesses}}" wx:key="label">
+            <view class="gr-trait-dot gr-trait-dot-weak" />
+            <view class="gr-trait-body">
+              <text class="gr-trait-name">{{item.label}}</text>
+              <text class="gr-trait-desc">{{item.description}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- Attributes (conditional) -->
+      <view wx:if="{{result.temperament || result.situation}}" class="gr-attr-block">
+        <view wx:if="{{result.temperament}}" class="gr-attr-item">
+          <text class="gr-label">气质特征</text>
+          <text class="gr-body">{{result.temperament}}</text>
+        </view>
+        <view wx:if="{{result.situation}}" class="gr-attr-item">
+          <text class="gr-label">处境</text>
+          <text class="gr-body">{{result.situation}}</text>
+        </view>
+      </view>
+
+      <!-- Career (conditional) -->
+      <view wx:if="{{result.career}}" class="gr-section">
+        <text class="gr-label">职业方向</text>
+        <text class="gr-body">{{result.career}}</text>
+      </view>
+
+      <!-- Relationships (conditional) -->
+      <view wx:if="{{result.relationships}}" class="gr-section">
+        <text class="gr-label">人际关系</text>
+        <text class="gr-body">{{result.relationships}}</text>
+      </view>
+
+      <!-- Life Advice (conditional) -->
+      <view wx:if="{{result.lifeAdvice}}" class="gr-section">
+        <text class="gr-label">人生建议</text>
+        <text class="gr-body">{{result.lifeAdvice}}</text>
+      </view>
+
+      <!-- Destiny (conditional) -->
+      <view wx:if="{{result.destiny}}" class="gr-destiny">
+        <text class="gr-label">结语</text>
+        <text class="gr-destiny-text">{{result.destiny}}</text>
+      </view>
+
+      <!-- Extras: domain-specific custom fields from Phase 0 -->
+      <view wx:if="{{result.extras && result.extras.length}}" class="gr-extras">
+        <view wx:for="{{result.extras}}" wx:key="key" class="gr-extra-item">
+          <text class="gr-label">{{item.label}}</text>
+          <text class="gr-body">{{item.content}}</text>
+        </view>
+      </view>
+
+      <!-- Actions (always) -->
+      <view class="gr-actions">
+        <button class="gr-btn-share" open-type="share">分享给朋友</button>
+        <view class="gr-actions-row">
+          <button class="gr-btn-secondary" bindtap="onRetake">再测一次</button>
+          <button class="gr-btn-tertiary" bindtap="onBackHome">返回首页</button>
+        </view>
+      </view>
+
+      <!-- Other results index -->
+      <view wx:if="{{otherResults.length > 1}}" class="gr-index">
+        <text class="gr-label">全部结果</text>
+        <view class="gr-index-list">
+          <view
+            wx:for="{{otherResults}}"
+            wx:key="id"
+            class="gr-index-item {{item.isCurrent ? 'gr-index-item-current' : ''}}"
+            bindtap="onTapOtherResult"
+            data-id="{{item.id}}"
+          >
+            <view class="gr-index-dot {{item.isCurrent ? 'gr-index-dot-on' : ''}}" />
+            <view class="gr-index-info">
+              <text class="gr-index-title">{{item.title}}</text>
+              <text wx:if="{{item.token}}" class="gr-index-token">{{item.token}}</text>
+            </view>
+            <text wx:if="{{item.isCurrent}}" class="gr-index-badge">你的结果</text>
+          </view>
+        </view>
+      </view>
+
+    </view>
+  </view>
+
+</scroll-view>

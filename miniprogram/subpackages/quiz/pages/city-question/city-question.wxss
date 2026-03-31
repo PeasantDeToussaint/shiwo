@@ -1,0 +1,286 @@
+/* ── Shell ────────────────────────────────────────────────── */
+.cq-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.cq-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: var(--bg);
+  border-bottom: 1rpx solid var(--divider);
+}
+
+.cq-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-6) var(--space-2);
+}
+
+.cq-back-btn {
+  font-size: 40rpx;
+  color: var(--text);
+  opacity: 0.7;
+  line-height: 1;
+  padding: 0 var(--space-3) 0 0;
+  min-width: 40rpx;
+}
+
+.cq-phase-label {
+  flex: 1;
+  font-size: 20rpx;
+  color: var(--chapter-accent);
+  letter-spacing: 0.2em;
+  font-family: var(--font-family-display);
+}
+
+.cq-counter {
+  font-size: 20rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.14em;
+  font-family: var(--font-family-display);
+}
+
+.cq-progress-bar {
+  height: 2rpx;
+  background: var(--divider);
+}
+
+.cq-progress-fill {
+  height: 100%;
+  background: var(--chapter-accent);
+  transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Scroll ───────────────────────────────────────────────── */
+.cq-scroll {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+.cq-scroll-exit {
+  opacity: 0;
+  transform: translateY(-16rpx);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.cq-scroll-enter {
+  animation: cq-enter 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cq-enter {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.cq-card {
+  padding: 160rpx var(--space-8) 0;
+  box-sizing: border-box;
+  min-height: 100vh;
+}
+
+/* ── Scene tag ────────────────────────────────────────────── */
+.cq-scene-tag {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.cq-scene-source {
+  font-size: 18rpx;
+  color: var(--text-tertiary);
+  letter-spacing: 0.14em;
+  font-family: var(--font-family-display);
+}
+
+.cq-scene-title {
+  font-size: 24rpx;
+  color: var(--chapter-accent);
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+
+/* ── Scene text ───────────────────────────────────────────── */
+.cq-scene-text {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.9;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-8);
+  white-space: pre-wrap;
+}
+
+/* ── Divider ──────────────────────────────────────────────── */
+.cq-divider {
+  width: 32rpx;
+  height: 1rpx;
+  background: var(--chapter-accent);
+  opacity: 0.5;
+  margin-bottom: var(--space-7);
+}
+
+/* ── Prompt ───────────────────────────────────────────────── */
+.cq-prompt {
+  display: block;
+  font-size: 38rpx;
+  line-height: 1.6;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-10);
+  font-weight: 500;
+}
+
+/* ── Standard options ─────────────────────────────────────── */
+.cq-options {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-8);
+}
+
+.cq-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-6) 0;
+  border-bottom: 1rpx solid var(--divider);
+  transition: opacity 0.2s ease;
+}
+
+.cq-option:first-child {
+  border-top: 1rpx solid var(--divider);
+}
+
+.cq-option-dot {
+  flex-shrink: 0;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  border: 1rpx solid var(--chapter-accent);
+  margin-top: 16rpx;
+  opacity: 0.5;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.cq-option-selected .cq-option-dot {
+  background: var(--chapter-accent);
+  opacity: 1;
+}
+
+.cq-option-dimmed {
+  opacity: 0.18;
+}
+
+.cq-option-label {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.7;
+  color: var(--text);
+  letter-spacing: 0.03em;
+  flex: 1;
+}
+
+/* ── Reaction ─────────────────────────────────────────────── */
+.cq-reaction-wrap {
+  padding: var(--space-7) 0 var(--space-5);
+  border-top: 1rpx solid var(--divider);
+  animation: cq-reaction-in 0.28s ease 0.1s both;
+}
+
+@keyframes cq-reaction-in {
+  from { opacity: 0; transform: translateY(8rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cq-reaction {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.85;
+  color: var(--chapter-accent);
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-6);
+  font-style: italic;
+}
+
+.cq-continue-btn {
+  display: block;
+  text-align: right;
+  font-size: 24rpx;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  padding: var(--space-2) 0;
+}
+
+/* ── Province picker grid ─────────────────────────────────── */
+/* ── Province grouped layout ──────────────────────────────── */
+.cq-province-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  margin-bottom: var(--space-10);
+}
+
+.cq-province-group-label {
+  display: block;
+  font-size: 20rpx;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.cq-province-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.cq-province-chip {
+  padding: var(--space-3) var(--space-6);
+  border: 1rpx solid var(--border);
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.cq-province-chip-selected {
+  border-color: var(--chapter-accent);
+  color: var(--chapter-accent);
+  background: var(--state-selected-bg);
+}
+
+/* ── Province confirm ─────────────────────────────────────── */
+.cq-province-confirm-wrap {
+  padding-top: var(--space-6);
+  border-top: 1rpx solid var(--divider);
+  animation: cq-reaction-in 0.28s ease 0.1s both;
+}
+
+.cq-province-confirm-btn {
+  display: block;
+  text-align: right;
+  font-size: 26rpx;
+  letter-spacing: 0.16em;
+  color: var(--chapter-accent);
+  padding: var(--space-3) 0;
+}
+
+/* ── Bottom spacer ────────────────────────────────────────── */
+.cq-bottom-spacer {
+  height: 120rpx;
+}

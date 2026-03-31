@@ -1,0 +1,51 @@
+<scroll-view scroll-y class="home-scroll">
+  <view class="home-root">
+
+    <view class="home-hero motion-enter">
+      <view class="home-wordmark-row" bindtap="onTapProfile">
+        <text class="home-wordmark display-title">My Type</text>
+        <view wx:if="{{quizCount > 0}}" class="home-wordmark-badge">
+          <text class="home-wordmark-badge-text">{{quizCount}}</text>
+        </view>
+      </view>
+      <text class="home-tagline"></text>
+    </view>
+
+    <view class="feature-list">
+      <view
+        wx:for="{{features}}"
+        wx:key="id"
+        class="feature-card motion-enter motion-stagger {{item.isAvailable ? '' : 'feature-card-dim'}}"
+        style="--stagger: {{120 + index * 80}}ms;"
+        data-id="{{item.id}}"
+        bindtap="onTapFeature"
+      >
+        <!-- Skeleton shimmer while painting loads -->
+        <view wx:if="{{item.bgImage && !item.bgImageDisplay}}" class="feature-card-skeleton">
+          <view class="feature-card-skeleton-shine" />
+        </view>
+
+        <!-- Painting backdrop -->
+        <image
+          wx:if="{{item.bgImageDisplay}}"
+          src="{{item.bgImageDisplay}}"
+          mode="aspectFill"
+          class="feature-card-bg"
+        />
+        <view wx:if="{{item.bgImageDisplay}}" class="feature-card-bg-dim" />
+
+        <text wx:if="{{item.comingSoonLabel}}" class="feature-badge">{{item.comingSoonLabel}}</text>
+        <text class="feature-title {{item.isAvailable ? '' : 'feature-title-dim'}}">{{item.title}}</text>
+        <text class="feature-subtitle">{{item.subtitle}}</text>
+      </view>
+    </view>
+
+    <!-- bottom padding so footer doesn't cover last card -->
+    <view class="home-scroll-pad" />
+
+  </view>
+</scroll-view>
+
+<view class="home-footer">
+  <text class="home-footer-text">MYTYPE © 2026</text>
+</view>

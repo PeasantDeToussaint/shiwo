@@ -1,0 +1,168 @@
+<scroll-view
+  scroll-y
+  class="rr-scroll"
+  style="{{pageThemeStyle}}"
+>
+  <view class="rr-shell {{mounted ? 'mounted' : ''}}">
+
+    <!-- ── Full-bleed character painting hero ─────────────── -->
+    <view class="rr-hero-wrap">
+      <image
+        wx:if="{{paintingDisplay}}"
+        class="rr-hero-painting"
+        src="{{paintingDisplay}}"
+        mode="aspectFill"
+        binderror="onPaintingError"
+      />
+      <view class="rr-hero-gradient" />
+      <view class="rr-hero-overlay">
+        <text class="rr-eyebrow motion-enter motion-stagger" style="--stagger: 40ms;">RED CHAMBER · 气质画像</text>
+        <view class="rr-accent-line progress-grow motion-enter motion-stagger" style="--stagger: 80ms;" />
+        <text class="rr-verse motion-enter motion-stagger" style="--stagger: 120ms;">{{result.verse}}</text>
+        <text class="rr-verse-source motion-enter motion-stagger" style="--stagger: 160ms;">{{result.verseSource}}</text>
+        <view class="rr-name-row motion-enter motion-stagger" style="--stagger: 220ms;">
+          <text class="rr-title">{{result.title}}</text>
+          <text class="rr-subtitle">{{result.subtitle}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ── Content sections ───────────────────────────────── -->
+    <view class="rr-content">
+      <!-- Portrait — opener, larger text -->
+      <view class="rr-section rr-section-opener">
+        <text class="rr-section-label">画像</text>
+        <text class="rr-section-body rr-section-body-opener">{{result.portrait}}</text>
+      </view>
+
+      <!-- Attribute cluster: Novel Echo / Temperament / Situation -->
+      <view class="rr-attr-block">
+        <view class="rr-attr-item">
+          <text class="rr-section-label">原著命运</text>
+          <text class="rr-section-body">{{result.novelEcho}}</text>
+        </view>
+        <view class="rr-attr-item">
+          <text class="rr-section-label">气质特征</text>
+          <text class="rr-section-body">{{result.temperament}}</text>
+        </view>
+        <view class="rr-attr-item rr-attr-item-last">
+          <text class="rr-section-label">处境</text>
+          <text class="rr-section-body">{{result.situation}}</text>
+        </view>
+      </view>
+
+      <!-- Mid-section visual break -->
+      <view class="rr-mid-break">
+        <view class="rr-mid-break-line" />
+        <text class="rr-mid-break-label">原著回响</text>
+        <view class="rr-mid-break-line" />
+      </view>
+
+      <!-- Classic Scenes -->
+      <view wx:if="{{result.classicScenes}}" class="rr-scenes">
+        <text class="rr-section-label">经典场景</text>
+        <view class="rr-scene-list">
+          <view
+            wx:for="{{result.classicScenes}}"
+            wx:key="*this"
+            class="rr-scene-item"
+          >
+            <view class="rr-scene-bullet" />
+            <text class="rr-scene-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- Classic Quote -->
+      <view wx:if="{{result.classicQuote}}" class="rr-quote-wrap">
+        <text class="rr-quote">{{result.classicQuote}}</text>
+      </view>
+
+      <!-- Life Advice -->
+      <view wx:if="{{result.lifeAdvice}}" class="rr-section">
+        <text class="rr-section-label">人生建议</text>
+        <text class="rr-section-body">{{result.lifeAdvice}}</text>
+      </view>
+
+      <!-- Destiny — closing epilogue -->
+      <view wx:if="{{result.destiny}}" class="rr-destiny-wrap">
+        <text class="rr-section-label">最终归宿</text>
+        <text class="rr-destiny-text">{{result.destiny}}</text>
+      </view>
+
+      <!-- Sub-type Block -->
+      <view wx:if="{{subTypeResult}}" class="rr-subtype-wrap">
+        <view class="rr-subtype-header">
+          <view class="rr-subtype-accent-line" />
+          <text class="rr-subtype-label">辅型气质</text>
+        </view>
+        <text class="rr-subtype-title">{{subTypeResult.title}} · {{subTypeResult.subtitle}}</text>
+        <text class="rr-subtype-body">{{subTypeResult.portrait}}</text>
+        <view wx:if="{{hasTension}}" class="rr-tension-wrap">
+          <text class="rr-tension-label">内在张力</text>
+          <text class="rr-tension-body">你的主型与辅型之间存在某种深层的拉扯——{{result.title}}的情感逻辑与{{subTypeResult.title}}的底色并不完全契合。这种张力可能会让你在某些时刻感到撕裂，但也正是这种撕裂，让你比别人多了一层深度。</text>
+        </view>
+      </view>
+
+      <!-- Actions -->
+      <view class="rr-actions">
+        <view class="rr-card-btn" bindtap="onGenerateCard">生成身份卡</view>
+        <view class="rr-share-btn" bindtap="onShareTap">分享给朋友</view>
+        <view class="rr-actions-row">
+          <button class="rr-secondary-btn" bindtap="onRetake">再测一次</button>
+          <button class="rr-tertiary-btn" bindtap="onBackHome">返回首页</button>
+        </view>
+      </view>
+
+    </view>
+  </view>
+</scroll-view>
+
+<!-- ── Identity Card Overlay ──────────────────────────────── -->
+<view wx:if="{{showCard}}" class="rr-card-overlay" bindtap="onCloseCard">
+  <view class="rr-card-preview-wrap" catchtap="noop">
+
+    <snapshot id="rc-card-snap" class="rr-identity-card">
+      <view class="rr-ic-bg" style="{{pageThemeStyle}}">
+
+        <!-- Faded painting background -->
+        <image
+          wx:if="{{paintingDisplay}}"
+          class="rr-ic-painting"
+          src="{{paintingDisplay}}"
+          mode="aspectFill"
+        />
+        <view class="rr-ic-tint" />
+
+        <!-- Card content -->
+        <view class="rr-ic-top">
+          <text class="rr-ic-brand">MYTYPE</text>
+          <text class="rr-ic-chapter">RED CHAMBER</text>
+        </view>
+
+        <view class="rr-ic-accent-line" />
+
+        <text class="rr-ic-verse">{{result.verse}}</text>
+        <text class="rr-ic-title">{{result.title}}</text>
+        <text class="rr-ic-subtitle">{{result.subtitle}}</text>
+
+        <text class="rr-ic-portrait">{{cardPortrait}}</text>
+
+        <view class="rr-ic-footer">
+          <text class="rr-ic-tagline">在文学、历史、艺术中寻找自己。</text>
+          <text class="rr-ic-copy">MYTYPE © 2026</text>
+        </view>
+
+      </view>
+    </snapshot>
+
+    <view class="rr-card-save-row">
+      <view
+        class="rr-card-save-btn {{savingCard ? 'rr-card-save-btn-loading' : ''}}"
+        bindtap="onSaveCard"
+      >{{savingCard ? "保存中…" : "保存到相册"}}</view>
+      <view class="rr-card-close-btn" bindtap="onCloseCard">关闭</view>
+    </view>
+
+  </view>
+</view>

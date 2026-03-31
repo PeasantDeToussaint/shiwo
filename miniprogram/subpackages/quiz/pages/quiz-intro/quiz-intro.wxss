@@ -1,0 +1,181 @@
+/* ═══════════════════════════════════════════════════════════
+   SHELL — full-screen three-zone flex column
+   ═══════════════════════════════════════════════════════════ */
+.intro-shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ZONE 1 — Header (fixed height)
+   back button left · eyebrow right
+   ═══════════════════════════════════════════════════════════ */
+.intro-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-left: var(--space-10);
+  padding-right: var(--space-14);
+  padding-bottom: var(--space-6);
+  box-sizing: border-box;
+}
+
+.intro-back-btn {
+  font-size: 52rpx;
+  line-height: 1;
+  color: var(--text-secondary);
+  opacity: 0.65;
+  padding: var(--space-2) var(--space-2);
+}
+
+.intro-eyebrow {
+  font-size: 18rpx;
+  letter-spacing: 0.3em;
+  color: var(--chapter-accent);
+  opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ZONE 2 — Title (flex: 1, title anchored to bottom)
+   ═══════════════════════════════════════════════════════════ */
+.intro-title-zone {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--space-14) var(--space-6);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.intro-divider-share {
+  display: block;
+  width: 40rpx;
+  height: 2rpx;
+  margin-bottom: var(--space-10);
+  flex-shrink: 0;
+}
+
+.intro-divider {
+  width: 40rpx;
+  height: 2rpx;
+  background: var(--chapter-accent);
+}
+
+.intro-title {
+  display: block;
+  font-size: 64rpx;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  margin-bottom: var(--space-6);
+  opacity: 0;
+  transition: opacity 0.45s ease 0.08s;
+  flex-shrink: 0;
+}
+
+.intro-title-visible {
+  opacity: 1;
+}
+
+.intro-subtitle {
+  display: block;
+  font-size: 26rpx;
+  color: var(--chapter-accent);
+  letter-spacing: 0.2em;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ZONE 3 — Footer (fixed height, description + start)
+   ═══════════════════════════════════════════════════════════ */
+.intro-footer {
+  flex-shrink: 0;
+  padding-left: var(--space-14);
+  padding-right: var(--space-14);
+  padding-top: var(--space-10);
+  /* padding-bottom is set inline for safe-area */
+  border-top: 1rpx solid var(--divider);
+  box-sizing: border-box;
+  opacity: 0;
+  transition: opacity 0.5s ease 0.2s;
+}
+
+.intro-footer-visible {
+  opacity: 1;
+}
+
+.intro-desc {
+  display: block;
+  font-size: 30rpx;
+  color: var(--text-muted);
+  line-height: 1.85;
+  letter-spacing: 0.03em;
+  opacity: 0.85;
+  margin-bottom: var(--space-8);
+}
+
+.intro-start-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--space-6);
+  border-top: 1rpx solid var(--divider);
+}
+
+.intro-start-label {
+  font-size: 26rpx;
+  letter-spacing: 0.24em;
+  color: var(--chapter-accent);
+  padding: var(--space-3) 0;
+}
+
+/* ── Skeleton (loading) ───────────────────────────────────── */
+.intro-skeleton {
+  padding: 0 var(--space-14);
+}
+
+@keyframes skShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.intro-sk-line,
+.intro-sk-divider,
+.intro-sk-desc {
+  border-radius: 4rpx;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.10) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skShimmer 1.6s ease-in-out infinite;
+}
+
+.intro-sk-eyebrow  { width: 100rpx; height: 20rpx; margin-bottom: 28rpx; }
+.intro-sk-divider  { width: 48rpx; height: 2rpx; margin-bottom: 28rpx; }
+.intro-sk-title    { width: 260rpx; height: 44rpx; margin-bottom: 14rpx; }
+.intro-sk-subtitle { width: 180rpx; height: 28rpx; margin-bottom: 32rpx; }
+.intro-sk-desc     { width: 100%; height: 22rpx; margin-bottom: 12rpx; }
+.intro-sk-desc-short { width: 68%; }
+
+/* ── Error state ──────────────────────────────────────────── */
+.intro-error {
+  padding: var(--space-14);
+}
+.intro-error-msg {
+  font-size: 26rpx;
+  color: var(--text-muted);
+  opacity: 0.6;
+  letter-spacing: 0.06em;
+}

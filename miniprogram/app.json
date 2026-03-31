@@ -1,0 +1,50 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/feature-quiz/feature-quiz",
+    "pages/profile/profile"
+  ],
+  "subpackages": [
+    {
+      "root": "subpackages/quiz",
+      "name": "quiz",
+      "pages": [
+        "pages/quiz-intro/quiz-intro",
+        "pages/quiz-result/quiz-result",
+        "pages/rc-question/rc-question",
+        "pages/rc-result/rc-result",
+        "pages/city-question/city-question",
+        "pages/city-result/city-result",
+        "pages/dialect-question/dialect-question",
+        "pages/dialect-result/dialect-result",
+        "pages/temple-question/temple-question",
+        "pages/temple-result/temple-result",
+        "pages/generic-question/generic-question",
+        "pages/generic-result/generic-result",
+        "pages/perfume-result/perfume-result",
+        "pages/mbti-result/mbti-result"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/feature-quiz/feature-quiz": {
+      "network": "all",
+      "packages": ["quiz"]
+    }
+  },
+  "window": {
+    "backgroundColor": "#09090a",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#09090a",
+    "navigationBarTitleText": "",
+    "navigationBarTextStyle": "white"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json",
+  "permission": {
+    "scope.writePhotosAlbum": {
+      "desc": "保存你的红楼梦气质身份卡"
+    }
+  }
+}

@@ -1,0 +1,291 @@
+/* ── Shell ────────────────────────────────────────────────── */
+.rc-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ── Painting Layer (fixed, no animation — static always) ──── */
+.rc-painting-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 54vh;
+  z-index: 0;
+  overflow: hidden;
+  /* Fallback if painting image fails or is absent */
+  background: linear-gradient(160deg, #2a1f14 0%, #0f0a06 100%);
+}
+
+.rc-painting {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.rc-painting-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65%;
+  background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+}
+
+/* ── Fixed Header — solid dark background for legibility ──── */
+.rc-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.rc-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-6) var(--space-2);
+}
+
+/* Back button */
+.rc-back-btn {
+  font-size: 40rpx;
+  color: #ffffff;
+  opacity: 0.8;
+  line-height: 1;
+  padding: 0 var(--space-3) 0 0;
+  min-width: 40rpx;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+
+.rc-arc-label {
+  flex: 1;
+  font-size: 20rpx;
+  color: #ffffff;
+  letter-spacing: 0.2em;
+  font-family: var(--font-family-display);
+  opacity: 0.85;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.rc-counter {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.14em;
+  font-family: var(--font-family-display);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.rc-progress-bar {
+  height: 2rpx;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 var(--space-6);
+}
+
+.rc-progress-fill {
+  height: 100%;
+  background: var(--chapter-accent);
+  transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Scroll Container ─────────────────────────────────────── */
+.rc-scroll {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+/* Exit: slide up and fade (fires when transitioning = true) */
+.rc-scroll-exit {
+  opacity: 0;
+  transform: translateY(-20rpx);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+/* Enter: animation fires ONCE when cardEntering = true, then class is removed */
+.rc-scroll-enter {
+  animation: scroll-enter 0.32s ease both;
+}
+
+@keyframes scroll-enter {
+  from { opacity: 0; transform: translateY(28rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Spacer = painting height — card slides up from here */
+.rc-painting-spacer {
+  height: 46vh;
+  pointer-events: none;
+}
+
+/* ── Content Card ─────────────────────────────────────────── */
+.rc-card {
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 28rpx 28rpx 0 0;
+  padding: var(--space-7) var(--space-8) 0;
+  min-height: 60vh;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 20;
+}
+
+/* ── Scene tag (source + title) inside the card ───────────── */
+.rc-scene-tag {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.rc-source {
+  font-size: 18rpx;
+  color: var(--text-tertiary);
+  letter-spacing: 0.14em;
+  font-family: var(--font-family-display);
+}
+
+.rc-scene-title {
+  font-size: 26rpx;
+  color: var(--chapter-accent);
+  letter-spacing: 0.12em;
+  font-weight: 500;
+}
+
+/* ── Scene Text ───────────────────────────────────────────── */
+.rc-scene-text {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.9;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-8);
+  white-space: pre-wrap;
+}
+
+/* ── Divider ──────────────────────────────────────────────── */
+.rc-divider {
+  width: 48rpx;
+  height: 1rpx;
+  background: var(--chapter-accent);
+  opacity: 0.45;
+  margin-bottom: var(--space-8);
+}
+
+/* ── Question Prompt ──────────────────────────────────────── */
+.rc-prompt {
+  display: block;
+  font-size: 36rpx;
+  line-height: 1.65;
+  color: var(--text);
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-10);
+  font-weight: 500;
+}
+
+/* ── Options — left-bar editorial style ──────────────────── */
+.rc-options {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-8);
+}
+
+.rc-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5) var(--space-6) 0;
+  border-bottom: 1rpx solid var(--divider);
+  background: transparent;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.rc-option:first-child {
+  border-top: 1rpx solid var(--divider);
+}
+
+.rc-option-bar {
+  flex-shrink: 0;
+  width: 3rpx;
+  min-height: 40rpx;
+  align-self: stretch;
+  background: var(--chapter-accent);
+  opacity: 0.35;
+  border-radius: 2rpx;
+  transition: opacity 0.2s ease, width 0.2s ease;
+  margin-top: 6rpx;
+}
+
+.rc-option-selected .rc-option-bar {
+  opacity: 1;
+  width: 5rpx;
+}
+
+.rc-option-selected {
+  background: var(--state-selected-bg);
+}
+
+.rc-option-dimmed {
+  opacity: 0.2;
+}
+
+.rc-option-label {
+  display: block;
+  font-size: 28rpx;
+  line-height: 1.65;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  flex: 1;
+}
+
+/* ── Reaction Text — enters via animation, removed from DOM when gone ── */
+.rc-reaction-wrap {
+  margin-bottom: var(--space-4);
+  animation: reaction-enter 0.32s ease 0.15s both;
+}
+
+@keyframes reaction-enter {
+  from { opacity: 0; transform: translateY(12rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.rc-reaction-inner {
+  background: var(--state-selected-bg);
+  border-top: 1rpx solid var(--chapter-accent);
+  padding: var(--space-6) var(--space-7) var(--space-5);
+}
+
+.rc-reaction {
+  display: block;
+  font-size: 30rpx;
+  line-height: 1.8;
+  color: var(--chapter-accent);
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-6);
+}
+
+.rc-continue-btn {
+  display: block;
+  text-align: right;
+  font-size: 24rpx;
+  letter-spacing: 0.2em;
+  color: var(--chapter-accent);
+  opacity: 0.7;
+  padding: var(--space-3) 0 var(--space-2);
+  border-top: 1rpx solid var(--divider);
+}
+
+/* ── Bottom spacer ────────────────────────────────────────── */
+.rc-bottom-spacer {
+  height: 120rpx;
+}

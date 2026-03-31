@@ -1,0 +1,99 @@
+<view class="cq-shell" style="{{pageThemeStyle}}">
+
+  <!-- ── Fixed header ───────────────────────────────────────── -->
+  <view class="cq-header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="cq-header-row">
+      <view class="cq-back-btn" bindtap="onGoBack">‹</view>
+      <text class="cq-phase-label">{{currentPhaseLabel}}</text>
+      <text class="cq-counter">{{currentIndex + 1}} / {{totalCount}}</text>
+    </view>
+    <view class="cq-progress-bar">
+      <view class="cq-progress-fill" style="width: {{progress}}%;" />
+    </view>
+  </view>
+
+  <!-- ── Scrollable content ─────────────────────────────────── -->
+  <scroll-view
+    scroll-y
+    scroll-into-view="{{scrollIntoViewId}}"
+    class="cq-scroll {{transitioning ? 'cq-scroll-exit' : (cardEntering ? 'cq-scroll-enter' : '')}}"
+  >
+    <view id="cq-top" />
+
+    <view class="cq-card" wx:if="{{currentQuestion}}">
+
+      <!-- Scene label -->
+      <view class="cq-scene-tag">
+        <text class="cq-scene-source">{{currentQuestion.source}}</text>
+        <text class="cq-scene-title">{{currentQuestion.title}}</text>
+      </view>
+
+      <!-- Scene description -->
+      <text class="cq-scene-text" wx:if="{{currentQuestion.scene}}">{{currentQuestion.scene}}</text>
+
+      <!-- Divider -->
+      <view class="cq-divider" />
+
+      <!-- Question prompt -->
+      <text class="cq-prompt">{{currentQuestion.prompt}}</text>
+
+      <!-- ── Province picker — grouped by region ────────── -->
+      <block wx:if="{{currentQuestion.mode === 'province'}}">
+        <view class="cq-province-groups">
+          <view
+            wx:for="{{provinceGroups}}"
+            wx:key="label"
+            wx:for-item="group"
+            class="cq-province-group"
+          >
+            <text class="cq-province-group-label">{{group.label}}</text>
+            <view class="cq-province-row">
+              <view
+                wx:for="{{group.provinces}}"
+                wx:key="id"
+                wx:for-item="prov"
+                class="cq-province-chip {{selectedProvince === prov.id ? 'cq-province-chip-selected' : ''}}"
+                data-province-id="{{prov.id}}"
+                bindtap="onSelectProvince"
+              >
+                {{prov.name}}
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="cq-province-confirm-wrap" wx:if="{{selectedProvince}}">
+          <view class="cq-province-confirm-btn" bindtap="onConfirmProvince">
+            确认 →
+          </view>
+        </view>
+      </block>
+
+      <!-- ── Standard choice options ─────────────────────── -->
+      <block wx:else>
+        <view class="cq-options">
+          <view
+            wx:for="{{currentQuestion.options}}"
+            wx:key="id"
+            wx:for-item="opt"
+            class="cq-option {{selectedOptionId === opt.id ? 'cq-option-selected' : ''}} {{confirming && selectedOptionId !== opt.id ? 'cq-option-dimmed' : ''}}"
+            data-option-id="{{opt.id}}"
+            bindtap="onSelectOption"
+          >
+            <view class="cq-option-dot" />
+            <text class="cq-option-label">{{opt.label}}</text>
+          </view>
+        </view>
+
+        <!-- Reaction -->
+        <view class="cq-reaction-wrap" wx:if="{{reaction && confirming}}">
+          <text class="cq-reaction">{{reaction}}</text>
+          <view class="cq-continue-btn" bindtap="onContinue">继续 →</view>
+        </view>
+      </block>
+
+      <view class="cq-bottom-spacer" />
+    </view>
+  </scroll-view>
+
+</view>

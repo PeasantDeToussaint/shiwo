@@ -1,0 +1,314 @@
+/** app.wxss - mytype design system **/
+
+/* Reset */
+button {
+  background: initial;
+  border: none;
+}
+
+button:focus {
+  outline: 0;
+}
+
+button::after {
+  border: none;
+}
+
+/* Core + semantic + chapter tokens */
+page {
+  --bg: #09090a;
+  --bg-elevated: #101112;
+  --surface: #151617;
+  --surface-2: #1c1d1f;
+  --surface-3: #27292c;
+
+  --text: #f3f3f2;
+  --text-secondary: #b3b3b0;
+  --text-muted: #868684;
+  --text-tertiary: #666664;
+
+  --accent: #f2f2f2;
+  --accent-dim: rgba(255, 255, 255, 0.09);
+  --accent-warm: #8ab0c8;
+  --accent-warm-soft: rgba(138, 176, 200, 0.16);
+  --accent-warm-border: rgba(138, 176, 200, 0.48);
+
+  --border: rgba(255, 255, 255, 0.11);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --divider: rgba(255, 255, 255, 0.08);
+  --hairline-highlight: rgba(255, 255, 255, 0.04);
+
+  --radius-sm: 10rpx;
+  --radius-md: 18rpx;
+  --radius-lg: 28rpx;
+  --radius-pill: 999rpx;
+
+  --font-display: 88rpx;
+  --font-title: 52rpx;
+  --font-body: 34rpx;
+  --font-small: 30rpx;
+  --font-caption: 26rpx;
+  --font-family-body: "Songti SC", "STSong", Georgia, serif;
+  /* Display is Latin-only — Chinese chars fall through to body stack automatically */
+  --font-family-display: "PingFang SC", "Helvetica Neue", sans-serif;
+
+  --space-2: 8rpx;
+  --space-3: 12rpx;
+  --space-4: 16rpx;
+  --space-5: 20rpx;
+  --space-6: 24rpx;
+  --space-7: 28rpx;
+  --space-8: 32rpx;
+  --space-10: 40rpx;
+  --space-12: 48rpx;
+  --space-14: 56rpx;
+  --space-16: 64rpx;
+  --space-18: 72rpx;
+  --space-20: 80rpx;
+
+  --motion-fast: 180ms;
+  --motion-medium: 320ms;
+  --motion-slow: 520ms;
+  --ease-emphasis: cubic-bezier(0.2, 0.9, 0.18, 1);
+
+  --shadow-soft: 0 12rpx 30rpx rgba(0, 0, 0, 0.28);
+  --shadow-inset-hairline: inset 0 1rpx 0 var(--hairline-highlight);
+
+  --state-selected-bg: var(--accent-warm-soft);
+  --state-selected-border: var(--accent-warm-border);
+
+  --chapter-accent: var(--accent-warm);
+  --chapter-glow: rgba(138, 176, 200, 0.08);
+  --chapter-gradient-start: #0d1318;
+  --chapter-gradient-end: #09090a;
+
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-family-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Skyline does not reliably cascade font-family from `page` into child nodes.
+ * Explicitly setting it on all element types ensures NotoSerifSC is used
+ * everywhere for Chinese text, without relying on inheritance.
+ */
+view, text, button, input, label, navigator, scroll-view, swiper {
+  font-family: var(--font-family-body);
+}
+
+.page-atmosphere {
+  background:
+    radial-gradient(circle at 50% -22%, var(--chapter-gradient-start) 0%, var(--chapter-gradient-end) 58%),
+    var(--bg);
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: var(--space-10) var(--space-8) var(--space-16);
+  box-sizing: border-box;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--border);
+  box-shadow: var(--shadow-inset-hairline);
+  padding: var(--space-8);
+  box-sizing: border-box;
+}
+
+.interactive {
+  transition:
+    border-color var(--motion-fast) ease,
+    background var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
+}
+
+/* Typography helpers */
+.display-title {
+  font-family: var(--font-family-display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+.muted-soft {
+  color: var(--text-muted);
+}
+
+.caption {
+  font-size: var(--font-caption);
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+}
+
+/* Buttons */
+.primary-button {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  background: #f0f0f0;
+  color: #0a0a0a;
+  font-size: var(--font-body);
+  font-weight: 600;
+  padding: 26rpx 0;
+  text-align: center;
+  letter-spacing: 0.04em;
+  box-sizing: border-box;
+}
+
+.primary-button[disabled] {
+  opacity: 0.35;
+}
+
+.secondary-button {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--border-strong);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--font-body);
+  font-weight: 400;
+  padding: 26rpx 0;
+  text-align: center;
+  letter-spacing: 0.02em;
+  box-sizing: border-box;
+}
+
+.tertiary-button {
+  display: block;
+  width: auto;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--font-small);
+  letter-spacing: 0.06em;
+  padding: var(--space-3) 0;
+}
+
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, rgba(9, 9, 10, 0) 0%, var(--bg) 42%);
+  padding: var(--space-10) var(--space-8) calc(var(--space-8) + env(safe-area-inset-bottom, 0rpx));
+  box-sizing: border-box;
+}
+
+/* Motion primitives */
+.fade-in,
+.motion-enter {
+  animation: revealUp var(--motion-medium) var(--ease-emphasis) both;
+}
+
+.motion-stagger {
+  animation-delay: var(--stagger, 0ms);
+}
+
+.mask-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.mask-sweep::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -120%;
+  width: 80%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.18) 50%, transparent 100%);
+  animation: maskSweep var(--motion-slow) var(--ease-emphasis) both;
+}
+
+.ambient-pulse {
+  animation: ambientPulse 2400ms ease-in-out infinite;
+}
+
+.progress-grow {
+  transform-origin: left center;
+  animation: progressGrow var(--motion-medium) var(--ease-emphasis) both;
+}
+
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes maskSweep {
+  from {
+    left: -120%;
+  }
+  to {
+    left: 140%;
+  }
+}
+
+@keyframes ambientPulse {
+  0%,
+  100% {
+    box-shadow: inset 0 1rpx 0 var(--hairline-highlight), 0 0 0 0 var(--chapter-glow);
+  }
+  50% {
+    box-shadow: inset 0 1rpx 0 var(--hairline-highlight), 0 0 0 10rpx rgba(0, 0, 0, 0);
+  }
+}
+
+@keyframes progressGrow {
+  from {
+    transform: scaleX(0.7);
+    opacity: 0.45;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* ── Film Grain Overlay ───────────────────────────────────── */
+/*
+ * SVG feTurbulence noise rendered as a data-URI background.
+ * Tiled at 200×200px, opacity 0.035 — removes digital flatness
+ * without any extra network request or file size.
+ * pointer-events: none ensures it never intercepts touches.
+ */
+page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* ── Glassmorphism Utility ────────────────────────────────── */
+/*
+ * backdrop-filter is natively supported in Skyline.
+ * Falls back gracefully in WebView (will appear as 60% alpha tinted bg).
+ */
+.glass {
+  background: rgba(9, 9, 10, 0.6);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+
+.glass-subtle {
+  background: rgba(9, 9, 10, 0.38);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}

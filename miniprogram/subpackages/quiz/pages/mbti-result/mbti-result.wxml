@@ -1,0 +1,191 @@
+<scroll-view scroll-y class="mr-scroll">
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="mr-loading">
+    <view class="mr-loading-bar" />
+  </view>
+
+  <view wx:elif="{{result}}" class="mr-shell {{mounted ? 'mounted' : ''}}">
+
+    <!-- ── Header ───────────────────────────────────────────── -->
+    <view class="mr-header">
+
+      <!-- Brand stamp -->
+      <view class="mr-brand-stamp motion-enter motion-stagger" style="--stagger: 0ms;">
+        <text class="mr-brand-name">MYTYPE</text>
+        <text class="mr-brand-sep">·</text>
+        <text class="mr-brand-quiz">{{quiz.eyebrow || quiz.title}}</text>
+      </view>
+
+      <!-- Group badge -->
+      <view class="mr-group-badge motion-enter motion-stagger" style="--stagger: 40ms;">
+        <text class="mr-group-text">{{result.group}}</text>
+        <text class="mr-group-sep">·</text>
+        <text class="mr-group-en">{{result.groupEnglish}}</text>
+      </view>
+
+      <!-- Type code + names -->
+      <view class="mr-type-block motion-enter motion-stagger" style="--stagger: 100ms;">
+        <text class="mr-type-code">{{result.typeCode}}</text>
+        <view class="mr-type-names">
+          <text class="mr-type-zh">{{result.title}}</text>
+          <text class="mr-type-en">{{result.englishTitle}}</text>
+        </view>
+      </view>
+
+      <!-- Subtitle -->
+      <text wx:if="{{result.subtitle}}" class="mr-subtitle motion-enter motion-stagger" style="--stagger: 160ms;">{{result.subtitle}}</text>
+
+      <!-- Dimension bars -->
+      <view class="mr-dim-bars motion-enter motion-stagger" style="--stagger: 240ms;">
+        <view class="mr-dim-row" wx:for="{{dimBars}}" wx:key="posLabel">
+          <view class="mr-dim-poles">
+            <text class="mr-dim-pole {{item.dominant === 'pos' ? 'active' : ''}}">{{item.posLabel}}</text>
+            <text class="mr-dim-pole {{item.dominant === 'neg' ? 'active' : ''}}">{{item.negLabel}}</text>
+          </view>
+          <view class="mr-dim-track">
+            <view
+              class="mr-dim-fill {{item.dominant === 'pos' ? 'fill-left' : 'fill-right'}}"
+              style="width: {{item.fillPct}}%;"
+            />
+            <view class="mr-dim-center-line" />
+          </view>
+          <view class="mr-dim-pcts">
+            <text class="mr-dim-pct {{item.dominant === 'pos' ? 'active' : ''}}">{{item.posPct}}%</text>
+            <text class="mr-dim-pct {{item.dominant === 'neg' ? 'active' : ''}}">{{item.negPct}}%</text>
+          </view>
+        </view>
+      </view>
+
+    </view>
+
+    <!-- ── Content ───────────────────────────────────────────── -->
+    <view class="mr-content">
+
+      <!-- Bold quote -->
+      <view wx:if="{{result.boldQuote}}" class="mr-bold-quote">
+        <text class="mr-bold-quote-mark">"</text>
+        <text class="mr-bold-quote-text">{{result.boldQuote}}</text>
+        <text class="mr-bold-quote-mark close">"</text>
+      </view>
+
+      <!-- 01 简介 -->
+      <view class="mr-section">
+        <view class="mr-section-head">
+          <text class="mr-section-num">01</text>
+          <text class="mr-section-title">简介</text>
+        </view>
+        <view class="mr-paras">
+          <text class="mr-para" wx:for="{{portraitParagraphs}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+
+      <!-- Verse -->
+      <view wx:if="{{result.verse}}" class="mr-verse">
+        <view class="mr-verse-rule" />
+        <text class="mr-verse-text">{{result.verse}}</text>
+        <text class="mr-verse-source">— {{result.verseSource}}</text>
+      </view>
+
+      <!-- 02 优势 -->
+      <view wx:if="{{result.strengths && result.strengths.length}}" class="mr-section">
+        <view class="mr-section-head">
+          <text class="mr-section-num">02</text>
+          <text class="mr-section-title">优势</text>
+        </view>
+        <view class="mr-trait-list">
+          <view class="mr-trait-item" wx:for="{{result.strengths}}" wx:key="label">
+            <view class="mr-trait-dot pos" />
+            <view class="mr-trait-body">
+              <text class="mr-trait-label">{{item.label}}</text>
+              <text class="mr-trait-desc">{{item.description}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 03 短板 -->
+      <view wx:if="{{result.weaknesses && result.weaknesses.length}}" class="mr-section">
+        <view class="mr-section-head">
+          <text class="mr-section-num">03</text>
+          <text class="mr-section-title">短板</text>
+        </view>
+        <view class="mr-trait-list">
+          <view class="mr-trait-item" wx:for="{{result.weaknesses}}" wx:key="label">
+            <view class="mr-trait-dot neg" />
+            <view class="mr-trait-body">
+              <text class="mr-trait-label">{{item.label}}</text>
+              <text class="mr-trait-desc">{{item.description}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 04 恋爱关系 -->
+      <view wx:if="{{romanticParagraphs.length}}" class="mr-section">
+        <view class="mr-section-head">
+          <text class="mr-section-num">04</text>
+          <text class="mr-section-title">恋爱关系</text>
+        </view>
+        <view class="mr-paras">
+          <text class="mr-para" wx:for="{{romanticParagraphs}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+
+      <!-- 05 友谊 -->
+      <view wx:if="{{friendshipsParagraphs.length}}" class="mr-section">
+        <view class="mr-section-head">
+          <text class="mr-section-num">05</text>
+          <text class="mr-section-title">友谊</text>
+        </view>
+        <view class="mr-paras">
+          <text class="mr-para" wx:for="{{friendshipsParagraphs}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+
+      <!-- 06 为人父母 -->
+      <view wx:if="{{parenthoodParagraphs.length}}" class="mr-section">
+        <view class="mr-section-head">
+          <text class="mr-section-num">06</text>
+          <text class="mr-section-title">为人父母</text>
+        </view>
+        <view class="mr-paras">
+          <text class="mr-para" wx:for="{{parenthoodParagraphs}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+
+      <!-- 07 职业发展 -->
+      <view wx:if="{{careerParagraphs.length}}" class="mr-section">
+        <view class="mr-section-head">
+          <text class="mr-section-num">07</text>
+          <text class="mr-section-title">职业发展</text>
+        </view>
+        <view class="mr-paras">
+          <text class="mr-para" wx:for="{{careerParagraphs}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+
+      <!-- 08 工作习惯 -->
+      <view wx:if="{{workplaceParagraphs.length}}" class="mr-section">
+        <view class="mr-section-head">
+          <text class="mr-section-num">08</text>
+          <text class="mr-section-title">工作习惯</text>
+        </view>
+        <view class="mr-paras">
+          <text class="mr-para" wx:for="{{workplaceParagraphs}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+
+      <!-- Actions -->
+      <view class="mr-actions">
+        <button class="mr-share-btn" open-type="share">分享给朋友</button>
+        <view class="mr-actions-row">
+          <button class="mr-secondary-btn" bindtap="onRetake">再测一次</button>
+          <button class="mr-tertiary-btn" bindtap="onBackHome">返回首页</button>
+        </view>
+      </view>
+
+    </view>
+  </view>
+
+</scroll-view>

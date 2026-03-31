@@ -1,0 +1,162 @@
+<scroll-view scroll-y class="gq-scroll" style="{{pageThemeStyle}}">
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="gq-loading">
+    <view class="gq-loading-bar" />
+  </view>
+
+  <!-- ── Group mode: 5 questions per page, radio-circle UI ── -->
+  <view wx:elif="{{groupMode}}" class="gq-shell">
+
+    <!-- Progress -->
+    <view class="gq-progress-wrap" style="padding-top: {{statusBarHeight}}px;">
+      <view class="gq-progress-head">
+        <view class="gq-exit-btn" bindtap="onExit">
+          <text class="gq-exit-label">← 返回主页</text>
+        </view>
+        <text class="gq-progress-label">{{groupIndex + 1}} / {{groupCount}}</text>
+      </view>
+      <view class="gq-progress-track">
+        <view class="gq-progress-fill" style="width: {{progress}}%;" />
+      </view>
+    </view>
+
+    <!-- Scale header -->
+    <view class="gq-scale-header">
+      <text class="gq-scale-end-text">不符合</text>
+      <view class="gq-scale-header-dots">
+        <view class="gq-scale-header-dot" />
+        <view class="gq-scale-header-dot" />
+        <view class="gq-scale-header-dot" />
+        <view class="gq-scale-header-dot" />
+        <view class="gq-scale-header-dot" />
+      </view>
+      <text class="gq-scale-end-text gq-scale-end-right">符合</text>
+    </view>
+
+    <!-- Question rows -->
+    <view class="gq-group-list">
+      <view
+        wx:for="{{groupQuestions}}"
+        wx:key="id"
+        wx:for-item="q"
+        wx:for-index="qi"
+        class="gq-group-row {{q.selectedOptionId ? 'gq-group-row-answered' : ''}}"
+      >
+        <view class="gq-group-row-top">
+          <text class="gq-group-qnum">{{groupIndex * groupSize + qi + 1}}</text>
+          <text class="gq-group-qtext">{{q.text}}</text>
+        </view>
+        <view class="gq-group-circles">
+          <view
+            wx:for="{{q.options}}"
+            wx:key="id"
+            wx:for-item="opt"
+            class="gq-circle {{q.selectedOptionId === opt.id ? 'gq-circle-sel' : ''}}"
+            data-qid="{{q.id}}"
+            data-oid="{{opt.id}}"
+            bindtap="onGroupSelect"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- Footer -->
+    <view class="gq-footer">
+      <view
+        class="gq-confirm-btn {{!groupComplete ? 'gq-confirm-btn-disabled' : ''}}"
+        bindtap="onGroupConfirm"
+      >
+        <text>{{groupIndex + 1 < groupCount ? '下一组' : '查看结果'}}</text>
+      </view>
+    </view>
+
+  </view>
+
+  <!-- ── Single-question mode (existing) ── -->
+  <view wx:else class="gq-shell {{cardEntering ? 'gq-entering' : ''}}">
+
+    <!-- Progress bar -->
+    <view class="gq-progress-wrap" style="padding-top: {{statusBarHeight}}px;">
+      <view class="gq-progress-head">
+        <view class="gq-exit-btn" bindtap="onExit">
+          <text class="gq-exit-label">← 返回主页</text>
+        </view>
+        <text class="gq-progress-label">{{currentIndex + 1}} / {{totalCount}}</text>
+      </view>
+      <view class="gq-progress-track">
+        <view class="gq-progress-fill" style="width: {{progress}}%;" />
+      </view>
+    </view>
+
+    <!-- Question card -->
+    <view class="gq-card">
+      <text class="gq-question-text">{{currentQuestion.text}}</text>
+
+      <!-- Binary / single choice -->
+      <view wx:if="{{currentQuestion.type !== 'likert-slider' && currentQuestion.type !== 'slider-likert' && currentQuestion.type !== 'slider' && currentQuestion.interaction !== 'slider'}}" class="gq-options">
+        <view
+          wx:for="{{currentQuestion.options}}"
+          wx:key="id"
+          class="gq-option {{selectedOptionId === item.id ? 'gq-option-selected' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onSelectOption"
+        >
+          <view class="gq-option-dot {{selectedOptionId === item.id ? 'gq-option-dot-selected' : ''}}" />
+          <text class="gq-option-text">{{item.text}}</text>
+        </view>
+      </view>
+
+      <!-- Likert slider -->
+      <view wx:else class="gq-slider-wrap">
+        <view class="gq-slider-head">
+          <text class="gq-slider-end">{{(currentQuestion.sliderLabels && currentQuestion.sliderLabels[0]) || '非常不同意'}}</text>
+          <text class="gq-slider-end gq-slider-end-right">{{(currentQuestion.sliderLabels && currentQuestion.sliderLabels[1]) || '非常同意'}}</text>
+        </view>
+        <slider
+          class="gq-slider"
+          min="0"
+          max="100"
+          step="1"
+          value="{{sliderValue}}"
+          activeColor="#8ab0c8"
+          backgroundColor="rgba(255,255,255,0.2)"
+          block-color="#8ab0c8"
+          bindchanging="onSliderChanging"
+          bindchange="onSliderChange"
+        />
+        <view class="gq-slider-foot">
+          <text class="gq-slider-hint">{{sliderHint}}</text>
+          <text class="gq-slider-value">{{sliderValue}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Confirm button -->
+    <view class="gq-footer">
+      <view
+        class="gq-confirm-btn {{!canConfirm ? 'gq-confirm-btn-disabled' : ''}} {{confirming ? 'gq-confirm-btn-confirming' : ''}}"
+        bindtap="onConfirm"
+      >
+        <text>{{currentIndex + 1 < totalCount ? '下一题' : '查看结果'}}</text>
+      </view>
+    </view>
+
+  </view>
+</scroll-view>
+
+<!-- Exit confirmation modal -->
+<view wx:if="{{showExitModal}}" class="gq-modal-mask" catchtap="onExitCancel">
+  <view class="gq-modal" catchtap="">
+    <text class="gq-modal-title">放弃这次测试？</text>
+    <text class="gq-modal-body">进度不会被保存</text>
+    <view class="gq-modal-actions">
+      <view class="gq-modal-btn gq-modal-btn-quit" bindtap="onExitConfirm">
+        <text>放弃</text>
+      </view>
+      <view class="gq-modal-btn gq-modal-btn-stay" bindtap="onExitCancel">
+        <text>继续答题</text>
+      </view>
+    </view>
+  </view>
+</view>

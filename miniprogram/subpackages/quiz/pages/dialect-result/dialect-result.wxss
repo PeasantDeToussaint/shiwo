@@ -1,0 +1,274 @@
+/* ── Scroll ───────────────────────────────────────────────── */
+.dr-scroll {
+  height: 100vh;
+  background: var(--bg);
+}
+
+.dr-shell {
+  min-height: 100vh;
+  padding: 0 var(--space-8) var(--space-8);
+  box-sizing: border-box;
+}
+
+/* Motion entrance */
+.motion-enter { opacity: 0; transform: translateY(20rpx); }
+.mounted .motion-enter { animation: dr-enter 0.5s ease both; }
+.mounted .motion-stagger { animation-delay: var(--stagger, 0ms); }
+
+@keyframes dr-enter {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.dr-hero {
+  padding: 120rpx 0 var(--space-10);
+  text-align: center;
+}
+
+.dr-eyebrow {
+  display: block;
+  font-size: 22rpx;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.dr-accent-line {
+  width: 60rpx;
+  height: 2rpx;
+  background: var(--chapter-accent, #b8956a);
+  margin: 0 auto var(--space-7);
+}
+
+.dr-label {
+  display: block;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-4);
+}
+
+.dr-region-title {
+  display: block;
+  font-size: 64rpx;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  margin-bottom: var(--space-4);
+}
+
+.dr-provinces {
+  display: block;
+  font-size: 24rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+/* ── Confidence ───────────────────────────────────────────── */
+.dr-conf-wrap {
+  border: 1rpx solid var(--border);
+  padding: var(--space-6) var(--space-7);
+  margin-bottom: var(--space-8);
+}
+
+.dr-conf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.dr-conf-label {
+  font-size: 24rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+.dr-conf-tag {
+  font-size: 22rpx;
+  color: var(--chapter-accent, #b8956a);
+  letter-spacing: 0.1em;
+}
+
+.dr-conf-low { color: var(--text-muted); }
+
+.dr-conf-bar-bg {
+  height: 4rpx;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.dr-conf-bar-fill {
+  height: 100%;
+  background: var(--chapter-accent, #b8956a);
+  transition: width 1s ease;
+}
+
+.dr-conf-note {
+  display: block;
+  font-size: 22rpx;
+  color: var(--text-muted);
+  margin-top: var(--space-4);
+  line-height: 1.6;
+}
+
+/* ── Matched words hero block ─────────────────────────────── */
+.dr-matched-hero {
+  margin-bottom: var(--space-6);
+  padding: var(--space-6) var(--space-7);
+  border: 1rpx solid var(--chapter-accent, #b8956a);
+  background: var(--state-selected-bg, rgba(184,149,106,0.07));
+}
+
+.dr-matched-label {
+  display: block;
+  font-size: 22rpx;
+  letter-spacing: 0.16em;
+  color: var(--chapter-accent, #b8956a);
+  margin-bottom: var(--space-5);
+}
+
+/* ── Sections ─────────────────────────────────────────────── */
+.dr-section {
+  margin-bottom: var(--space-8);
+}
+
+.dr-section-label {
+  display: block;
+  font-size: 22rpx;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.dr-body {
+  display: block;
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  line-height: 1.85;
+  letter-spacing: 0.04em;
+}
+
+.dr-body-dim { color: var(--text-muted); }
+
+/* ── Matched word chips ───────────────────────────────────── */
+.dr-words-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.dr-word-chip {
+  border: 1rpx solid var(--chapter-accent, #b8956a);
+  padding: var(--space-2) var(--space-5);
+}
+
+.dr-word-text {
+  font-size: 26rpx;
+  color: var(--chapter-accent, #b8956a);
+  letter-spacing: 0.06em;
+}
+
+/* ── Verse ────────────────────────────────────────────────── */
+.dr-verse-wrap {
+  border-left: 3rpx solid var(--chapter-accent, #b8956a);
+  padding: var(--space-5) var(--space-7);
+  margin-bottom: var(--space-8);
+}
+
+.dr-verse {
+  display: block;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+  font-style: italic;
+}
+
+/* ── Sub-region ───────────────────────────────────────────── */
+.dr-sub-wrap {
+  border: 1rpx solid var(--border);
+  padding: var(--space-7);
+  margin-bottom: var(--space-8);
+}
+
+.dr-sub-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.dr-sub-accent-line {
+  width: 24rpx;
+  height: 2rpx;
+  background: var(--chapter-accent, #b8956a);
+}
+
+.dr-sub-label {
+  font-size: 22rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.14em;
+}
+
+.dr-sub-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: var(--space-3);
+}
+
+.dr-sub-body {
+  display: block;
+  font-size: 26rpx;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+.dr-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.dr-share-btn {
+  border: 1rpx solid var(--chapter-accent, #b8956a);
+  background: var(--chapter-accent, #b8956a);
+  color: #101010;
+  font-size: 28rpx;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  padding: var(--space-6) 0;
+  text-align: center;
+}
+
+.dr-actions-row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.dr-btn-secondary, .dr-btn-tertiary {
+  flex: 1;
+  padding: var(--space-5) 0;
+  font-size: 24rpx;
+  letter-spacing: 0.1em;
+  text-align: center;
+  border: 1rpx solid var(--border);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Disclaimer ───────────────────────────────────────────── */
+.dr-disclaimer {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  line-height: 1.6;
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.dr-bottom-pad { height: 120rpx; }

@@ -1,0 +1,1617 @@
+{
+  "id": "city",
+  "featureId": "lifestyle",
+  "title": "城市归属",
+  "subtitle": "中国哪座城市，最适合你的生活？",
+  "eyebrow": "City Match",
+  "description": "",
+  "disclaimer": "",
+  "themeKey": "city",
+  "accent": "#c9a96a",
+  "bgImage": "cloud://cloudbase-4gadl6qo4a9aa95d.636c-cloudbase-4gadl6qo4a9aa95d-1415990507/city_pic.png",
+  "displayTitleZh": "城市归属",
+  "displayTitleEn": "City Match",
+  "tags": [
+    "城市选择",
+    "生活方式"
+  ],
+  "estimatedMinutes": 8,
+  "questionCount": 25,
+  "isAvailable": true,
+  "questionPage": "/subpackages/quiz/pages/city-question/city-question",
+  "resultPage": "/subpackages/quiz/pages/city-result/city-result",
+  "scoring": {
+    "type": "city"
+  },
+  "questions": [
+    {
+      "id": "A1",
+      "phase": "about_you",
+      "mode": "province",
+      "source": "关于你",
+      "title": "出发地",
+      "scene": "先了解一下你从哪里来。这会影响我们对距离和归属感的判断。",
+      "prompt": "你的家乡或现在的所在省份？",
+      "provinces": [
+        {
+          "id": "beijing",
+          "name": "北京",
+          "region": "north"
+        },
+        {
+          "id": "tianjin",
+          "name": "天津",
+          "region": "north"
+        },
+        {
+          "id": "hebei",
+          "name": "河北",
+          "region": "north"
+        },
+        {
+          "id": "shanxi",
+          "name": "山西",
+          "region": "north"
+        },
+        {
+          "id": "neimenggu",
+          "name": "内蒙古",
+          "region": "north"
+        },
+        {
+          "id": "liaoning",
+          "name": "辽宁",
+          "region": "northeast"
+        },
+        {
+          "id": "jilin",
+          "name": "吉林",
+          "region": "northeast"
+        },
+        {
+          "id": "heilongjiang",
+          "name": "黑龙江",
+          "region": "northeast"
+        },
+        {
+          "id": "shanghai",
+          "name": "上海",
+          "region": "east"
+        },
+        {
+          "id": "jiangsu",
+          "name": "江苏",
+          "region": "east"
+        },
+        {
+          "id": "zhejiang",
+          "name": "浙江",
+          "region": "east"
+        },
+        {
+          "id": "anhui",
+          "name": "安徽",
+          "region": "east"
+        },
+        {
+          "id": "fujian",
+          "name": "福建",
+          "region": "east"
+        },
+        {
+          "id": "jiangxi",
+          "name": "江西",
+          "region": "east"
+        },
+        {
+          "id": "shandong",
+          "name": "山东",
+          "region": "east"
+        },
+        {
+          "id": "henan",
+          "name": "河南",
+          "region": "central"
+        },
+        {
+          "id": "hubei",
+          "name": "湖北",
+          "region": "central"
+        },
+        {
+          "id": "hunan",
+          "name": "湖南",
+          "region": "central"
+        },
+        {
+          "id": "guangdong",
+          "name": "广东",
+          "region": "south"
+        },
+        {
+          "id": "guangxi",
+          "name": "广西",
+          "region": "south"
+        },
+        {
+          "id": "hainan",
+          "name": "海南",
+          "region": "south"
+        },
+        {
+          "id": "chongqing",
+          "name": "重庆",
+          "region": "southwest"
+        },
+        {
+          "id": "sichuan",
+          "name": "四川",
+          "region": "southwest"
+        },
+        {
+          "id": "guizhou",
+          "name": "贵州",
+          "region": "southwest"
+        },
+        {
+          "id": "yunnan",
+          "name": "云南",
+          "region": "southwest"
+        },
+        {
+          "id": "xizang",
+          "name": "西藏",
+          "region": "southwest"
+        },
+        {
+          "id": "shaanxi",
+          "name": "陕西",
+          "region": "northwest"
+        },
+        {
+          "id": "gansu",
+          "name": "甘肃",
+          "region": "northwest"
+        },
+        {
+          "id": "qinghai",
+          "name": "青海",
+          "region": "northwest"
+        },
+        {
+          "id": "ningxia",
+          "name": "宁夏",
+          "region": "northwest"
+        },
+        {
+          "id": "xinjiang",
+          "name": "新疆",
+          "region": "northwest"
+        },
+        {
+          "id": "overseas",
+          "name": "海外 / 港澳台",
+          "region": "other"
+        }
+      ],
+      "reaction": "记下了。",
+      "pref": null
+    },
+    {
+      "id": "A2",
+      "phase": "about_you",
+      "mode": "choice",
+      "source": "关于你",
+      "title": "落地方式",
+      "scene": "不同的住房目标，影响我们对城市房价和发展潜力的权重。",
+      "prompt": "你打算在新城市租房还是买房？",
+      "options": [
+        {
+          "id": "a",
+          "label": "租房，保持灵活，暂时不考虑置业",
+          "reaction": "租房为主，注重性价比和生活质量。",
+          "pref": {
+            "targets": {
+              "housingIntent": "rent"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "计划买房，长期定居",
+          "reaction": "长期定居，房产潜力也纳入考量。",
+          "pref": {
+            "targets": {
+              "housingIntent": "buy"
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "两者都有可能，视情况而定",
+          "reaction": "好，两个维度都考虑。",
+          "pref": {
+            "targets": {
+              "housingIntent": "flexible"
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我不确定，或者这不重要",
+          "reaction": "明白，我们跳过这个维度。",
+          "pref": {
+            "targets": {
+              "housingIntent": "none"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "A3",
+      "phase": "about_you",
+      "mode": "choice",
+      "source": "关于你",
+      "title": "时间线",
+      "scene": "你对迁居这件事有多紧迫？这会影响我们对可操作性的侧重。",
+      "prompt": "你大概什么时候打算做出这个决定？",
+      "options": [
+        {
+          "id": "a",
+          "label": "已经在认真规划，半年内可能就动",
+          "reaction": "时间紧，注重实操可行性。",
+          "pref": {
+            "targets": {
+              "timeline": "soon"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "1–2 年内打算搬，还在调研阶段",
+          "reaction": "不急，可以深入权衡。",
+          "pref": {
+            "targets": {
+              "timeline": "medium"
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "只是随便想想，没有具体计划",
+          "reaction": "探索模式，帮你开开眼界。",
+          "pref": {
+            "targets": {
+              "timeline": "exploring"
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "不打算搬，只是好奇哪个城市最适合自己",
+          "reaction": "好奇驱动，最轻松的方式。",
+          "pref": {
+            "targets": {
+              "timeline": "curious"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "HC1",
+      "phase": "hard_constraints",
+      "mode": "choice",
+      "source": "我的底线",
+      "title": "空气质量",
+      "scene": "中国城市 PM2.5 差距悬殊。有些人对此非常敏感，有些人无所谓。",
+      "prompt": "你对空气质量的底线是什么？",
+      "options": [
+        {
+          "id": "a",
+          "label": "必须达标，年均 PM2.5 低于 35 μg/m³（国家一级）",
+          "reaction": "严格筛选，清肺优先。",
+          "pref": {
+            "constraints": {
+              "maxPM25": 35,
+              "maxPM25Mode": "must"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "55 μg/m³ 以内可接受，达到国家二级标准",
+          "reaction": "合理底线，大多数宜居城市都能达到。",
+          "pref": {
+            "constraints": {
+              "maxPM25": 55,
+              "maxPM25Mode": "must"
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "70 μg/m³ 以内就行，稍差一点可以接受",
+          "reaction": "弹性底线，更多城市进入候选。",
+          "pref": {
+            "constraints": {
+              "maxPM25": 70,
+              "maxPM25Mode": "nice"
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "空气质量不是我的优先考虑",
+          "reaction": "明白，这个维度不参与筛选。",
+          "pref": {
+            "constraints": {
+              "maxPM25": 999,
+              "maxPM25Mode": "none"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "HC2",
+      "phase": "hard_constraints",
+      "mode": "choice",
+      "source": "我的底线",
+      "title": "租房预算",
+      "scene": "市区一居室的月租，是城市生活成本的核心指标。",
+      "prompt": "你能接受的月租上限大概是多少？",
+      "options": [
+        {
+          "id": "a",
+          "label": "2000 元以内，性价比是核心",
+          "reaction": "控制成本，聚焦二三线城市。",
+          "pref": {
+            "constraints": {
+              "maxRent": 2000,
+              "maxRentMode": "must"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "2000–4000 元，合理范围内",
+          "reaction": "大多数新一线城市都在这个区间。",
+          "pref": {
+            "constraints": {
+              "maxRent": 4000,
+              "maxRentMode": "must"
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "4000–8000 元，品质优先",
+          "reaction": "可以看一线城市了。",
+          "pref": {
+            "constraints": {
+              "maxRent": 8000,
+              "maxRentMode": "must"
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "预算不是问题，超过 8000 也无所谓",
+          "reaction": "不设上限，全部城市都纳入。",
+          "pref": {
+            "constraints": {
+              "maxRent": 99999,
+              "maxRentMode": "none"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "HC3",
+      "phase": "hard_constraints",
+      "mode": "choice",
+      "source": "我的底线",
+      "title": "海岸线",
+      "scene": "「城市必须靠海」是很多人不可妥协的条件，也有人完全无所谓。",
+      "prompt": "靠海或有海滩，对你来说是硬条件吗？",
+      "options": [
+        {
+          "id": "a",
+          "label": "必须！我需要能随时去海边的生活",
+          "reaction": "沿海城市优先，内陆一律排除。",
+          "pref": {
+            "constraints": {
+              "requireCoast": true,
+              "requireCoastMode": "must"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "有海当然更好，但不是不可妥协的条件",
+          "reaction": "沿海城市加分，内陆不被排除。",
+          "pref": {
+            "constraints": {
+              "requireCoast": true,
+              "requireCoastMode": "nice"
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "我不需要住在海边",
+          "reaction": "好，这个维度不参与筛选。",
+          "pref": {
+            "constraints": {
+              "requireCoast": false,
+              "requireCoastMode": "none"
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我更喜欢山城或内陆盆地",
+          "reaction": "山地型城市加分。",
+          "pref": {
+            "constraints": {
+              "requireCoast": false,
+              "preferMountain": true,
+              "requireCoastMode": "none"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "HC4",
+      "phase": "hard_constraints",
+      "mode": "choice",
+      "source": "我的底线",
+      "title": "冬天底线",
+      "scene": "中国南北冬季差异极大。重庆冬天5°C、哈尔滨 -25°C，都是现实。",
+      "prompt": "你能接受的冬天有多冷？",
+      "options": [
+        {
+          "id": "a",
+          "label": "冬天必须暖和，最冷不能低于 5°C",
+          "reaction": "亚热带及以南城市优先，告别冬季外套。",
+          "pref": {
+            "constraints": {
+              "minWinterTemp": 5,
+              "minWinterTempMode": "must"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "0°C 左右可以接受，有暖气就行",
+          "reaction": "过渡气候城市也在候选里了。",
+          "pref": {
+            "constraints": {
+              "minWinterTemp": 0,
+              "minWinterTempMode": "must"
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "-10°C 以上都能扛，习惯北方冬天",
+          "reaction": "东北、华北也在考虑范围。",
+          "pref": {
+            "constraints": {
+              "minWinterTemp": -10,
+              "minWinterTempMode": "nice"
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "对冬天的冷热没有要求",
+          "reaction": "冬季气温不参与筛选。",
+          "pref": {
+            "constraints": {
+              "minWinterTemp": -999,
+              "minWinterTempMode": "none"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "HC6",
+      "phase": "hard_constraints",
+      "mode": "choice",
+      "source": "我的底线",
+      "title": "地铁",
+      "scene": "没有地铁意味着完全依赖汽车或网约车。对有些人是障碍，对另一些人无所谓。",
+      "prompt": "城市必须有地铁吗？",
+      "options": [
+        {
+          "id": "a",
+          "label": "必须有地铁，否则生活不方便",
+          "reaction": "地铁是硬条件，无地铁城市排除。",
+          "pref": {
+            "constraints": {
+              "requireSubway": true,
+              "requireSubwayMode": "must"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "有地铁更好，没有也能接受",
+          "reaction": "有地铁加分，没有不出局。",
+          "pref": {
+            "constraints": {
+              "requireSubway": true,
+              "requireSubwayMode": "nice"
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "无所谓，我开车或者骑车",
+          "reaction": "地铁不参与筛选。",
+          "pref": {
+            "constraints": {
+              "requireSubway": false,
+              "requireSubwayMode": "none"
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我更倾向于小城市，地铁反而让城市太大了",
+          "reaction": "小城市特有的生活感纳入考量。",
+          "pref": {
+            "constraints": {
+              "requireSubway": false,
+              "preferSmallCity": true,
+              "requireSubwayMode": "none"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "HC7",
+      "phase": "hard_constraints",
+      "mode": "choice",
+      "source": "我的底线",
+      "title": "国际航班",
+      "scene": "如果你需要频繁出境，或者家人在海外，直飞国际航班的重要性会完全不同。",
+      "prompt": "你需要城市有国际直飞航班吗？",
+      "options": [
+        {
+          "id": "a",
+          "label": "必须有国际直飞，我经常出境",
+          "reaction": "仅保留有国际机场的城市。",
+          "pref": {
+            "constraints": {
+              "requireIntlAirport": true,
+              "requireIntlAirportMode": "must"
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "有更方便，但坐高铁去大城市转机也能接受",
+          "reaction": "国际航班加分，不是淘汰条件。",
+          "pref": {
+            "constraints": {
+              "requireIntlAirport": true,
+              "requireIntlAirportMode": "nice"
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "我很少出境，不是我的考虑",
+          "reaction": "这个维度不参与筛选。",
+          "pref": {
+            "constraints": {
+              "requireIntlAirport": false,
+              "requireIntlAirportMode": "none"
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我偏好远离机场噪音的城市",
+          "reaction": "好的，不以此为加分项。",
+          "pref": {
+            "constraints": {
+              "requireIntlAirport": false,
+              "requireIntlAirportMode": "none"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP1",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "口味偏好",
+      "scene": "饮食是日常体验的核心。在一个口味不合的城市，每顿饭都是妥协。",
+      "prompt": "你对「辣」这件事怎么看？",
+      "options": [
+        {
+          "id": "a",
+          "label": "非常喜欢辣，越辣越好，这对我很重要",
+          "reaction": "麻辣口味的城市会排在前面。",
+          "pref": {
+            "targets": {
+              "spiceLevel": 9
+            },
+            "weights": {
+              "spice": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "喜欢有点辣，但不想天天吃极辣，口味比较重要",
+          "reaction": "中等辣度最合适你。",
+          "pref": {
+            "targets": {
+              "spiceLevel": 5
+            },
+            "weights": {
+              "spice": 2
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "不太喜欢辣，偏好清淡，口味有一定要求",
+          "reaction": "广式、江浙口味的城市更适合你。",
+          "pref": {
+            "targets": {
+              "spiceLevel": 2
+            },
+            "weights": {
+              "spice": 2
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "对辣完全没有要求，什么都能吃",
+          "reaction": "口味这个维度跳过。",
+          "pref": {
+            "targets": {
+              "spiceLevel": 5
+            },
+            "weights": {
+              "spice": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP2",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "美食风格",
+      "scene": "除了辣度，食物风格本身也是城市气质的一部分。",
+      "prompt": "你最在意哪种饮食体验？",
+      "options": [
+        {
+          "id": "a",
+          "label": "街头小吃、夜市、地道地方风味，越接地气越好",
+          "reaction": "市井烟火气的城市加分。",
+          "pref": {
+            "targets": {
+              "foodStyle": "street"
+            },
+            "weights": {
+              "foodStyle": 2
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "新鲜海鲜，最好每天都能吃到",
+          "reaction": "沿海城市在这个维度上分值提升。",
+          "pref": {
+            "targets": {
+              "foodStyle": "seafood"
+            },
+            "weights": {
+              "foodStyle": 3
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "饮食要多元，精致国际化，不局限于本地菜",
+          "reaction": "一线和强新一线城市更符合这个偏好。",
+          "pref": {
+            "targets": {
+              "foodStyle": "cosmopolitan"
+            },
+            "weights": {
+              "foodStyle": 2
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "饮食对我不重要，随便吃都行",
+          "reaction": "饮食风格不参与评分。",
+          "pref": {
+            "targets": {
+              "foodStyle": "any"
+            },
+            "weights": {
+              "foodStyle": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP3",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "生活节奏",
+      "scene": "城市的节奏感是你每天都要呼吸的空气。北京是冲刺，大理是散步。",
+      "prompt": "你希望自己生活在什么节奏的城市里？",
+      "options": [
+        {
+          "id": "a",
+          "label": "快节奏，有竞争有压力有活力，我喜欢这种感觉",
+          "reaction": "一线城市的能量最适合你。",
+          "pref": {
+            "targets": {
+              "pace": 8
+            },
+            "weights": {
+              "pace": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "适中，不太快也不太慢，张弛有度",
+          "reaction": "新一线城市往往在这个平衡点上。",
+          "pref": {
+            "targets": {
+              "pace": 5
+            },
+            "weights": {
+              "pace": 2
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "慢一点，悠闲为主，工作不是生活的全部",
+          "reaction": "慢生活型城市加分。",
+          "pref": {
+            "targets": {
+              "pace": 3
+            },
+            "weights": {
+              "pace": 3
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "极度放松，甚至有点「躺平」，彻底减压",
+          "reaction": "最悠闲的城市排在最前面。",
+          "pref": {
+            "targets": {
+              "pace": 1
+            },
+            "weights": {
+              "pace": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP4",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "夜生活",
+      "scene": "有些城市晚上12点后才开始热闹，有些城市9点已经关灯。",
+      "prompt": "夜生活对你来说有多重要？",
+      "options": [
+        {
+          "id": "a",
+          "label": "非常重要，我需要丰富的夜间娱乐、酒吧和活动",
+          "reaction": "夜间经济活跃的城市靠前。",
+          "pref": {
+            "targets": {
+              "nightlife": 9
+            },
+            "weights": {
+              "nightlife": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "偶尔出去玩就够了，有几个选择就行",
+          "reaction": "中等夜生活水平满足你。",
+          "pref": {
+            "targets": {
+              "nightlife": 5
+            },
+            "weights": {
+              "nightlife": 1
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "我不太在意，早睡早起型",
+          "reaction": "夜生活不纳入评分。",
+          "pref": {
+            "targets": {
+              "nightlife": 2
+            },
+            "weights": {
+              "nightlife": 0
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我主动偏好安静的夜晚，不喜欢嘈杂",
+          "reaction": "安静宜居的城市加分。",
+          "pref": {
+            "targets": {
+              "nightlife": 1
+            },
+            "weights": {
+              "nightlife": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP5",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "职业生态",
+      "scene": "你所在的行业，在不同城市的机会密度差异巨大。",
+      "prompt": "你的工作方向是什么？",
+      "options": [
+        {
+          "id": "a",
+          "label": "科技 / 互联网 / 创业，需要好的行业生态",
+          "reaction": "科技城市在这个维度大幅加分。",
+          "pref": {
+            "targets": {
+              "industry": "tech"
+            },
+            "weights": {
+              "industry": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "金融 / 商务 / 外贸 / 制造业",
+          "reaction": "金融中心和制造业重镇加分。",
+          "pref": {
+            "targets": {
+              "industry": "finance"
+            },
+            "weights": {
+              "industry": 3
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "创意 / 设计 / 文化 / 媒体 / 教育",
+          "reaction": "文化浓度高的城市加分。",
+          "pref": {
+            "targets": {
+              "industry": "creative"
+            },
+            "weights": {
+              "industry": 3
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "远程工作 / 自由职业 / 不受城市限制",
+          "reaction": "职业生态不影响你的选择，跳过。",
+          "pref": {
+            "targets": {
+              "industry": "remote"
+            },
+            "weights": {
+              "industry": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP7",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "文化底蕴",
+      "scene": "有些人需要历史、博物馆、文人气质；有些人觉得这些和自己无关。",
+      "prompt": "历史文化深度对你住的城市有多重要？",
+      "options": [
+        {
+          "id": "a",
+          "label": "非常重要，我想住在有历史厚度、文人气质的城市",
+          "reaction": "文化历史名城在这个维度大幅加分。",
+          "pref": {
+            "targets": {
+              "culture": 8
+            },
+            "weights": {
+              "culture": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "有一定文化积累就好，不需要古都级别",
+          "reaction": "文化中等偏上的城市满足你。",
+          "pref": {
+            "targets": {
+              "culture": 5
+            },
+            "weights": {
+              "culture": 1
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "对我不重要，我更看重现代感和便利性",
+          "reaction": "文化维度不参与评分。",
+          "pref": {
+            "targets": {
+              "culture": 3
+            },
+            "weights": {
+              "culture": 0
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我主动偏好新兴城市，没有包袱的地方",
+          "reaction": "年轻、现代的城市加分。",
+          "pref": {
+            "targets": {
+              "culture": 2
+            },
+            "weights": {
+              "culture": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP8",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "城市体量",
+      "scene": "城市越大，机会越多，但也更拥挤、更贵、更快节奏。",
+      "prompt": "你希望住在多大规模的城市？",
+      "options": [
+        {
+          "id": "a",
+          "label": "大城市，人口1000万以上，越繁华越好",
+          "reaction": "一线和头部新一线城市加分。",
+          "pref": {
+            "targets": {
+              "citySize": "large"
+            },
+            "weights": {
+              "citySize": 2
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "中等城市，300–800万人口，有城市感但不太挤",
+          "reaction": "新一线和强二线城市最适合。",
+          "pref": {
+            "targets": {
+              "citySize": "medium"
+            },
+            "weights": {
+              "citySize": 2
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "偏小城市，100万左右，人情味更浓",
+          "reaction": "三线及以下的宜居小城加分。",
+          "pref": {
+            "targets": {
+              "citySize": "small"
+            },
+            "weights": {
+              "citySize": 2
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "城市大小对我无所谓",
+          "reaction": "城市体量不参与评分。",
+          "pref": {
+            "targets": {
+              "citySize": "any"
+            },
+            "weights": {
+              "citySize": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP9",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "医疗资源",
+      "scene": "一座三甲医院的密度，在面对大病时会直接影响生存率。",
+      "prompt": "医疗资源的丰富程度对你有多重要？",
+      "options": [
+        {
+          "id": "a",
+          "label": "非常重要，需要顶级三甲医院集中的城市",
+          "reaction": "医疗资源强的城市显著加分。",
+          "pref": {
+            "targets": {
+              "healthcare": 9
+            },
+            "weights": {
+              "healthcare": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "有一定医疗保障就够了，不需要顶级",
+          "reaction": "基础医疗条件纳入参考。",
+          "pref": {
+            "targets": {
+              "healthcare": 6
+            },
+            "weights": {
+              "healthcare": 1
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "对我目前不重要，身体健康优先考虑其他",
+          "reaction": "医疗维度跳过。",
+          "pref": {
+            "targets": {
+              "healthcare": 5
+            },
+            "weights": {
+              "healthcare": 0
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我有长期健康需求，这是我的核心考量",
+          "reaction": "医疗资源是核心筛选项之一。",
+          "pref": {
+            "targets": {
+              "healthcare": 10
+            },
+            "weights": {
+              "healthcare": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP10",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "教育资源",
+      "scene": "如果你有或计划有孩子，高校密度和基础教育质量会成为关键变量。",
+      "prompt": "教育资源对你选城市有多大影响？",
+      "options": [
+        {
+          "id": "a",
+          "label": "非常重要，985/211 高校数量和基础教育质量是核心",
+          "reaction": "教育重镇城市大幅加分。",
+          "pref": {
+            "targets": {
+              "education": 9
+            },
+            "weights": {
+              "education": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "有一定的教育资源就好，有大学氛围更好",
+          "reaction": "教育中等偏上的城市满足你。",
+          "pref": {
+            "targets": {
+              "education": 6
+            },
+            "weights": {
+              "education": 1
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "目前对我不重要，暂时不考虑孩子教育",
+          "reaction": "教育维度不参与评分。",
+          "pref": {
+            "targets": {
+              "education": 5
+            },
+            "weights": {
+              "education": 0
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我自己还在求学或考研阶段",
+          "reaction": "高校资源丰富的城市加分。",
+          "pref": {
+            "targets": {
+              "education": 8
+            },
+            "weights": {
+              "education": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP11",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "创业生态",
+      "scene": "城市的孵化器、风险投资、技术人才密度，决定了你创业的起跑线在哪里。",
+      "prompt": "你对城市的创业或科技生态有要求吗？",
+      "options": [
+        {
+          "id": "a",
+          "label": "这是我的核心需求，必须有活跃的创业/科技圈",
+          "reaction": "创业生态强的城市排在最前。",
+          "pref": {
+            "targets": {
+              "startup": 9
+            },
+            "weights": {
+              "startup": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "有一定创业氛围就好，不需要顶尖",
+          "reaction": "有一定科技基础的城市满足你。",
+          "pref": {
+            "targets": {
+              "startup": 5
+            },
+            "weights": {
+              "startup": 1
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "对我不重要，我不在这个领域",
+          "reaction": "创业生态不参与评分。",
+          "pref": {
+            "targets": {
+              "startup": 3
+            },
+            "weights": {
+              "startup": 0
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我主动偏好低内卷的城市，不想进这个赛道",
+          "reaction": "轻竞争、慢生活的城市加分。",
+          "pref": {
+            "targets": {
+              "startup": 1
+            },
+            "weights": {
+              "startup": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP12",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "国际化程度",
+      "scene": "如果你的生活圈里有外籍朋友，或你偏好英语友好的环境，国际化程度会很关键。",
+      "prompt": "国际化氛围对你有多重要？",
+      "options": [
+        {
+          "id": "a",
+          "label": "非常重要，需要外籍社区、英语友好的生活环境",
+          "reaction": "国际化程度高的城市大幅加分。",
+          "pref": {
+            "targets": {
+              "expat": 9
+            },
+            "weights": {
+              "expat": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "有一定国际化就好，不需要很高",
+          "reaction": "轻微国际化的城市满足你。",
+          "pref": {
+            "targets": {
+              "expat": 4
+            },
+            "weights": {
+              "expat": 1
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "不需要，我完全适应本地中文环境",
+          "reaction": "国际化不参与评分。",
+          "pref": {
+            "targets": {
+              "expat": 2
+            },
+            "weights": {
+              "expat": 0
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我主动偏好本地化浓厚的城市，传统文化更重要",
+          "reaction": "本地文化浓厚、国际化程度低的城市加分。",
+          "pref": {
+            "targets": {
+              "expat": 1
+            },
+            "weights": {
+              "expat": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP13",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "离家远近",
+      "scene": "有人需要随时能回家探亲，有人把「逃离」当成选城市的动力。",
+      "prompt": "你希望新城市离家乡有多近？",
+      "options": [
+        {
+          "id": "a",
+          "label": "非常重要，必须方便回家，最好同省或相邻省",
+          "reaction": "离你家乡近的城市大幅加分。",
+          "pref": {
+            "targets": {
+              "proximity": "close"
+            },
+            "weights": {
+              "proximity": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "3小时高铁以内就行，逢年过节能回去",
+          "reaction": "可接触距离的城市加分。",
+          "pref": {
+            "targets": {
+              "proximity": "medium"
+            },
+            "weights": {
+              "proximity": 2
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "距离对我无所谓，四海为家",
+          "reaction": "距离维度不参与评分。",
+          "pref": {
+            "targets": {
+              "proximity": "any"
+            },
+            "weights": {
+              "proximity": 0
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "我主动想离家远一点，独立和陌生感更重要",
+          "reaction": "与家乡较远的城市反而加分。",
+          "pref": {
+            "targets": {
+              "proximity": "far"
+            },
+            "weights": {
+              "proximity": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "SP15",
+      "phase": "soft_prefs",
+      "mode": "choice",
+      "source": "我的偏好",
+      "title": "气候偏好",
+      "scene": "气候是所有城市属性里最难改变的一条。你每年365天都要和它共存。",
+      "prompt": "你理想中的气候是什么样的？",
+      "options": [
+        {
+          "id": "a",
+          "label": "温暖湿润，四季如春，最好冬天不冷夏天不热",
+          "reaction": "昆明、贵阳、大理一类的城市最符合。",
+          "pref": {
+            "targets": {
+              "climate": "mild_spring"
+            },
+            "weights": {
+              "climate": 3
+            }
+          }
+        },
+        {
+          "id": "b",
+          "label": "四季分明，每个季节都想经历，包括冬天下雪",
+          "reaction": "温带季风气候城市加分。",
+          "pref": {
+            "targets": {
+              "climate": "four_seasons"
+            },
+            "weights": {
+              "climate": 2
+            }
+          }
+        },
+        {
+          "id": "c",
+          "label": "温热潮湿，南方气候，冬天不冻人就好",
+          "reaction": "华南和东南沿海城市更适合你。",
+          "pref": {
+            "targets": {
+              "climate": "tropical_warm"
+            },
+            "weights": {
+              "climate": 2
+            }
+          }
+        },
+        {
+          "id": "d",
+          "label": "干燥少雨，晴天多，不喜欢阴雨绵绵",
+          "reaction": "西北和北方城市的阳光充足。",
+          "pref": {
+            "targets": {
+              "climate": "dry_sunny"
+            },
+            "weights": {
+              "climate": 2
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "results": [],
+  "provinces": [
+    {
+      "id": "beijing",
+      "name": "北京",
+      "region": "north"
+    },
+    {
+      "id": "tianjin",
+      "name": "天津",
+      "region": "north"
+    },
+    {
+      "id": "hebei",
+      "name": "河北",
+      "region": "north"
+    },
+    {
+      "id": "shanxi",
+      "name": "山西",
+      "region": "north"
+    },
+    {
+      "id": "neimenggu",
+      "name": "内蒙古",
+      "region": "north"
+    },
+    {
+      "id": "liaoning",
+      "name": "辽宁",
+      "region": "northeast"
+    },
+    {
+      "id": "jilin",
+      "name": "吉林",
+      "region": "northeast"
+    },
+    {
+      "id": "heilongjiang",
+      "name": "黑龙江",
+      "region": "northeast"
+    },
+    {
+      "id": "shanghai",
+      "name": "上海",
+      "region": "east"
+    },
+    {
+      "id": "jiangsu",
+      "name": "江苏",
+      "region": "east"
+    },
+    {
+      "id": "zhejiang",
+      "name": "浙江",
+      "region": "east"
+    },
+    {
+      "id": "anhui",
+      "name": "安徽",
+      "region": "east"
+    },
+    {
+      "id": "fujian",
+      "name": "福建",
+      "region": "east"
+    },
+    {
+      "id": "jiangxi",
+      "name": "江西",
+      "region": "east"
+    },
+    {
+      "id": "shandong",
+      "name": "山东",
+      "region": "east"
+    },
+    {
+      "id": "henan",
+      "name": "河南",
+      "region": "central"
+    },
+    {
+      "id": "hubei",
+      "name": "湖北",
+      "region": "central"
+    },
+    {
+      "id": "hunan",
+      "name": "湖南",
+      "region": "central"
+    },
+    {
+      "id": "guangdong",
+      "name": "广东",
+      "region": "south"
+    },
+    {
+      "id": "guangxi",
+      "name": "广西",
+      "region": "south"
+    },
+    {
+      "id": "hainan",
+      "name": "海南",
+      "region": "south"
+    },
+    {
+      "id": "chongqing",
+      "name": "重庆",
+      "region": "southwest"
+    },
+    {
+      "id": "sichuan",
+      "name": "四川",
+      "region": "southwest"
+    },
+    {
+      "id": "guizhou",
+      "name": "贵州",
+      "region": "southwest"
+    },
+    {
+      "id": "yunnan",
+      "name": "云南",
+      "region": "southwest"
+    },
+    {
+      "id": "xizang",
+      "name": "西藏",
+      "region": "southwest"
+    },
+    {
+      "id": "shaanxi",
+      "name": "陕西",
+      "region": "northwest"
+    },
+    {
+      "id": "gansu",
+      "name": "甘肃",
+      "region": "northwest"
+    },
+    {
+      "id": "qinghai",
+      "name": "青海",
+      "region": "northwest"
+    },
+    {
+      "id": "ningxia",
+      "name": "宁夏",
+      "region": "northwest"
+    },
+    {
+      "id": "xinjiang",
+      "name": "新疆",
+      "region": "northwest"
+    },
+    {
+      "id": "overseas",
+      "name": "海外 / 港澳台",
+      "region": "other"
+    }
+  ]
+}

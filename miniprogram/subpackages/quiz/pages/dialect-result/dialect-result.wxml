@@ -1,0 +1,76 @@
+<scroll-view scroll-y class="dr-scroll" style="{{pageThemeStyle}}">
+  <view class="dr-shell {{mounted ? 'mounted' : ''}}">
+
+    <!-- ── Hero ───────────────────────────────────────────── -->
+    <view class="dr-hero">
+      <text class="dr-eyebrow motion-enter motion-stagger" style="--stagger: 0ms;">MYTYPE · 方言溯源</text>
+      <view class="dr-accent-line motion-enter motion-stagger" style="--stagger: 60ms;" />
+      <text class="dr-label motion-enter motion-stagger" style="--stagger: 100ms;">你的词汇特征指向</text>
+      <text class="dr-region-title motion-enter motion-stagger" style="--stagger: 160ms;">{{result.title}}</text>
+      <text class="dr-provinces motion-enter motion-stagger" style="--stagger: 220ms;">{{provinceStr}}</text>
+    </view>
+
+    <!-- ── Matched words — placed first for impact ────────── -->
+    <view wx:if="{{matchedWords.length}}" class="dr-matched-hero motion-enter motion-stagger" style="--stagger: 280ms;">
+      <text class="dr-matched-label">你用了这些词</text>
+      <view class="dr-words-wrap">
+        <view wx:for="{{matchedWords}}" wx:key="*this" class="dr-word-chip">
+          <text class="dr-word-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ── Confidence bar ─────────────────────────────────── -->
+    <view class="dr-conf-wrap motion-enter motion-stagger" style="--stagger: 360ms;">
+      <view class="dr-conf-header">
+        <text class="dr-conf-label">词汇集中度</text>
+        <text class="dr-conf-tag {{confidence < 20 ? 'dr-conf-low' : ''}}">{{confidenceLabel}} · {{confidence}}%</text>
+      </view>
+      <view class="dr-conf-bar-bg">
+        <view class="dr-conf-bar-fill" style="width: {{confidence > 100 ? 100 : confidence}}%;" />
+      </view>
+      <text wx:if="{{confidenceNote}}" class="dr-conf-note">{{confidenceNote}}</text>
+      <text wx:else class="dr-conf-note">数值越高代表你的用词越集中指向该区域</text>
+    </view>
+
+    <!-- ── Portrait ───────────────────────────────────────── -->
+    <view class="dr-section motion-enter motion-stagger" style="--stagger: 420ms;">
+      <text class="dr-section-label">方言区简介</text>
+      <text class="dr-body">{{result.portrait}}</text>
+    </view>
+
+    <!-- ── Verse / highlight ──────────────────────────────── -->
+    <view class="dr-verse-wrap motion-enter motion-stagger" style="--stagger: 480ms;">
+      <text class="dr-verse">{{result.verse}}</text>
+    </view>
+
+    <!-- ── Portrait2 ──────────────────────────────────────── -->
+    <view wx:if="{{result.portrait2}}" class="dr-section motion-enter motion-stagger" style="--stagger: 520ms;">
+      <text class="dr-section-label">延伸知识</text>
+      <text class="dr-body dr-body-dim">{{result.portrait2}}</text>
+    </view>
+
+    <!-- ── Sub-region ─────────────────────────────────────── -->
+    <view wx:if="{{subRegionResult}}" class="dr-sub-wrap motion-enter motion-stagger" style="--stagger: 560ms;">
+      <view class="dr-sub-header">
+        <view class="dr-sub-accent-line" />
+        <text class="dr-sub-label">次要词汇特征</text>
+      </view>
+      <text class="dr-sub-title">{{subRegionResult.title}}</text>
+      <text class="dr-sub-body">部分答题词汇同时指向这一区域，可能来自方言过渡带，或家庭有跨地域背景。</text>
+    </view>
+
+    <!-- ── Actions ────────────────────────────────────────── -->
+    <view class="dr-actions motion-enter motion-stagger" style="--stagger: 620ms;">
+      <view class="dr-share-btn" bindtap="onShareTap">分享给朋友</view>
+      <view class="dr-actions-row">
+        <view class="dr-btn-secondary" bindtap="onRetake">再测一次</view>
+        <view class="dr-btn-tertiary" bindtap="onBackHome">返回首页</view>
+      </view>
+    </view>
+
+    <view class="dr-disclaimer">{{quiz.disclaimer}}</view>
+    <view class="dr-bottom-pad" />
+
+  </view>
+</scroll-view>

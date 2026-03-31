@@ -1,0 +1,159 @@
+<scroll-view scroll-y class="cr-scroll" style="{{pageThemeStyle}}">
+  <view class="cr-shell">
+
+    <!-- ── No results fallback ──────────────────────────────── -->
+    <view class="cr-empty" wx:if="{{noResults}}">
+      <view class="cr-empty-icon">◎</view>
+      <text class="cr-empty-title">条件组合较为严格</text>
+      <text class="cr-empty-body">没有城市同时满足你所有的硬性要求。建议放宽空气质量或气温的标准后重新测试。</text>
+      <view class="cr-retake-btn" bindtap="onRetake">重新测试</view>
+    </view>
+
+    <!-- ── Main results ─────────────────────────────────────── -->
+    <block wx:if="{{!noResults && topCity}}">
+
+      <!-- Hero — top match -->
+      <view class="cr-hero">
+        <text class="cr-eyebrow">你最适合的城市</text>
+        <view class="cr-accent-line" />
+        <text class="cr-city-name">{{topCity.city.name}}</text>
+        <text class="cr-city-sub">{{topCity.tierName}}  ·  {{topCity.city.province}}省</text>
+
+        <!-- Match bar -->
+        <view class="cr-match-wrap">
+          <view class="cr-match-bar-bg">
+            <view class="cr-match-bar-fill" style="width: {{topCity.matchBar}};" />
+          </view>
+          <text class="cr-match-pct">匹配度 {{topCity.matchPercent}}%</text>
+        </view>
+      </view>
+
+      <!-- ── Top city detail ───────────────────────────────── -->
+      <view class="cr-content">
+
+        <!-- Why you match -->
+        <view class="cr-section cr-section-reasons" wx:if="{{topCity.strongMatches.length > 0}}">
+          <text class="cr-section-label">为什么适合你</text>
+          <view class="cr-reasons-list">
+            <view class="cr-reason-item" wx:for="{{topCity.strongMatches}}" wx:key="field" wx:for-item="r">
+              <view class="cr-reason-dot" />
+              <text class="cr-reason-text">{{r.detail}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- Trade-offs -->
+        <view class="cr-section" wx:if="{{topCity.tradeoffs.length > 0}}">
+          <text class="cr-section-label">需要接受的取舍</text>
+          <view class="cr-tradeoff-list">
+            <view class="cr-tradeoff-item" wx:for="{{topCity.tradeoffs}}" wx:key="field" wx:for-item="t">
+              <view class="cr-tradeoff-dot" />
+              <text class="cr-tradeoff-text">{{t.detail}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- Data snapshot -->
+        <view class="cr-section cr-snapshot">
+          <text class="cr-section-label">城市数据速览</text>
+          <view class="cr-snapshot-grid">
+            <view class="cr-snap-item">
+              <text class="cr-snap-val">{{topCity.snapshot.rent}}</text>
+              <text class="cr-snap-key">月租（元）</text>
+            </view>
+            <view class="cr-snap-item">
+              <text class="cr-snap-val">{{topCity.snapshot.pm25}}</text>
+              <text class="cr-snap-key">PM2.5 均值</text>
+            </view>
+            <view class="cr-snap-item">
+              <text class="cr-snap-val">{{topCity.snapshot.winterTemp}}°C</text>
+              <text class="cr-snap-key">最冷月均低温</text>
+            </view>
+            <view class="cr-snap-item">
+              <text class="cr-snap-val">{{topCity.snapshot.summerTemp}}°C</text>
+              <text class="cr-snap-key">最热月均高温</text>
+            </view>
+            <view class="cr-snap-item">
+              <text class="cr-snap-val">{{topCity.snapshot.hasBeach ? '✓' : '—'}}</text>
+              <text class="cr-snap-key">海岸线</text>
+            </view>
+            <view class="cr-snap-item">
+              <text class="cr-snap-val">{{topCity.snapshot.hasSubway ? topCity.snapshot.subwayKm + 'km' : '无'}}</text>
+              <text class="cr-snap-key">地铁里程</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- ── Divider ──────────────────────────────────────── -->
+        <view class="cr-mid-break">
+          <view class="cr-mid-break-line" />
+          <text class="cr-mid-break-label">其他候选</text>
+          <view class="cr-mid-break-line" />
+        </view>
+
+        <!-- Runner-up 2 -->
+        <view class="cr-runner-card" wx:if="{{runner2}}">
+          <view class="cr-runner-header">
+            <view class="cr-runner-rank">#2</view>
+            <view class="cr-runner-city-info">
+              <text class="cr-runner-name">{{runner2.city.name}}</text>
+              <text class="cr-runner-sub">{{runner2.tierName}}</text>
+            </view>
+            <text class="cr-runner-pct">{{runner2.matchPercent}}%</text>
+          </view>
+          <view class="cr-runner-bar-bg">
+            <view class="cr-runner-bar-fill" style="width: {{runner2.matchBar}};" />
+          </view>
+          <view class="cr-runner-reasons" wx:if="{{runner2.strongMatches.length > 0}}">
+            <view class="cr-runner-reason" wx:for="{{runner2.strongMatches}}" wx:key="field" wx:for-item="r" wx:if="{{index < 2}}">
+              <view class="cr-runner-dot" />
+              <text class="cr-runner-text">{{r.detail}}</text>
+            </view>
+          </view>
+          <view class="cr-runner-snaps">
+            <text class="cr-runner-snap-pill">月租 {{runner2.snapshot.rent}} 元</text>
+            <text class="cr-runner-snap-pill">PM2.5 {{runner2.snapshot.pm25}}</text>
+            <text class="cr-runner-snap-pill">{{runner2.snapshot.winterTemp}}°C ~ {{runner2.snapshot.summerTemp}}°C</text>
+          </view>
+        </view>
+
+        <!-- Runner-up 3 -->
+        <view class="cr-runner-card" wx:if="{{runner3}}">
+          <view class="cr-runner-header">
+            <view class="cr-runner-rank">#3</view>
+            <view class="cr-runner-city-info">
+              <text class="cr-runner-name">{{runner3.city.name}}</text>
+              <text class="cr-runner-sub">{{runner3.tierName}}</text>
+            </view>
+            <text class="cr-runner-pct">{{runner3.matchPercent}}%</text>
+          </view>
+          <view class="cr-runner-bar-bg">
+            <view class="cr-runner-bar-fill" style="width: {{runner3.matchBar}};" />
+          </view>
+          <view class="cr-runner-reasons" wx:if="{{runner3.strongMatches.length > 0}}">
+            <view class="cr-runner-reason" wx:for="{{runner3.strongMatches}}" wx:key="field" wx:for-item="r" wx:if="{{index < 2}}">
+              <view class="cr-runner-dot" />
+              <text class="cr-runner-text">{{r.detail}}</text>
+            </view>
+          </view>
+          <view class="cr-runner-snaps">
+            <text class="cr-runner-snap-pill">月租 {{runner3.snapshot.rent}} 元</text>
+            <text class="cr-runner-snap-pill">PM2.5 {{runner3.snapshot.pm25}}</text>
+            <text class="cr-runner-snap-pill">{{runner3.snapshot.winterTemp}}°C ~ {{runner3.snapshot.summerTemp}}°C</text>
+          </view>
+        </view>
+
+        <!-- Actions -->
+        <view class="cr-actions">
+          <view class="cr-share-btn" bindtap="onShareTap">分享结果</view>
+          <view class="cr-actions-row">
+            <view class="cr-secondary-btn" bindtap="onRetake">重新测试</view>
+            <view class="cr-tertiary-btn" bindtap="onBackHome">返回首页</view>
+          </view>
+        </view>
+
+      </view>
+    </block>
+
+  </view>
+</scroll-view>

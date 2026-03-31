@@ -1,0 +1,103 @@
+<scroll-view scroll-y class="tr-scroll" style="{{pageThemeStyle}}">
+  <view class="tr-shell {{mounted ? 'mounted' : ''}}">
+
+    <!-- ── 低置信度 fallback ───────────────────────────────── -->
+    <view wx:if="{{isLowConfidence}}" class="tr-low-conf">
+      <text class="tr-low-title">白马寺</text>
+      <text class="tr-low-location">河南·洛阳 · 中国第一古刹</text>
+      <view class="tr-accent-line motion-enter" style="--stagger: 0ms;" />
+      <text class="tr-low-msg">{{lowConfidenceMsg}}</text>
+    </view>
+
+    <!-- ── 正常结果 ────────────────────────────────────────── -->
+    <block wx:else>
+
+      <!-- Hero -->
+      <view class="tr-hero">
+        <text class="tr-eyebrow motion-enter motion-stagger" style="--stagger: 0ms;">MYTYPE · 寺庙缘分</text>
+        <view class="tr-accent-line motion-enter motion-stagger" style="--stagger: 60ms;" />
+        <text class="tr-label motion-enter motion-stagger" style="--stagger: 100ms;">你与这座古刹，最有缘分</text>
+        <text class="tr-temple-name motion-enter motion-stagger" style="--stagger: 160ms;">{{result.title}}</text>
+        <text class="tr-location motion-enter motion-stagger" style="--stagger: 210ms;">{{result.location}} · {{result.subtitle}}</text>
+      </view>
+
+      <!-- 签文 -->
+      <view class="tr-verse-wrap motion-enter motion-stagger" style="--stagger: 270ms;">
+        <text class="tr-verse">{{result.verse}}</text>
+      </view>
+
+      <!-- 五行 + 守护 -->
+      <view class="tr-meta motion-enter motion-stagger" style="--stagger: 330ms;">
+        <view class="tr-meta-item">
+          <text class="tr-meta-label">五行气场</text>
+          <text class="tr-meta-value">{{result.wuxing}}</text>
+        </view>
+        <view class="tr-meta-divider" />
+        <view class="tr-meta-item">
+          <text class="tr-meta-label">守护感应</text>
+          <text class="tr-meta-value">{{result.guardian}}</text>
+        </view>
+      </view>
+
+      <!-- 汉学核心句 -->
+      <view class="tr-core-quote motion-enter motion-stagger" style="--stagger: 390ms;">
+        <text class="tr-core-quote-text">{{result.coreQuote}}</text>
+      </view>
+
+      <!-- 画像 -->
+      <view class="tr-section motion-enter motion-stagger" style="--stagger: 440ms;">
+        <text class="tr-section-label">与你相应</text>
+        <text class="tr-body">{{result.portrait}}</text>
+      </view>
+
+      <!-- 延伸 -->
+      <view wx:if="{{result.portrait2}}" class="tr-section motion-enter motion-stagger" style="--stagger: 490ms;">
+        <text class="tr-section-label">延伸</text>
+        <text class="tr-body tr-body-dim">{{result.portrait2}}</text>
+      </view>
+
+      <!-- 开运三件事 -->
+      <view class="tr-wuyun motion-enter motion-stagger" style="--stagger: 540ms;">
+        <text class="tr-wuyun-title">开运三件事</text>
+        <view class="tr-wuyun-item">
+          <text class="tr-wuyun-tag">法物</text>
+          <text class="tr-wuyun-body">{{result.faWu}}</text>
+        </view>
+        <view class="tr-wuyun-item">
+          <text class="tr-wuyun-tag">心法</text>
+          <text class="tr-wuyun-body">{{result.xinFa}}</text>
+        </view>
+        <view class="tr-wuyun-item">
+          <text class="tr-wuyun-tag">风水</text>
+          <text class="tr-wuyun-body">{{result.fengShui}}</text>
+        </view>
+      </view>
+
+      <!-- 副缘寺庙 -->
+      <view wx:if="{{subTempleResult}}" class="tr-sub-wrap motion-enter motion-stagger" style="--stagger: 590ms;">
+        <view class="tr-sub-header">
+          <view class="tr-sub-line" />
+          <text class="tr-sub-label">也在等你</text>
+          <view class="tr-sub-line" />
+        </view>
+        <text class="tr-sub-name">{{subTempleResult.title}}</text>
+        <text class="tr-sub-location">{{subTempleResult.location}}</text>
+        <text class="tr-sub-verse">{{subTempleResult.verse}}</text>
+      </view>
+
+      <!-- Actions -->
+      <view class="tr-actions motion-enter motion-stagger" style="--stagger: 640ms;">
+        <view class="tr-share-btn" bindtap="onShareTap">分享给朋友</view>
+        <view class="tr-actions-row">
+          <view class="tr-btn-secondary" bindtap="onRetake">再测一次</view>
+          <view class="tr-btn-tertiary" bindtap="onBackHome">返回首页</view>
+        </view>
+      </view>
+
+    </block>
+
+    <view class="tr-disclaimer">{{quiz.disclaimer}}</view>
+    <view class="tr-bottom-pad" />
+
+  </view>
+</scroll-view>

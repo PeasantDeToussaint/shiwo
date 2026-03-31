@@ -1,0 +1,26 @@
+<view class="intro-shell" style="{{pageThemeStyle}}">
+
+  <!-- Zone 1: Header bar (fixed height) -->
+  <view class="intro-header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="intro-back-btn" bindtap="onBack">‹</view>
+    <text class="intro-eyebrow">{{quiz.eyebrow}}</text>
+  </view>
+
+  <!-- Zone 2: Title (flex — absorbs all remaining space, title at bottom) -->
+  <view class="intro-title-zone">
+    <share-element key="quiz-accent-{{quiz.id}}" class="intro-divider-share">
+      <view class="intro-divider" />
+    </share-element>
+    <text class="intro-title {{mounted ? 'intro-title-visible' : ''}}">{{quiz.title}}</text>
+    <text wx:if="{{quiz.subtitle}}" class="intro-subtitle">{{quiz.subtitle}}</text>
+  </view>
+
+  <!-- Zone 3: Footer (fixed height — description + start) -->
+  <view class="intro-footer {{mounted ? 'intro-footer-visible' : ''}}" style="padding-bottom: calc(40rpx + {{safeAreaBottom}}px);">
+    <text wx:if="{{quiz.description}}" class="intro-desc">{{quiz.description}}</text>
+    <view class="intro-start-row" bindtap="onStartQuiz">
+      <text class="intro-start-label">开始 →</text>
+    </view>
+  </view>
+
+</view>
