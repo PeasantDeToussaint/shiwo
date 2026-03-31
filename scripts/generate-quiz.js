@@ -428,41 +428,47 @@ function extractJSON(raw) {
     .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
     .replace(/[\u2018\u2019\u201A\u201B]/g, "'");
 
-  // Escape literal newlines/tabs inside JSON string values before any repair
-  jsonStr = escapeNewlinesInStrings(jsonStr);
+  function normalizeJSONCandidate(candidate) {
+    // Run the structural/backslash cleanup after every repair pass too.
+    // Some malformed quotes make the first scan lose string state, so a later
+    // repair can expose fresh structural \n / \" sequences that need another pass.
+    candidate = escapeNewlinesInStrings(candidate);
 
-  const STRING_FIELDS = [
-    "reaction","text","label","description","portrait",
-    "temperament","situation","lifeAdvice","destiny",
-    "token","verse","verseSource","boldQuote","title","subtitle",
-    "insight","nameContext","coreIdentity","distinctiveFeature",
-    "domainInsight","figureContext","axisLabel","lowPole",
-  ];
-  for (const f of STRING_FIELDS) {
-    const re = new RegExp(`("${f}"\\s*:\\s*)([^"\\s{\\[\\d\\-ntf][^"\\n]*?)(")`, "g");
-    jsonStr = jsonStr.replace(re, '$1"$2$3');
+    const STRING_FIELDS = [
+      "reaction","text","label","description","portrait",
+      "temperament","situation","lifeAdvice","destiny",
+      "token","verse","verseSource","boldQuote","title","subtitle",
+      "insight","nameContext","coreIdentity","distinctiveFeature",
+      "domainInsight","figureContext","axisLabel","lowPole",
+    ];
+    for (const f of STRING_FIELDS) {
+      const re = new RegExp(`("${f}"\\s*:\\s*)([^"\\s{\\[\\d\\-ntf][^"\\n]*?)(")`, "g");
+      candidate = candidate.replace(re, '$1"$2$3');
+    }
+
+    // Merge duplicate "portrait" keys that models sometimes emit (one per paragraph).
+    let prev;
+    do {
+      prev = candidate;
+      candidate = candidate.replace(
+        /"portrait"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"portrait"\s*:\s*"((?:[^"\\]|\\.)*)"/g,
+        '"portrait": "$1\\n\\n$2"'
+      );
+    } while (candidate !== prev);
+
+    // Escape any literal newlines/tabs that still remain inside quoted strings.
+    candidate = candidate.replace(/"((?:[^"\\]|\\.)*)"/g, (m) =>
+      m.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
+    );
+    return candidate;
   }
 
-  // Merge duplicate "portrait" keys that models sometimes emit (one per paragraph).
-  // Loop until stable since there can be 3+ consecutive keys.
-  let prev;
-  do {
-    prev = jsonStr;
-    jsonStr = jsonStr.replace(
-      /"portrait"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"portrait"\s*:\s*"((?:[^"\\]|\\.)*)"/g,
-      '"portrait": "$1\\n\\n$2"'
-    );
-  } while (jsonStr !== prev);
-
-  // Replace unescaped literal newlines/tabs inside JSON strings with escape sequences
-  jsonStr = jsonStr.replace(/"((?:[^"\\]|\\.)*)"/g, (m) =>
-    m.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
-  );
+  jsonStr = normalizeJSONCandidate(jsonStr);
 
   try { return JSON.parse(jsonStr); } catch (_) {}
-  try { const r = JSON.parse(fixBracketMismatches(jsonStr)); process.stderr.write("  [json] repaired via bracket fix\n"); return r; } catch (_) {}
-  try { const r = JSON.parse(repairJSON(jsonStr)); process.stderr.write("  [json] repaired via jsonrepair\n"); return r; } catch (_) {}
-  try { const r = JSON.parse(repairJSON(fixBracketMismatches(jsonStr))); process.stderr.write("  [json] repaired via bracket fix + jsonrepair\n"); return r; } catch (e) {
+  try { const r = JSON.parse(normalizeJSONCandidate(fixBracketMismatches(jsonStr))); process.stderr.write("  [json] repaired via bracket fix\n"); return r; } catch (_) {}
+  try { const r = JSON.parse(normalizeJSONCandidate(repairJSON(jsonStr))); process.stderr.write("  [json] repaired via jsonrepair\n"); return r; } catch (_) {}
+  try { const r = JSON.parse(normalizeJSONCandidate(repairJSON(fixBracketMismatches(jsonStr)))); process.stderr.write("  [json] repaired via bracket fix + jsonrepair\n"); return r; } catch (e) {
     throw new Error(`JSON parse failed after repair: ${e.message}`);
   }
 }
