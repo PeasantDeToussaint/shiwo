@@ -92,8 +92,29 @@ function escapeNewlinesInStrings(str) {
   return out.join("");
 }
 
+function removeTrailingCommas(str) {
+  const out = [];
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (escaped)               { out.push(c); escaped = false; continue; }
+    if (c === "\\" && inString){ out.push(c); escaped = true;  continue; }
+    if (c === '"')             { inString = !inString; out.push(c); continue; }
+    if (inString)              { out.push(c); continue; }
+    if (c === ",") {
+      let j = i + 1;
+      while (j < str.length && /\s/.test(str[j])) j++;
+      if (str[j] === "}" || str[j] === "]") continue; // drop trailing comma
+    }
+    out.push(c);
+  }
+  return out.join("");
+}
+
 function normalizeJSONCandidate(candidate) {
   candidate = escapeNewlinesInStrings(candidate);
+  candidate = removeTrailingCommas(candidate);
 
   const STRING_FIELDS = [
     "reaction","text","label","description","portrait",
@@ -147,5 +168,5 @@ function extractJSON(raw) {
 
 module.exports = {
   fixBracketMismatches, repairJSON, escapeNewlinesInStrings,
-  normalizeJSONCandidate, extractJSON,
+  removeTrailingCommas, normalizeJSONCandidate, extractJSON,
 };
