@@ -4,6 +4,7 @@ const {
   validateFinalQuiz,
   collectProfileSimilarityIssues,
 } = require("../lib/validate");
+const { fixStringifiedArrayFields, extractJSON } = require("../lib/json-repair");
 
 describe("validation", () => {
   it("allows abbreviated dimension names but still reports invalid scores", () => {
@@ -123,5 +124,24 @@ describe("validation", () => {
     expect(result.errors.some(err => err.includes('invalid dimension label'))).toBe(true);
     expect(result.errors.some(err => err.includes("corrupted reaction text"))).toBe(true);
     expect(result.errors.some(err => err.includes("does not look like a quote"))).toBe(true);
+  });
+});
+
+describe("json-repair: fixStringifiedArrayFields", () => {
+  it("unwraps escaped array: \"highAnchorResults\": \"[\\\"a\\\",\\\"b\\\"]\"", () => {
+    const input = `{"highAnchorResults": "[\\"言豫津\\", \\"蒙挚\\"]"}`;
+    const fixed = fixStringifiedArrayFields(input);
+    const parsed = JSON.parse(fixed);
+    expect(Array.isArray(parsed.highAnchorResults)).toBe(true);
+    expect(parsed.highAnchorResults).toEqual(["言豫津", "蒙挚"]);
+  });
+
+  it("unwraps unescaped array via extractJSON pipeline", () => {
+    // Simulate model output: "highAnchorResults": "["言豫津", "蒙挚"]"
+    const input = `{"highAnchorResults": "["言豫津", "蒙挚"]", "lowAnchorResults": ["靖王"]}`;
+    const parsed = extractJSON(input);
+    expect(Array.isArray(parsed.highAnchorResults)).toBe(true);
+    expect(parsed.highAnchorResults).toEqual(["言豫津", "蒙挚"]);
+    expect(parsed.lowAnchorResults).toEqual(["靖王"]);
   });
 });

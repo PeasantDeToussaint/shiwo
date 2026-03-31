@@ -112,7 +112,82 @@ function removeTrailingCommas(str) {
   return out.join("");
 }
 
+/**
+ * Models sometimes output array field values wrapped in quotes:
+ *   "highAnchorResults": "[\"word1\", \"word2\"]"   (escaped inner quotes)
+ *   "highAnchorResults": "["word1", "word2"]"       (unescaped inner quotes)
+ * Both cases are invalid JSON. This function detects the pattern by scanning
+ * for known array field names whose value starts with `"[`, then unwraps them.
+ */
+function fixStringifiedArrayFields(str) {
+  const ARRAY_FIELDS = [
+    "highAnchorResults", "lowAnchorResults", "forbiddenInterpretations",
+    "dimensions",
+  ];
+
+  for (const fieldName of ARRAY_FIELDS) {
+    const fieldPrefix = `"${fieldName}"`;
+    let searchFrom = 0;
+    while (true) {
+      const fieldPos = str.indexOf(fieldPrefix, searchFrom);
+      if (fieldPos === -1) break;
+
+      // Find colon
+      let colonPos = fieldPos + fieldPrefix.length;
+      while (colonPos < str.length && str[colonPos] !== ':') colonPos++;
+      if (colonPos >= str.length) { searchFrom = fieldPos + 1; break; }
+
+      // Skip whitespace to find value start
+      let vStart = colonPos + 1;
+      while (vStart < str.length && /\s/.test(str[vStart])) vStart++;
+
+      // Only handle when value starts with "[  (string wrapping an array)
+      if (str[vStart] !== '"' || str[vStart + 1] !== '[') {
+        searchFrom = fieldPos + fieldPrefix.length;
+        continue;
+      }
+
+      // Scan for balanced [] inside the string, respecting inner escape sequences
+      const innerStart = vStart + 1; // points to [
+      let depth = 0;
+      let inInnerStr = false;
+      let esc = false;
+      let arrayEnd = -1;
+
+      for (let i = innerStart; i < str.length; i++) {
+        const c = str[i];
+        if (esc) { esc = false; continue; }
+        if (c === '\\') { esc = true; continue; }
+        if (c === '"') { inInnerStr = !inInnerStr; continue; }
+        if (inInnerStr) continue;
+        if (c === '[') depth++;
+        if (c === ']') {
+          depth--;
+          if (depth === 0) { arrayEnd = i; break; }
+        }
+      }
+
+      if (arrayEnd === -1) { searchFrom = fieldPos + fieldPrefix.length; continue; }
+
+      // Check if immediately after ] there's a closing " (the outer string close)
+      let afterArray = arrayEnd + 1;
+      if (str[afterArray] === '"') {
+        // Extract array content [vStart+1 .. arrayEnd+1) and unescape inner \"
+        let inner = str.slice(vStart + 1, arrayEnd + 1); // includes [ ... ]
+        inner = inner.replace(/\\"/g, '"');               // unescape \" → "
+        str = str.slice(0, vStart) + inner + str.slice(afterArray + 1);
+        // re-scan from same position in case of multiple occurrences
+        continue;
+      }
+
+      searchFrom = fieldPos + fieldPrefix.length;
+    }
+  }
+  return str;
+}
+
 function normalizeJSONCandidate(candidate) {
+  candidate = fixStringifiedArrayFields(candidate);
   candidate = escapeNewlinesInStrings(candidate);
   candidate = removeTrailingCommas(candidate);
 
@@ -170,5 +245,5 @@ function extractJSON(raw) {
 
 module.exports = {
   fixBracketMismatches, repairJSON, escapeNewlinesInStrings,
-  removeTrailingCommas, normalizeJSONCandidate, extractJSON,
+  removeTrailingCommas, fixStringifiedArrayFields, normalizeJSONCandidate, extractJSON,
 };
