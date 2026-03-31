@@ -31,8 +31,10 @@ jobs:
         run: |
           topics_json=$(printf '%s' "$TOPICS" \
             | tr '|' '\n' \
-            | grep -v '^[[:space:]]*$' \
-            | jq -R -s 'split("\n") | map(ltrimstr(" ") | rtrimstr(" ")) | map(select(length > 0))' )
+            | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' \
+            | grep -v '^$' \
+            | jq -R '.' \
+            | jq -sc '.')
           echo "matrix={\"topic\":$topics_json}" >> "$GITHUB_OUTPUT"
 
   # Job 2: one VM per topic, all run in parallel
