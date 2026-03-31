@@ -210,7 +210,12 @@ async function main() {
     questionPlan = await withRetry("question-plan", async () => {
       const plan = await generateQuestionPlan(outline, Q_TOTAL, DATA_DIR, aiClient.callAI);
       const planErrors = validateQuestionPlan(plan, outline.dimensions, Q_TOTAL);
-      if (planErrors.length > 0) throw new Error(`Question plan invalid: ${planErrors.join("; ")}`);
+      const overlapWarnings = planErrors.filter(e => e.includes("overlapping settings"));
+      const fatalPlanErrors = planErrors.filter(e => !e.includes("overlapping settings"));
+      if (overlapWarnings.length > 0)
+        console.warn(`  ⚠   setting overlaps (non-fatal): ${overlapWarnings.join("; ")}`);
+      if (fatalPlanErrors.length > 0)
+        throw new Error(`Question plan invalid: ${fatalPlanErrors.join("; ")}`);
       return plan;
     }, 3, 5000);
     saveCheckpoint(TOPIC_ARG, "phase2a-qplan", questionPlan);

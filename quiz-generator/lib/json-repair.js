@@ -191,6 +191,19 @@ function normalizeJSONCandidate(candidate) {
   candidate = escapeNewlinesInStrings(candidate);
   candidate = removeTrailingCommas(candidate);
 
+  // Fix unquoted string values: "field": some text,  →  "field": "some text",
+  // Must run before the STRING_FIELDS pass below.
+  const UNQUOTED_FIELDS = [
+    "setting", "type", "dimension", "text", "label", "description",
+    "portrait", "title", "subtitle", "eyebrow", "name", "id",
+  ];
+  for (const f of UNQUOTED_FIELDS) {
+    candidate = candidate.replace(
+      new RegExp(`("${f}"\\s*:\\s*)(?!")([^,{}\\[\\]\\n]+)`, "g"),
+      (_, prefix, val) => `${prefix}"${val.trim()}"`
+    );
+  }
+
   const STRING_FIELDS = [
     "reaction","text","label","description","portrait",
     "temperament","situation","lifeAdvice","destiny",
