@@ -72,8 +72,51 @@ const MODEL_DEFAULT = {
 };
 const MODEL = MODEL_ARG || MODEL_DEFAULT[PROVIDER] || null;
 
-const HINT_BLOCK = HINT_ARGS.length > 0
-  ? `\n### 创作者硬性约束（必须严格遵守，不得偏离）\n${HINT_ARGS.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n`
+// ── Auto-detect topic constraints and inject hints ────────────────
+function inferHintsFromTopic(topic) {
+  const autoHints = [];
+
+  // Pattern 1: parenthetical slash/comma-list → explicit result items
+  // Strip nested parens first so "鸟（如鹦鹉）" → "鸟" before splitting
+  const listMatch = topic.match(/[（(]([^）)]{4,}[/／、][^）)（(]+(?:[（(][^）)]*[）)][^）)（(]*)*)[）)]/);
+  if (listMatch) {
+    const inner = listMatch[1].replace(/[（(][^）)]*[）)]/g, ""); // remove nested parens
+    const items = inner
+      .split(/[/／、，,]/)
+      .map(s => s.trim())
+      .map(s => s.replace(/^(要包含|包含|包括|涵盖|如|比如|例如)\s*/u, "")) // strip leading verbs
+      .map(s => s.replace(/(归为一类|等|类|型|等类别)$/u, "").trim())        // strip trailing suffixes
+      .filter(s => s.length > 0 && s.length <= 10);
+    if (items.length >= 3) {
+      autoHints.push(
+        `resultType必须是item，results必须严格使用以下名称，不得自创原型名：${items.join("、")}`
+      );
+    }
+  }
+
+  // Pattern 2: "给出适合程度" → spectrum results
+  if (/适合程度|适合度|程度|段位/.test(topic)) {
+    autoHints.push(
+      `结果必须是「适合程度」的不同段位，从最适合到最不适合排列，名称要体现程度差异，不能是通用人格原型名称`
+    );
+  }
+
+  // Pattern 3: "哪个国家/城市/地方" → item type
+  if (/哪个国家|哪个城市|哪座城市|哪个地方|哪个地区/.test(topic) && !listMatch) {
+    autoHints.push(`resultType必须是item，每个结果是真实存在的国家或城市名称`);
+  }
+
+  return autoHints;
+}
+
+const AUTO_HINTS  = inferHintsFromTopic(TOPIC_ARG);
+if (AUTO_HINTS.length > 0) {
+  console.log(`📌  Auto-detected constraints:`);
+  AUTO_HINTS.forEach(h => console.log(`     • ${h}`));
+}
+const ALL_HINTS   = [...AUTO_HINTS, ...HINT_ARGS];
+const HINT_BLOCK  = ALL_HINTS.length > 0
+  ? `\n### 创作者硬性约束（必须严格遵守，不得偏离）\n${ALL_HINTS.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n`
   : "";
 
 const DATA_DIR = path.resolve(__dirname, "data");
@@ -394,7 +437,9 @@ function formatAestheticContext(aestheticContext) {
 
 // ── Phase 0: Domain Architecture ─────────────────────────────────
 async function generateArchitecture(topic) {
-  const system = `你是「${topic}」领域的资深专家，同时熟悉心理学。你的任务是为一道人格测验设计概念架构——决定测验应该测量哪些人格、为什么这样划分、每个原型的核心身份是什么。
+  const system = `你是「${topic}」领域的资深专家。你的任务是为一道微信小程序测验设计结果架构——决定测验应该输出哪些结果、为什么这样划分、每个结果的核心定位是什么。
+
+这个测验不一定是人格测验。结果可能是：具体国家/城市/事物（item 类）、适合程度的不同段位（archetype 类但以程度命名）、真实人物（figure 类）、或有象征意味的人格原型（archetype 类）。你需要先判断这个测验属于哪种类型，再基于该类型设计结果，而不是一律套用「人格原型」框架。
 
 这一步只关注概念和结构，不写任何正文内容。输出严格 JSON，不输出其他内容。`;
 
@@ -404,8 +449,10 @@ async function generateArchitecture(topic) {
 ${HINT_BLOCK}
 第一步：判断这个测验适合哪种结果类型
 - resultType = "figure"：题目明确涉及某类具体人物（如「民国女性」「宋词词人」「文艺复兴画家」），每个结果对应一个真实存在的代表人物
-- resultType = "item"：题目是"你适合什么X"类型（如「你适合养什么宠物」「你适合什么运动」「你是哪种茶」），结果是该类别中真实存在的具体事物
+- resultType = "item"：结果是真实存在的具体事物或地点。包括「你适合什么X」类型，也包括主题说明中明确指定了结果类别的情况（如「包含多个国家」「包含多个城市」「包含以下几种食物」）——只要结果是真实存在的具体事物，就选 item
 - resultType = "archetype"：题目是抽象人格映射（如「你是哪种宝石」「你的恋爱风格」），结果是有象征意味的原型名称，侧重人格隐喻而非真实事物特性
+
+【重要】如果主题或约束中明确说明结果应该是某类真实事物（国家、城市、食物、运动等），必须选 item，不能选 archetype。
 
 第二步：基于领域知识设计维度和原型
 
@@ -500,7 +547,7 @@ ${ resultType === "figure" ? "- verse 优先选该人物自己写的诗词或评
 - 不要改变原型对应的维度划分和核心身份
 ` : "";
 
-  const system = `你是一位微信小程序人格测验产品策划专家，同时对「${topic}」这个领域有深入的专业知识。你的任务是为一道新测验设计整体框架，包括维度体系和每个结果类型的精准人格权重分布。
+  const system = `你是一位微信小程序测验产品策划专家，同时对「${topic}」这个领域有深入的专业知识。你的任务是为一道新测验设计整体框架，包括维度体系和每个结果的精准权重分布。这个测验的结果可能是人格原型、真实人物、具体事物、国家、或适合程度段位——你必须完全遵循 Phase 0 确定的 resultType 和结果名称，不得擅自改为人格类型。
 
 ${LITERARY_GUIDE}
 
@@ -728,7 +775,7 @@ async function generateResults(outline, resultSubset) {
     resultFields = defaultFieldObjs[resultType] || defaultFieldObjs.archetype;
   }
 
-  const system = `你是一位中文人格测验内容专家，擅长写有深度、有辨识度的人格描述。
+  const system = `你是一位中文测验内容专家，擅长写有深度、有辨识度的结果描述。结果可能是人格原型、真实人物、具体事物或适合程度段位，写作方式应与结果类型匹配，不要把所有结果都写成人格分析的口吻。
 
 ${LITERARY_GUIDE}
 ${aestheticContext}
