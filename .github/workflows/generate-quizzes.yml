@@ -3,11 +3,38 @@ name: 生成测验
 on:
   workflow_dispatch:
     inputs:
-      topics:
-        description: '测验主题，用 | 分隔，例如：主题A|主题B|主题C'
+      topic_1:
+        description: '主题 1'
         required: true
+      topic_2:
+        description: '主题 2'
+        required: false
+      topic_3:
+        description: '主题 3'
+        required: false
+      topic_4:
+        description: '主题 4'
+        required: false
+      topic_5:
+        description: '主题 5'
+        required: false
+      topic_6:
+        description: '主题 6'
+        required: false
+      topic_7:
+        description: '主题 7'
+        required: false
+      topic_8:
+        description: '主题 8'
+        required: false
+      topic_9:
+        description: '主题 9'
+        required: false
+      topic_10:
+        description: '主题 10'
+        required: false
       hint:
-        description: '硬性约束（可选），如：结果必须是真实国家名称，resultType必须是item'
+        description: '硬性约束（所有主题共用，可选）'
         required: false
       provider:
         description: 'AI 提供商'
@@ -29,9 +56,23 @@ jobs:
       - name: 解析主题列表
         id: parse
         env:
-          TOPICS: ${{ github.event.inputs.topics }}
+          T1:  ${{ github.event.inputs.topic_1 }}
+          T2:  ${{ github.event.inputs.topic_2 }}
+          T3:  ${{ github.event.inputs.topic_3 }}
+          T4:  ${{ github.event.inputs.topic_4 }}
+          T5:  ${{ github.event.inputs.topic_5 }}
+          T6:  ${{ github.event.inputs.topic_6 }}
+          T7:  ${{ github.event.inputs.topic_7 }}
+          T8:  ${{ github.event.inputs.topic_8 }}
+          T9:  ${{ github.event.inputs.topic_9 }}
+          T10: ${{ github.event.inputs.topic_10 }}
         run: |
-          topics_json=$(python3 -c 'import os,json; t=os.environ["TOPICS"]; print(json.dumps([x.strip() for x in t.split("|") if x.strip()],ensure_ascii=False))')
+          topics_json=$(python3 -c '
+import os, json
+keys = ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10"]
+topics = [os.environ[k].strip() for k in keys if os.environ.get(k,"").strip()]
+print(json.dumps(topics, ensure_ascii=False))
+')
           echo "matrix={\"topic\":$topics_json}" >> "$GITHUB_OUTPUT"
 
   generate:

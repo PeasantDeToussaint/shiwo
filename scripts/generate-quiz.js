@@ -257,7 +257,7 @@ async function callAI(systemPrompt, userPrompt, maxTokens = 8000) {
   ];
 
   if (PROVIDER === "zhipu") {
-    const zhipuMax = Math.min(maxTokens, 4096); // glm-4-plus hard cap
+    const zhipuMax = Math.min(maxTokens, 8192); // glm-4-plus supports up to 8192 output tokens
     const res = await httpPost(
       "https://open.bigmodel.cn/api/paas/v4/chat/completions",
       { model: MODEL, max_tokens: zhipuMax, temperature: 0.85, messages, stream: false },
@@ -362,6 +362,27 @@ function repairJSON(str) {
   return out.join("");
 }
 
+function escapeNewlinesInStrings(str) {
+  // Scan through JSON character by character; when inside a string value,
+  // replace literal newlines/tabs with their escape sequences
+  const out = [];
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (escaped) { out.push(c); escaped = false; continue; }
+    if (c === "\\" && inString) { out.push(c); escaped = true; continue; }
+    if (c === '"') { inString = !inString; out.push(c); continue; }
+    if (inString) {
+      if (c === "\n") { out.push("\\n"); continue; }
+      if (c === "\r") { out.push("\\r"); continue; }
+      if (c === "\t") { out.push("\\t"); continue; }
+    }
+    out.push(c);
+  }
+  return out.join("");
+}
+
 function extractJSON(raw) {
   let match = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
   let jsonStr = match ? match[1].trim() : raw.trim();
@@ -374,6 +395,9 @@ function extractJSON(raw) {
   jsonStr = jsonStr
     .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
     .replace(/[\u2018\u2019\u201A\u201B]/g, "'");
+
+  // Escape literal newlines/tabs inside JSON string values before any repair
+  jsonStr = escapeNewlinesInStrings(jsonStr);
 
   const STRING_FIELDS = [
     "reaction","text","label","description","portrait",
