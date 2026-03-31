@@ -363,10 +363,15 @@ function repairJSON(str) {
 }
 
 function escapeNewlinesInStrings(str) {
-  // Scan character-by-character; inside JSON string values:
-  // 1. Escape literal newlines/tabs
-  // 2. Remove backslashes before characters that are not valid JSON escape sequences
-  //    (models like Zhipu sometimes emit \很 or \。 which breaks JSON.parse)
+  // Scan character-by-character to fix model JSON emission bugs:
+  //
+  // Inside strings:
+  //   1. Escape literal newlines/tabs (→ \n \r \t)
+  //   2. Strip backslashes before non-valid-escape characters (\很 → 很)
+  //
+  // Outside strings:
+  //   3. Strip stray backslashes entirely (\ in structural whitespace → dropped)
+  //      Zhipu sometimes emits }, \n  "nextKey" where the \n is two chars not a newline
   const VALID_ESCAPE = new Set(['"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u']);
   const out = [];
   let inString = false;
@@ -374,15 +379,31 @@ function escapeNewlinesInStrings(str) {
   for (let i = 0; i < str.length; i++) {
     const c = str[i];
     if (escaped) {
+      // We are inside a string, processing the char after a backslash
       if (!VALID_ESCAPE.has(c)) {
-        // Drop the backslash that was already pushed; keep the character
-        out.pop();
+        out.pop(); // drop the backslash already pushed
       }
       out.push(c);
       escaped = false;
       continue;
     }
-    if (c === "\\" && inString) { out.push(c); escaped = true; continue; }
+    if (c === "\\") {
+      if (inString) {
+        out.push(c); escaped = true; // handle next char
+        continue;
+      }
+      // Outside a string: model emitted a stray backslash.
+      // Peek at the next character to decide how to handle it:
+      //   \n or \r or \t → replace the pair with a real space (valid structural whitespace)
+      //   anything else  → drop the backslash, keep the next char as-is
+      const next = str[i + 1];
+      if (next === "n" || next === "r" || next === "t") {
+        out.push(" "); // turn \n / \t outside a string into whitespace
+        i++;           // skip the 'n'/'r'/'t'
+      }
+      // else: just drop the backslash (next char will be processed normally)
+      continue;
+    }
     if (c === '"') { inString = !inString; out.push(c); continue; }
     if (inString) {
       if (c === "\n") { out.push("\\n"); continue; }
@@ -446,6 +467,86 @@ function extractJSON(raw) {
   }
 }
 
+function validateArchitecture(architecture) {
+  const errors = [];
+  const dimensionCount = architecture?.dimensionCount;
+  const dimensions = Array.isArray(architecture?.dimensions) ? architecture.dimensions : [];
+  const results = Array.isArray(architecture?.results) ? architecture.results : [];
+
+  if (!Number.isInteger(dimensionCount)) {
+    errors.push(`dimensionCount must be an integer (got ${JSON.stringify(dimensionCount)})`);
+  }
+  if (dimensions.length === 0) {
+    errors.push("dimensions missing or empty");
+  }
+  if (Number.isInteger(dimensionCount) && dimensions.length !== dimensionCount) {
+    errors.push(`dimensions.length (${dimensions.length}) must equal dimensionCount (${dimensionCount})`);
+  }
+  if (results.length === 0) {
+    errors.push("results missing or empty");
+  }
+
+  const dimSet = new Set(dimensions);
+  for (const r of results) {
+    if (!r?.primaryDimension || !dimSet.has(r.primaryDimension)) {
+      errors.push(`${r?.conceptId || r?.name || "result"}: primaryDimension must be one of dimensions`);
+    }
+    if (r?.profileHints) {
+      const keys = Object.keys(r.profileHints);
+      for (const d of dimensions) {
+        if (!keys.includes(d)) errors.push(`${r?.conceptId || r?.name || "result"}: profileHints missing "${d}"`);
+      }
+      for (const k of keys) {
+        if (!dimSet.has(k)) errors.push(`${r?.conceptId || r?.name || "result"}: profileHints has unknown dimension "${k}"`);
+      }
+    }
+  }
+  return errors;
+}
+
+function validateOutlineStructure(outline, architecture) {
+  const errors = [];
+  const dimensions = Array.isArray(outline?.dimensions) ? outline.dimensions : [];
+  const axes = Array.isArray(outline?.dimensionAxes) ? outline.dimensionAxes : [];
+  const results = Array.isArray(outline?.results) ? outline.results : [];
+  const dimSet = new Set(dimensions);
+
+  if (dimensions.length === 0) errors.push("outline.dimensions missing or empty");
+  if (axes.length !== dimensions.length) {
+    errors.push(`dimensionAxes.length (${axes.length}) must equal dimensions.length (${dimensions.length})`);
+  }
+  for (const axis of axes) {
+    if (!dimSet.has(axis.dimension)) {
+      errors.push(`dimensionAxes has unknown dimension "${axis.dimension}"`);
+    }
+  }
+  for (const r of results) {
+    if (!r?.dimension || !dimSet.has(r.dimension)) {
+      errors.push(`${r?.id || r?.title || "result"}: dimension must be one of outline.dimensions`);
+    }
+    if (!r?.dimension_profile) {
+      errors.push(`${r?.id || r?.title || "result"}: missing dimension_profile`);
+      continue;
+    }
+    const keys = Object.keys(r.dimension_profile);
+    for (const d of dimensions) {
+      if (!keys.includes(d)) errors.push(`${r?.id || r?.title || "result"}: dimension_profile missing "${d}"`);
+    }
+    for (const k of keys) {
+      if (!dimSet.has(k)) errors.push(`${r?.id || r?.title || "result"}: dimension_profile has unknown dimension "${k}"`);
+    }
+  }
+
+  if (architecture?.dimensions?.length) {
+    const archDims = architecture.dimensions;
+    if (archDims.length !== dimensions.length || archDims.some((d, i) => d !== dimensions[i])) {
+      errors.push(`outline dimensions must exactly match Phase 0 dimensions: ${archDims.join(" / ")}`);
+    }
+  }
+
+  return errors;
+}
+
 // ── Simplify overly complex dimension names ───────────────────────
 const DIMENSION_MAP = {
   "豪放不羁": "豪放", "沉郁顿挫": "沉郁", "清丽自然": "清丽",
@@ -502,9 +603,9 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
     { "key": "lifeAdvice", "label": "行动建议", "standard": true },
     { "key": "customFieldKey", "label": "自定义标题", "standard": false, "instruction": "说明这个字段写什么、写多少字" }
   ],
-  "dimensionCount": "你决定的维度数量，整数，分类应体现专业洞察但面向普通用户可理解",
+  "dimensionCount": "你决定的维度数量，整数。由你根据主题复杂度决定，通常为2-5个",
   "questionCount": "你决定的题目数量，整数，建议范围：简单主题12题，中等主题16-20题，复杂多维主题22-24题",
-  "dimensions": ["根据主题实际需要填写，与dimensionCount数量一致"],
+  "dimensions": ["维度1", "维度2", "更多维度按需补足，必须与dimensionCount数量一致"],
   "results": [
     {
       "conceptId": "c1",
@@ -515,7 +616,8 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
       "distinctiveFeature": "与其他原型最显著的区别特质，15-20字",
       "profileHints": {
         "维度A": "high/medium/low",
-        "维度B": "high/medium/low"
+        "维度B": "high/medium/low",
+        "维度C": "如果存在更多维度，继续补齐。profileHints 必须覆盖所有维度"
       }
     }
   ]
@@ -553,14 +655,18 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 请根据「${topic}」这个主题，从用户视角出发，设计最合适的字段组合。
 
 规则：
--【关键约束】dimensions 和 results 数量必须严格相等，每个 primaryDimension 对应 dimensions 中的一个，不重复。输出前请自检 dimensions.length === results.length
+-【关键约束】dimensionCount 由你根据主题复杂度决定；dimensions 数量必须与 dimensionCount 严格一致。results 是6-9个（视主题而定），与 dimensions 数量无关。多个结果可以共享同一个 primaryDimension。每个 primaryDimension 必须是 dimensions 数组里的某一项。
+- 维度数量不要机械固定；重点是维度彼此独立、可解释，并且足以区分这些结果。简单主题可用2个，复杂主题可到5个。
 - resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
 - resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
 - profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异`;
 
   const raw = await callAI(system, user, 2500);
-  return extractJSON(raw);
+  const architecture = extractJSON(raw);
+  const errors = validateArchitecture(architecture);
+  if (errors.length > 0) throw new Error(`Architecture invalid: ${errors.join("; ")}`);
+  return architecture;
 }
 
 // ── Phase 1: Generate outline ─────────────────────────────────────
@@ -622,16 +728,18 @@ ${HINT_BLOCK}${archContext}
       "verseSource": "出处或作者",
       "dimension_profile": {
         "维度A": 0.0,
-        "维度B": 0.0
+        "维度B": 0.0,
+        "更多维度按已确定 dimensions 继续补齐，必须覆盖所有维度": 0.0
       }
     }
   ]
 }
 
 规则：
-- dimensions 数量 = results 数量 = dimensionAxes 数量，4-6个（若 Phase 0 已给出，严格使用 Phase 0 的维度）
+- dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，严格使用 Phase 0 的维度，数量以 Phase 0 为准）
+- results 数量 6-9个，与 dimensions 数量无关，多个结果可以共享同一个 dimension
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
-- 每个 result 对应一个 dimension，id 从 r1 开始
+- 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
 - 维度名称简洁，2-4字
 - axisLabel 是这条轴的"类别名"，lowPole 是该维度的反面特质
 - insight 必须是具体的、有画面感的描述，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌
@@ -645,7 +753,10 @@ dimension_profile 规则（这是最重要的部分，直接决定结果准确�
 - profile 设计完成后自我检验：是否有两个结果过于相似？是否会导致大多数用户聚集在同一个结果？`;
 
   const raw = await callAI(system, user, 4500);
-  return extractJSON(raw);
+  const outline = extractJSON(raw);
+  const errors = validateOutlineStructure(outline, architecture);
+  if (errors.length > 0) throw new Error(`Outline invalid: ${errors.join("; ")}`);
+  return outline;
 }
 
 // ── Phase 2: Generate questions ───────────────────────────────────
