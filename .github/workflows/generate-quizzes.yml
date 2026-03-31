@@ -1,5 +1,9 @@
 name: 生成测验
 
+concurrency:
+  group: generate-quizzes
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
     inputs:
