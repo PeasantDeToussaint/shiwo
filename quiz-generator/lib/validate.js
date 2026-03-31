@@ -28,6 +28,13 @@ function validateArchitecture(architecture) {
     errors.push(`scoringFamily must be one of ${Array.from(SCORING_FAMILIES).join(", ")} (got ${JSON.stringify(scoringFamily)})`);
   }
 
+  // Require at least 2 custom (non-standard) result fields
+  const resultFields = Array.isArray(architecture?.resultFields) ? architecture.resultFields : [];
+  const customFields = resultFields.filter(f => f?.standard === false);
+  if (customFields.length < 2) {
+    errors.push(`resultFields must include at least 2 custom fields (standard: false), got ${customFields.length} — add a second custom field like characterQuote, historicalNote, coreConflict, etc.`);
+  }
+
   if (!Number.isInteger(dimensionCount)) {
     errors.push(`dimensionCount must be an integer (got ${JSON.stringify(dimensionCount)})`);
   }
