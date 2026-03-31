@@ -850,7 +850,7 @@ ${buildResultTemplate(resultFields, resultType)}
 只生成上方格式中出现的字段，不要添加其他字段。
 规则：遵守 literary guide，禁止出现被列明的句型。`;
 
-  const raw = await callAI(system, user, 8000);
+  const raw = await callAI(system, user, 10000);
   const label = stub.map(r => r.id).join("-");
   const rawPath = path.join(DATA_DIR, `${outline.id}.r${label}.raw.txt`);
   fs.writeFileSync(rawPath, raw);
@@ -1397,9 +1397,10 @@ async function main() {
 
   await sleep(4000);
 
-  // Phase 3: Results — fixed batch size of 2 (portrait content is large, must stay within token limits)
+  // Phase 3: Results — batch size 1 for item/figure types or large result sets (content is very large)
   const rTotal      = outline.results.length;
-  const R_BATCH_SIZE = 2;
+  const resultType  = outline.architectureResultType || "archetype";
+  const R_BATCH_SIZE = (resultType === "item" || resultType === "figure" || rTotal > 6) ? 1 : 2;
   const rBatchCount = Math.ceil(rTotal / R_BATCH_SIZE);
   const rSize       = R_BATCH_SIZE;
   const R_BATCHES   = Array.from({ length: rBatchCount }, (_, i) =>
