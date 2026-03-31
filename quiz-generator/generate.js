@@ -13,9 +13,9 @@ const path = require("path");
 const config = require("./lib/config");
 const { createClient, configure: configureAI } = require("./lib/ai");
 const { sleep, withRetry } = require("./lib/http");
-const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestions, generateResults } = require("./lib/prompts");
+const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestionPlan, generateQuestions, generateResults } = require("./lib/prompts");
 const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, spreadProfiles, enforceUniquePeaks, applyProfilesFromHints } = require("./lib/assemble");
-const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
+const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, validateQuestionPlan, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
 const { evaluateQuiz, printEvalReport } = require("./lib/eval");
 const { uploadQuiz } = require("./lib/wechat");
 const { saveCheckpoint, loadCheckpoint, clearCheckpoints } = require("./lib/checkpoint");
@@ -200,6 +200,27 @@ async function main() {
     return { startId, endId, label: String(i + 1) };
   }).filter(b => b.startId <= Q_TOTAL);
 
+  // Phase 2a: Question plan — generate all scenario skeletons in one call
+  startPhase("2a-qplan");
+  let questionPlan = RESUME ? loadCheckpoint(TOPIC_ARG, "phase2a-qplan") : null;
+  if (questionPlan) {
+    console.log(`\n📋  Question plan: resumed ${questionPlan.length} items from checkpoint`);
+  } else {
+    console.log(`\n📋  [2/3] Generating question plan (${Q_TOTAL} scenarios)...`);
+    questionPlan = await withRetry("question-plan", async () => {
+      const plan = await generateQuestionPlan(outline, Q_TOTAL, DATA_DIR, aiClient.callAI);
+      const planErrors = validateQuestionPlan(plan, outline.dimensions, Q_TOTAL);
+      if (planErrors.length > 0) throw new Error(`Question plan invalid: ${planErrors.join("; ")}`);
+      return plan;
+    }, 3, 5000);
+    saveCheckpoint(TOPIC_ARG, "phase2a-qplan", questionPlan);
+  }
+  console.log(`     ✓  plan: ${questionPlan.map(p => `${p.id}[${p.type?.slice(0,1)}]`).join(" ")}`);
+  console.log(`     (${endPhase("2a-qplan")}s)`);
+
+  await sleep(3000);
+
+  // Phase 2b: Question generation (each batch expands plan skeletons)
   startPhase("2-questions");
   let allQuestions = RESUME ? loadCheckpoint(TOPIC_ARG, "phase2-questions") : null;
   if (allQuestions) {
@@ -210,7 +231,7 @@ async function main() {
       const phaseQuestions = [];
       for (const [i, { startId, endId, label }] of Q_BATCHES.entries()) {
         console.log(`\n📝  [2/3] Questions q${startId}-q${endId} (batch ${label}/${Q_BATCHES.length})...`);
-        const qs = await withRetry(`questions-${label}`, () => generateQuestions(outline, startId, endId, label, Q_TOTAL, DATA_DIR, aiClient.callAI, phaseQuestions));
+        const qs = await withRetry(`questions-${label}`, () => generateQuestions(outline, startId, endId, label, Q_TOTAL, DATA_DIR, aiClient.callAI, questionPlan));
         phaseQuestions.push(...qs);
         console.log(`     ✓  got ${qs.length} questions`);
         if (i < Q_BATCHES.length - 1) await sleep(4000);

@@ -397,6 +397,61 @@ function validateDimensionProfiles(results, dimensions, options = {}) {
   return warnings;
 }
 
+function validateQuestionPlan(plan, dimensions, total) {
+  const errors = [];
+
+  if (!Array.isArray(plan) || plan.length < total)
+    return [`plan has ${plan?.length ?? 0} items, expected ${total}`];
+
+  // Dimension coverage
+  const dimSet = new Set(dimensions);
+  const dimCounts = {};
+  for (const d of dimensions) dimCounts[d] = 0;
+  for (const p of plan) {
+    if (!dimSet.has(p.dimension))
+      errors.push(`${p.id}: dimension "${p.dimension}" not in quiz dimensions`);
+    else
+      dimCounts[p.dimension]++;
+  }
+  const dimValues = Object.values(dimCounts);
+  const maxDim = Math.max(...dimValues), minDim = Math.min(...dimValues);
+  if (maxDim - minDim > Math.ceil(total / dimensions.length))
+    errors.push(`dimension distribution too uneven: max ${maxDim}, min ${minDim} — ${JSON.stringify(dimCounts)}`);
+
+  // Crisis type cap: ① must not exceed 45%
+  const crisisCount = plan.filter(p => (p.type || "").startsWith("①")).length;
+  const crisisMax = Math.ceil(total * 0.45);
+  if (crisisCount > crisisMax)
+    errors.push(`too many ①危机行动 scenarios: ${crisisCount}/${total} (max ${crisisMax})`);
+
+  // Each non-crisis type (②③④⑤) must appear at least once
+  for (const t of ["②", "③", "④", "⑤"]) {
+    if (!plan.some(p => (p.type || "").startsWith(t)))
+      errors.push(`no questions of type ${t} in plan — all types must be represented`);
+  }
+
+  // Duplicate setting detection: flag if two settings share an 8-char substring
+  const settings = plan.map(p => (p.setting || "").replace(/\s/g, ""));
+  const flagged = new Set();
+  for (let i = 0; i < settings.length; i++) {
+    if (flagged.has(i)) continue;
+    const a = settings[i];
+    if (a.length < 8) continue;
+    for (let j = i + 1; j < settings.length; j++) {
+      const b = settings[j];
+      for (let k = 0; k <= a.length - 8; k++) {
+        if (b.includes(a.slice(k, k + 8))) {
+          errors.push(`${plan[i].id} and ${plan[j].id} have overlapping settings`);
+          flagged.add(j);
+          break;
+        }
+      }
+    }
+  }
+
+  return errors;
+}
+
 function printWarnings(label, warnings) {
   if (warnings.length === 0) {
     console.log(`  ✅  ${label}: all checks passed`);
@@ -415,6 +470,7 @@ module.exports = {
   validateArchitecture, validateOutlineStructure,
   collectProfileSimilarityIssues, validateFinalQuiz,
   validateQuestions, validateResults, validateDimensionProfiles,
+  validateQuestionPlan,
   printWarnings, assertNoCriticalWarnings,
   STANDARD_FIELD_KEYS,
 };

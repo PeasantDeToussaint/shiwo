@@ -627,7 +627,68 @@ ${profileTemplate}
   return outline;
 }
 
-async function generateQuestions(outline, startId, endId, batchLabel, total, dataDir, callAIImpl = callAI, previousQuestions = []) {
+async function generateQuestionPlan(outline, total, dataDir, callAIImpl = callAI) {
+  const dimensions = outline.dimensions;
+  const aestheticContext = formatAestheticContext(outline.aestheticContext);
+  const dimensionSpecs = Array.isArray(outline.architectureDimensionSpecs) ? outline.architectureDimensionSpecs : [];
+  const dimensionSpecBlock = dimensionSpecs.length > 0
+    ? `\n### 维度语义锚点\n${formatDimensionSpecs(dimensionSpecs)}\n`
+    : "";
+
+  const crisisMax  = Math.floor(total * 0.40);
+  const perType    = Math.max(1, Math.floor((total - crisisMax) / 4));
+
+  const system = `你是一位中文测验内容专家。你的任务是为一套测验设计 ${total} 道题的「场景骨架」——只需要确定每道题的题型和场景设定，不需要写选项。
+
+${LITERARY_GUIDE}
+${aestheticContext}
+
+### 输出格式
+严格输出一个 JSON 对象，只包含 "plan" 字段（${total} 个骨架的数组）。不要输出其他内容，直接输出 JSON。`;
+
+  const user = `测验信息：
+- 标题：${outline.title}
+- 描述：${outline.description}
+- 评分维度：${dimensions.join("、")}
+${dimensionSpecBlock}
+
+请为这套测验设计全部 ${total} 道题的场景骨架。输出格式：
+{
+  "plan": [
+    {
+      "id": "q1",
+      "type": "①危机行动",
+      "setting": "1-3句话描述场景，有具体时间/地点/人物状态，不含选项，不含结尾问句",
+      "dimension": "主要测试的维度（必须是以下之一：${dimensions.join("、")}）"
+    }
+  ]
+}
+
+【五种题型说明】
+① 危机行动：遭遇困境/冲突，需要做出行动决策
+② 喜好本能：无压力场景，问你更愿意/更享受哪种
+③ 代价权衡：两个选项都有真实代价，没有明显正确答案，需要取舍
+④ 小事日常：非权谋/非危机，日常小事中暴露性格
+⑤ 观察投射：描述他人行为或一句话，问你的感受/第一反应
+
+【强制分配规则】
+1. ①危机行动类题目全套不得超过 ${crisisMax} 道，其余四种各至少 ${perType} 道
+2. ${total} 道题的 setting 描述的场景必须完全不同——不同地点、不同情境、不同人物组合。严禁同类场景出现两次（如多次"发现密信"、多次"下属来报错"、多次"战场对峙"）
+3. 每个维度出现次数大致均衡，每个维度约 ${Math.round(total / dimensions.length * 10) / 10} 道
+4. 场景必须契合「${outline.title}」的历史/文化氛围`;
+
+  const rawPath = path.join(dataDir, `${outline.id}.qplan.raw.txt`);
+  const raw = await callAIImpl(system, user, 3000);
+  fs.writeFileSync(rawPath, raw);
+
+  const parsed = extractJSON(raw);
+  if (!Array.isArray(parsed.plan) || parsed.plan.length < total)
+    throw new Error(`Expected ${total} question plans, got ${parsed.plan?.length ?? 0}`);
+
+  return parsed.plan.slice(0, total);
+}
+
+async function generateQuestions(outline, startId, endId, batchLabel, total, dataDir, callAIImpl = callAI, questionPlan = []) {
   const dimensions = outline.dimensions;
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const count = endId - startId + 1;
@@ -655,9 +716,21 @@ ${aestheticContext}
 ### 输出格式
 严格输出一个 JSON 对象，只包含 "questions" 字段（${count}道题的数组，id从q${startId}到q${endId}）。不要输出其他内容，直接输出 JSON。`;
 
-  const usedScenesBlock = previousQuestions.length > 0
-    ? `\n### 已生成题目场景（本批禁止重复这些场景结构）\n${previousQuestions.map((q, i) => `${i + 1}. ${q.text}`).join("\n")}\n`
+  // Build plan block for this batch — each entry becomes a mandatory scene
+  const batchPlan = questionPlan.filter(p => {
+    const num = parseInt((p.id || "").replace(/\D/g, ""), 10);
+    return num >= startId && num <= endId;
+  });
+  const hasPlan = batchPlan.length > 0;
+
+  const planBlock = hasPlan
+    ? `\n### 本批题目的场景骨架（必须严格按照以下设定扩写，不得改变场景地点或核心情境）\n` +
+      batchPlan.map(p => `- ${p.id}【${p.type}】主测维度「${p.dimension}」：${p.setting}`).join("\n") + "\n"
     : "";
+
+  const taskLine = hasPlan
+    ? `将以下 ${count} 个场景骨架扩写为完整题目（共${total}道题的第${batchLabel}批，id q${startId}~q${endId}）：`
+    : `请生成 q${startId} 到 q${endId} 共${count}道全新场景题目（共${total}道题的第${batchLabel}批）：`;
 
   const user = `测验信息：
 - 标题：${outline.title}
@@ -665,15 +738,15 @@ ${aestheticContext}
 - 评分维度：${dimensions.join("、")}
 ${scoringGuideBlock}
 ${dimensionSpecBlock}
-${usedScenesBlock}
-请生成 q${startId} 到 q${endId} 共${count}道题目（共${total}道题的第${batchLabel}批）。
+${planBlock}
+${taskLine}
 
 输出格式：
 {
   "questions": [
     {
       "id": "q${startId}",
-      "text": "【场景铺陈 30-50字】+【问题抛出 10-20字】，合计 40-70字。先用感官细节（光线/声音/气味/神情/动作）把读者带入现场，再抛出问题。禁止只用一句话直接问"你会怎么做"。示例：「烛火将熄，你与他对坐已久，他忽然低声说了一句你早已知道答案却一直不敢正视的话。窗外有雨，案上的茶早就凉了。你抬起头……」",
+      "text": "在骨架 setting 基础上扩写，40-70字。加入感官细节（光线/声音/气味/人物神情/动作），再以问句结尾收束。禁止改变骨架规定的场景地点和核心情境。",
       "options": [
 ${optionTemplateA}
         { "id": "b", "text": "选项文本", "scores": { "维度": 2 } },
@@ -684,27 +757,16 @@ ${optionTemplateA}
   ]
 }
 
-【题型分配要求】本批 ${count} 道题必须覆盖多种题型：
-
-① 细节感知题：不问"你怎么做"，问"你先注意到什么"/"你的第一感受是"。例：「宴席散场，你和一个平日疏远的人都没走，两人都没开口。你首先感到的是……」
-② 喜好本能题：无压力场景下的真实偏好，问"你更愿意"/"你更享受哪种"。例：「如果有一整天在这个世界里自由支配，你最想做的是……」
-③ 代价权衡题：两个选项都有真实代价，没有明显正确答案。例：「实现目标的最后一步需要做一件让你终身不安的事，不做就功亏一篑。你会……」
-④ 小事/日常题：非权谋危机，在生活小事中暴露性格。例：「你路过一场可以不管的街头争执，你走路的速度……」
-⑤ 观察投射题：描述他人行为，问你的感受或判断。例：「一个朋友在失败后第一件事是独自消化而非找人倾诉，你的第一反应是……」
-
-本批 ${count} 道题中，至少 ${Math.max(1, Math.floor(count * 0.4))} 道必须属于②③④⑤之一，不能全是危机行动类。
-
 规则：
-1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围。例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等。每道题 text 字段 40 字以上，先渲染场景氛围，再收尾抛问；禁止只有一句话的纯白描问法
-2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
-3. ${scoreRule}
-4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
-5. 维度覆盖均衡：本批 ${count} 道题中，每个维度应大致均匀出现，避免某一维度题目过多而另一维度数据稀少。当前维度共 ${dimensions.length} 个，每个维度平均约 ${Math.round(count / dimensions.length * 10) / 10} 道题的信号量
-6. 每道题的高分选项必须服从维度语义锚点，不能把某个维度偷换成"相近但不同"的概念。例如某维度若高分代表"公义优先"，则"索要官职谋私利""只保自己"之类选项绝不能给这个维度高分
-7. 如果 scoringFamily = level-band，四个选项的总分梯度必须明显拉开，保证最终能分出"低段位/中段位/高段位"
-8. 如果 scoringFamily = bipolar-dimension，负分只能用来表示"朝 lowDefinition 一侧移动"；禁止出现"高低两边都给高分"的自相矛盾写法
-9. 遵守 literary guide，列明的禁止句型一律不得出现
-10. 场景类型多样性（全套 ${total} 道题的约束）：同一场景结构（如"他人遭难/被陷害是否出手"、"掌握证据是否揭发"、"朝堂站队"）全套不得超过 3 道；选项中"明哲保身"及等义表达至多出现 3 次`;
+1. id 严格从 q${startId} 到 q${endId}，不能多也不能少
+2. ${scoreRule}
+3. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
+4. 维度覆盖：本批 ${count} 道题，每个维度大致均匀出现（共 ${dimensions.length} 个维度，每维度约 ${Math.round(count / dimensions.length * 10) / 10} 道信号量）
+5. 每道题的高分选项必须服从维度语义锚点，不能偷换概念
+6. 如果 scoringFamily = level-band，四个选项总分梯度必须明显拉开
+7. 如果 scoringFamily = bipolar-dimension，负分只能表示朝 lowDefinition 一侧移动
+8. 遵守 literary guide，列明的禁止句型一律不得出现
+9. 选项中"明哲保身"及等义表达（独善其身、静观其变、置身事外）本批最多出现 2 次`;
 
   const raw = await callAIImpl(system, user, 6000);
   fs.writeFileSync(path.join(dataDir, `${outline.id}.q${batchLabel}.raw.txt`), raw);
@@ -918,6 +980,7 @@ ${buildResultTemplate(resultFields, resultType)}
 
 module.exports = {
   inferHintsFromTopic, buildResultTemplate,
-  generateArchitecture, generateOutline, generateOutlineProfiles, generateQuestions, generateResults,
+  generateArchitecture, generateOutline, generateOutlineProfiles,
+  generateQuestionPlan, generateQuestions, generateResults,
   PORTRAIT_TEMPLATE_BY_TYPE, STANDARD_FIELD_TEMPLATES,
 };
