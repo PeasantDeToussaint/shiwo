@@ -151,8 +151,8 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
     { "key": "lifeAdvice", "label": "行动建议", "standard": true },
     { "key": "customFieldKey", "label": "自定义标题", "standard": false, "instruction": "说明这个字段写什么、写多少字" }
   ],
-  "dimensionCount": "你决定的维度数量，整数。通常为4-6个。results越多维度应越多——原则上每2-3个结果需要1个独立维度（如8个结果 → 至少4个维度，9个结果 → 至少4-5个）。figure类型（同一作品中的人物）因人物天然共享背景与价值观，需取上限。维度之间必须真正独立、正交，不能是同一特质的不同表述",
-  "questionCount": "你决定的题目数量，整数，建议范围：简单主题12题，中等主题16-20题，复杂多维主题22-24题。维度越多题目应越多，保证每个维度有足够的题目覆盖",
+  "dimensionCount": 5,
+  "questionCount": 20,
   "dimensions": ["维度1", "维度2", "更多维度按需补足，必须与dimensionCount数量一致。每个维度名称必须2-4字，不要用与/和连接两个概念"],
   "results": [
     {
@@ -203,8 +203,9 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 请根据「${topic}」这个主题，从用户视角出发，设计最合适的字段组合。
 
 规则：
--【关键约束】dimensionCount 由你根据主题复杂度和结果数量共同决定；dimensions 数量必须与 dimensionCount 严格一致。results 是6-9个（视主题而定），results越多则dimensions越多，确保每个结果都有足够的区分空间（每2-3个结果需要1个独立维度）。多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。
-- 维度之间必须真正独立、正交，不能是同一特质的不同表述（如「理性」和「逻辑性」高度相关，不应同时作为维度）。通常4个维度起，复杂主题可到6个。
+-【关键约束】dimensionCount 和 questionCount 必须是纯整数（如 5、20），不能是字符串。dimensionCount 由主题复杂度和结果数量共同决定：通常4-6个，每2-3个结果需要1个独立维度（如8个结果 → 至少4个维度）。figure类型（同一作品人物）因天然共享背景，需取上限。questionCount 建议：简单主题12，中等16-20，复杂22-24，维度越多题目应越多。
+- dimensions 数量必须与 dimensionCount 严格一致。results 是6-9个，多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。
+- 维度之间必须真正独立、正交，不能是同一特质的不同表述（如「理性」和「逻辑性」高度相关，不应同时作为维度）。
 - resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
 - resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
@@ -212,6 +213,9 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 
   const raw = await callAIImpl(system, user, 2500);
   const architecture = extractJSON(raw);
+  // Models occasionally return numeric fields as strings — coerce before validation
+  if (typeof architecture.dimensionCount === "string") architecture.dimensionCount = parseInt(architecture.dimensionCount, 10);
+  if (typeof architecture.questionCount  === "string") architecture.questionCount  = parseInt(architecture.questionCount,  10);
   const errors = validateArchitecture(architecture);
   if (errors.length > 0) throw new Error(`Architecture invalid: ${errors.join("; ")}`);
   return architecture;
