@@ -244,7 +244,13 @@ function extractJSON(raw) {
 
   jsonStr = jsonStr
     .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
-    .replace(/[\u2018\u2019\u201A\u201B]/g, "'");
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/\uff1a/g, ":")    // ： full-width colon → ASCII
+    .replace(/\uff0c/g, ",")    // ， full-width comma → ASCII
+    .replace(/\uff5b/g, "{")    // ｛ full-width brace
+    .replace(/\uff5d/g, "}")    // ｝
+    .replace(/\uff3b/g, "[")    // ［ full-width bracket
+    .replace(/\uff3d/g, "]");   // ］
 
   jsonStr = normalizeJSONCandidate(jsonStr);
 

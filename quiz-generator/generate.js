@@ -116,7 +116,7 @@ async function main() {
     console.log("     (resumed from checkpoint)");
   } else {
     try {
-      architecture = await withRetry("architecture", () => generateArchitecture(TOPIC_ARG, HINT_BLOCK, aiClient.callAI), 4, 5000);
+      architecture = await withRetry("architecture", () => generateArchitecture(TOPIC_ARG, HINT_BLOCK, aiClient.callAI), 6, 5000);
       saveCheckpoint(TOPIC_ARG, "phase0-architecture", architecture);
     } catch (err) {
       console.error("❌  Architecture failed:", err.message);

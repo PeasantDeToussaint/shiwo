@@ -54,7 +54,7 @@ scripts/              本地 Node.js 工具脚本
 **核心依赖：**
 - 微信小程序 + 腾讯云 CloudBase（数据库 + 云函数）
 - AI 提供商：智谱 GLM / DeepSeek / Gemini / Anthropic（四选一）
-- 纯 Node.js 脚本，无第三方 npm 依赖
+- Node.js CLI + `dotenv`，生成器测试使用 `vitest`
 
 ---
 
@@ -91,7 +91,7 @@ scripts/              本地 Node.js 工具脚本
 
 ## AI 生成流水线
 
-`generate-quiz.js` 将一个主题描述转化为完整测验，分四个阶段：
+`quiz-generator/generate.js` 是当前维护中的生成入口。它会把一个主题描述转化为完整测验，并在失败时支持 checkpoint 恢复。
 
 ```
 Phase 0 — 领域架构
@@ -103,13 +103,15 @@ Phase 1 — 框架生成
      题目风格指南（aestheticContext）、维度轴定义、
      每个结果的数值化 dimension_profile
 
-Phase 2 — 题目生成（3批并行）
+Phase 2 — 题目生成（3批顺序执行）
   └─ 根据 Phase 0 确定的题目数量（12–24题）分批生成，
      每题包含 4 个选项，每个选项携带维度得分
 
-Phase 3 — 结果内容生成（2–3批）
+Phase 3 — 结果内容生成（按结果分批）
   └─ 为每个人格原型生成完整内容：
      人格画像、优劣势、气质描述、自定义扩展字段
+
+Validation / Eval — 结构校验、内容校验、AI 质检
 
 Assembly — 纯 JS 组装 → 上传至 CloudBase
 ```
@@ -125,12 +127,14 @@ Assembly — 纯 JS 组装 → 上传至 CloudBase
 
 | 脚本 | 用途 |
 |------|------|
-| `generate-quiz.js` | 从主题生成全新测验并上传 |
+| `quiz-generator/generate.js` | 当前维护中的生成入口，支持 `--resume` / `--clean` / `--force` |
 | `rewrite-all-quizzes.js` | 批量重写已有测验的题目和结果 |
 | `upload-quiz.js` | 将本地 JSON 手动上传至 CloudBase |
 | `upload-all-data-quizzes.js` | 批量上传 `scripts/data/` 下所有测验 |
 | `export-quizzes.js` | 从 CloudBase 导出测验数据到本地 |
 | `delete-quizzes-from-cloud.js` | 从 CloudBase 删除指定测验 |
+
+`scripts/generate-quiz.js` 仍保留作兼容旧流程参考，但不再是主入口。
 
 ---
 
@@ -163,29 +167,32 @@ ANTHROPIC_API_KEY=...
 
 ```bash
 # 基础用法
-node scripts/generate-quiz.js --topic="你是哪种雨"
+node quiz-generator/generate.js --topic="你是哪种雨"
 
 # 指定 AI 提供商
-node scripts/generate-quiz.js --topic="你是哪种雨" --provider=zhipu
+node quiz-generator/generate.js --topic="你是哪种雨" --provider=zhipu
 
 # 添加创作约束
-node scripts/generate-quiz.js --topic="你是哪种宝石" \
+node quiz-generator/generate.js --topic="你是哪种宝石" \
   --hint="结果必须涵盖彩色宝石" \
   --hint="运用宝石行业专业知识"
 
 # 仅生成不上传（调试用）
-node scripts/generate-quiz.js --topic="你是哪种雨" --dry-run
+node quiz-generator/generate.js --topic="你是哪种雨" --dry-run
 
 # 预估 token 用量
-node scripts/generate-quiz.js --topic="你是哪种雨" --estimate
+node quiz-generator/generate.js --topic="你是哪种雨" --estimate
+
+# 从 checkpoint 恢复
+node quiz-generator/generate.js --topic="你是哪种雨" --resume
 ```
 
 **批量生成（顺序执行）：**
 
 ```bash
-node scripts/generate-quiz.js --topic="主题A" --provider=zhipu && \
-node scripts/generate-quiz.js --topic="主题B" --provider=zhipu && \
-node scripts/generate-quiz.js --topic="主题C" --provider=zhipu
+node quiz-generator/generate.js --topic="主题A" --provider=zhipu && \
+node quiz-generator/generate.js --topic="主题B" --provider=zhipu && \
+node quiz-generator/generate.js --topic="主题C" --provider=zhipu
 ```
 
 **手动上传已有 JSON：**
@@ -203,39 +210,9 @@ node scripts/upload-quiz.js scripts/data/tang-poet-personality.json --update  # 
 
 1. 将项目推送到 GitHub 私有仓库
 2. 在仓库 **Settings → Secrets and variables → Actions** 中添加 `.env` 中的所有密钥
-3. 创建 `.github/workflows/generate.yml`：
+3. 仓库已经包含 `.github/workflows/generate-quizzes.yml`，可直接在 Actions 里手动触发并填写最多 10 个主题。
 
-```yaml
-name: 批量生成测验
-
-on:
-  workflow_dispatch:
-    inputs:
-      topics:
-        description: '测验主题（每行一个）'
-        required: true
-
-jobs:
-  generate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: 生成测验
-        env:
-          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
-          WX_APPID: ${{ secrets.WX_APPID }}
-          WX_APPSECRET: ${{ secrets.WX_APPSECRET }}
-          WX_CLOUD_ENV: ${{ secrets.WX_CLOUD_ENV }}
-        run: |
-          node scripts/generate-quiz.js --topic="你的精神故乡" --provider=zhipu
-          node scripts/generate-quiz.js --topic="你和哪位民国女性最像" --provider=zhipu
-```
-
-4. 进入仓库 **Actions → 批量生成测验 → Run workflow** 手动触发
+4. 进入仓库 **Actions → 生成测验 → Run workflow**，填写 `topic_1` 到 `topic_10`、可选的共用 `hint`，以及 provider。
 
 ---
 

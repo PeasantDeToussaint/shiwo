@@ -6,8 +6,8 @@
   "scripts": {
     "generate": "node generate.js",
     "upload": "node upload.js",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --globals",
+    "test:watch": "vitest --globals"
   },
   "dependencies": {
     "dotenv": "^16.4.7",

@@ -44,7 +44,7 @@ function summarizeQuizForEvaluation(quiz) {
   };
 }
 
-async function evaluateQuiz(quiz) {
+async function evaluateQuiz(quiz, callAIImpl = callAI) {
   const payload = summarizeQuizForEvaluation(quiz);
 
   const system = `你是一位严苛的中文人格测验总编审，负责评估最终成品的内容质量。
@@ -89,7 +89,7 @@ ${JSON.stringify(payload, null, 2)}
   "suggestions": ["最多5条，优先可执行修改建议"]
 }`;
 
-  const raw = await callAI(system, user, 3500);
+  const raw = await callAIImpl(system, user, 3500);
   const parsed = extractJSON(raw);
 
   const metricKeys = ["aiSlop", "portraitDepth", "labelQuality", "differentiation", "topicFidelity"];
