@@ -31,12 +31,7 @@ jobs:
         env:
           TOPICS: ${{ github.event.inputs.topics }}
         run: |
-          topics_json=$(python3 -c "
-import os, json
-raw = os.environ['TOPICS']
-topics = [t.strip() for t in raw.split('|') if t.strip()]
-print(json.dumps(topics, ensure_ascii=False))
-")
+          topics_json=$(python3 -c 'import os,json; t=os.environ["TOPICS"]; print(json.dumps([x.strip() for x in t.split("|") if x.strip()],ensure_ascii=False))')
           echo "matrix={\"topic\":$topics_json}" >> "$GITHUB_OUTPUT"
 
   generate:
