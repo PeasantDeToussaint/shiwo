@@ -434,6 +434,28 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
     });
   }
   repairArchitectureAnchors(architecture);
+
+  // Repair orphaned dimensions: every dimension must have at least one result as primaryDimension.
+  // If a dimension has none, reassign the result whose profileHints scores it highest.
+  if (Array.isArray(architecture.dimensions) && Array.isArray(architecture.results)) {
+    const usedDims = new Set(architecture.results.map(r => r?.primaryDimension).filter(Boolean));
+    for (const dim of architecture.dimensions) {
+      if (usedDims.has(dim)) continue;
+      // Pick the result with the "high" hint for this dim that doesn't already own it,
+      // falling back to any unowned result.
+      const candidates = architecture.results.filter(r => r?.primaryDimension !== dim);
+      const best = candidates.sort((a, b) => {
+        const rank = h => h === "high" ? 0 : h === "medium" ? 1 : 2;
+        return rank((a.profileHints || {})[dim]) - rank((b.profileHints || {})[dim]);
+      })[0];
+      if (best) {
+        console.log(`     [repair] orphan dim "${dim}": primaryDimension assigned to "${best.name}"`);
+        best.primaryDimension = dim;
+        usedDims.add(dim);
+      }
+    }
+  }
+
   const errors = validateArchitecture(architecture);
   if (errors.length > 0) throw new Error(`Architecture invalid: ${errors.join("; ")}`);
   return architecture;
