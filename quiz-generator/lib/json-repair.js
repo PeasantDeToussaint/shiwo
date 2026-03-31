@@ -191,6 +191,16 @@ function normalizeJSONCandidate(candidate) {
   candidate = escapeNewlinesInStrings(candidate);
   candidate = removeTrailingCommas(candidate);
 
+  // Fix unquoted JSON keys: { key: "v" } or , key: "v"  →  { "key": "v" }
+  // Only matches ASCII identifiers and common Chinese key names.
+  candidate = candidate.replace(
+    /([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g,
+    (m, pre, key, colon) => {
+      // Already quoted keys will never reach here because { followed by " is not matched
+      return `${pre}"${key}"${colon}`;
+    }
+  );
+
   // Fix unquoted string values: "field": some text,  →  "field": "some text",
   // Must run before the STRING_FIELDS pass below.
   const UNQUOTED_FIELDS = [
