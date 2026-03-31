@@ -665,8 +665,14 @@ ${aestheticContext}
 }
 
 // ── Result template builder ───────────────────────────────────────
+const PORTRAIT_TEMPLATE_BY_TYPE = {
+  archetype: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段150-200字，合计不少于450字。第一段：描述这类人的内在世界和核心特质；第二段：描述他们的行为模式和与他人的关系；第三段：描述核心挑战与成长方向。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+  figure:    `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段150-200字，合计不少于450字。第一段：描述这位人物的核心精神气质；第二段：将用户与这位人物的相似之处具体化，写出共同的行为模式或内在动因；第三段：这种气质带来的挑战与可能性。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+  item:      `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段150-200字，合计不少于450字。【核心要求】不要描述这个事物/国家/地方本身，而要解释为什么测验者的人格特质与它产生共鸣。第一段：测验者身上哪些具体特质让他们与这个结果产生联结；第二段：这个结果的文化/精神特质如何与测验者的内在世界对应；第三段：这种匹配在现实中意味着什么，测验者会在这里/与这个事物产生什么样的体验。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+};
+
 const STANDARD_FIELD_TEMPLATES = {
-  portrait: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段150-200字，合计不少于450字。格式：「第一段内容\\\\n\\\\n第二段内容\\\\n\\\\n第三段内容」"`,
+  portrait: PORTRAIT_TEMPLATE_BY_TYPE.archetype, // default, overridden in buildResultTemplate
   strengths: `  "strengths": [
     { "label": "3-5字标签，从该事物/人物/原型特质提炼", "description": "2-3句，包含可视化的行为场景" },
     { "label": "同上", "description": "2-3句" },
@@ -701,12 +707,17 @@ function buildResultTemplate(resultFields, resultType) {
     '  "boldQuote": null,',
   ];
 
-  const standardKeys = new Set(Object.keys(STANDARD_FIELD_TEMPLATES));
+  // Use type-specific portrait template
+  const templates = {
+    ...STANDARD_FIELD_TEMPLATES,
+    portrait: PORTRAIT_TEMPLATE_BY_TYPE[resultType] || PORTRAIT_TEMPLATE_BY_TYPE.archetype,
+  };
+  const standardKeys = new Set(Object.keys(templates));
   const customFields = [];
 
   for (const f of resultFields) {
     if (standardKeys.has(f.key)) {
-      lines.push(STANDARD_FIELD_TEMPLATES[f.key] + ",");
+      lines.push(templates[f.key] + ",");
     } else {
       customFields.push(f);
     }
@@ -1400,7 +1411,7 @@ async function main() {
   // Phase 3: Results — batch size 1 for item/figure types or large result sets (content is very large)
   const rTotal      = outline.results.length;
   const resultType  = outline.architectureResultType || "archetype";
-  const R_BATCH_SIZE = (resultType === "item" || resultType === "figure" || rTotal > 6) ? 1 : 2;
+  const R_BATCH_SIZE = 1;
   const rBatchCount = Math.ceil(rTotal / R_BATCH_SIZE);
   const rSize       = R_BATCH_SIZE;
   const R_BATCHES   = Array.from({ length: rBatchCount }, (_, i) =>
