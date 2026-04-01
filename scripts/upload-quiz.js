@@ -57,6 +57,27 @@ if (!fs.existsSync(quizPath)) {
 }
 
 const quiz = JSON.parse(fs.readFileSync(quizPath, "utf-8"));
+
+function inferFeatureId(quiz) {
+  if (quiz && typeof quiz.featureId === "string" && quiz.featureId.trim()) return quiz.featureId;
+  const text = [
+    quiz?.id, quiz?.title, quiz?.subtitle, quiz?.eyebrow, quiz?.description,
+  ].filter(Boolean).join(" ").toLowerCase();
+  const has = (re) => re.test(text);
+  const resultTitles = Array.isArray(quiz?.results) ? quiz.results.map(r => r?.title).filter(Boolean).join(" ") : "";
+  const corpus = `${text} ${resultTitles}`.toLowerCase();
+
+  if (/mbti|16人格|十六人格|大五|九型|enneagram|career|职业倾向|aptitude/.test(corpus)) return "classics";
+  if (/审美|艺术|画家|绘画|电影|戏剧|舞蹈|音乐|诗人|词人|作家|文学|香水|perfume|literary/.test(corpus)) return "aesthetics";
+  if (/恋爱|关系|依恋|心理|人格|性格|冲突|友谊|人生哲学|价值观|原型|philosophy|psychology/.test(corpus)) return "psychology";
+  if (/城市|旅行|宠物|运动|方言|寺庙|厨房|美食|天气|生活方式|sport|pet|city|dialect|temple/.test(corpus)) return "lifestyle";
+  return "history";
+}
+
+if (!quiz.featureId) {
+  quiz.featureId = inferFeatureId(quiz);
+  console.log(`🧭  Inferred featureId: ${quiz.featureId}`);
+}
 console.log(`📦  Quiz: ${quiz.id} — ${quiz.title}`);
 
 // ── HTTP helpers ──────────────────────────────────────────────

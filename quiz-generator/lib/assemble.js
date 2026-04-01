@@ -124,6 +124,32 @@ function normalizeStrengthsWeaknesses(raw, fieldName, resultId) {
   return raw;
 }
 
+function inferFeatureId(outline) {
+  const resultType = outline?.architectureResultType || "archetype";
+  const text = [
+    outline?.id, outline?.title, outline?.subtitle, outline?.eyebrow,
+    outline?.description, outline?.aestheticContext,
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  const has = (re) => re.test(text);
+
+  if (has(/mbti|16人格|十六人格|大五|九型|enneagram|career|职业倾向|aptitude/)) {
+    return "classics";
+  }
+  if (has(/审美|艺术|画家|绘画|电影|戏剧|舞蹈|音乐|诗人|词人|作家|文学|香水|perfume|literary/)) {
+    return "aesthetics";
+  }
+  if (has(/恋爱|关系|依恋|心理|人格|性格|冲突|友谊|人生哲学|价值观|原型|philosophy|psychology/)) {
+    return "psychology";
+  }
+  if (has(/城市|旅行|宠物|运动|方言|寺庙|厨房|美食|天气|生活方式|sport|pet|city|dialect|temple/)) {
+    return "lifestyle";
+  }
+  if (resultType === "figure") return "history";
+  if (resultType === "item") return "lifestyle";
+  return "psychology";
+}
+
 function normalizeDimensionKey(s) {
   return String(s || "")
     .replace(/\s+/g, "")
@@ -300,7 +326,7 @@ function assembleQuiz(outline, questions, results) {
 
   return {
     id:               outline.id,
-    featureId:        null,
+    featureId:        inferFeatureId(outline),
     title:            outline.title,
     subtitle:         outline.subtitle,
     eyebrow:          outline.eyebrow,
