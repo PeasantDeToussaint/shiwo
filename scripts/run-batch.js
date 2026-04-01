@@ -44,7 +44,7 @@ for (let i = 0; i < selected.length; i++) {
 
   console.log(`\n${"─".repeat(60)}`);
   console.log(`[${i + 1}/${selected.length}] #${q._idx} ${q.title}${badge}`);
-  console.log(`    scoring=${q.scoring}  r=${q.results}  d=${q.dimensions}  q=${q.questions}`);
+  console.log(`    scoring=${q.scoring || "auto"}  r=${q.results}  d=${q.dimensions}  q=${q.questions}`);
   console.log(`${"─".repeat(60)}`);
 
   const args = [
@@ -52,7 +52,6 @@ for (let i = 0; i < selected.length; i++) {
     `--topic=${q.title}`,
     `--title=${q.title}`,
     `--id=${q.id}`,
-    `--scoring=${q.scoring}`,
     `--results=${q.results}`,
     `--dimensions=${q.dimensions}`,
     `--questions=${q.questions}`,
