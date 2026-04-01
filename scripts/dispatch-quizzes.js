@@ -462,14 +462,15 @@ const args     = process.argv.slice(2);
 const hasFlag  = (f) => args.includes(f);
 const getArg   = (prefix) => (args.find(a => a.startsWith(prefix)) || "").replace(prefix, "");
 
-const showList = hasFlag("--list");
-const runAll   = hasFlag("--all");
-const estimate = hasFlag("--estimate");
-const noDryRun = hasFlag("--no-dry-run");
-const dryRun   = !noDryRun;
-const skipEval = hasFlag("--skip-eval");
-const quizArg  = getArg("--quiz=");
-const delayMs  = parseInt(getArg("--delay=") || "3000", 10);
+const showList   = hasFlag("--list");
+const runAll     = hasFlag("--all");
+const estimate   = hasFlag("--estimate");
+const noDryRun   = hasFlag("--no-dry-run");
+const dryRun     = !noDryRun;
+const skipEval   = hasFlag("--skip-eval");
+const sequential = hasFlag("--sequential");
+const quizArg    = getArg("--quiz=");
+const delayMs    = parseInt(getArg("--delay=") || "3000", 10);
 
 // ── List mode ─────────────────────────────────────────────────────────────────
 
@@ -513,6 +514,7 @@ if (runAll) {
   console.log("  node scripts/dispatch-quizzes.js --quiz=1,3,12");
   console.log("  node scripts/dispatch-quizzes.js --quiz=hogwarts-house-sorting");
   console.log("  node scripts/dispatch-quizzes.js --all");
+  console.log("  node scripts/dispatch-quizzes.js --all --sequential   # 一个跑完再触发下一个");
   console.log("  node scripts/dispatch-quizzes.js --all --estimate");
   console.log("  node scripts/dispatch-quizzes.js --all --no-dry-run");
   process.exit(0);
@@ -522,10 +524,13 @@ if (runAll) {
 
 if (selected.length > 3 && !estimate) {
   const mode = dryRun ? "dry-run（本地生成，不上传）" : "⚠️  真实生成并上传 CloudBase";
+  const seqNote = sequential
+    ? "  顺序模式：一个跑完再触发下一个"
+    : `  ⚠️  并发模式：全部同时触发，Actions 并行运行（API 费用会叠加）\n  建议改用 --sequential 逐个运行`;
   console.log(`\n即将触发 ${selected.length} 个 GitHub Actions workflow：`);
   selected.forEach((q, i) => console.log(`  ${i + 1}. ${q.title}`));
   console.log(`\n模式：${mode}`);
-  console.log(`每次 dispatch 间隔 ${delayMs}ms\n`);
+  console.log(seqNote);
 
   const readline = require("readline");
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -581,11 +586,17 @@ async function dispatch(quizzes) {
 
     if (result.status !== 0) {
       console.error(`❌  dispatch 失败（exit ${result.status}）`);
+      if (sequential && i < quizzes.length - 1) {
+        console.log("  顺序模式：跳过等待，继续下一个...");
+      }
     } else {
       console.log(`✅  已触发`);
+      if (sequential && i < quizzes.length - 1) {
+        await waitForRun(workflowFile, branch);
+      }
     }
 
-    if (i < quizzes.length - 1) await sleep(delayMs);
+    if (!sequential && i < quizzes.length - 1) await sleep(delayMs);
   }
 
   console.log(`\n全部 dispatch 完成。在 GitHub Actions 页面查看进度：`);
@@ -599,4 +610,64 @@ async function dispatch(quizzes) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ── Sequential: wait for the latest run to finish ────────────────────────────
+
+async function waitForRun(workflowFile, branch) {
+  // Wait a few seconds for GitHub to register the new run
+  console.log("  ⏳  等待 Actions run 注册...");
+  await sleep(6000);
+
+  // Find the run ID of the most recently triggered run
+  let runId = null;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const listResult = spawnSync("gh", [
+      "run", "list",
+      "--workflow", workflowFile,
+      "--branch", branch,
+      "--limit", "1",
+      "--json", "databaseId,status,createdAt",
+    ], { encoding: "utf8" });
+
+    if (listResult.status === 0) {
+      const runs = JSON.parse(listResult.stdout || "[]");
+      if (runs.length > 0 && (runs[0].status === "queued" || runs[0].status === "in_progress" || runs[0].status === "waiting")) {
+        runId = runs[0].databaseId;
+        break;
+      }
+    }
+    await sleep(3000);
+  }
+
+  if (!runId) {
+    console.log("  ⚠️  无法找到正在运行的 run，继续触发下一个...");
+    return;
+  }
+
+  console.log(`  ⏳  等待 run #${runId} 完成（这可能需要 5-15 分钟）...`);
+
+  // Poll until the run completes
+  while (true) {
+    await sleep(15000);
+    const viewResult = spawnSync("gh", [
+      "run", "view", String(runId), "--json", "status,conclusion",
+    ], { encoding: "utf8" });
+
+    if (viewResult.status !== 0) {
+      console.log("  ⚠️  无法查询 run 状态，继续等待...");
+      continue;
+    }
+
+    const info = JSON.parse(viewResult.stdout || "{}");
+    const { status, conclusion } = info;
+
+    if (status === "completed") {
+      const icon = conclusion === "success" ? "✅" : "⚠️ ";
+      console.log(`  ${icon}  run #${runId} 已完成（${conclusion}），触发下一个`);
+      return;
+    }
+
+    process.stdout.write(`  ⏳  ${status}...  `);
+  }
 }

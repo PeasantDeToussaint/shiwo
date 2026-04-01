@@ -1,9 +1,5 @@
 name: 生成单个测验（高级参数）
 
-concurrency:
-  group: generate-quiz-manual
-  cancel-in-progress: false
-
 on:
   workflow_dispatch:
     inputs:
