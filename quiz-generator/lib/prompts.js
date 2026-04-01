@@ -87,20 +87,14 @@ const PORTRAIT_TEMPLATE_BY_TYPE = {
 const STANDARD_FIELD_TEMPLATES = {
   portrait: PORTRAIT_TEMPLATE_BY_TYPE.archetype, // default, overridden in buildResultTemplate
   strengths: `  "strengths": [
-    { "label": "3-5字标签", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" }
+    { "label": "2-4字标签", "description": "严格2-3句，共60-90字" },
+    { "label": "同上", "description": "严格2-3句，共60-90字" },
+    { "label": "同上", "description": "严格2-3句，共60-90字" }
   ]`,
   weaknesses: `  "weaknesses": [
-    { "label": "3-5字标签", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" }
+    { "label": "2-4字标签", "description": "严格2-3句，共60-90字" },
+    { "label": "同上", "description": "严格2-3句，共60-90字" },
+    { "label": "同上", "description": "严格2-3句，共60-90字" }
   ]`,
   temperament: `  "temperament": "严格2句，共40-60字"`,
   situation:   `  "situation": "严格1句，20-30字"`,
@@ -423,8 +417,8 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 ### 标准字段（按需选用，用 standard: true 标记）
 这些字段有默认生成格式，全部可选，只选对这个主题有意义的：
 - portrait：三段深度画像（必选）
-- strengths：6条优势
-- weaknesses：6条局限
+- strengths：3条优势（每条展开写透）
+- weaknesses：3条局限（每条展开写透）
 - temperament：气质描述
 - situation：核心张力
 - lifeAdvice：给用户的行动建议
@@ -879,13 +873,13 @@ ${resultTitles}
 
 为每个结果分配：
 1. portraitAngle（1句，20-30字）：这个结果的 portrait 应从哪个切入角度写，必须与其他所有结果的角度完全不同
-2. strengthLabels（6个标签）：这个结果的6个优势标签，每个3-5字
-3. weaknessLabels（6个标签）：这个结果的6个局限标签，每个3-5字
+2. strengthLabels（3个标签）：这个结果的3个优势标签，每个2-4字
+3. weaknessLabels（3个标签）：这个结果的3个局限标签，每个2-4字
 
 【强制约束】
-- 所有 ${results.length} 个结果的 strengthLabels 合计 ${results.length * 6} 个标签，应尽量避免重复；理想是全不重复，允许少量重复，但同一标签绝不能泛滥
-- 所有 ${results.length} 个结果的 weaknessLabels 合计 ${results.length * 6} 个标签，应尽量避免重复；理想是全不重复，允许少量重复，但同一标签绝不能泛滥
-- 同一 strengthLabel 或 weaknessLabel 最多出现 2 次；如果某标签在全套结果中出现 3 次或以上，系统会判定为过于重复
+- 所有 ${results.length} 个结果的 strengthLabels 合计 ${results.length * 3} 个标签，应尽量避免重复；理想是全不重复，允许少量重复，但同一标签绝不能泛滥
+- 所有 ${results.length} 个结果的 weaknessLabels 合计 ${results.length * 3} 个标签，应尽量避免重复；理想是全不重复，允许少量重复，但同一标签绝不能泛滥
+- 同一 strengthLabel 或 weaknessLabel 尽量不超过 2 次；如果某标签在全套结果中出现 4 次或以上，系统会判定为过于重复
 - 标签必须体现该结果的独特气质，禁止通用标签（如"行动力强""情绪稳定""共情力""情感丰富"等）
 - 每个结果的 portraitAngle 必须完全不同，代入该人物/原型最具辨识度的心理处境或行为模式
 
@@ -895,8 +889,8 @@ ${resultTitles}
     {
       "id": "r1",
       "portraitAngle": "从X角度切入，写Y",
-      "strengthLabels": ["标签1", "标签2", "标签3", "标签4", "标签5", "标签6"],
-      "weaknessLabels": ["标签1", "标签2", "标签3", "标签4", "标签5", "标签6"]
+      "strengthLabels": ["标签1", "标签2", "标签3"],
+      "weaknessLabels": ["标签1", "标签2", "标签3"]
     }
   ]
 }`;
@@ -961,7 +955,7 @@ async function generateResults(outline, resultSubset, dataDir, callAIImpl = call
 
   const system = `你是一位中文测验内容专家，擅长写有深度、有辨识度的结果描述。结果可能是人格原型、真实人物、具体事物或适合程度段位，写作方式应与结果类型匹配，不要把所有结果都写成人格分析的口吻。
 
-【字数硬约束】严格遵守每个字段的字数要求，不得超过上限。portrait 每段严格100-150字，三段共300-450字；strengths/weaknesses 每条 description 严格2句共40-60字；其他字段按格式说明控制。宁可精炼，不可冗长。
+【字数硬约束】严格遵守每个字段的字数要求，不得超过上限。portrait 每段严格100-150字，三段共300-450字；strengths/weaknesses 每条 description 严格2-3句共60-90字；其他字段按格式说明控制。宁可精炼，不可冗长。
 
 ${LITERARY_GUIDE}
 ${aestheticContext}
@@ -1083,7 +1077,7 @@ ${buildResultTemplate(resultFields, resultType)}
 规则：
 - 只生成上方 ${stub.length} 个结果，不多不少。
 - 只生成格式中出现的字段，不要添加其他字段。
-- strengths 和 weaknesses 必须是对象数组，每项必须有 "label"（3-5字）和 "description"（2句话）两个字段，不能是纯字符串数组。
+- strengths 和 weaknesses 必须是对象数组，每项必须有 "label"（2-4字）和 "description"（2-3句话）两个字段，不能是纯字符串数组。
 - lifeAdvice 必须是字符串（string），不能是数组。
 - portrait 必须是三段结构；如果不是三段，就视为不合格。
 - 不同结果的 dimension_profile 虽然由 Phase 1 决定，但你的文字必须强化区分度，不能把两个结果写成只有措辞不同、人格几乎一样。
