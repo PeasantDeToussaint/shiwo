@@ -217,7 +217,7 @@ async function main() {
       if (fatalPlanErrors.length > 0)
         throw new Error(`Question plan invalid: ${fatalPlanErrors.join("; ")}`);
       return plan;
-    }, 3, 5000);
+    }, 5, 5000);
     saveCheckpoint(TOPIC_ARG, "phase2a-qplan", questionPlan);
   }
   console.log(`     ✓  plan: ${questionPlan.map(p => `${p.id}[${p.type?.slice(0,1)}]`).join(" ")}`);

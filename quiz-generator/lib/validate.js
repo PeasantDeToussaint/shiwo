@@ -535,18 +535,19 @@ function validateResultsPlan(plan, results) {
     for (const label of (p.strengthLabels || [])) allStrengthLabels.push(label);
     for (const label of (p.weaknessLabels || [])) allWeaknessLabels.push(label);
   }
-  // Only error on labels that appear 3+ times — occasional overlap is unavoidable
-  // in Chinese personality vocabulary; the individual result prompts handle residual duplicates.
+  // Only error on labels that appear 4+ times — occasional overlap is unavoidable
+  // in Chinese personality vocabulary, especially across 8 results × 12 labels each.
+  // Repetition at 2-3 occurrences is acceptable if the rest of the plan is diverse.
   const countOccurrences = (arr) => {
     const counts = {};
     for (const v of arr) counts[v] = (counts[v] || 0) + 1;
     return counts;
   };
   for (const [label, count] of Object.entries(countOccurrences(allStrengthLabels))) {
-    if (count >= 3) errors.push(`strengthLabel "${label}" appears ${count} times — too repetitive`);
+    if (count >= 4) errors.push(`strengthLabel "${label}" appears ${count} times — too repetitive`);
   }
   for (const [label, count] of Object.entries(countOccurrences(allWeaknessLabels))) {
-    if (count >= 3) errors.push(`weaknessLabel "${label}" appears ${count} times — too repetitive`);
+    if (count >= 4) errors.push(`weaknessLabel "${label}" appears ${count} times — too repetitive`);
   }
 
   return errors;

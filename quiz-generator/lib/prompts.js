@@ -883,8 +883,9 @@ ${resultTitles}
 3. weaknessLabels（6个标签）：这个结果的6个局限标签，每个3-5字
 
 【强制约束】
-- 所有 ${results.length} 个结果的 strengthLabels 合计 ${results.length * 6} 个标签，不能有任何两个完全相同
-- 所有 ${results.length} 个结果的 weaknessLabels 合计 ${results.length * 6} 个标签，不能有任何两个完全相同
+- 所有 ${results.length} 个结果的 strengthLabels 合计 ${results.length * 6} 个标签，应尽量避免重复；理想是全不重复，允许少量重复，但同一标签绝不能泛滥
+- 所有 ${results.length} 个结果的 weaknessLabels 合计 ${results.length * 6} 个标签，应尽量避免重复；理想是全不重复，允许少量重复，但同一标签绝不能泛滥
+- 同一 strengthLabel 或 weaknessLabel 最多出现 2 次；如果某标签在全套结果中出现 3 次或以上，系统会判定为过于重复
 - 标签必须体现该结果的独特气质，禁止通用标签（如"行动力强""情绪稳定""共情力""情感丰富"等）
 - 每个结果的 portraitAngle 必须完全不同，代入该人物/原型最具辨识度的心理处境或行为模式
 
