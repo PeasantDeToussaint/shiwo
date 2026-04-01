@@ -284,7 +284,7 @@ async function main() {
   } else {
     console.log(`\n📋  [2.5/3] Generating results plan (${outline.results.length} results)...`);
     resultsPlan = await withRetry("results-plan", async () => {
-      const plan = await generateResultsPlan(outline, aiClient.callAI);
+      const plan = await generateResultsPlan(outline, DATA_DIR, aiClient.callAI);
       const planErrors = validateResultsPlan(plan, outline.results);
       if (planErrors.length > 0) throw new Error(`Results plan invalid: ${planErrors.join("; ")}`);
       return plan;

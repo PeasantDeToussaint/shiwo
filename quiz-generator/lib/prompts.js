@@ -863,7 +863,7 @@ ${optionTemplateA}
   return parsed.questions;
 }
 
-async function generateResultsPlan(outline, callAIImpl = callAI) {
+async function generateResultsPlan(outline, dataDir, callAIImpl = callAI) {
   const results = outline.results;
   const resultTitles = results
     .map(r => `${r.id}「${r.title}」（主导维度：${r.dimension}）`)
@@ -901,7 +901,9 @@ ${resultTitles}
   ]
 }`;
 
+  const rawPath = path.join(dataDir, `${outline.id || "results-plan"}.rplan.raw.txt`);
   const raw = await callAIImpl(system, user, 2000);
+  fs.writeFileSync(rawPath, raw);
   const parsed = extractJSON(raw);
   if (!Array.isArray(parsed.plan) || parsed.plan.length < results.length)
     throw new Error(`Expected ${results.length} result plans, got ${parsed.plan?.length ?? 0}`);

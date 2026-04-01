@@ -186,8 +186,100 @@ function fixStringifiedArrayFields(str) {
   return str;
 }
 
+/**
+ * Some model outputs contain partially quoted string arrays, e.g.
+ *   "strengthLabels": ["任性", "叛逆",冲动", \"偏执""]
+ * or
+ *   "weaknessLabels": ["协调力",适应力, "掌控力""]
+ * For known string-array fields, normalize every element into a valid JSON string.
+ */
+function fixBarewordStringArrayFields(str) {
+  const ARRAY_FIELDS = [
+    "strengthLabels", "weaknessLabels",
+    "highAnchorResults", "lowAnchorResults", "forbiddenInterpretations",
+    "dimensions",
+  ];
+
+  const normalizeItems = (inner) => {
+    const items = [];
+    let buf = "";
+    let inString = false;
+    let escaped = false;
+    for (let i = 0; i < inner.length; i++) {
+      const c = inner[i];
+      if (escaped) { buf += c; escaped = false; continue; }
+      if (c === "\\") { buf += c; escaped = true; continue; }
+      if (c === '"') { buf += c; inString = !inString; continue; }
+      if (c === "," && !inString) {
+        items.push(buf);
+        buf = "";
+        continue;
+      }
+      buf += c;
+    }
+    if (buf.trim()) items.push(buf);
+
+    const cleaned = items
+      .map(s => s.trim())
+      .filter(Boolean)
+      .flatMap(s => {
+        s = s.replace(/\\"/g, '"').trim();
+        const parts = s.split(/"\s*,\s*"|"\s*,\s*|,\s*"/g);
+        return parts.map(p => p.replace(/^["']+|["']+$/g, "").trim()).filter(Boolean);
+      })
+      .map(s => JSON.stringify(s));
+
+    return `[${cleaned.join(", ")}]`;
+  };
+
+  for (const fieldName of ARRAY_FIELDS) {
+    const fieldPrefix = `"${fieldName}"`;
+    let searchFrom = 0;
+    while (true) {
+      const fieldPos = str.indexOf(fieldPrefix, searchFrom);
+      if (fieldPos === -1) break;
+
+      let colonPos = fieldPos + fieldPrefix.length;
+      while (colonPos < str.length && str[colonPos] !== ':') colonPos++;
+      if (colonPos >= str.length) { searchFrom = fieldPos + 1; break; }
+
+      let vStart = colonPos + 1;
+      while (vStart < str.length && /\s/.test(str[vStart])) vStart++;
+      if (str[vStart] !== '[') {
+        searchFrom = fieldPos + fieldPrefix.length;
+        continue;
+      }
+
+      let depth = 0;
+      let inInnerStr = false;
+      let esc = false;
+      let arrayEnd = -1;
+      for (let i = vStart; i < str.length; i++) {
+        const c = str[i];
+        if (esc) { esc = false; continue; }
+        if (c === '\\') { esc = true; continue; }
+        if (c === '"') { inInnerStr = !inInnerStr; continue; }
+        if (inInnerStr) continue;
+        if (c === '[') depth++;
+        if (c === ']') {
+          depth--;
+          if (depth === 0) { arrayEnd = i; break; }
+        }
+      }
+      if (arrayEnd === -1) { searchFrom = fieldPos + fieldPrefix.length; continue; }
+
+      const inner = str.slice(vStart + 1, arrayEnd);
+      const normalized = normalizeItems(inner);
+      str = str.slice(0, vStart) + normalized + str.slice(arrayEnd + 1);
+      searchFrom = vStart + normalized.length;
+    }
+  }
+  return str;
+}
+
 function normalizeJSONCandidate(candidate) {
   candidate = fixStringifiedArrayFields(candidate);
+  candidate = fixBarewordStringArrayFields(candidate);
   candidate = escapeNewlinesInStrings(candidate);
   candidate = removeTrailingCommas(candidate);
 
@@ -285,5 +377,6 @@ function extractJSON(raw) {
 
 module.exports = {
   fixBracketMismatches, repairJSON, escapeNewlinesInStrings,
-  removeTrailingCommas, fixStringifiedArrayFields, normalizeJSONCandidate, extractJSON,
+  removeTrailingCommas, fixStringifiedArrayFields, fixBarewordStringArrayFields,
+  normalizeJSONCandidate, extractJSON,
 };
