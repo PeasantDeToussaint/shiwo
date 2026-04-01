@@ -136,21 +136,12 @@ jobs:
             ARGS+=( "--questions=$QUESTIONS" )
           fi
 
+          NORMALIZED_HINTS="${HINTS//||/$'\n'}"
           while IFS= read -r hint; do
             if [[ -n "$hint" ]]; then
               ARGS+=( "--hint=$hint" )
             fi
-          done < <(
-            python3 - <<'PY'
-import os
-
-raw = os.environ.get("HINTS", "")
-for part in raw.replace("||", "\n").splitlines():
-    part = part.strip()
-    if part:
-        print(part)
-PY
-          )
+          done <<< "$NORMALIZED_HINTS"
 
           if [[ "$DRY_RUN" == "true" ]]; then
             ARGS+=( "--dry-run" )
@@ -172,25 +163,15 @@ PY
 
           node "scripts/generate-quiz_副本.js" "${ARGS[@]}"
 
-          python3 - <<'PY'
-import pathlib
-import shutil
-
-before = pathlib.Path("/tmp/before_generate").stat().st_mtime
-output_dir = pathlib.Path("/tmp/quiz-output")
-data_dir = pathlib.Path("scripts/data")
-files = []
-
-if data_dir.exists():
-    for path in data_dir.rglob("*"):
-        if path.is_file() and path.stat().st_mtime > before:
-            target = output_dir / path.relative_to(".")
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(path, target)
-            files.append(str(path))
-
-(output_dir / "generated-files.txt").write_text("\n".join(sorted(files)), encoding="utf-8")
-PY
+          generated_list=/tmp/quiz-output/generated-files.txt
+          : > "$generated_list"
+          if [[ -d scripts/data ]]; then
+            while IFS= read -r -d '' file; do
+              cp --parents "$file" /tmp/quiz-output/
+              echo "$file" >> "$generated_list"
+            done < <(find scripts/data -type f -newer /tmp/before_generate -print0)
+            sort -o "$generated_list" "$generated_list"
+          fi
 
       - name: 生成运行摘要
         if: always()
