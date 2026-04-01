@@ -112,10 +112,7 @@ Page({
   },
 
   onGoExplore() {
-    wx.navigateBack();
+    wx.switchTab({ url: "/pages/explore/explore" });
   },
 
-  onBack() {
-    wx.navigateBack();
-  },
 });

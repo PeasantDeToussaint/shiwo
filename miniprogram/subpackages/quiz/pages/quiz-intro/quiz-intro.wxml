@@ -1,4 +1,12 @@
 <view class="intro-shell" style="{{pageThemeStyle}}">
+  <image
+    wx:if="{{heroPaintingDisplay}}"
+    src="{{heroPaintingDisplay}}"
+    mode="aspectFill"
+    class="intro-hero-bg"
+    binderror="onPaintingError"
+  />
+  <view wx:if="{{heroPaintingDisplay}}" class="intro-hero-scrim" />
 
   <!-- Zone 1: Header bar (fixed height) -->
   <view class="intro-header" style="padding-top: {{statusBarHeight}}px;">

@@ -1,59 +1,70 @@
-/* ─── Root ────────────────────────────────────────────────── */
 .pf-root {
   min-height: 100vh;
-  background: var(--pageBg, #0d0d12);
-  color: var(--textPrimary, #e8e4d9);
+  padding: 0 var(--space-12);
+  box-sizing: border-box;
+  background: var(--bg);
+  color: var(--text);
 }
 
-/* ─── Navbar ──────────────────────────────────────────────── */
 .pf-navbar {
-  display: flex;
-  align-items: center;
-  padding-left: 40rpx;
-  padding-bottom: 16rpx;
-  background: var(--pageBg, #0d0d12);
+  padding-bottom: var(--space-6);
 }
 
-.pf-back {
-  font-size: 48rpx;
-  color: var(--textSecondary, #888);
-  line-height: 1;
-  padding: 8rpx 0;
+.pf-header {
+  padding-bottom: var(--space-12);
 }
 
-/* ─── Stats header ──────────────────────────────────────────── */
-.pf-stats {
+.pf-kicker {
+  display: block;
+  margin-bottom: var(--space-4);
+  font-size: 20rpx;
+  color: var(--text-secondary);
+  letter-spacing: 0.24em;
+  opacity: 0.8;
+}
+
+.pf-heading-row {
   display: flex;
   align-items: baseline;
-  gap: 10rpx;
-  padding: 32rpx 40rpx 64rpx;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-bottom: var(--space-3);
 }
 
-.pf-stats-number {
-  font-size: 72rpx;
-  font-weight: 700;
-  letter-spacing: -2rpx;
-  color: var(--textPrimary, #e8e4d9);
-  line-height: 1;
-}
-
-.pf-stats-unit {
-  font-size: 28rpx;
-  color: var(--textSecondary, #888);
+.pf-title {
+  flex: 1;
+  font-size: 58rpx;
+  line-height: 1.08;
   letter-spacing: 0.02em;
+  color: var(--text);
 }
 
-/* ─── Loading ───────────────────────────────────────────────── */
+.pf-count {
+  font-size: 22rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.pf-sub {
+  display: block;
+  max-width: 84%;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
 .pf-loading {
   display: flex;
   justify-content: center;
-  padding: 80rpx 0;
+  padding: var(--space-16) 0;
 }
 
 .pf-loading-bar {
   width: 40rpx;
   height: 2rpx;
-  background: var(--textSecondary, #888);
+  background: var(--text-secondary);
   opacity: 0.4;
   animation: pulse 1.4s ease-in-out infinite;
 }
@@ -63,17 +74,43 @@
   50%       { opacity: 0.7; }
 }
 
-/* ─── Card collection ───────────────────────────────────────── */
+.pf-section {
+  margin-bottom: var(--space-14);
+}
+
+.pf-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.pf-section-kicker {
+  display: block;
+  margin-bottom: 6rpx;
+  font-size: 20rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.16em;
+}
+
+.pf-section-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
 .pf-swiper {
   width: 100%;
-  height: 480rpx;
+  height: 520rpx;
 }
 
 .pf-swiper-item {
-  padding: 0 16rpx;
+  padding: 0 10rpx;
 }
 
-/* ─── Card 3-D wrapper ──────────────────────────────────────── */
 .pf-card-outer {
   width: 100%;
   height: 100%;
@@ -101,19 +138,37 @@
 .pf-card-face {
   position: absolute;
   inset: 0;
-  border-radius: 28rpx;
+  border-radius: var(--radius-lg);
   border: 1px solid transparent;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   overflow: hidden;
+  box-shadow:
+    var(--shadow-inset-hairline),
+    0 18rpx 40rpx rgba(0, 0, 0, 0.2);
 }
 
-/* ─── Card front ────────────────────────────────────────────── */
 .pf-card-front {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 48rpx;
+  padding: 42rpx;
+}
+
+.pf-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pf-card-chip {
+  font-size: 18rpx;
+  color: rgba(255,255,255,0.68);
+  letter-spacing: 0.12em;
+  border-radius: var(--radius-pill);
+  border: 1rpx solid rgba(255,255,255,0.14);
+  padding: 6rpx 14rpx;
+  background: rgba(9,9,10,0.18);
 }
 
 .pf-card-center {
@@ -124,7 +179,7 @@
 }
 
 .pf-card-result {
-  font-size: 52rpx;
+  font-size: 56rpx;
   font-weight: 700;
   letter-spacing: -1rpx;
   text-align: center;
@@ -140,7 +195,7 @@
 
 .pf-card-quiz {
   font-size: 22rpx;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.54);
   letter-spacing: 0.04em;
   max-width: 60%;
   overflow: hidden;
@@ -150,23 +205,28 @@
 
 .pf-card-date {
   font-size: 22rpx;
-  color: rgba(255,255,255,0.3);
-  letter-spacing: 0.02em;
+  color: rgba(255,255,255,0.34);
+  letter-spacing: 0.06em;
 }
 
-/* ─── Card back ─────────────────────────────────────────────── */
+.pf-card-hint {
+  font-size: 20rpx;
+  color: rgba(255,255,255,0.34);
+  letter-spacing: 0.12em;
+}
+
 .pf-card-back {
   transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 56rpx 48rpx 52rpx;
+  padding: 48rpx 42rpx 44rpx;
 }
 
 .pf-card-back-top {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 14rpx;
 }
 
 .pf-card-back-result {
@@ -178,21 +238,21 @@
 
 .pf-card-back-quiz {
   font-size: 24rpx;
-  color: rgba(255,255,255,0.4);
-  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.46);
+  letter-spacing: 0.06em;
 }
 
 .pf-card-back-actions {
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 10rpx;
 }
 
 .pf-card-back-btn {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: rgba(255,255,255,0.85);
-  letter-spacing: 0.04em;
-  padding: 16rpx 0;
+  letter-spacing: 0.08em;
+  padding: 18rpx 0;
   border-top: 1px solid rgba(255,255,255,0.1);
 }
 
@@ -200,56 +260,56 @@
   color: rgba(255,255,255,0.4);
 }
 
-/* ─── Counter ───────────────────────────────────────────────── */
 .pf-counter {
-  display: block;
-  text-align: center;
   font-size: 22rpx;
-  color: var(--textSecondary, #888);
+  color: var(--text-muted);
   letter-spacing: 0.08em;
-  margin-top: 36rpx;
+  white-space: nowrap;
 }
 
-/* ─── Empty state ───────────────────────────────────────────── */
 .pf-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 0 40rpx;
-  gap: 20rpx;
+  margin-bottom: var(--space-14);
+}
+
+.pf-empty-kicker {
+  display: block;
+  margin-bottom: var(--space-3);
+  font-size: 20rpx;
+  color: var(--text-secondary);
+  letter-spacing: 0.14em;
 }
 
 .pf-empty-title {
-  font-size: 32rpx;
-  color: var(--textSecondary, #888);
-  letter-spacing: 0.02em;
+  display: block;
+  margin-bottom: var(--space-6);
+  font-size: 30rpx;
+  line-height: 1.5;
+  color: var(--text);
+  letter-spacing: 0.04em;
 }
 
 .pf-empty-link {
-  font-size: 28rpx;
-  color: var(--textPrimary, #e8e4d9);
-  letter-spacing: 0.02em;
-  border-bottom: 1px solid var(--textPrimary, #e8e4d9);
-  padding-bottom: 2rpx;
+  display: inline-block;
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  letter-spacing: 0.12em;
 }
 
-/* ─── Footer ────────────────────────────────────────────────── */
 .pf-footer {
-  padding: 88rpx 40rpx 0;
+  padding-top: var(--space-6);
 }
 
 .pf-footer-motto {
   font-size: 24rpx;
-  color: rgba(255,255,255,0.2);
-  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
   line-height: 1.8;
 }
 
 .pf-scroll-pad {
-  height: 80rpx;
+  height: 140rpx;
 }
 
-/* ─── Motion helpers ─────────────────────────────────────────── */
 .motion-enter {
   animation: fadeUp 0.5s ease both;
 }

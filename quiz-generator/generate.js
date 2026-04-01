@@ -14,7 +14,7 @@ const config = require("./lib/config");
 const { createClient, configure: configureAI } = require("./lib/ai");
 const { sleep, withRetry } = require("./lib/http");
 const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestions, generateResults } = require("./lib/prompts");
-const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, spreadProfiles, enforceUniquePeaks, applyProfilesFromHints } = require("./lib/assemble");
+const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, applyProfilesFromHints } = require("./lib/assemble");
 const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, validateScoreMap, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
 const { evaluateQuiz, printEvalReport } = require("./lib/eval");
 const { uploadQuiz } = require("./lib/wechat");
@@ -182,10 +182,9 @@ async function main() {
         outline.architectureScoringFamily = architecture.scoringFamily || "weighted-dimension";
       }
       // Phase 1b: numeric profiles are code-generated from architecture profileHints.
-      // This removes the most failure-prone step from the model pipeline.
+      // The constructor now builds contrastive, non-dominated profiles directly,
+      // so we avoid the older cleanup passes that could reintroduce collisions.
       applyProfilesFromHints(outline.results, outline.dimensions, architecture);
-      spreadProfiles(outline.results, outline.dimensions);
-      enforceUniquePeaks(outline.results, outline.dimensions);
       saveCheckpoint(TOPIC_ARG, "phase1-outline", outline);
     } catch (err) {
       console.error("❌  Outline failed:", err.message); process.exit(1);
@@ -205,7 +204,6 @@ async function main() {
     outline.dimensions,
     {
       scoringType: outline.architectureScoringFamily || architecture.scoringFamily || "weighted-dimension",
-      primaryDimensions: Object.fromEntries((outline.results || []).map(r => [r.id, r.dimension])),
     }
   );
   printWarnings("outline profiles", outlineProfileWarnings);
@@ -334,7 +332,6 @@ async function main() {
     quiz.scoring.dimensions,
     {
       scoringType: quiz.scoring.type || "weighted-dimension",
-      primaryDimensions: Object.fromEntries(((quiz.scoring || {}).results || []).map(r => [r.id, r.dimension])),
     }
   );
   printWarnings("final profiles", finalProfileWarnings);

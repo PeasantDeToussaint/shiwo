@@ -3,8 +3,6 @@ const {
   normalizeOutlineToArchitecture,
   assembleQuiz,
   applyProfilesFromHints,
-  spreadProfiles,
-  enforceUniquePeaks,
 } = require("../lib/assemble");
 const { validateDimensionProfiles } = require("../lib/validate");
 
@@ -132,7 +130,7 @@ describe("assemble helpers", () => {
     expect(results[0].dimension_profile).not.toEqual(results[1].dimension_profile);
   });
 
-  it("keeps cleanup passes from collapsing many profiles to identical ceilings", () => {
+  it("builds contrastive profiles directly without cleanup passes", () => {
     const dimensions = ["权谋取向", "情感立场", "行事风格", "处世态度", "理想高度"];
     const results = [
       { id: "r1", dimension: "权谋取向" },
@@ -154,11 +152,43 @@ describe("assemble helpers", () => {
     };
 
     applyProfilesFromHints(results, dimensions, architecture);
-    spreadProfiles(results, dimensions);
-    enforceUniquePeaks(results, dimensions);
-
     const warnings = validateDimensionProfiles(results, dimensions);
     expect(warnings.some(w => w.includes("max diff 0.00"))).toBe(false);
     expect(warnings.some(w => w.includes("dominated by"))).toBe(false);
+  });
+
+  it("keeps eight results across three dimensions from producing dominated profiles", () => {
+    const dimensions = ["权力欲望", "情感依恋", "理性计算"];
+    const results = [
+      { id: "r1", dimension: "情感依恋" },
+      { id: "r2", dimension: "权力欲望" },
+      { id: "r3", dimension: "权力欲望" },
+      { id: "r4", dimension: "情感依恋" },
+      { id: "r5", dimension: "情感依恋" },
+      { id: "r6", dimension: "理性计算" },
+      { id: "r7", dimension: "权力欲望" },
+      { id: "r8", dimension: "理性计算" },
+    ];
+    const patterns = [
+      { "权力欲望": "medium", "情感依恋": "high", "理性计算": "medium" },
+      { "权力欲望": "high", "情感依恋": "medium", "理性计算": "low" },
+      { "权力欲望": "high", "情感依恋": "medium", "理性计算": "low" },
+      { "权力欲望": "low", "情感依恋": "high", "理性计算": "medium" },
+      { "权力欲望": "medium", "情感依恋": "high", "理性计算": "low" },
+      { "权力欲望": "low", "情感依恋": "medium", "理性计算": "high" },
+      { "权力欲望": "high", "情感依恋": "low", "理性计算": "medium" },
+      { "权力欲望": "medium", "情感依恋": "low", "理性计算": "high" },
+    ];
+    const architecture = {
+      results: results.map((r, i) => ({
+        primaryDimension: r.dimension,
+        profileHints: patterns[i],
+      })),
+    };
+
+    applyProfilesFromHints(results, dimensions, architecture);
+    const warnings = validateDimensionProfiles(results, dimensions);
+    expect(warnings.some(w => w.includes("dominated by"))).toBe(false);
+    expect(warnings.filter(w => w.includes("profiles too similar")).length).toBeLessThan(2);
   });
 });

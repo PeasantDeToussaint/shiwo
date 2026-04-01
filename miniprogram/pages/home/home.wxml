@@ -1,51 +1,77 @@
-<scroll-view scroll-y class="home-scroll">
+<import src="../../templates/editorial-card.wxml" />
+
+<scroll-view scroll-y class="home-scroll page-atmosphere">
   <view class="home-root">
-
-    <view class="home-hero motion-enter">
-      <view class="home-wordmark-row" bindtap="onTapProfile">
-        <text class="home-wordmark display-title">My Type</text>
-        <view wx:if="{{quizCount > 0}}" class="home-wordmark-badge">
-          <text class="home-wordmark-badge-text">{{quizCount}}</text>
-        </view>
+    <view class="home-header motion-enter" style="padding-top: calc({{statusBarHeight}}px + 36rpx);">
+      <text class="home-kicker display-title"></text>
+      <view class="home-heading-row">
+        <text class="home-title">MY TYPE</text>
       </view>
-      <text class="home-tagline"></text>
+      <text class="home-sub">在文学、历史与艺术里，遇见你自己。</text>
     </view>
 
-    <view class="feature-list">
-      <view
-        wx:for="{{features}}"
-        wx:key="id"
-        class="feature-card motion-enter motion-stagger {{item.isAvailable ? '' : 'feature-card-dim'}}"
-        style="--stagger: {{120 + index * 80}}ms;"
-        data-id="{{item.id}}"
-        bindtap="onTapFeature"
-      >
-        <!-- Skeleton shimmer while painting loads -->
-        <view wx:if="{{item.bgImage && !item.bgImageDisplay}}" class="feature-card-skeleton">
-          <view class="feature-card-skeleton-shine" />
+    <view wx:if="{{featured}}" class="home-feature-block">
+      <view class="home-block-head">
+        <view>
+          <text class="home-block-kicker">编辑精选</text>
+          <text class="home-block-title">从这一题开始</text>
         </view>
+      </view>
+      <template
+        is="editorialCard"
+        data="{{ item: featured, variant: 'feature', eyebrow: '本期推荐', meta: featured.primaryTag || '最新上线', caption: featured.displayMinutes || featured.displayQuestionCount, stagger: 40 }}"
+      />
+    </view>
 
-        <!-- Painting backdrop -->
-        <image
-          wx:if="{{item.bgImageDisplay}}"
-          src="{{item.bgImageDisplay}}"
-          mode="aspectFill"
-          class="feature-card-bg"
-        />
-        <view wx:if="{{item.bgImageDisplay}}" class="feature-card-bg-dim" />
-
-        <text wx:if="{{item.comingSoonLabel}}" class="feature-badge">{{item.comingSoonLabel}}</text>
-        <text class="feature-title {{item.isAvailable ? '' : 'feature-title-dim'}}">{{item.title}}</text>
-        <text class="feature-subtitle">{{item.subtitle}}</text>
+    <view wx:if="{{spotlight.length}}" class="home-spotlight">
+      <view class="home-block-head">
+        <view>
+          <text class="home-block-kicker">继续浏览</text>
+          <text class="home-block-title">刚刚进入视野的题</text>
+        </view>
+      </view>
+      <view class="home-spotlight-grid">
+        <block wx:for="{{spotlight}}" wx:key="id" wx:for-item="quiz">
+          <template
+            is="editorialCard"
+            data="{{ item: quiz, variant: 'support', meta: quiz.displayQuestionCount || quiz.primaryTag, caption: quiz.displayMinutes, stagger: 100 + index * 60 }}"
+          />
+        </block>
       </view>
     </view>
 
-    <!-- bottom padding so footer doesn't cover last card -->
+    <view wx:for="{{sections}}" wx:key="id" wx:for-item="sec" class="home-module">
+      <view class="home-block-head">
+        <view>
+          <text class="home-block-kicker">{{sec.eyebrow}}</text>
+          <text class="home-block-title">{{sec.title}}</text>
+        </view>
+        <text wx:if="{{sec.seeAllFeatureId}}" class="home-block-more" data-fid="{{sec.seeAllFeatureId}}" bindtap="onSeeAll">全部 →</text>
+      </view>
+
+      <scroll-view wx:if="{{sec.layout === 'rail'}}" scroll-x class="home-rail" enhanced="{{true}}" show-scrollbar="{{false}}">
+        <view class="home-rail-inner">
+          <block wx:for="{{sec.items}}" wx:key="id" wx:for-item="quiz">
+            <template
+              is="editorialCard"
+              data="{{ item: quiz, variant: sec.variant, meta: quiz.primaryTag || quiz.displayQuestionCount, caption: quiz.displayMinutes, stagger: 160 + index * 50 }}"
+            />
+          </block>
+        </view>
+      </scroll-view>
+
+      <view wx:elif="{{sec.layout === 'grid'}}" class="home-grid">
+        <block wx:for="{{sec.items}}" wx:key="id" wx:for-item="quiz">
+          <template
+            is="editorialCard"
+            data="{{ item: quiz, variant: sec.variant, meta: quiz.primaryTag || quiz.displayQuestionCount, caption: quiz.displayMinutes || quiz.displayQuestionCount, stagger: 180 + index * 50 }}"
+          />
+        </block>
+      </view>
+    </view>
+
+    <view class="home-footer-note">
+    </view>
     <view class="home-scroll-pad" />
-
   </view>
 </scroll-view>
-
-<view class="home-footer">
-  <text class="home-footer-text">MYTYPE © 2026</text>
-</view>

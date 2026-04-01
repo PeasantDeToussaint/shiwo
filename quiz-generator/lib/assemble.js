@@ -37,10 +37,10 @@ function normalizePortraitText(text) {
     if (parts.length >= 2) return parts.join("\n\n");
   }
 
-  // If there are no paragraph breaks, try to split a long portrait into 3 sentence groups.
+  // If there are no paragraph breaks, try to split a long portrait into sentence groups.
   if (!normalized.includes("\n\n")) {
     const sentences = normalized.match(/[^。！？!?]+[。！？!?]?/g)?.map(s => s.trim()).filter(Boolean) || [];
-    if (sentences.length >= 6) {
+    if (sentences.length >= 3) {
       const groups = [[], [], []];
       const totalChars = sentences.reduce((sum, s) => sum + s.length, 0);
       const target = Math.ceil(totalChars / 3);
@@ -56,6 +56,25 @@ function normalizePortraitText(text) {
       }
       const paragraphs = groups.map(g => g.join("")).filter(Boolean);
       if (paragraphs.length >= 2) return paragraphs.join("\n\n");
+    }
+    // Fallback: character-position split when sentence parsing yields too few segments.
+    if (normalized.length > 180) {
+      const third = Math.floor(normalized.length / 3);
+      const sentenceEnds = /[。！？!?]/g;
+      let m;
+      const splits = [];
+      while ((m = sentenceEnds.exec(normalized)) !== null) {
+        splits.push(m.index + 1);
+      }
+      const cut1 = splits.find(p => p >= third) || third;
+      const cut2 = splits.find(p => p >= third * 2 && p > cut1) || third * 2;
+      if (cut1 < cut2 && cut2 < normalized.length) {
+        return [
+          normalized.slice(0, cut1).trim(),
+          normalized.slice(cut1, cut2).trim(),
+          normalized.slice(cut2).trim(),
+        ].filter(Boolean).join("\n\n");
+      }
     }
   }
 
@@ -207,6 +226,13 @@ function normalizeOutlineToArchitecture(outline, architecture) {
   return outline;
 }
 
+function derivePeakDimension(profile, dimensions, fallback) {
+  if (!profile || typeof profile !== "object") return fallback;
+  const keys = dimensions.filter(d => Object.prototype.hasOwnProperty.call(profile, d));
+  if (keys.length === 0) return fallback;
+  return keys.reduce((best, k) => ((profile[k] ?? -Infinity) > (profile[best] ?? -Infinity) ? k : best), keys[0]);
+}
+
 function assembleQuiz(outline, questions, results) {
   const scoringType = outline.architectureScoringFamily || "weighted-dimension";
   const simplifiedDimensions = simplifyDimensions(outline.dimensions);
@@ -322,7 +348,7 @@ function assembleQuiz(outline, questions, results) {
   } else {
     scoring.results = outline.results.map(r => ({
       id:        r.id,
-      dimension: dimMap[r.dimension] || r.dimension,
+      dimension: dimMap[derivePeakDimension(r.dimension_profile, outline.dimensions, r.dimension)] || dimMap[r.dimension] || r.dimension,
     }));
   }
 
@@ -450,6 +476,7 @@ function applyProfilesFromHints(results, dimensions, architecture) {
   const archResults = (architecture && architecture.results) || [];
   const normalize = (s) => String(s || "").replace(/\s+/g, "").replace(/[轴重度力感性]$/g, "");
   const clamp = (v) => parseFloat(Math.min(0.95, Math.max(0.05, v)).toFixed(2));
+  const hintRank = (hint) => ({ high: 2, medium: 1, low: 0 }[hint] ?? 1);
   const stableUnit = (seed) => {
     let hash = 2166136261;
     for (let i = 0; i < seed.length; i++) {
@@ -462,59 +489,168 @@ function applyProfilesFromHints(results, dimensions, architecture) {
     const [min, max] = RANGES[hint] || RANGES.medium;
     return parseFloat((min + stableUnit(seed) * (max - min)).toFixed(2));
   };
+  const hintMaps = new Map();
+  const signatureById = new Map();
+  const findHint = (hints, dim, fallbackDim) => {
+    const normalizedDim = normalize(dim);
+    let hint = hints[dim];
+    if (!hint) {
+      const found = Object.entries(hints).find(([k]) => {
+        const normalizedKey = normalize(k);
+        return normalizedKey === normalizedDim ||
+          normalizedKey.startsWith(normalizedDim) ||
+          normalizedDim.startsWith(normalizedKey);
+      });
+      hint = found ? found[1] : (normalizedDim === fallbackDim ? "high" : "medium");
+    }
+    return ["high", "medium", "low"].includes(hint) ? hint : "medium";
+  };
 
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     const archResult = archResults[i] || {};
     const hints = archResult.profileHints || {};
     const primaryDimension = normalize(archResult.primaryDimension || result.dimension);
+    const normalizedHintMap = {};
 
     result.dimension_profile = {};
     for (const dim of dimensions) {
-      const normalizedDim = normalize(dim);
-      let hint = hints[dim];
-      if (!hint) {
-        const found = Object.entries(hints).find(([k]) => {
-          const normalizedKey = normalize(k);
-          return normalizedKey === normalizedDim ||
-            normalizedKey.startsWith(normalizedDim) ||
-            normalizedDim.startsWith(normalizedKey);
-        });
-        hint = found ? found[1] : (normalizedDim === primaryDimension ? "high" : "medium");
-      }
-
+      const hint = findHint(hints, dim, primaryDimension);
+      normalizedHintMap[dim] = hint;
       const seed = `${result.id}|${dim}|${hint}|${i}`;
       result.dimension_profile[dim] = pickValue(hint, seed);
     }
+
+    const signatureDim = dimensions.includes(result.dimension)
+      ? result.dimension
+      : (dimensions.find(dim => normalizedHintMap[dim] === "high") || dimensions[0]);
+    result.dimension = signatureDim;
+    hintMaps.set(result.id, normalizedHintMap);
+    signatureById.set(result.id, signatureDim);
   }
 
-  // If multiple results share the same primary dimension, give each one a stable
-  // secondary signature so they do not collapse into near-duplicates or dominate
-  // one another on all remaining dimensions.
+  // Give same-signature results deterministic cross-cuts on secondary dimensions
+  // so they do not collapse into the same vector.
   const groups = new Map();
   for (const result of results) {
-    const key = dimensions.includes(result.dimension) ? result.dimension : dimensions[0];
+    const key = signatureById.get(result.id) || (dimensions.includes(result.dimension) ? result.dimension : dimensions[0]);
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(result);
   }
-  for (const [primaryDim, group] of groups.entries()) {
-    if (group.length <= 1) continue;
-    const secondaryDims = dimensions.filter(d => d !== primaryDim);
+  for (const [signatureDim, group] of groups.entries()) {
+    const secondaryDims = dimensions.filter(d => d !== signatureDim);
     for (let idx = 0; idx < group.length; idx++) {
       const result = group[idx];
       const p = result.dimension_profile;
-      const upDim = secondaryDims[idx % secondaryDims.length];
-      const downDim = secondaryDims[(idx + 1) % secondaryDims.length];
+      const hints = hintMaps.get(result.id) || {};
+      const orderedSecondary = [...secondaryDims].sort((a, b) =>
+        stableUnit(`${result.id}|${a}|secondary`) - stableUnit(`${result.id}|${b}|secondary`)
+      );
+      const upDim = orderedSecondary.length ? orderedSecondary[idx % orderedSecondary.length] : null;
+      const downDim = orderedSecondary.length ? orderedSecondary[(idx + 1) % orderedSecondary.length] : null;
+
+      p[signatureDim] = clamp(Math.max(
+        p[signatureDim] || 0,
+        0.76 + 0.03 * Math.min(idx, 3) + 0.03 * stableUnit(`${result.id}|${signatureDim}|signature`)
+      ));
+
       for (const dim of secondaryDims) {
         if (dim === upDim) {
-          p[dim] = clamp(Math.max(p[dim] || 0, 0.55));
+          const floor = hints[dim] === "high" ? 0.68 : (hints[dim] === "medium" ? 0.54 : 0.26);
+          p[dim] = clamp(Math.max(p[dim] || 0, floor + 0.03 * stableUnit(`${result.id}|${dim}|up`)));
         } else if (dim === downDim) {
-          p[dim] = clamp(Math.min(p[dim] || 0, 0.12));
+          const ceiling = hints[dim] === "high" ? 0.58 : (hints[dim] === "medium" ? 0.24 : 0.12);
+          p[dim] = clamp(Math.min(p[dim] || 0, ceiling - 0.02 * stableUnit(`${result.id}|${dim}|down`)));
         } else {
-          p[dim] = clamp(Math.min(p[dim] || 0, 0.42));
+          const ceiling = hints[dim] === "high" ? 0.72 : (hints[dim] === "medium" ? 0.46 : 0.18);
+          p[dim] = clamp(Math.min(p[dim] || 0, ceiling));
         }
       }
     }
+  }
+
+  // If two results share the exact same hint pattern, give them a stronger,
+  // deterministic accent/contrast split so their numeric profiles diverge.
+  const patternGroups = new Map();
+  for (const result of results) {
+    const hints = hintMaps.get(result.id) || {};
+    const signatureDim = signatureById.get(result.id) || result.dimension || dimensions[0];
+    const key = dimensions.map(dim => hints[dim] || "medium").join("|");
+    if (!patternGroups.has(key)) patternGroups.set(key, []);
+    patternGroups.get(key).push({ result, signatureDim, hints });
+  }
+  for (const group of patternGroups.values()) {
+    if (group.length <= 1) continue;
+    for (let idx = 0; idx < group.length; idx++) {
+      const { result, signatureDim, hints } = group[idx];
+      const p = result.dimension_profile;
+      const dims = dimensions.filter(d => d !== signatureDim);
+      if (dims.length === 0) continue;
+      const accentDim = dims[idx % dims.length];
+      const contrastDim = dims[(idx + 1) % dims.length];
+      p[accentDim] = clamp(Math.max(
+        p[accentDim] || 0,
+        (hints[accentDim] === "low" ? 0.28 : 0.58) + 0.02 * stableUnit(`${result.id}|${accentDim}|accent`)
+      ));
+      if (contrastDim && contrastDim !== accentDim) {
+        const ceiling = hints[contrastDim] === "high" ? 0.60 : (hints[contrastDim] === "medium" ? 0.22 : 0.10);
+        p[contrastDim] = clamp(Math.min(p[contrastDim] || 0, ceiling));
+      }
+    }
+  }
+
+  // Safety net: if any result is still Pareto-dominated, rescue it on one
+  // dimension it is semantically allowed to own. This should be rare after the
+  // constrained construction above, but avoids unreachable outcomes.
+  for (let pass = 0; pass < results.length * Math.max(2, dimensions.length); pass++) {
+    let changed = false;
+    for (let i = 0; i < results.length; i++) {
+      for (let j = 0; j < results.length; j++) {
+        if (i === j) continue;
+        const a = results[i];
+        const b = results[j];
+        const pa = a.dimension_profile;
+        const pb = b.dimension_profile;
+        if (!pa || !pb) continue;
+        const dominated = dimensions.every(d => (pb[d] || 0) >= (pa[d] || 0)) &&
+          dimensions.some(d => (pb[d] || 0) > (pa[d] || 0));
+        if (!dominated) continue;
+
+        const hints = hintMaps.get(a.id) || {};
+        const signatureDim = signatureById.get(a.id) || a.dimension || dimensions[0];
+        const candidates = [...dimensions].sort((x, y) => {
+          const sx = (x === signatureDim ? 10 : 0) + hintRank(hints[x]) * 3 - ((pb[x] || 0) - (pa[x] || 0));
+          const sy = (y === signatureDim ? 10 : 0) + hintRank(hints[y]) * 3 - ((pb[y] || 0) - (pa[y] || 0));
+          return sy - sx;
+        });
+        const rescueDim = candidates[0] || signatureDim;
+        const target = clamp(Math.min(0.95, (pb[rescueDim] || 0) + 0.05 + 0.02 * stableUnit(`${a.id}|${b.id}|${rescueDim}|rescue`)));
+        if (target > (pa[rescueDim] || 0)) {
+          pa[rescueDim] = target;
+          changed = true;
+        }
+
+        if ((pa[rescueDim] || 0) <= (pb[rescueDim] || 0)) {
+          const altDim = candidates.find(dim => dim !== rescueDim);
+          if (altDim) {
+            const altTarget = clamp(Math.min(0.95, (pb[altDim] || 0) + 0.05 + 0.02 * stableUnit(`${a.id}|${b.id}|${altDim}|alt-rescue`)));
+            if (altTarget > (pa[altDim] || 0)) {
+              pa[altDim] = altTarget;
+              changed = true;
+            }
+          }
+        }
+
+        if ((pa[rescueDim] || 0) <= (pb[rescueDim] || 0)) {
+          const lowered = clamp(Math.max(0.05, (pb[rescueDim] || 0) - 0.04));
+          if (lowered < (pb[rescueDim] || 0)) {
+            pb[rescueDim] = lowered;
+            changed = true;
+          }
+        }
+      }
+    }
+    if (!changed) break;
   }
 }
 

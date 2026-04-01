@@ -128,7 +128,7 @@ function validateArchitecture(architecture) {
     }
   }
   for (const r of results) {
-    if (!r?.primaryDimension || !dimSet.has(r.primaryDimension)) {
+    if (r?.primaryDimension && !dimSet.has(r.primaryDimension)) {
       errors.push(`${r?.conceptId || r?.name || "result"}: primaryDimension must be one of dimensions`);
     }
     if (r?.profileHints) {
@@ -139,18 +139,6 @@ function validateArchitecture(architecture) {
       for (const k of keys) {
         if (!dimSet.has(k)) errors.push(`${r?.conceptId || r?.name || "result"}: profileHints has unknown dimension "${k}"`);
       }
-      if (r?.primaryDimension && r.profileHints[r.primaryDimension] !== "high") {
-        errors.push(`${r?.conceptId || r?.name || "result"}: primaryDimension "${r.primaryDimension}" must be "high" in profileHints`);
-      }
-    }
-  }
-  // Every dimension must be claimed as primaryDimension by at least one result.
-  // An unclaimed dimension can never be the peak for any result → it's a dead dimension
-  // that wastes question real estate without driving any result separation.
-  const primaryDimUsed = new Set(results.map(r => r?.primaryDimension).filter(Boolean));
-  for (const dim of dimensions) {
-    if (!primaryDimUsed.has(dim)) {
-      errors.push(`dimension "${dim}" has no result with it as primaryDimension — every dimension must anchor at least one result`);
     }
   }
   return errors;

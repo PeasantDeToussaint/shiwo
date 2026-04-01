@@ -1,0 +1,117 @@
+```json
+{
+  "id": "zhenhuan-character-match",
+  "title": "宫廷心法测",
+  "subtitle": "权谋与情感，你会如何取舍",
+  "eyebrow": "深宫生存之道",
+  "description": "在权力与情感的漩涡中，每个选择都暴露你的本性。测测你在甄嬛传的世界中，最接近哪种生存智慧。",
+  "aestheticContext": "题目应发生在清代宫廷场景中：御花园、御前议政、后宫争斗、深夜独处。选项语言应体现宫廷礼仪与暗藏机锋，人物关系复杂微妙，展现后宫生存策略。",
+  "dimensions": ["权谋", "情感", "原则", "韧性", "谋略"],
+  "dimensionAxes": [
+    {
+      "dimension": "权谋",
+      "axisLabel": "处世方式",
+      "lowPole": "明哲保身",
+      "insight": "你更倾向于在权力游戏中保持低调，不愿主动争斗，更愿意顺其自然或依靠他人庇护。"
+    },
+    {
+      "dimension": "情感",
+      "axisLabel": "情感投入",
+      "lowPole": "克制淡然",
+      "insight": "你在人际关系中更看重实际利益与生存，情感可以成为你达成目标的工具或筹码。"
+    },
+    {
+      "dimension": "原则",
+      "axisLabel": "价值坚守",
+      "lowPole": "灵活变通",
+      "insight": "你能在环境中灵活调整自我，根据需要改变策略，有时会为了适应环境而放弃原则。"
+    },
+    {
+      "dimension": "韧性",
+      "axisLabel": "抗压能力",
+      "lowPole": "易受挫折",
+      "insight": "遭遇挫折后，你需要较长时间才能恢复，难以承受持续的压力，容易在逆境中消沉。"
+    },
+    {
+      "dimension": "谋略",
+      "axisLabel": "思维策略",
+      "lowPole": "直觉导向",
+      "insight": "你更依赖直觉或他人引导，思维简单直接，缺乏长远规划和系统性思考。"
+    }
+  ],
+  "results": [
+    {
+      "id": "r1",
+      "dimension": "权谋",
+      "title": "甄嬛",
+      "subtitle": "外柔内刚，深谙权谋",
+      "token": "玉兰",
+      "verse": "世间的情爱，不过是一场精心策划的骗局，唯有权力才是永恒的。",
+      "verseSource": "甄嬛"
+    },
+    {
+      "id": "r2",
+      "dimension": "权谋",
+      "title": "皇后",
+      "subtitle": "表面温婉，心机深沉",
+      "token": "牡丹",
+      "verse": "人心如水，能载舟亦能覆舟，唯有掌控人心，才能立于不败之地。",
+      "verseSource": "皇后"
+    },
+    {
+      "id": "r3",
+      "dimension": "情感",
+      "title": "眉庄",
+      "subtitle": "温婉贤淑，重情重义",
+      "token": "兰花",
+      "verse": "宁可枝头抱香死，何曾吹落北风中。宁可清贫自乐，不做浊富多忧。",
+      "verseSource": "眉庄"
+    },
+    {
+      "id": "r4",
+      "dimension": "情感",
+      "title": "安陵容",
+      "subtitle": "自卑敏感，渴望被爱",
+      "token": "茉莉",
+      "verse": "我不甘心永远被别人踩在脚下，我要让所有人看到，我不是可以随意欺负的人。",
+      "verseSource": "安陵容"
+    },
+    {
+      "id": "r5",
+      "dimension": "原则",
+      "title": "端妃",
+      "subtitle": "通透豁达，看透宫廷",
+      "token": "青竹",
+      "verse": "在这宫里，只有看得透彻的人才能活得更长久，我早已习惯了这宫中的明争暗斗。",
+      "verseSource": "端妃"
+    },
+    {
+      "id": "r6",
+      "dimension": "韧性",
+      "title": "华妃",
+      "subtitle": "骄傲强势，欲望强烈",
+      "token": "牡丹",
+      "verse": "本宫受的委屈，总有一天要加倍讨回来！这宫里，只有强者才能生存。",
+      "verseSource": "华妃"
+    },
+    {
+      "id": "r7",
+      "dimension": "谋略",
+      "title": "祺贵人",
+      "subtitle": "骄傲跋扈，野心勃勃",
+      "token": "石榴",
+      "verse": "我要让所有人都知道，我可不是好惹的！这宫里，谁都得敬我三分。",
+      "verseSource": "祺贵人"
+    },
+    {
+      "id": "r8",
+      "dimension": "韧性",
+      "title": "淳儿",
+      "subtitle": "天真烂漫，单纯善良",
+      "token": "桃花",
+      "verse": "在这宫里，能有个真心朋友真好。我不懂那些算计，只希望大家都好好的。",
+      "verseSource": "淳儿"
+    }
+  ]
+}
+```

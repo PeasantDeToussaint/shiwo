@@ -1,0 +1,140 @@
+BIG FIVE INVENTORY (BFI)
+Reference
+John, O. P., & Srivastava, S. (1999). The Big-Five trait taxonomy: History, measurement, and
+theoretical perspectives. In L. A. Pervin & O. P. John (Eds.), Handbook of personality: Theory
+and research (Vol. 2, pp. 102–138). New York: Guilford Press.
+Description of Measure:
+44-item inventory that measures an individual on the Big Five Factors (dimensions) of
+personality (Goldberg, 1993). Each of the factors is then further divided into personality facets.
+The Big Five Factors are (chart recreated from John & Srivastava, 1999):
+Big Five Dimensions Facet (and correlated trait adjective)
+Extraversion vs. introversion Gregariousness (sociable)
+Assertiveness (forceful)
+Activity (energetic)
+Excitement-seeking (adventurous)
+Positive emotions (enthusiastic)
+Warmth (outgoing)
+Agreeableness vs. antagonism Trust (forgiving)
+Straightforwardness (not demanding)
+Altruism (warm)
+Compliance (not stubborn)
+Modesty (not show-off)
+Tender-mindedness (sympathetic)
+Conscientiousness vs. lack of direction Competence (efficient)
+Order (organized)
+Dutifulness (not careless)
+Achievement striving (thorough)
+Self-discipline (not lazy)
+Deliberation (not impulsive)
+Neuroticism vs. emotional stability Anxiety (tense)
+Angry hostility (irritable)
+Depression (not contented)
+Self-consciousness (shy)
+Impulsiveness (moody)
+Vulnerability (not self-confident)
+Openness vs. closedness to experience Ideas (curious)
+Fantasy (imaginative)
+Aesthetics (artistic)
+Actions (wide interests)
+Feelings (excitable)
+Values (unconventional)
+For more information about the Big Five, visit this website:
+http://www.uoregon.edu/~sanjay/bigfive.html#where
+Self Report Measures for Love and Compassion Research: Personality
+Abstracts of Selected Related Articles:
+Bouchard, T. J. & McGue, M. (2003). Genetic and environmental influences on human psychological
+differences. Journal of Neurobiology, 54, 4-45.
+Psychological researchers typically distinguish five major domains of individual differences
+in human behavior: cognitive abilities, personality, social attitudes, psychological interests,
+and psychopathology (Lubinski, 2000). In this article we: discuss a number of methodological
+errors commonly found in research on human individual differences; introduce a broad
+framework for interpreting findings from contemporary behavioral genetic studies; briefly
+outline the basic quantitative methods used in human behavioral genetic research; review
+the major criticisms of behavior genetic designs, with particular emphasis on the twin and
+adoption methods; describe the major or dominant theoretical scheme in each domain; and
+review behavioral genetic findings in all five domains. We conclude that there is now strong
+evidence that virtually all individual psychological differences, when reliably measured, are
+moderately to substantially heritable.
+Tkach, C., & Lyubomirsky, S. (2006). How do people pursue happiness?: Relating personality,
+happiness-increasing strategies, and well-being. Journal of Happiness Studies, 7, 183-225.
+Five hundred ethnically diverse undergraduates reported their happiness strategies – that
+is, activities undertaken to maintain or increase happiness. Factor analysis extracted eight
+general strategies: Affiliation, Partying, Mental Control, Goal Pursuit, Passive Leisure,
+Active Leisure, Religion, and Direct Attempts at happiness. According to multiple regression
+analyses, these strategies accounted for 52% of the variance in self-reported happiness and
+16% over and above the variance accounted for by the Big Five personality traits. The
+strongest unique predictors of current happiness were Mental Control (inversely related),
+Direct Attempts, Affiliation, Religion, Partying, and Active Leisure. Gender differences
+suggest that men prefer to engage in Active Leisure and Mental Control, whereas women
+favor Affiliation, Goal Pursuit, Passive Leisure, and Religion. Relative to Asian and
+Chicano(a) students, White students preferred using high arousal strategies. Finally,
+mediation analyses revealed that many associations between individuals’ personality and
+happiness levels are to some extent mediated by the strategies they use to increase their
+happiness – particularly, by Affiliation, Mental Control, and Direct Attempts.
+Shiota, M.N., Keltner, D., & John, O. P. (2006). Positive emotion dispositions differentially
+associated with Big Five personality and attachment style. The Journal of Positive
+Psychology, 1, 61-71.
+Although theorists have proposed the existence of multiple distinct varieties of positive
+emotion, dispositional positive affect is typically treated as a unidimensional variable in
+personality research. We present data elaborating conceptual and empirical differences
+among seven positive emotion dispositions in their relationships with two core personality
+constructs, the ‘‘Big Five’’ and adult attachment style. We found that the positive emotion
+dispositions were differentially associated with self- and peer-rated Extraversion,
+Conscientiousness, Agreeableness, Openness to Experience, and Neuroticism. We also found
+that different adult attachment styles were associated with different kinds of emotional
+rewards. Findings support the theoretical utility of differentiating among several
+dispositional positive emotion constructs in personality research.
+ 
+Self Report Measures for Love and Compassion Research: Personality
+Scale:
+The Big Five Inventory (BFI)
+Here are a number of characteristics that may or may not apply to you. For example, do you agree
+that you are someone who likes to spend time with others? Please write a number next to each
+statement to indicate the extent to which you agree or disagree with that statement.
+Disagree
+strongly
+Disagree
+a little
+Neither agree
+nor disagree
+Agree
+a little
+Agree
+Strongly
+1 2 3 4 5
+I see Myself as Someone Who...
+ ____1. Is talkative ____23. Tends to be lazy
+
+____2. Tends to find fault with others ____24. Is emotionally stable, not easily upset
+____3. Does a thorough job ____25. Is inventive
+____4. Is depressed, blue ____26. Has an assertive personality
+____5. Is original, comes up with new ideas ____27. Can be cold and aloof
+____6. Is reserved ____28. Perseveres until the task is finished
+____7. Is helpful and unselfish with others ____29. Can be moody
+____8. Can be somewhat careless ____30. Values artistic, aesthetic experiences
+
+____9. Is relaxed, handles stress well ____31. Is sometimes shy, inhibited
+____10. Is curious about many different things ____32. Is considerate and kind to almost
+ everyone
+____11. Is full of energy ____33. Does things efficiently
+____12. Starts quarrels with others ____34. Remains calm in tense situations
+____13. Is a reliable worker ____35. Prefers work that is routine
+____14. Can be tense ____36. Is outgoing, sociable
+____15. Is ingenious, a deep thinker ____37. Is sometimes rude to others
+____16. Generates a lot of enthusiasm ____38. Makes plans and follows through with
+ them
+____17. Has a forgiving nature ____39. Gets nervous easily
+____18. Tends to be disorganized ____40. Likes to reflect, play with ideas
+____19. Worries a lot ____41. Has few artistic interests 
+Self Report Measures for Love and Compassion Research: Personality
+____20. Has an active imagination ____42. Likes to cooperate with others
+____21. Tends to be quiet ____43. Is easily distracted
+____22. Is generally trusting ____44. Is sophisticated in art, music, or
+ literature
+Scoring:
+BFI scale scoring (“R” denotes reverse-scored items):
+Extraversion: 1, 6R, 11, 16, 21R, 26, 31R, 36
+Agreeableness: 2R, 7, 12R, 17, 22, 27R, 32, 37R, 42
+Conscientiousness: 3, 8R, 13, 18R, 23R, 28, 33, 38, 43R
+Neuroticism: 4, 9R, 14, 19, 24R, 29, 34R, 39
+Openness: 5, 10, 15, 20, 25, 30, 35R, 40, 41R, 44 

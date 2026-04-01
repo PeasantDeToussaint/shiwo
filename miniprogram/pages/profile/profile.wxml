@@ -1,29 +1,31 @@
 <view class="pf-root page-atmosphere">
+  <view class="pf-navbar" style="padding-top: {{statusBarHeight}}px;" />
 
-  <!-- Navbar -->
-  <view class="pf-navbar" style="padding-top: {{statusBarHeight}}px;">
-    <view class="pf-back" bindtap="onBack">←</view>
+  <view class="pf-header motion-enter">
+    <text class="pf-kicker display-title">ARCHIVE</text>
+    <view class="pf-heading-row">
+      <text class="pf-title">你的测验档案</text>
+      <text class="pf-count">{{quizCount}} 次探索</text>
+    </view>
   </view>
 
-  <!-- Stats header -->
-  <view class="pf-stats motion-enter">
-    <text class="pf-stats-unit">你已完成</text>
-    <text class="pf-stats-number">{{quizCount}}</text>
-    <text class="pf-stats-unit">次探索</text>
-  </view>
-
-  <!-- Loading -->
   <view wx:if="{{loading}}" class="pf-loading">
     <view class="pf-loading-bar" />
   </view>
 
-  <!-- Card collection -->
-  <view wx:elif="{{hasCards}}" class="pf-collection motion-enter motion-stagger" style="--stagger: 80ms;">
+  <view wx:elif="{{hasCards}}" class="pf-section motion-enter motion-stagger" style="--stagger: 80ms;">
+    <view class="pf-section-head">
+      <view>
+        <text class="pf-section-kicker">最近结果</text>
+        <text class="pf-section-title">翻一翻你测过的题</text>
+      </view>
+      <text class="pf-counter">{{cardIndex + 1}} / {{cardTotal}}</text>
+    </view>
 
     <swiper
       class="pf-swiper"
-      previous-margin="40rpx"
-      next-margin="40rpx"
+      previous-margin="56rpx"
+      next-margin="56rpx"
       current="{{cardIndex}}"
       bindchange="onSwiperChange"
     >
@@ -39,27 +41,31 @@
         >
           <view class="pf-card-inner {{item.flipped ? 'pf-card-flipped' : ''}}">
 
-            <!-- Front -->
             <view
               class="pf-card-face pf-card-front"
               style="background: linear-gradient(160deg, {{item.gradStart}} 0%, {{item.gradEnd}} 100%); border-color: {{item.accent}}22;"
             >
+              <view class="pf-card-topline">
+                <text class="pf-card-chip">结果存档</text>
+                <text class="pf-card-date">{{item.date}}</text>
+              </view>
+
               <view class="pf-card-center">
                 <text class="pf-card-result" style="color: {{item.accent}};">{{item.resultTitle}}</text>
               </view>
 
               <view class="pf-card-foot">
                 <text class="pf-card-quiz">{{item.quizTitle}}</text>
-                <text class="pf-card-date">{{item.date}}</text>
+                <text class="pf-card-hint">点按翻面</text>
               </view>
             </view>
 
-            <!-- Back -->
             <view
               class="pf-card-face pf-card-back"
               style="background: linear-gradient(160deg, {{item.gradStart}} 0%, {{item.gradEnd}} 100%); border-color: {{item.accent}}22;"
             >
               <view class="pf-card-back-top">
+                <text class="pf-card-chip">结果卡片</text>
                 <text class="pf-card-back-result" style="color: {{item.accent}};">{{item.resultTitle}}</text>
                 <text class="pf-card-back-quiz">{{item.quizTitle}}</text>
               </view>
@@ -78,21 +84,17 @@
         </view>
       </swiper-item>
     </swiper>
-
-    <text class="pf-counter">{{cardIndex + 1}} / {{cardTotal}}</text>
   </view>
 
-  <!-- Empty state -->
-  <view wx:elif="{{emptyState}}" class="pf-empty motion-enter motion-stagger" style="--stagger: 80ms;">
-
-    <text class="pf-empty-link" bindtap="onGoExplore">去完成一次测验</text>
+  <view wx:elif="{{emptyState}}" class="pf-empty motion-enter motion-stagger card" style="--stagger: 80ms;">
+    <text class="pf-empty-kicker">还没有结果</text>
+    <text class="pf-empty-title">先去完成一次测验，再回来建立你的档案。</text>
+    <text class="pf-empty-link" bindtap="onGoExplore">去探索</text>
   </view>
 
-  <!-- Footer -->
   <view class="pf-footer motion-enter motion-stagger" style="--stagger: 200ms;">
-    <text class="pf-footer-motto">在文学、历史与艺术里，遇见你自己</text>
+    <text class="pf-footer-motto">在文学、历史与艺术里，遇见你自己。</text>
   </view>
 
   <view class="pf-scroll-pad" />
-
 </view>

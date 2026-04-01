@@ -1,0 +1,47 @@
+<template name="editorialCard">
+  <view
+    class="ed-card ed-card--{{variant || 'grid'}} {{item.hasImage ? 'ed-card--image' : 'ed-card--text'}} {{item.isAvailable === false ? 'ed-card--dim' : ''}} motion-enter motion-stagger"
+    style="--stagger: {{stagger || 0}}ms; {{item.themeStyle}}"
+    data-id="{{item.id}}"
+    data-bg="{{item.bgImage}}"
+    data-available="{{item.isAvailable}}"
+    bindtap="onTapCard"
+  >
+    <view wx:if="{{item.bgImage && !item.bgImageDisplay}}" class="ed-card-skeleton">
+      <view class="ed-card-skeleton-shine" />
+    </view>
+
+    <image
+      wx:if="{{item.bgImageDisplay}}"
+      src="{{item.bgImageDisplay}}"
+      mode="aspectFill"
+      class="ed-card-bg"
+    />
+
+    <view wx:if="{{item.hasImage}}" class="ed-card-scrim" />
+    <view wx:else class="ed-card-texture" />
+    <view class="ed-card-glow" />
+    <view class="ed-card-accent" />
+
+    <view class="ed-card-top">
+      <text wx:if="{{eyebrow}}" class="ed-card-eyebrow">{{eyebrow}}</text>
+      <view wx:if="{{showTags && item.tags && item.tags.length}}" class="ed-card-tag-row">
+        <text wx:for="{{item.tags}}" wx:key="*this" wx:for-item="tag" class="ed-card-tag">{{tag}}</text>
+      </view>
+      <text wx:if="{{item.isAvailable === false}}" class="ed-card-badge">即将开放</text>
+    </view>
+
+    <view class="ed-card-body">
+      <view class="ed-card-copy">
+        <text wx:if="{{meta}}" class="ed-card-meta">{{meta}}</text>
+        <text class="ed-card-title">{{item.displayTitleZh || item.title}}</text>
+        <text wx:if="{{item.subtitle}}" class="ed-card-subtitle">{{item.subtitle}}</text>
+      </view>
+
+      <view wx:if="{{caption || (showArrow !== false && item.isAvailable !== false)}}" class="ed-card-footer">
+        <text wx:if="{{caption}}" class="ed-card-caption">{{caption}}</text>
+        <text wx:if="{{showArrow !== false && item.isAvailable !== false}}" class="ed-card-arrow">→</text>
+      </view>
+    </view>
+  </view>
+</template>

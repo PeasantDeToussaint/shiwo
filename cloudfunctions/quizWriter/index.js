@@ -19,6 +19,8 @@ exports.main = async (event) => {
       return await getQuiz(data);
     case "deleteQuiz":
       return await deleteQuiz(data);
+    case "patchCatalog":
+      return await patchCatalog(data);
     default:
       return { success: false, error: `Unknown action: ${action}` };
   }
@@ -88,6 +90,22 @@ async function deleteQuiz({ id } = {}) {
     await db.collection("quiz_catalog").doc(doc._id).remove();
   }
   return { success: true, id, removedQuizDocs: qRes.data.length, removedCatalogDocs: cRes.data.length };
+}
+
+/** Patch specific fields on quiz_catalog (and optionally quizzes) without full re-upload. */
+async function patchCatalog({ id, fields } = {}) {
+  if (!id || !fields) return { success: false, error: "id and fields are required" };
+  const res = await db.collection("quiz_catalog").where({ id }).get();
+  if (res.data.length === 0) return { success: false, error: `Catalog entry "${id}" not found` };
+  await db.collection("quiz_catalog").doc(res.data[0]._id).update({ data: { ...fields, _updatedAt: db.serverDate() } });
+  // Mirror featureId patch into main quizzes collection if requested
+  if (fields.featureId !== undefined) {
+    const qRes = await db.collection("quizzes").where({ id }).get();
+    if (qRes.data.length > 0) {
+      await db.collection("quizzes").doc(qRes.data[0]._id).update({ data: { featureId: fields.featureId, _updatedAt: db.serverDate() } });
+    }
+  }
+  return { success: true, id };
 }
 
 async function upsertCatalogEntry(quiz) {

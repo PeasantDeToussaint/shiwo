@@ -1,0 +1,53 @@
+<import src="../../templates/editorial-card.wxml" />
+
+<scroll-view scroll-y class="exp-scroll page-atmosphere">
+  <view class="exp-root">
+    <view class="exp-header motion-enter" style="padding-top: calc({{statusBarHeight}}px + 40rpx);">
+      <text class="exp-kicker display-title"></text>
+      <text class="exp-title">探索各种人格测验</text>
+
+    </view>
+
+    <scroll-view wx:if="{{quickCategories.length}}" scroll-x class="exp-chip-scroll" show-scrollbar="{{false}}" enhanced="{{true}}">
+      <view class="exp-chip-row">
+        <view wx:for="{{quickCategories}}" wx:key="id" wx:for-item="cat" class="exp-chip" data-fid="{{cat.id}}" bindtap="onSeeAll">
+          <text class="exp-chip-title">{{cat.title}}</text>
+          <text class="exp-chip-count">{{cat.count}}</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view wx:for="{{sections}}" wx:key="id" wx:for-item="sec" class="exp-section">
+      <view class="exp-section-head">
+        <view>
+          <text class="exp-section-title">{{sec.title}}</text>
+          <text class="exp-section-count">{{sec.items.length}} 题</text>
+        </view>
+        <text class="exp-section-more" data-fid="{{sec.seeAllFeatureId}}" bindtap="onSeeAll">全部 →</text>
+      </view>
+
+      <view class="exp-grid">
+        <block wx:for="{{sec.previewItems}}" wx:key="id" wx:for-item="quiz">
+          <template
+            is="editorialCard"
+            data="{{ item: quiz, variant: 'grid', meta: quiz.primaryTag || quiz.displayQuestionCount, caption: quiz.displayMinutes || quiz.displayQuestionCount, stagger: 40 + index * 40 }}"
+          />
+        </block>
+      </view>
+    </view>
+
+    <view wx:if="{{comingSoon.length}}" class="exp-coming">
+      <view class="exp-section-head exp-coming-head">
+        <view>
+          <text class="exp-section-title">即将上线</text>
+          <text class="exp-section-count">正在补齐内容</text>
+        </view>
+      </view>
+      <view class="exp-coming-list">
+        <text wx:for="{{comingSoon}}" wx:key="*this" wx:for-item="label" class="exp-coming-pill">{{label}}</text>
+      </view>
+    </view>
+
+    <view class="exp-pad" />
+  </view>
+</scroll-view>

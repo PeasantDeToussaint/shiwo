@@ -1,51 +1,31 @@
 const { getCatalog } = require("../../utils/quizStore");
-const { resolveTheme, toCssVarString } = require("../../utils/themePresets");
-const { resolveCloudImageSrc } = require("../../utils/resolveCloudImage");
 const { fetchCloudCatalog } = require("../../utils/cloudCatalog");
+const { FEATURE_LABELS } = require("../../utils/catalogSections");
+const {
+  decorateCatalogItem,
+  mergeLocalAndCloud,
+  resolveCatalogCardHero,
+} = require("../../utils/catalogPresentation");
 
-function decorateItem(item, source) {
-  const theme = resolveTheme({ themeKey: item.themeKey || "default" });
-  return {
-    ...item,
-    accentColor: item.isAvailable !== false ? theme.accent : null,
-    themeStyle: toCssVarString(theme),
-    bgImageDisplay: "",
-    hasImage: !!item.bgImage,
-    _source: source,
-  };
-}
-
-/**
- * 本地条目顺序优先；同 id 以云端为准（标题、上下架等）。
- * 仅云端有的条目排在后面。
- */
-function mergeLocalAndCloud(localDecorated, cloudDecorated) {
-  const byId = new Map(localDecorated.map((i) => [i.id, i]));
-  for (const c of cloudDecorated) {
-    byId.set(c.id, c);
-  }
-  const order = localDecorated.map((i) => i.id);
-  const seen = new Set();
-  const merged = [];
-  for (const id of order) {
-    const row = byId.get(id);
-    if (row) {
-      merged.push(row);
-      seen.add(id);
-    }
-  }
-  for (const c of cloudDecorated) {
-    if (!seen.has(c.id)) {
-      merged.push(c);
-      seen.add(c.id);
-    }
-  }
-  return merged;
-}
+const FEATURE_SUBHEADS = {
+  classics: "从最稳定、最成熟的题开始。",
+  ip: "从熟悉的作品宇宙进入自己。",
+  history: "借历史人物与时代气质照见你。",
+  archetype: "用原型、神话与象征理解自己。",
+  aesthetics: "从审美和创作偏好慢慢靠近你。",
+  relationship: "关于情感、连接与亲密方式。",
+  cognition: "看见你的思维、判断和倾向。",
+  career: "把职业风格与成长路径讲清楚。",
+  lifestyle: "日常选择，也是人格的一部分。",
+  festival: "节令与情境里的你会怎么选。",
+  city: "城市、方言与地方感的题都在这里。",
+};
 
 Page({
   data: {
     featureId: "",
+    featureLabel: "",
+    featureSubhead: "",
     catalog: [],
     statusBarHeight: 0,
     snackbar: { visible: false, leaving: false, label: "" },
@@ -56,7 +36,12 @@ Page({
   onLoad(options) {
     const { statusBarHeight } = wx.getWindowInfo();
     this._featureId = options.featureId || "";
-    this.setData({ featureId: this._featureId, statusBarHeight });
+    this.setData({
+      featureId: this._featureId,
+      featureLabel: FEATURE_LABELS[this._featureId] || "分类浏览",
+      featureSubhead: FEATURE_SUBHEADS[this._featureId] || "在这一组题里慢慢挑。",
+      statusBarHeight,
+    });
   },
 
   /**
@@ -69,13 +54,12 @@ Page({
   },
 
   _syncCatalog(featureId) {
-    const localCatalog = getCatalog(featureId).map((item) => decorateItem(item, "local"));
+    const localCatalog = getCatalog(featureId);
 
     fetchCloudCatalog(featureId).then((cloudItems) => {
-      const cloudDecorated = cloudItems.map((item) => decorateItem(item, "cloud"));
-      const merged = cloudDecorated.length
-        ? mergeLocalAndCloud(localCatalog, cloudDecorated)
-        : localCatalog;
+      const merged = cloudItems.length
+        ? mergeLocalAndCloud(localCatalog, cloudItems, decorateCatalogItem)
+        : localCatalog.map((item) => decorateCatalogItem(item));
 
       this.setData({ catalog: merged });
       this._resolveImages(merged, 0);
@@ -84,9 +68,9 @@ Page({
 
   _resolveImages(items, startIndex) {
     items.forEach((item, i) => {
-      if (!item.bgImage) return;
-      resolveCloudImageSrc(item.bgImage).then((url) => {
-        if (url) this.setData({ [`catalog[${startIndex + i}].bgImageDisplay`]: url });
+      resolveCatalogCardHero(item).then((patch) => {
+        if (!patch.hasImage) return;
+        this.setData({ [`catalog[${startIndex + i}]`]: { ...this.data.catalog[startIndex + i], ...patch } });
       });
     });
   },
@@ -96,12 +80,13 @@ Page({
   },
 
   onTapCard(event) {
-    const { id, available } = event.currentTarget.dataset;
+    const { id, bg, available } = event.currentTarget.dataset;
     if (available === false || available === "false") {
       this._showSnackbar("— 即将开放 —");
       return;
     }
-    wx.navigateTo({ url: `/subpackages/quiz/pages/quiz-intro/quiz-intro?quizId=${id}` });
+    const hero = bg ? `&hero=${encodeURIComponent(bg)}` : "";
+    wx.navigateTo({ url: `/subpackages/quiz/pages/quiz-intro/quiz-intro?quizId=${id}${hero}` });
   },
 
   _showSnackbar(label) {

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Quiz Generator Architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #0f0f13;
+    color: #e8e8f0;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #a8a8c0;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: #555570;
+    margin-bottom: 48px;
+    letter-spacing: 0.04em;
+  }
+
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ── Phase block ── */
+  .phase {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 20px;
+    align-items: start;
+    position: relative;
+  }
+
+  .phase-label {
+    text-align: right;
+    padding-top: 18px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #44445a;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .phase-body {
+    border-radius: 12px;
+    padding: 16px 20px;
+    position: relative;
+    border: 1px solid transparent;
+  }
+
+  .phase-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .phase-desc {
+    font-size: 11px;
+    color: #88889a;
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+
+  /* ── Output chips ── */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .chip {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+  }
+
+  /* ── Mechanism badges ── */
+  .mechs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 8px;
+  }
+  .mech {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    color: #666688;
+    border: 1px solid rgba(255,255,255,0.06);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Connector ── */
+  .connector {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0 20px;
+    align-items: center;
+    height: 28px;
+  }
+  .connector-spacer { }
+  .connector-line {
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    gap: 8px;
+    height: 100%;
+  }
+  .connector-line::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+  }
+  .flow-label {
+    font-size: 9px;
+    color: #44445a;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── Color themes per phase ── */
+  .p0 .phase-body { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.25); }
+  .p0 .phase-title { color: #818cf8; }
+  .p0 .chip { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+
+  .p1 .phase-body { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.25); }
+  .p1 .phase-title { color: #60a5fa; }
+  .p1 .chip { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.3); color: #93c5fd; }
+
+  .p2a .phase-body { background: rgba(16,185,129,0.07); border-color: rgba(16,185,129,0.22); }
+  .p2a .phase-title { color: #34d399; }
+  .p2a .chip { background: rgba(16,185,129,0.13); border-color: rgba(16,185,129,0.28); color: #6ee7b7; }
+
+  .p2b .phase-body { background: rgba(20,184,166,0.07); border-color: rgba(20,184,166,0.22); }
+  .p2b .phase-title { color: #2dd4bf; }
+  .p2b .chip { background: rgba(20,184,166,0.13); border-color: rgba(20,184,166,0.28); color: #5eead4; }
+
+  .p3a .phase-body { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.22); }
+  .p3a .phase-title { color: #fbbf24; }
+  .p3a .chip { background: rgba(245,158,11,0.13); border-color: rgba(245,158,11,0.28); color: #fcd34d; }
+
+  .p3b .phase-body { background: rgba(249,115,22,0.07); border-color: rgba(249,115,22,0.22); }
+  .p3b .phase-title { color: #fb923c; }
+  .p3b .chip { background: rgba(249,115,22,0.13); border-color: rgba(249,115,22,0.28); color: #fdba74; }
+
+  .p4 .phase-body { background: rgba(236,72,153,0.07); border-color: rgba(236,72,153,0.22); }
+  .p4 .phase-title { color: #f472b6; }
+  .p4 .chip { background: rgba(236,72,153,0.13); border-color: rgba(236,72,153,0.28); color: #f9a8d4; }
+
+  .pdeploy .phase-body { background: rgba(139,92,246,0.07); border-color: rgba(139,92,246,0.22); }
+  .pdeploy .phase-title { color: #c084fc; }
+  .pdeploy .chip { background: rgba(139,92,246,0.13); border-color: rgba(139,92,246,0.28); color: #d8b4fe; }
+
+  /* ── Sidebar annotation ── */
+  .sidebar-group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 80px 1fr 200px;
+    gap: 0 20px;
+    align-items: stretch;
+    margin-top: 32px;
+  }
+  .sidebar-note {
+    font-size: 10px;
+    color: #44445a;
+    border-left: 2px solid rgba(255,255,255,0.06);
+    padding-left: 12px;
+    line-height: 1.6;
+  }
+  .sidebar-note strong {
+    display: block;
+    color: #666688;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  /* ── Cross-cutting panel ── */
+  .crosscut {
+    width: 100%;
+    margin-top: 48px;
+    max-width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .crosscut-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #44445a;
+    margin-bottom: 12px;
+    padding-left: 100px;
+  }
+  .crosscut-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding-left: 100px;
+  }
+  .cc-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .cc-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8888a8;
+    margin-bottom: 6px;
+  }
+  .cc-card-body {
+    font-size: 10px;
+    color: #555570;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<h1>MYTYPE · Quiz Generator</h1>
+<p class="subtitle">多阶段 AI 生成管道 · Planner-Worker 架构</p>
+
+<div class="pipeline">
+
+  <!-- Phase 0 -->
+  <div class="phase p0">
+    <div class="phase-label">Phase 0</div>
+    <div class="phase-body">
+      <div class="phase-title">Domain Architecture &nbsp;🧠</div>
+      <div class="phase-desc">根据主题生成测验骨架：评分维度、人物原型、评分家族选择</div>
+      <div class="chips">
+        <span class="chip">dimensions[]</span>
+        <span class="chip">dimensionSpecs[]</span>
+        <span class="chip">results[] (名单)</span>
+        <span class="chip">scoringFamily</span>
+      </div>
+      <div class="mechs">
+        <span class="mech">Validate + Repair (anchor对齐 / 孤儿维度修复)</span>
+        <span class="mech">Retry ×6</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-spacer"></div>
+    <div class="connector-line"><span class="flow-label">架构传递到 Outline</span></div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div class="phase p1">
+    <div class="phase-label">Phase 1</div>
+    <div class="phase-body">
+      <div class="phase-title">Outline &nbsp;📐</div>
+      <div class="phase-desc">为每个人物生成维度得分分布 (dimension_profile)，确保每个维度都有峰值角色</div>
+      <div class="chips">
+        <span class="chip">dimension_profile[N]</span>
+        <span class="chip">唯一峰值约束</span>
+        <span class="chip">Pareto 不可支配</span>
+      </div>
+      <div class="mechs">
+        <span class="mech">Fuzzy name match (≥0.6)</span>
+        <span class="mech">Retry ×4</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-spacer"></div>
+    <div class="connector-line"><span class="flow-label">场景骨架规划</span></div>
+  </div>
+
+  <!-- Phase 2a -->
+  <div class="phase p2a">
+    <div class="phase-label">Phase 2a ✨</div>
+    <div class="phase-body">
+      <div class="phase-title">Question Plan &nbsp;📋</div>
+      <div class="phase-desc">在单次 AI 调用中预分配所有问题的类型、场景、目标维度 — 全局保证多样性</div>
+      <div class="chips">
+        <span class="chip">type 分布 (5种)</span>
+        <span class="chip">unique setting×20</span>
+        <span class="chip">dimension 覆盖</span>
+        <span class="chip">连场允许</span>
+      </div>
+      <div class="mechs">
+        <span class="mech">Score Map 验证</span>
+        <span class="mech">Overlap 非致命警告</span>
+        <span class="mech">Retry ×4</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-spacer"></div>
+    <div class="connector-line"><span class="flow-label">按计划批量写题</span></div>
+  </div>
+
+  <!-- Phase 2b -->
+  <div class="phase p2b">
+    <div class="phase-label">Phase 2b</div>
+    <div class="phase-body">
+      <div class="phase-title">Questions &nbsp;✍️</div>
+      <div class="phase-desc">按 Question Plan 分批生成题干与选项，前批传入后批以消除重复</div>
+      <div class="chips">
+        <span class="chip">20题 / 3批</span>
+        <span class="chip">上下文滚动传递</span>
+        <span class="chip">负分修复 → 0</span>
+      </div>
+      <div class="mechs">
+        <span class="mech">JSON repair chain</span>
+        <span class="mech">Retry per batch</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-spacer"></div>
+    <div class="connector-line"><span class="flow-label">标签预分配</span></div>
+  </div>
+
+  <!-- Phase 3a -->
+  <div class="phase p3a">
+    <div class="phase-label">Phase 3a ✨</div>
+    <div class="phase-body">
+      <div class="phase-title">Results Planner &nbsp;🗺️</div>
+      <div class="phase-desc">单次调用预分配每个角色的叙事角度、强项标签、弱项标签，保证全局唯一</div>
+      <div class="chips">
+        <span class="chip">portraitAngle</span>
+        <span class="chip">strengthLabels ×3</span>
+        <span class="chip">weaknessLabels ×3</span>
+      </div>
+      <div class="mechs">
+        <span class="mech">重复标签检测 (≥4次报错)</span>
+        <span class="mech">Retry ×5</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-spacer"></div>
+    <div class="connector-line"><span class="flow-label">按计划写人物卡</span></div>
+  </div>
+
+  <!-- Phase 3b -->
+  <div class="phase p3b">
+    <div class="phase-label">Phase 3b</div>
+    <div class="phase-body">
+      <div class="phase-title">Results &nbsp;🎴</div>
+      <div class="phase-desc">按 Results Planner 生成每个角色的完整人物画像：简介、强弱项描述、extras</div>
+      <div class="chips">
+        <span class="chip">description</span>
+        <span class="chip">strengths ×3</span>
+        <span class="chip">weaknesses ×3</span>
+        <span class="chip">extras ≥2</span>
+      </div>
+      <div class="mechs">
+        <span class="mech">Style guide 约束</span>
+        <span class="mech">Retry per result</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-spacer"></div>
+    <div class="connector-line"><span class="flow-label">组装 + 评分</span></div>
+  </div>
+
+  <!-- Phase 4 -->
+  <div class="phase p4">
+    <div class="phase-label">Phase 4</div>
+    <div class="phase-body">
+      <div class="phase-title">Assemble &nbsp;📦</div>
+      <div class="phase-desc">将所有阶段产物合并为单一 Quiz JSON，注入评分函数、推断 featureId</div>
+      <div class="chips">
+        <span class="chip">quiz.json</span>
+        <span class="chip">cosine similarity scorer</span>
+        <span class="chip">inferFeatureId()</span>
+      </div>
+      <div class="mechs">
+        <span class="mech">weighted-dimension / bipolar / level-band</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-spacer"></div>
+    <div class="connector-line"><span class="flow-label">云端发布</span></div>
+  </div>
+
+  <!-- Deploy -->
+  <div class="phase pdeploy">
+    <div class="phase-label">Deploy</div>
+    <div class="phase-body">
+      <div class="phase-title">CloudBase &nbsp;☁️</div>
+      <div class="phase-desc">GitHub Actions 批量生成 → commit → 上传 quiz_catalog + 题库 → 小程序可见</div>
+      <div class="chips">
+        <span class="chip">pipelined_materials/</span>
+        <span class="chip">quiz_catalog 写入</span>
+        <span class="chip">WeChat Mini Program</span>
+      </div>
+      <div class="mechs">
+        <span class="mech">max-parallel: 1</span>
+        <span class="mech">upload-pipelined-materials.js</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Cross-cutting mechanisms -->
+<div class="crosscut">
+  <div class="crosscut-title">横切机制 · Cross-cutting Concerns</div>
+  <div class="crosscut-grid">
+
+    <div class="cc-card">
+      <div class="cc-card-title">JSON Repair Chain</div>
+      <div class="cc-card-body">
+        全宽标点替换 → 括号修复 → 单引号 → 未加引号 key → 未加引号 value → 裸词数组 → jsonrepair 兜底
+      </div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-title">Validate → Repair → Retry</div>
+      <div class="cc-card-body">
+        每个阶段均有独立 Validator；AI 修复层（positional align / anchor fill / name dedup）在 Retry 前自动运行
+      </div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-title">Planner-Worker 模式</div>
+      <div class="cc-card-body">
+        Question Plan + Results Plan 作为 Planner，用单次全局调用锁定约束；后续 Worker 只需填充细节
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -10,11 +10,30 @@
   overflow: hidden;
 }
 
+.intro-hero-bg,
+.intro-hero-scrim {
+  position: absolute;
+  inset: 0;
+}
+
+.intro-hero-bg {
+  width: 100%;
+  height: 100%;
+  opacity: 0.24;
+}
+
+.intro-hero-scrim {
+  background:
+    linear-gradient(180deg, rgba(9,9,10,0.18) 0%, rgba(9,9,10,0.28) 22%, rgba(9,9,10,0.62) 58%, rgba(9,9,10,0.94) 100%);
+}
+
 /* ═══════════════════════════════════════════════════════════
    ZONE 1 — Header (fixed height)
    back button left · eyebrow right
    ═══════════════════════════════════════════════════════════ */
 .intro-header {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   display: flex;
   flex-direction: row;
@@ -45,6 +64,8 @@
    ZONE 2 — Title (flex: 1, title anchored to bottom)
    ═══════════════════════════════════════════════════════════ */
 .intro-title-zone {
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -99,6 +120,8 @@
    ZONE 3 — Footer (fixed height, description + start)
    ═══════════════════════════════════════════════════════════ */
 .intro-footer {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   padding-left: var(--space-14);
   padding-right: var(--space-14);

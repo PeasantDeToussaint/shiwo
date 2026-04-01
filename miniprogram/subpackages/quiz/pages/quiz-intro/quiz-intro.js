@@ -21,21 +21,27 @@ Page({
     const info = wx.getWindowInfo();
     const safeAreaBottom = info.screenHeight - (info.safeArea ? info.safeArea.bottom : info.screenHeight);
     const { quizId } = options;
+    this._heroHint = options.hero ? decodeURIComponent(options.hero) : "";
     this.setData({ statusBarHeight: info.statusBarHeight, safeAreaBottom, loading: true });
 
     resolveQuiz(quizId, getQuizById).then(({ quiz }) => {
       this._applyQuiz(quiz);
     }).catch((e) => {
       console.error("[quiz-intro] failed to load quiz:", e);
-      wx.showToast({ title: "测验加载失败", icon: "none" });
-      this.setData({ loading: false });
+      wx.showToast({ title: "测验暂不可用", icon: "none", duration: 1500 });
+      setTimeout(() => wx.navigateBack(), 1200);
     });
   },
 
   _applyQuiz(quiz) {
     const theme = resolveTheme({ themeKey: quiz.themeKey || "default" });
     const questions = quiz.questions || [];
-    const heroPainting = (questions[0] && questions[0].painting) || quiz.introPainting || "";
+    const heroPainting =
+      (questions[0] && questions[0].painting) ||
+      quiz.introPainting ||
+      quiz.bgImage ||
+      this._heroHint ||
+      "";
     const questionCount = questions.length;
     const estimatedMinutes = quiz.estimatedMinutes || Math.ceil(questionCount * 0.3);
 
@@ -87,7 +93,7 @@ Page({
 
   onStartQuiz() {
     const { quiz } = this.data;
-    const page = quiz.questionPage || `/subpackages/quiz/pages/quiz-question/quiz-question`;
+    const page = quiz.questionPage || `/subpackages/quiz/pages/generic-question/generic-question`;
     wx.redirectTo({ url: `${page}?quizId=${quiz.id}` });
   },
 

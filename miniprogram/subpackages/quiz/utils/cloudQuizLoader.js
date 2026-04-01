@@ -6,6 +6,34 @@
 
 const { isRemovedQuizId } = require("../../../utils/removedQuizIds");
 
+function unwrapCloudQuiz(doc) {
+  if (!doc || typeof doc !== "object") return null;
+
+  const quiz = (doc.quiz && typeof doc.quiz === "object") ? doc.quiz : doc;
+  return {
+    ...quiz,
+    // Preserve top-level metadata when older uploads wrapped the full quiz.
+    id: quiz.id || doc.id,
+    featureId: quiz.featureId || doc.featureId,
+    isAvailable: quiz.isAvailable !== false && doc.isAvailable !== false,
+  };
+}
+
+function isUsableQuiz(quiz) {
+  if (!quiz || typeof quiz !== "object") return false;
+  if (!quiz.id || !quiz.title || !quiz.questionPage || !quiz.resultPage) return false;
+
+  if (quiz.questionPage.includes("/generic-question/")) {
+    if (!Array.isArray(quiz.questions) || quiz.questions.length === 0) return false;
+  }
+
+  if (quiz.resultPage.includes("/generic-result/")) {
+    if (!Array.isArray(quiz.results) || quiz.results.length === 0) return false;
+  }
+
+  return true;
+}
+
 /**
  * Fetch a quiz by id from cloud. Throws if not found.
  * @param {string} quizId
@@ -25,7 +53,12 @@ async function fetchCloudQuiz(quizId) {
     throw new Error(`[cloudQuizLoader] Quiz "${quizId}" not found in cloud`);
   }
 
-  return res.result.quiz;
+  const quiz = unwrapCloudQuiz(res.result.quiz);
+  if (!isUsableQuiz(quiz)) {
+    throw new Error(`[cloudQuizLoader] Quiz "${quizId}" payload is incomplete`);
+  }
+
+  return quiz;
 }
 
 /**

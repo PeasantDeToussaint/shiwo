@@ -152,7 +152,6 @@ Page({
         pct: Math.round(((value || 0) / peakValue) * 100),
         rawPct: Math.round((value || 0) * 100),
         axisLabel: axis.axisLabel || "",
-        lowPole:   axis.lowPole || "",
         insight:   axis.highInsight || axis.insight || "",
       };
     });
@@ -160,7 +159,13 @@ Page({
       if (a.centered || b.centered) return (b.fillPct || 0) - (a.fillPct || 0);
       return (b.pct || 0) - (a.pct || 0);
     });
-    if (bars.length > 0) bars[0].dominant = true;
+    if (bars.length > 0) {
+      bars[0].dominant = true;
+      // weighted-dimension: only the top bar shows insight
+      if (scoringType !== "bipolar-dimension") {
+        bars.forEach((b, i) => { if (i > 0) b.insight = ""; });
+      }
+    }
     return bars;
   },
 

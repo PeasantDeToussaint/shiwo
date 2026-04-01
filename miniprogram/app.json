@@ -1,9 +1,36 @@
 {
   "pages": [
     "pages/home/home",
-    "pages/feature-quiz/feature-quiz",
-    "pages/profile/profile"
+    "pages/explore/explore",
+    "pages/profile/profile",
+    "pages/feature-quiz/feature-quiz"
   ],
+  "tabBar": {
+    "backgroundColor": "#09090a",
+    "borderStyle": "black",
+    "color": "#555558",
+    "selectedColor": "#f5f5f4",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "images/icons/home.png",
+        "selectedIconPath": "images/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/explore/explore",
+        "text": "探索",
+        "iconPath": "images/icons/explore.png",
+        "selectedIconPath": "images/icons/explore-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/icons/usercenter.png",
+        "selectedIconPath": "images/icons/usercenter-active.png"
+      }
+    ]
+  },
   "subpackages": [
     {
       "root": "subpackages/quiz",
@@ -27,10 +54,8 @@
     }
   ],
   "preloadRule": {
-    "pages/feature-quiz/feature-quiz": {
-      "network": "all",
-      "packages": ["quiz"]
-    }
+    "pages/home/home":    { "network": "all", "packages": ["quiz"] },
+    "pages/explore/explore": { "network": "all", "packages": ["quiz"] }
   },
   "window": {
     "backgroundColor": "#09090a",

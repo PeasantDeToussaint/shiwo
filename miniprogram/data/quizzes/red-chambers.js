@@ -14,7 +14,7 @@ module.exports = {
     questionCount: 20,
     isAvailable: true,
     themeKey: "red-chambers",
-    featureId: "history",
+    featureId: "ip",
   },
   questionPage: "/subpackages/quiz/pages/rc-question/rc-question",
   resultPage:   "/subpackages/quiz/pages/rc-result/rc-result",

@@ -168,6 +168,21 @@ function nameSimilarity(a, b) {
   return overlap / Math.max(x.length, y.length);
 }
 
+function normalizeDimensionToken(value) {
+  return String(value || "")
+    .replace(/\s+/g, "")
+    .replace(/[：:·•]/g, "")
+    .trim();
+}
+
+function normalizeProfileHint(value) {
+  return ["high", "medium", "low"].includes(value) ? value : null;
+}
+
+function profileHintRank(value) {
+  return { high: 2, medium: 1, low: 0 }[normalizeProfileHint(value)] ?? 1;
+}
+
 /**
  * Post-process repair: normalize and dedupe architecture result names.
  * Duplicate exact names are dropped; obvious quote/whitespace corruption is removed.
@@ -192,147 +207,120 @@ function repairArchitectureResults(architecture) {
 }
 
 /**
- * Post-process repair: clamp dimensionSpecs anchors to the actual results list.
+ * Post-process repair: make profileHints the only semantic source of truth.
  *
- * Models routinely pick anchor names from domain knowledge (e.g. 夏冬, 蒙挚)
- * even when those characters weren't chosen as results for this run. Rather than
- * retrying the whole architecture, we:
- *   1. Normalise every anchor name via fuzzy match against the real result names.
- *   2. Drop anchors that don't match anything.
- *   3. If a list ends up empty, fill it with the best-matching result that isn't
- *      already in the opposite anchor list.
- *   4. Ensure forbiddenInterpretations is always a non-empty array.
+ * The model may still emit primaryDimension / anchor lists, but we do not trust
+ * them independently because they often contradict the per-result profileHints.
+ * Instead we:
+ *   1. Normalize every result's profileHints to cover all dimensions.
+ *   2. Infer / repair primaryDimension from the strongest hint.
+ *   3. Guarantee every dimension has at least one high owner and one low contrast.
+ *   4. Derive highAnchorResults / lowAnchorResults from the repaired profileHints.
  */
 function repairArchitectureAnchors(architecture) {
   const results = Array.isArray(architecture?.results) ? architecture.results : [];
-  if (results.length === 0) return;
-
-  const validNames = results.map(r => normalizeResultName(r?.name)).filter(Boolean);
-
-  // Levenshtein-free fuzzy: returns the best valid name for a given anchor string,
-  // or null if nothing is close enough.
-  function bestMatch(anchor) {
-    const a = normalizeResultName(anchor);
-    if (!a) return null;
-    // Exact match
-    if (validNames.includes(a)) return a;
-    // Substring: valid name contains the anchor, or anchor contains the valid name
-    const sub = validNames.find(n => n.includes(a) || a.includes(n));
-    if (sub) return sub;
-    // Character overlap: pick the name that shares the most characters with anchor
-    let best = null, bestScore = 0;
-    for (const n of validNames) {
-      const overlap = [...a].filter(ch => n.includes(ch)).length;
-      const score = overlap / Math.max(a.length, n.length);
-      if (score > bestScore && score >= 0.5) { bestScore = score; best = n; }
-    }
-    return best;
-  }
-
-  function repairList(anchors) {
-    if (!Array.isArray(anchors)) {
-      // Model may have output a plain string (e.g. "靖王/萧景琰") — try to split it
-      const raw = String(anchors || "");
-      anchors = raw ? raw.split(/[,，、\/／\s]+/).map(s => s.trim()).filter(Boolean) : [];
-    }
-    const mapped = [];
-    for (const a of anchors) {
-      const m = bestMatch(a);
-      if (m && !mapped.includes(m)) mapped.push(m);
-    }
-    return mapped;
-  }
-
-  // Build a lookup: resultName → profileHints object, for semantically-guided filling
-  const hintsByName = {};
-  for (const r of results) {
-    const name = String(r?.name || "");
-    if (name) hintsByName[name] = r.profileHints || {};
-  }
-
+  const dimensions = Array.isArray(architecture?.dimensions) ? architecture.dimensions : [];
   const specs = Array.isArray(architecture?.dimensionSpecs) ? architecture.dimensionSpecs : [];
-  for (const spec of specs) {
-    if (!spec) continue;
+  if (results.length === 0 || dimensions.length === 0) return;
 
-    spec.highAnchorResults = repairList(spec.highAnchorResults);
-    spec.lowAnchorResults  = repairList(spec.lowAnchorResults);
+  const findHintForDimension = (rawHints, dim) => {
+    const direct = normalizeProfileHint(rawHints?.[dim]);
+    if (direct) return direct;
+    const normalizedDim = normalizeDimensionToken(dim);
+    const found = Object.entries(rawHints || {}).find(([key]) => normalizeDimensionToken(key) === normalizedDim);
+    return normalizeProfileHint(found?.[1]) || "medium";
+  };
 
-    const dimName = spec.dimension || "";
+  for (const result of results) {
+    const rawHints = result?.profileHints && typeof result.profileHints === "object" ? result.profileHints : {};
+    const normalizedHints = {};
+    for (const dim of dimensions) normalizedHints[dim] = findHintForDimension(rawHints, dim);
+    result.profileHints = normalizedHints;
 
-    // Fill empty anchor lists using profileHints so we pick semantically correct results,
-    // not just whoever hasn't been used yet.
-    const hintRank = (name, wantedHint) => {
-      const hint = (hintsByName[name] || {})[dimName];
-      if (hint === wantedHint) return 0;
-      if (hint === "medium")   return 1;
-      return 2; // opposite pole — least preferred
-    };
+    const currentPrimary = dimensions.includes(result?.primaryDimension) ? result.primaryDimension : null;
+    const bestRank = Math.max(...dimensions.map(dim => profileHintRank(normalizedHints[dim])));
+    const bestDim = (currentPrimary && profileHintRank(normalizedHints[currentPrimary]) === bestRank)
+      ? currentPrimary
+      : dimensions.find(dim => profileHintRank(normalizedHints[dim]) === bestRank) || dimensions[0];
 
-    const fillFromHints = (exclude, wantedHint) => {
-      return validNames
-        .filter(n => !exclude.includes(n))
-        .sort((a, b) => hintRank(a, wantedHint) - hintRank(b, wantedHint))
-        .slice(0, 2);
-    };
-
-    if (spec.highAnchorResults.length === 0) {
-      spec.highAnchorResults = fillFromHints(spec.lowAnchorResults, "high");
-      if (spec.highAnchorResults.length === 0 && validNames.length > 0) {
-        spec.highAnchorResults = [validNames[0]];
-      }
-      console.log(`     [repair] ${dimName}: highAnchorResults filled with ${spec.highAnchorResults.join("、")} (from profileHints)`);
+    if (result.primaryDimension !== bestDim) {
+      console.log(`     [repair] ${result.name}: primaryDimension -> ${bestDim} (derived from profileHints)`);
     }
-    if (spec.lowAnchorResults.length === 0) {
-      spec.lowAnchorResults = fillFromHints(spec.highAnchorResults, "low");
-      if (spec.lowAnchorResults.length === 0 && validNames.length > 1) {
-        spec.lowAnchorResults = [validNames[validNames.length - 1]];
+    result.primaryDimension = bestDim;
+    if (result.profileHints[bestDim] !== "high") {
+      result.profileHints[bestDim] = "high";
+      console.log(`     [repair] ${result.name}: profileHints["${bestDim}"] promoted to "high"`);
+    }
+  }
+
+  const reassigned = new Set();
+  for (const dim of dimensions) {
+    const claimed = results.some(r => r?.primaryDimension === dim);
+    if (!claimed) {
+      const target = [...results]
+        .filter(r => !reassigned.has(normalizeResultName(r?.name)))
+        .sort((a, b) => profileHintRank(b.profileHints?.[dim]) - profileHintRank(a.profileHints?.[dim]))[0];
+      if (target) {
+        target.primaryDimension = dim;
+        target.profileHints[dim] = "high";
+        reassigned.add(normalizeResultName(target?.name));
+        console.log(`     [repair] orphan dim "${dim}": primaryDimension assigned to "${target.name}"`);
       }
-      console.log(`     [repair] ${dimName}: lowAnchorResults filled with ${spec.lowAnchorResults.join("、")} (from profileHints)`);
     }
 
-    // Ensure forbiddenInterpretations is a non-empty array
+    const hasHigh = results.some(r => r?.profileHints?.[dim] === "high");
+    if (!hasHigh) {
+      const target = [...results]
+        .sort((a, b) => profileHintRank(b.profileHints?.[dim]) - profileHintRank(a.profileHints?.[dim]))[0];
+      if (target) {
+        target.profileHints[dim] = "high";
+        if (!target.primaryDimension) target.primaryDimension = dim;
+        console.log(`     [repair] ${dim}: promoted "${target.name}" to high anchor`);
+      }
+    }
+
+    const hasLow = results.some(r => r?.profileHints?.[dim] === "low");
+    if (!hasLow) {
+      const target = [...results]
+        .filter(r => r?.primaryDimension !== dim)
+        .sort((a, b) => profileHintRank(a.profileHints?.[dim]) - profileHintRank(b.profileHints?.[dim]))[0]
+        || [...results].sort((a, b) => profileHintRank(a.profileHints?.[dim]) - profileHintRank(b.profileHints?.[dim]))[0];
+      if (target) {
+        target.profileHints[dim] = "low";
+        console.log(`     [repair] ${dim}: demoted "${target.name}" to low anchor`);
+      }
+    }
+  }
+
+  for (const [i, dim] of dimensions.entries()) {
+    const spec = specs[i] || (specs[i] = { dimension: dim });
+    spec.dimension = dim;
+
+    const rankedHigh = [...results]
+      .sort((a, b) => {
+        const delta = profileHintRank(b.profileHints?.[dim]) - profileHintRank(a.profileHints?.[dim]);
+        if (delta !== 0) return delta;
+        return (b.primaryDimension === dim ? 1 : 0) - (a.primaryDimension === dim ? 1 : 0);
+      })
+      .filter(r => r?.profileHints?.[dim] === "high")
+      .map(r => String(r?.name || "").trim())
+      .filter(Boolean);
+    const rankedLow = [...results]
+      .sort((a, b) => {
+        const delta = profileHintRank(a.profileHints?.[dim]) - profileHintRank(b.profileHints?.[dim]);
+        if (delta !== 0) return delta;
+        return (a.primaryDimension === dim ? 1 : 0) - (b.primaryDimension === dim ? 1 : 0);
+      })
+      .filter(r => r?.profileHints?.[dim] === "low")
+      .map(r => String(r?.name || "").trim())
+      .filter(Boolean);
+
+    spec.highAnchorResults = Array.from(new Set(rankedHigh)).slice(0, 2);
+    spec.lowAnchorResults = Array.from(new Set(rankedLow.filter(name => !spec.highAnchorResults.includes(name)))).slice(0, 2);
+
     if (!Array.isArray(spec.forbiddenInterpretations) || spec.forbiddenInterpretations.length === 0) {
-      spec.forbiddenInterpretations = [`不能把"${dimName}"偷换成语义相近但不同的概念`];
-      console.log(`     [repair] ${dimName}: forbiddenInterpretations was empty, added placeholder`);
-    }
-
-    // Cross-check anchor lists against profileHints.
-    // profileHints are set result-by-result (the AI focused on one character at a time) and are
-    // more reliable than anchor assignments (where the model reasons across the whole cast at once).
-    // Strategy: if an anchor entry contradicts the result's profileHint for this dimension,
-    // REMOVE the entry from the anchor list — do NOT change the profileHint.
-    // The fill-from-hints logic below will then place the semantically correct results.
-    const beforeHigh = spec.highAnchorResults.length;
-    spec.highAnchorResults = spec.highAnchorResults.filter(name => {
-      const result = results.find(r => String(r?.name || "") === name);
-      const hint = result?.profileHints?.[dimName];
-      if (hint === "low") {
-        console.log(`     [repair] ${name} removed from ${dimName} highAnchorResults — profileHints says "${hint}"`);
-        return false;
-      }
-      return true;
-    });
-    const beforeLow = spec.lowAnchorResults.length;
-    spec.lowAnchorResults = spec.lowAnchorResults.filter(name => {
-      const result = results.find(r => String(r?.name || "") === name);
-      const hint = result?.profileHints?.[dimName];
-      if (hint === "high") {
-        console.log(`     [repair] ${name} removed from ${dimName} lowAnchorResults — profileHints says "${hint}"`);
-        return false;
-      }
-      return true;
-    });
-
-    // If filtering emptied a list, the fill-from-hints logic above will repopulate it correctly.
-    if (spec.highAnchorResults.length === 0 && beforeHigh > 0) {
-      spec.highAnchorResults = fillFromHints(spec.lowAnchorResults, "high");
-      if (spec.highAnchorResults.length === 0 && validNames.length > 0) spec.highAnchorResults = [validNames[0]];
-      console.log(`     [repair] ${dimName}: highAnchorResults refilled with ${spec.highAnchorResults.join("、")} after contradiction removal`);
-    }
-    if (spec.lowAnchorResults.length === 0 && beforeLow > 0) {
-      spec.lowAnchorResults = fillFromHints(spec.highAnchorResults, "low");
-      if (spec.lowAnchorResults.length === 0 && validNames.length > 1) spec.lowAnchorResults = [validNames[validNames.length - 1]];
-      console.log(`     [repair] ${dimName}: lowAnchorResults refilled with ${spec.lowAnchorResults.join("、")} after contradiction removal`);
+      spec.forbiddenInterpretations = [`不能把"${dim}"偷换成语义相近但不同的概念`];
+      console.log(`     [repair] ${dim}: forbiddenInterpretations was empty, added placeholder`);
     }
   }
 }
@@ -395,15 +383,15 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
       "dimension": "维度1",
       "highDefinition": "这个维度高分到底意味着什么。要写成决策标准或行为原则，不要写抽象夸奖",
       "lowDefinition": "这个维度低分到底意味着什么。必须与 highDefinition 构成真正对立",
-      "highAnchorResults": ["最能代表这个维度高分的2个结果名称"],
-      "lowAnchorResults": ["最能代表这个维度低分的2个结果名称"],
+      "highAnchorResults": ["可省略；如果填写，必须是最能代表这个维度高分的结果名称。系统也会根据 profileHints 自动推导"],
+      "lowAnchorResults": ["可省略；如果填写，必须是最能代表这个维度低分的结果名称。系统也会根据 profileHints 自动推导"],
       "forbiddenInterpretations": ["这个维度最容易被误解成什么", "再写1-2条禁止误读"]
     }
   ],
   "results": [
     {
       "conceptId": "c1",
-      "primaryDimension": "维度A",
+      "primaryDimension": "可省略；若填写，应是这个结果最强的维度。系统会基于 profileHints 自动校正",
       "name": "resultType=figure 时：真实人物姓名，如「林徽因」。resultType=item 时：具体事物名称，如「柴犬」「攀岩」「成都」。resultType=archetype 时：原型名称，如「翡翠」「猫系恋人」，不能是抽象性格词",
       "nameContext": "resultType=figure 时：人物背景（1句）。resultType=item 时：该事物的核心特性（1句，说明为何能映射这种人格）。resultType=archetype 时：象征描述（1句）",
       "coreIdentity": "这个原型的人格核心，20-30字，说清楚「这类人本质上是什么样的人」",
@@ -456,17 +444,26 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 -【关键约束】dimensionCount 和 questionCount 必须是纯整数，不能是字符串。dimensionCount 由主题复杂度、结果数量和结果之间真正需要区分的语义轴决定：可以是 3-6，不要默认 5。只有当结果之间确实存在足够多的独立分化轴时才增加维度，能用 4 个维度说清楚就不要硬上 5 或 6。
 - questionCount 由你根据主题复杂度决定；
 - 维度之间应尽量独立，避免把同一特质拆成两种说法（如「理性」和「逻辑性」高度相关，不应同时作为维度）。
-- dimensionSpecs 数量必须与 dimensions 严格一致，且顺序一一对应。每个维度必须写清 6 件事：名称、高分定义、低分定义、高分锚点、低分锚点、禁止误读。
+- 如果某个维度无法自然对应至少 1 个高分结果和 1 个低分结果，就说明这个维度不成立，应删掉或改写，不要为了凑维度数保留它。
+- 如果超过一半结果都会落到同一维度的高分端，说明这个维度吞噬性太强，应重切维度或减少维度数量。
+- dimensionSpecs 数量必须与 dimensions 严格一致，且顺序一一对应。每个维度至少要写清：名称、高分定义、低分定义、禁止误读；高低锚点如有把握可以给，系统也会根据 profileHints 自动推导。
 - highDefinition / lowDefinition 必须写成“做决定时优先看什么、遇事时先保什么、为了什么可以付代价”的行为原则，不能只是“更成熟”“更有魅力”这种评价词。
-- highAnchorResults / lowAnchorResults 必须从 results 里选，作为语义锚点。后续所有出题、profileHints、结果写作都必须与这些锚点一致。【强制一致性】如果一个结果出现在某维度的 highAnchorResults 里，它的 profileHints 里该维度必须是 "high"；如果出现在 lowAnchorResults 里，必须是 "low"。不一致的情况会被系统发现并丢弃，请生成时自行检查。
+- profileHints 是这一步最核心的语义地图。请先把每个结果在每个维度上的 high/medium/low 判断清楚；highAnchorResults / lowAnchorResults 和 primaryDimension 都会优先由系统根据 profileHints 统一推导，避免多套定义互相打架。
 - forbiddenInterpretations 应明确写出这个维度不能被偷换成什么。例如：若维度是“公义优先”，则禁止误读成“有野心”“有立场”“行动果断”。
 - resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
 - resultType=figure 时：所有结果 name 必须两两不同，严禁重复同一人物；必须使用该作品/领域里公认的标准写法，禁止错别字、昵称替代、近似拼写（如把「沈眉庄」写成「沈眉眉」）
 - resultType=figure 时：只能使用该作品/题材中真实存在、受众能识别的人物；不确定的人物宁可不用，也绝不能自创名字、拼接名字或用“看起来像真名”的泛化姓名
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
 - resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
-- profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异，并且必须服从 dimensionSpecs 的高低定义与锚点，不可自行偷换维度含义
-- 结果自检：每个结果的 primaryDimension 必须同时是它最能代表的高分维度。生成前先检查：如果某人物在常识上明显不属于该维度高分端，就不要把它设为该维度 primaryDimension`;
+- profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异，并且必须服从 dimensionSpecs 的高低定义，不可自行偷换维度含义
+- 如果两个结果的核心动机、代价和行为逻辑没有本质区别，就不要硬拆成两个结果；同一作品中的人物不能只靠“更强/更弱”来区分。
+- resultType=figure 时，请为每个结果自检一句：为什么偏偏是这个人物，而不是另一个人物？如果换个角色名也成立，说明区分还不够。
+- 结果自检：把 profileHints 当成唯一主语义图来检查。生成前请再检查 5 件事：
+  1. 有没有哪个维度其实只是另一个维度的改写？
+  2. 有没有哪个维度只是“听起来合理”，但没有角色真正以它为核心？
+  3. 有没有两个结果的 profileHints 组合几乎一样，只是强弱差别？
+  4. 有没有超过一半结果都被同一个维度吸走？
+  5. 有没有哪个结果换个角色名也依然成立？`;
 
   const raw = await callAIImpl(system, user, 4500);
   const architecture = extractJSON(raw);
@@ -482,31 +479,6 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
   }
   repairArchitectureResults(architecture);
   repairArchitectureAnchors(architecture);
-
-  // Repair orphaned dimensions: every dimension must have at least one result as primaryDimension.
-  // If a dimension has none, reassign the result whose profileHints scores it highest.
-  if (Array.isArray(architecture.dimensions) && Array.isArray(architecture.results)) {
-    const usedDims = new Set(architecture.results.map(r => r?.primaryDimension).filter(Boolean));
-    const reassigned = new Set();
-    for (const dim of architecture.dimensions) {
-      if (usedDims.has(dim)) continue;
-      // Pick the result with the "high" hint for this dim that doesn't already own it,
-      // falling back to any unowned result.
-      const candidates = architecture.results.filter(r =>
-        r?.primaryDimension !== dim && !reassigned.has(normalizeResultName(r?.name))
-      );
-      const best = candidates.sort((a, b) => {
-        const rank = h => h === "high" ? 0 : h === "medium" ? 1 : 2;
-        return rank((a.profileHints || {})[dim]) - rank((b.profileHints || {})[dim]);
-      })[0];
-      if (best) {
-        console.log(`     [repair] orphan dim "${dim}": primaryDimension assigned to "${best.name}"`);
-        best.primaryDimension = dim;
-        usedDims.add(dim);
-        reassigned.add(normalizeResultName(best.name));
-      }
-    }
-  }
 
   const errors = validateArchitecture(architecture);
   if (errors.length > 0) throw new Error(`Architecture invalid: ${errors.join("; ")}`);
@@ -563,10 +535,11 @@ ${hintBlock}${archContext}
     {
       "dimension": "维度A",
       "axisLabel": "这个轴的分类名，2-4字，例如「词风」「处世」「情感」",
-      "lowPole": "维度A的对立面，2-4字，代表低分端的特质，例如「婉约含蓄」",
       "insight": "描述这个维度高分端特质的一句洞察，30-50字，第二人称，具体描述这种性格倾向的表现和内在动因，语气温暖但不失锐度，禁止空泛夸奖",
-      "highInsight": "若 scoringFamily=bipolar-dimension，写高分端洞察；否则可与 insight 相同",
-      "lowInsight": "若 scoringFamily=bipolar-dimension，写低分端洞察；否则可省略"
+      "【仅 bipolar-dimension 填写以下字段，weighted-dimension 和 level-band 禁止输出】": "",
+      "lowPole": "仅 bipolar-dimension：维度A的对立面，2-4字，代表低分端极点，例如「婉约含蓄」",
+      "highInsight": "仅 bipolar-dimension：高分端洞察，替代 insight",
+      "lowInsight": "仅 bipolar-dimension：低分端洞察"
     }
   ],
   "results": [
@@ -592,12 +565,13 @@ ${hintBlock}${archContext}
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
 - 维度名称简洁，2-4字
-- axisLabel 是这条轴的"类别名"，lowPole 是该维度的反面特质
-- insight 应是具体的、有画面感的描述，避免套话如"你是个…的人"开头，也避免空洞形容词堆砌
+- axisLabel 是这条轴的“类别名”，2-4字；insight 描述高分端特质行为
+- weighted-dimension 和 level-band 的 dimensionAxes 只输出 dimension / axisLabel / insight，禁止出现 lowPole / highInsight / lowInsight
+- bipolar-dimension 的 dimensionAxes 必须输出 lowPole / highInsight / lowInsight，不用输出 insight
+- insight / highInsight 应是具体的、有画面感的描述，避免套话如“你是个…的人”开头，也避免空洞形容词堆砌
 - writingVoice 应该真的可执行，像给写作者的语气说明，不要只写“有古风感”“更现代”这种空话
 - 若 Phase 0 提供了 dimensionSpecs，dimensionAxes 的语义必须与之严格一致，不能把某个维度偷偷改写成别的意思
 - 不得违背 Phase 0 的高低定义、锚点人物和 forbiddenInterpretations；若某维度高分锚点是靖王、低分锚点是誉王，就不能在后续结构里把誉王写成该维度高分代表
-- dimensionAxes.insight 默认只描述该维度的高分端行为，不能写成低分端；如果 scoringFamily=bipolar-dimension，额外填写 highInsight / lowInsight 两端描述
 - quiz 的 title / subtitle / eyebrow 要认真分工：
   1. title 负责“成品感”和识别度，读起来像一个真正会被点开的测验标题
   2. subtitle 负责“心理钩子”，要点出用户想知道的自我映射，不可只是重复 title

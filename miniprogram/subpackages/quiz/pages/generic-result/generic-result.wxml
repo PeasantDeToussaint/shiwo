@@ -100,7 +100,10 @@
               <text class="gr-bar-pole-low">{{item.lowPole}}</text>
               <text class="gr-bar-pole-high">{{item.label}}</text>
             </view>
-            <text wx:if="{{item.insight}}" class="gr-bar-insight {{item.dominant ? 'gr-bar-insight-dominant' : ''}}">{{item.insight}}</text>
+            <text
+              wx:if="{{item.insight}}"
+              class="gr-bar-insight {{item.centered ? 'gr-bar-insight-bipolar' : (item.dominant ? 'gr-bar-insight-dominant' : '')}}"
+            >{{item.insight}}</text>
           </view>
         </view>
       </view>

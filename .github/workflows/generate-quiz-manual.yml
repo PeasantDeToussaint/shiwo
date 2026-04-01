@@ -1,0 +1,249 @@
+name: 生成单个测验（高级参数）
+
+concurrency:
+  group: generate-quiz-manual
+  cancel-in-progress: false
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "测验主题"
+        required: true
+      hints:
+        description: "可选提示词；多条可用 || 分隔"
+        required: false
+      provider:
+        description: "AI 提供商"
+        required: true
+        default: "zhipu"
+        type: choice
+        options:
+          - zhipu
+          - deepseek
+          - gemini
+          - anthropic
+      model:
+        description: "模型名（留空则使用脚本默认值）"
+        required: false
+      scoring:
+        description: "强制 scoring family"
+        required: true
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - weighted-dimension
+          - bipolar-dimension
+          - level-band
+      quiz_id:
+        description: "可选：强制指定 quiz id"
+        required: false
+      results:
+        description: "可选：强制指定结果数"
+        required: false
+      dimensions:
+        description: "可选：强制指定维度数"
+        required: false
+      questions:
+        description: "可选：强制指定题目数"
+        required: false
+      dry_run:
+        description: "只生成本地文件，不上传 CloudBase"
+        required: true
+        default: true
+        type: boolean
+      estimate:
+        description: "只输出调用/成本估算，不真正生成"
+        required: true
+        default: false
+        type: boolean
+      skip_eval:
+        description: "跳过质量评估"
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 运行 generate-quiz_副本
+        shell: bash
+        env:
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WX_APPID: ${{ secrets.WX_APPID }}
+          WX_APPSECRET: ${{ secrets.WX_APPSECRET }}
+          WX_CLOUD_ENV: ${{ secrets.WX_CLOUD_ENV }}
+          TOPIC: ${{ github.event.inputs.topic }}
+          HINTS: ${{ github.event.inputs.hints }}
+          PROVIDER: ${{ github.event.inputs.provider }}
+          MODEL: ${{ github.event.inputs.model }}
+          SCORING: ${{ github.event.inputs.scoring }}
+          QUIZ_ID: ${{ github.event.inputs.quiz_id }}
+          RESULTS: ${{ github.event.inputs.results }}
+          DIMENSIONS: ${{ github.event.inputs.dimensions }}
+          QUESTIONS: ${{ github.event.inputs.questions }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          ESTIMATE: ${{ github.event.inputs.estimate }}
+          SKIP_EVAL: ${{ github.event.inputs.skip_eval }}
+        run: |
+          set -euo pipefail
+
+          touch /tmp/before_generate
+          mkdir -p /tmp/quiz-output
+
+          ARGS=()
+          ARGS+=( "--topic=$TOPIC" )
+          ARGS+=( "--provider=$PROVIDER" )
+
+          if [[ -n "$MODEL" ]]; then
+            ARGS+=( "--model=$MODEL" )
+          fi
+
+          if [[ "$SCORING" != "auto" ]]; then
+            ARGS+=( "--scoring=$SCORING" )
+          fi
+
+          if [[ -n "$QUIZ_ID" ]]; then
+            ARGS+=( "--id=$QUIZ_ID" )
+          fi
+
+          if [[ -n "$RESULTS" ]]; then
+            ARGS+=( "--results=$RESULTS" )
+          fi
+
+          if [[ -n "$DIMENSIONS" ]]; then
+            ARGS+=( "--dimensions=$DIMENSIONS" )
+          fi
+
+          if [[ -n "$QUESTIONS" ]]; then
+            ARGS+=( "--questions=$QUESTIONS" )
+          fi
+
+          while IFS= read -r hint; do
+            if [[ -n "$hint" ]]; then
+              ARGS+=( "--hint=$hint" )
+            fi
+          done < <(
+            python3 - <<'PY'
+import os
+
+raw = os.environ.get("HINTS", "")
+for part in raw.replace("||", "\n").splitlines():
+    part = part.strip()
+    if part:
+        print(part)
+PY
+          )
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            ARGS+=( "--dry-run" )
+          fi
+
+          if [[ "$ESTIMATE" == "true" ]]; then
+            ARGS+=( "--estimate" )
+          fi
+
+          if [[ "$SKIP_EVAL" == "true" ]]; then
+            ARGS+=( "--skip-eval" )
+          fi
+
+          printf 'Running: node scripts/generate-quiz_副本.js'
+          for arg in "${ARGS[@]}"; do
+            printf ' %q' "$arg"
+          done
+          printf '\n'
+
+          node "scripts/generate-quiz_副本.js" "${ARGS[@]}"
+
+          python3 - <<'PY'
+import pathlib
+import shutil
+
+before = pathlib.Path("/tmp/before_generate").stat().st_mtime
+output_dir = pathlib.Path("/tmp/quiz-output")
+data_dir = pathlib.Path("scripts/data")
+files = []
+
+if data_dir.exists():
+    for path in data_dir.rglob("*"):
+        if path.is_file() and path.stat().st_mtime > before:
+            target = output_dir / path.relative_to(".")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, target)
+            files.append(str(path))
+
+(output_dir / "generated-files.txt").write_text("\n".join(sorted(files)), encoding="utf-8")
+PY
+
+      - name: 生成运行摘要
+        if: always()
+        shell: bash
+        env:
+          TOPIC: ${{ github.event.inputs.topic }}
+          PROVIDER: ${{ github.event.inputs.provider }}
+          MODEL: ${{ github.event.inputs.model }}
+          SCORING: ${{ github.event.inputs.scoring }}
+          QUIZ_ID: ${{ github.event.inputs.quiz_id }}
+          RESULTS: ${{ github.event.inputs.results }}
+          DIMENSIONS: ${{ github.event.inputs.dimensions }}
+          QUESTIONS: ${{ github.event.inputs.questions }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          ESTIMATE: ${{ github.event.inputs.estimate }}
+          SKIP_EVAL: ${{ github.event.inputs.skip_eval }}
+        run: |
+          {
+            echo "## 单个测验生成结果"
+            echo
+            echo "| 参数 | 值 |"
+            echo "|---|---|"
+            echo "| topic | $TOPIC |"
+            echo "| provider | $PROVIDER |"
+            echo "| model | ${MODEL:-<default>} |"
+            echo "| scoring | $SCORING |"
+            echo "| quiz_id | ${QUIZ_ID:-<auto>} |"
+            echo "| results | ${RESULTS:-<auto>} |"
+            echo "| dimensions | ${DIMENSIONS:-<auto>} |"
+            echo "| questions | ${QUESTIONS:-<auto>} |"
+            echo "| dry_run | $DRY_RUN |"
+            echo "| estimate | $ESTIMATE |"
+            echo "| skip_eval | $SKIP_EVAL |"
+            echo
+
+            if [[ -f /tmp/quiz-output/generated-files.txt ]] && [[ -s /tmp/quiz-output/generated-files.txt ]]; then
+              echo "### 生成文件"
+              echo
+              while IFS= read -r file; do
+                [[ -n "$file" ]] && echo "- \`$file\`"
+              done < /tmp/quiz-output/generated-files.txt
+            else
+              echo "### 生成文件"
+              echo
+              echo "没有检测到新文件。若本次启用了 \`estimate\`，这是正常的。"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 上传生成产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-quiz-${{ github.run_id }}
+          path: /tmp/quiz-output
+          if-no-files-found: ignore
+          retention-days: 7
