@@ -59,6 +59,8 @@ for (let i = 0; i < selected.length; i++) {
     `--provider=zhipu`,
   ];
 
+  if (q.scoring) args.push(`--scoring=${q.scoring}`);
+
   for (const hint of (q.hints || [])) {
     args.push(`--hint=${hint}`);
   }

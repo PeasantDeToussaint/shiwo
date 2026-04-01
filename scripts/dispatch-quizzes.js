@@ -565,7 +565,7 @@ async function dispatch(quizzes) {
       `--field=topic=${q.title}`,
       `--field=title=${q.title}`,
       `--field=quiz_id=${q.id}`,
-      `--field=scoring=${q.scoring}`,
+      `--field=scoring=${q.scoring || "auto"}`,
       `--field=results=${q.results}`,
       `--field=dimensions=${q.dimensions}`,
       `--field=questions=${q.questions}`,

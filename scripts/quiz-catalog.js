@@ -3,20 +3,20 @@ module.exports = [
   {
     id: "zootopia-character-match",
     title: "你是疯狂动物城里的谁？",
-    scoring: "weighted-dimension",
-    results: 8, dimensions: 4, questions: 20,
+    results: 4, dimensions: 2, questions: 18,
     hints: [
-      "结果角色固定为：朱迪·霍普斯、尼克·王尔德、博戈局长、羊助理市长贝尔韦瑟、克劳豪泽、雅克斯、闪电（树懒）、大象戴恩；每个代表一种都市职场人格",
-      "维度为：理想主义vs现实主义、主动开拓vs遵规守位、情绪外显vs内敛、秩序认同vs边缘游走",
-      "题目应发生在都市职场、窗口服务、排队、谈判、地铁等疯狂动物城真实场景中，不要脱离世界观",
-      "选项用具体行为描述，禁止写「你更喜欢A还是B」这类直白问法",
-      "verse 来源必须是角色台词，不得使用任何泛励志名言",
+      "结果固定为四个核心角色：朱迪·霍普斯、尼克·王尔德、博戈局长、贝尔韦瑟助理市长",
+      "第一条轴：理想主义/相信世界可以更好（朱迪/贝尔韦瑟极）↔ 犬儒现实主义/世界就是这样（尼克/博戈极）",
+      "第二条轴：遵从体制/在规则内行动（朱迪/博戈极）↔ 颠覆体制/走自己的路（尼克/贝尔韦瑟极）",
+      "四个角色对应四个象限：朱迪=理想主义+遵从、尼克=犬儒+颠覆、博戈=犬儒+遵从、贝尔韦瑟=理想主义+颠覆",
+      "题目发生在疯狂动物城的真实场景中：警察局、街头、市政厅、案件现场",
+      "禁止在题目中出现任何角色名字",
+      "verse 来源必须是角色台词",
     ],
   },
   {
     id: "lotr-character-match",
     title: "你和指环王中的谁最像？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 5, questions: 24,
     hints: [
       "结果角色：弗罗多、山姆、甘道夫、阿拉贡、莱戈拉斯、吉姆利、波罗米尔、皮聘；每个代表一种承担使命与代价的方式",
@@ -30,7 +30,6 @@ module.exports = [
   {
     id: "big-bang-theory-character-match",
     title: "你和生活大爆炸中的谁最像？",
-    scoring: "weighted-dimension",
     results: 7, dimensions: 4, questions: 20,
     hints: [
       "结果角色：谢耳朵、莱纳德、霍华德、拉杰什、佩妮、伯纳黛特、艾米",
@@ -43,7 +42,6 @@ module.exports = [
   {
     id: "avengers-hero-match",
     title: "你是《复仇者联盟》里的哪位英雄？",
-    scoring: "weighted-dimension",
     results: 9, dimensions: 5, questions: 22,
     hints: [
       "结果角色：钢铁侠、美国队长、雷神、绿巨人/班纳、黑寡妇、鹰眼、蜘蛛侠、奇异博士、黑豹",
@@ -57,7 +55,6 @@ module.exports = [
   {
     id: "one-piece-character-match",
     title: "你和《海贼王》中的谁最像？",
-    scoring: "weighted-dimension",
     results: 9, dimensions: 5, questions: 22,
     hints: [
       "结果角色：路飞、索隆、娜美、乌索普、山治、乔巴、罗宾、弗兰基、布鲁克",
@@ -71,7 +68,6 @@ module.exports = [
   {
     id: "detective-conan-character-match",
     title: "你和《名侦探柯南》中的谁最像？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 4, questions: 20,
     hints: [
       "结果角色：柯南/工藤新一、毛利兰、灰原哀、平次、赤井秀一、怪盗基德、园子、目暮警官",
@@ -84,7 +80,6 @@ module.exports = [
   {
     id: "pokemon-personality-match",
     title: "你是哪种精灵宝可梦？",
-    scoring: "weighted-dimension",
     results: 10, dimensions: 4, questions: 20,
     hints: [
       "结果宝可梦（固定）：皮卡丘（活力社交）、卡比兽（悠然自在）、伊布（多向可能）、耿鬼（神秘边缘）、喷火龙（独立强者）、超梦（孤高智慧）、胖丁（创意表达）、路卡利欧（直觉忠诚）、风速狗（热血行动）、妙蛙种子（稳健支撑）",
@@ -96,7 +91,6 @@ module.exports = [
   {
     id: "luxun-character-match",
     title: "如果你是鲁迅笔下的角色，你会是谁？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 5, questions: 22,
     hints: [
       "结果角色（固定）：阿Q（精神胜利的自我保护者）、祥林嫂（被吞没的反复倾诉者）、孔乙己（自尊与没落的挣扎者）、闰土（被时代遮蔽的沉默者）、狂人（清醒而无人相信的异见者）、吕纬甫（理想退守的妥协者）、魏连殳（孤独抗争直至耗尽的人）、子君（用觉醒换来悲剧的人）",
@@ -110,7 +104,6 @@ module.exports = [
   {
     id: "buendia-generation-match",
     title: "你是《百年孤独》里的哪一代布恩迪亚？",
-    scoring: "weighted-dimension",
     results: 7, dimensions: 5, questions: 22,
     hints: [
       "结果人物（固定）：何塞·阿尔卡蒂奥·布恩迪亚（痴迷探索的创建者）、乌苏拉（用生命撑起一切的人）、奥雷连诺上校（孤独而革命的人）、阿玛兰妲（用恨守护爱的人）、奥雷连诺第二（享乐与混沌中的人）、雷梅苔丝（超越尘世的人）、奥雷连诺·巴比伦尼亚（孤独终结者）",
@@ -123,7 +116,6 @@ module.exports = [
   {
     id: "classic-book-match",
     title: "如果你是一本经典名著，你的书名是什么？",
-    scoring: "weighted-dimension",
     results: 9, dimensions: 4, questions: 20,
     hints: [
       "结果书目（固定）：《百年孤独》《活着》《1984》《小王子》《挪威的森林》《堂吉诃德》《呼啸山庄》《战争与和平》《局外人》；每本代表一种独特的人生态度",
@@ -135,7 +127,6 @@ module.exports = [
   {
     id: "coffee-personality-match",
     title: "你更像哪种咖啡？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 4, questions: 16,
     hints: [
       "结果（固定）：意式浓缩（纯粹强烈）、美式（务实简洁）、拿铁（温暖包容）、卡布奇诺（精致平衡）、冷萃（沉静深沉）、玛奇朵（精致利己）、馥芮白（亲密细腻）、手冲（仪式感审美）",
@@ -147,7 +138,6 @@ module.exports = [
   {
     id: "hogwarts-house-sorting",
     title: "你会加入哈利波特中哪个魔法学院？",
-    scoring: "bipolar-dimension",
     results: 4, dimensions: 2, questions: 18,
     hints: [
       "结果固定为四院：格兰芬多、斯莱特林、拉文克劳、赫奇帕奇",
@@ -161,7 +151,6 @@ module.exports = [
   {
     id: "jujutsu-kaisen-character-match",
     title: "你和《咒术回战》中的谁最像？",
-    scoring: "weighted-dimension",
     results: 9, dimensions: 5, questions: 22,
     hints: [
       "结果角色（固定）：虎杖悠仁、伏黑惠、钉崎野蔷薇、五条悟、夏油杰、乙骨憂太、七海建人、狗卷棘、真人",
@@ -174,7 +163,6 @@ module.exports = [
   {
     id: "demon-slayer-character-match",
     title: "你最像《鬼灭之刃》中的谁？",
-    scoring: "weighted-dimension",
     results: 9, dimensions: 4, questions: 20,
     hints: [
       "结果角色（固定）：炭治郎、善逸、伊之助、煉獄杏寿郎、宇髄天元、甘露寺蜜璃、时透无一郎、悲鸣嶋行冥、伊黒小芭内",
@@ -187,7 +175,6 @@ module.exports = [
   {
     id: "love-rank-test",
     title: "你的恋爱等级是青铜还是王者？",
-    scoring: "level-band",
     results: 5, dimensions: 4, questions: 18,
     hints: [
       "结果五段（固定）：青铜（靠本能行动的恋爱小白）、白银（有感知但不会表达）、黄金（理解自我和对方但偶尔短路）、铂金（情感成熟，能有效沟通）、王者（高自知与共情，能建立深度关系）",
@@ -199,7 +186,6 @@ module.exports = [
   {
     id: "content-creator-type",
     title: "你最适合做什么自媒体？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 4, questions: 18,
     hints: [
       "结果类型（固定）：生活vlog、深度测评、情感/心理科普、美食探店、穿搭时尚、知识科普、旅行记录、游戏/娱乐直播",
@@ -210,7 +196,6 @@ module.exports = [
   {
     id: "retirement-destination-match",
     title: "财富自由之后，你最适合去哪里养老？",
-    scoring: "bipolar-dimension",
     results: 8, dimensions: 3, questions: 18,
     hints: [
       "结果目的地（固定）：大理、京都、成都、巴厘岛、里斯本、新西兰、泰国清迈、冰岛",
@@ -223,7 +208,6 @@ module.exports = [
   {
     id: "spending-personality-test",
     title: "你会为了什么毫不犹豫的掏钱？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 4, questions: 16,
     hints: [
       "结果类型（固定）：旅行体验、精致美食、电子产品、书籍/学习、健身运动、居家品质、演出/音乐会、时尚单品",
@@ -234,7 +218,6 @@ module.exports = [
   {
     id: "paladin-character-match",
     title: "你更像《仙剑奇侠传》里的谁？",
-    scoring: "weighted-dimension",
     results: 7, dimensions: 5, questions: 20,
     hints: [
       "结果角色（固定，横跨仙剑一/三/四）：李逍遥（率性自由、重情重义）、赵灵儿（纯粹善良、命运承担者）、林月如（刚烈执着、理性守护者）、景天（玩世不恭下的深情）、雪见（温柔压抑、自我牺牲）、龙葵（孤独叛逆、渴望被看见）、云天河（守则与情感的撕裂者）",
@@ -246,7 +229,6 @@ module.exports = [
   {
     id: "spirited-away-character-match",
     title: "你更像《千与千寻》里的谁？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 4, questions: 18,
     hints: [
       "结果角色（固定）：千寻（在陌生世界学会站稳）、白龙（夹在两个世界之间的人）、汤婆婆（用控制表达权力的人）、钱婆婆（隐居智慧的给予者）、小玲（务实但善良的现实主义者）、无脸男（用给予换认同的人）、坊宝宝（被过度保护而未成长的人）、锅炉爷爷（默默劳作的守护者）",
@@ -259,7 +241,6 @@ module.exports = [
   {
     id: "flower-personality-match",
     title: "你是哪一种花？",
-    scoring: "weighted-dimension",
     results: 9, dimensions: 4, questions: 18,
     hints: [
       "结果（固定）：玫瑰（热烈张扬）、向日葵（明朗温暖）、兰花（内敛清高）、荷花（洁净自持）、薰衣草（疗愈安静）、茉莉（细腻亲近）、樱花（短暂而绚烂）、梅花（孤傲坚韧）、牡丹（丰盈自信）",
@@ -270,7 +251,6 @@ module.exports = [
   {
     id: "tarot-card-match",
     title: "你是哪种塔罗牌？",
-    scoring: "weighted-dimension",
     results: 10, dimensions: 5, questions: 20,
     hints: [
       "结果（大阿卡那，固定）：愚者、女祭司、皇帝、隐者、星星、月亮、太阳、力量、正义、世界",
@@ -282,7 +262,6 @@ module.exports = [
   {
     id: "study-abroad-country-match",
     title: "你最适合去哪个国家留学？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 4, questions: 18,
     hints: [
       "结果国家（固定）：英国（传统与批判思维）、美国（多元与竞争）、日本（精工与沉浸）、法国（艺术与思辨）、德国（严谨与工程）、澳大利亚（开放与自然）、加拿大（包容与平衡）、新加坡（效率与亚洲枢纽）",
@@ -293,7 +272,6 @@ module.exports = [
   {
     id: "cthulhu-deity-match",
     title: "你是哪种克苏鲁古神？",
-    scoring: "weighted-dimension",
     results: 7, dimensions: 5, questions: 20,
     hints: [
       "结果古神（固定）：克苏鲁（深渊沉睡者）、奈亚拉托普（混沌爬行者，智识与操控）、阿撒托斯（盲目痴愚之神，虚无本身）、莎布·尼古拉斯（千面圣母，生命原力）、犹格·索托斯（穿越时空的全知者）、哈斯塔（虚空之王，美学与疯狂）、大衮（海洋古神，沉默与深渊力量）",
@@ -305,7 +283,6 @@ module.exports = [
   {
     id: "spiritual-homeland-match",
     title: "哪里是你的精神故乡？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 4, questions: 18,
     hints: [
       "结果地方（固定）：京都（古雅与沉静）、大理（自由与隐居）、巴黎（美与思想的交叠）、纽约（速度与多元）、伊斯坦布尔（东西方游离）、布拉格（历史与荒诞感）、冰岛（极致空旷与崇高）、加德满都（混沌与灵性）",
@@ -316,7 +293,6 @@ module.exports = [
   {
     id: "niche-sport-match",
     title: "有哪些适合你的小众运动？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 4, questions: 18,
     hints: [
       "结果运动（固定）：攀岩（垂直挑战、专注当下）、冲浪（顺应自然、律动感知）、击剑（智慧与速度）、射箭（静心专注、内在控制）、桨板（平衡与静观）、马术（人与动物的默契）、武术（内外兼修、文化传承）、山地自行车（耐力与冒险）",
@@ -327,7 +303,6 @@ module.exports = [
   {
     id: "pet-personality-match",
     title: "你适合养什么宠物？",
-    scoring: "weighted-dimension",
     results: 8, dimensions: 4, questions: 16,
     hints: [
       "结果宠物（固定）：猫（独立神秘）、狗（忠诚热情）、仓鼠（低维护高可爱密度）、兔子（安静敏感）、鱼（视觉疗愈、极度低互动）、乌龟（长情陪伴、不求回应）、鸟（聪明互动、需要关注）、爬行动物（超小众猎奇型陪伴）",
@@ -338,7 +313,6 @@ module.exports = [
   {
     id: "ancient-poet-match",
     title: "你和哪位古代诗人心有灵犀？",
-    scoring: "bipolar-dimension",
     results: 8, dimensions: 3, questions: 22,
     hints: [
       "结果诗人（固定）：李白（飘逸自由、洒脱不羁）、杜甫（忧世悲悯、沉郁顿挫）、苏轼（旷达通透、豪放中有柔情）、李清照（婉约细腻、词中见自我）、王维（禅意静美、山水即心境）、陶渊明（归隐自足、不为五斗米折腰）、辛弃疾（壮志未酬的豪放与哀愁）、白居易（平易近人、以诗写世情）",
