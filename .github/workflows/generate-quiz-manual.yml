@@ -10,6 +10,9 @@ on:
       topic:
         description: "测验主题"
         required: true
+      title:
+        description: "最终成品标题（留空则由 AI 生成）"
+        required: false
       hints:
         description: "可选提示词；多条可用 || 分隔"
         required: false
@@ -91,6 +94,7 @@ jobs:
           WX_APPSECRET: ${{ secrets.WX_APPSECRET }}
           WX_CLOUD_ENV: ${{ secrets.WX_CLOUD_ENV }}
           TOPIC: ${{ github.event.inputs.topic }}
+          TITLE: ${{ github.event.inputs.title }}
           HINTS: ${{ github.event.inputs.hints }}
           PROVIDER: ${{ github.event.inputs.provider }}
           MODEL: ${{ github.event.inputs.model }}
@@ -111,6 +115,10 @@ jobs:
           ARGS=()
           ARGS+=( "--topic=$TOPIC" )
           ARGS+=( "--provider=$PROVIDER" )
+
+          if [[ -n "$TITLE" ]]; then
+            ARGS+=( "--title=$TITLE" )
+          fi
 
           if [[ -n "$MODEL" ]]; then
             ARGS+=( "--model=$MODEL" )
@@ -178,6 +186,7 @@ jobs:
         shell: bash
         env:
           TOPIC: ${{ github.event.inputs.topic }}
+          TITLE: ${{ github.event.inputs.title }}
           PROVIDER: ${{ github.event.inputs.provider }}
           MODEL: ${{ github.event.inputs.model }}
           SCORING: ${{ github.event.inputs.scoring }}
@@ -195,6 +204,7 @@ jobs:
             echo "| 参数 | 值 |"
             echo "|---|---|"
             echo "| topic | $TOPIC |"
+            echo "| title | ${TITLE:-<ai-generated>} |"
             echo "| provider | $PROVIDER |"
             echo "| model | ${MODEL:-<default>} |"
             echo "| scoring | $SCORING |"
