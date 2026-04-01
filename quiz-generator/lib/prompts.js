@@ -63,7 +63,7 @@ function formatDimensionSpecs(specs) {
 
 const SCORING_FAMILY_GUIDANCE = {
   "weighted-dimension": "适合“你像谁 / 你是哪种类型 / 你更接近哪个角色”的匹配题。核心是把用户映射到多个结果中的一个，结果之间靠维度组合差异区分，不靠总分高低排段位。",
-  "bipolar-dimension": "适合每个维度都有清晰正反两极的题，例如“公义优先 vs 自我为本”。同一维度的高低分必须代表真正对立的两端，出题时允许正负分去表达向哪一极偏移。",
+  "bipolar-dimension": "适合每个维度都有清晰正反两极的题，例如“公义优先 vs 自我为本”。也适合由 2-3 条正交坐标形成 4-8 个象限结果的题，如学院/阵营/门派/四象限分类。出题时允许正负分去表达向哪一极偏移。",
   "level-band": "适合“你的程度 / 等级 / 段位 / 适合度”这类连续层级题。结果是从低到高的阶段，不是彼此平行的原型；核心是看总体成熟度或适配度落在哪个区间。",
 };
 
@@ -87,12 +87,12 @@ const PORTRAIT_TEMPLATE_BY_TYPE = {
 const STANDARD_FIELD_TEMPLATES = {
   portrait: PORTRAIT_TEMPLATE_BY_TYPE.archetype, // default, overridden in buildResultTemplate
   strengths: `  "strengths": [
-    { "label": "2-4字标签", "description": "严格2-3句，共60-90字" },
+    { "label": "2-7字标签", "description": "严格2-3句，共60-90字" },
     { "label": "同上", "description": "严格2-3句，共60-90字" },
     { "label": "同上", "description": "严格2-3句，共60-90字" }
   ]`,
   weaknesses: `  "weaknesses": [
-    { "label": "2-4字标签", "description": "严格2-3句，共60-90字" },
+    { "label": "2-7字标签", "description": "严格2-3句，共60-90字" },
     { "label": "同上", "description": "严格2-3句，共60-90字" },
     { "label": "同上", "description": "严格2-3句，共60-90字" }
   ]`,
@@ -356,6 +356,13 @@ ${hintBlock}
 - scoringFamily = "bipolar-dimension"：每个维度都天然有高低两极，用户会落在每条轴的某一侧，再综合匹配结果
 - scoringFamily = "level-band"：结果本质是程度/阶段/段位，必须能从低到高排成序列
 
+scoringFamily 选择捷径（优先按题意判断，不要偷懒一律选 weighted-dimension）：
+- 如果题目本质是在问「最像谁 / 最接近哪类角色 / 哪种类型」→ 优先 weighted-dimension
+- 如果题目本质是在问「程度 / 段位 / 适合度 / 成熟度 / 匹配度」→ 优先 level-band
+- 如果题目本质是在问「你更偏哪一侧 / 两种对立倾向之间更靠近哪端」→ 优先 bipolar-dimension
+- 如果结果是固定的 4 个学院/阵营/象限，而且本质上由少数几条对立坐标决定落点 → 优先 bipolar-dimension，不要偷懒改成 weighted-dimension
+- 除非题意天然就是“像谁”，否则不要默认 weighted-dimension
+
 每种 scoringFamily 的 guidance：
 ${formatScoringFamilyMenu()}
 
@@ -368,7 +375,7 @@ ${formatScoringFamilyMenu()}
 
 第三步：基于领域知识设计维度和原型
 
-resultFields 说明：portrait 必选，其余标准字段按需选用，自定义字段必须选 2 个（最多 3 个）。以下格式仅供参考，实际字段由你在第三步决定。
+resultFields 说明：portrait 必选，其余标准字段按需选用，自定义字段建议至少选 2 个。以下格式仅供参考，实际字段由你在第三步决定。
 
 输出格式：
 {
@@ -380,8 +387,8 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
     { "key": "lifeAdvice", "label": "行动建议", "standard": true },
     { "key": "customFieldKey", "label": "自定义标题", "standard": false, "instruction": "说明这个字段写什么、写多少字" }
   ],
-  "dimensionCount": 5,
-  "questionCount": 20,
+  "dimensionCount": "<根据主题自行判断的整数>",
+  "questionCount": "<根据主题自行判断的整数>",
   "dimensions": ["维度1", "维度2", "更多维度按需补足，必须与dimensionCount数量一致。每个维度名称必须2-4字，不要用与/和连接两个概念"],
   "dimensionSpecs": [
     {
@@ -419,15 +426,15 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 - portrait：三段深度画像（必选）
 - strengths：3条优势（每条展开写透）
 - weaknesses：3条局限（每条展开写透）
-- temperament：气质描述
-- situation：核心张力
-- lifeAdvice：给用户的行动建议
-- destiny：诗意命运收尾
+- temperament：气质描述（非必选）
+- situation：核心张力 （非必选）
+- lifeAdvice：给用户的行动建议 （非必选）
+- destiny：诗意命运收尾 （非必选）
 
 不要全选。对于标准字段，如果你认为默认格式对这个主题不够精准，可以额外提供 instruction 字段来覆盖默认写法。例如：
 { "key": "portrait", "label": "气质画像", "standard": true, "instruction": "三段，第一段描述测验者与这个国家的气质共鸣，第二段写具体行为联结，第三段写挑战与代价" }
 
-### 自定义字段（必选 2 个，最多 3 个，用 standard: false 标记）
+### 自定义字段（必选选两个以上不设上限并鼓励多写，但要切题，用 standard: false 标记）
 这个主题的用户一定有标准字段以外的核心关注点，必须设计 2 个自定义字段。不能只写 1 个或不写。
 每个自定义字段需要提供：
 - key：英文 camelCase 字段名
@@ -442,22 +449,24 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 请根据「${topic}」这个主题，从用户视角出发，设计最合适的字段组合。
 
 规则：
--【先选框架】scoringFamily 必须先判断清楚，再决定结果结构。不要一边说是 level-band，一边又设计成 8 个互相平行的人格原型。
-- weighted-dimension：结果之间是并列的“谁更像谁”；不同结果必须靠 profileHints 组合拉开，而不是高低顺序。
+-【先选框架】scoringFamily 先判断清楚，再决定结果结构。不要一边说是 level-band，一边又设计成 8 个互相平行的人格原型。
+- weighted-dimension：结果之间是并列的“谁更像谁”；不同结果应主要靠 profileHints 组合拉开，而不是高低顺序。
 - bipolar-dimension：dimensionSpecs 的 highDefinition / lowDefinition 必须构成真正对立；禁止把 lowPole 写成“只是更弱一点的 highPole”。
 - level-band：results 必须能清楚排成从低到高的阶段序列；相邻结果是程度递进，而不是完全不同的人格阵营。results 数量建议 4-6 个，不宜过多。
--【关键约束】dimensionCount 和 questionCount 必须是纯整数（如 5、20），不能是字符串。dimensionCount 由主题复杂度和结果数量共同决定：通常4-6个，每2-3个结果需要1个独立维度（如8个结果 → 至少4个维度）。figure类型（同一作品人物）因天然共享背景，需取上限。questionCount 建议：简单主题12，中等16-20，复杂22-24，维度越多题目应越多。
-- dimensions 数量必须与 dimensionCount 严格一致。weighted-dimension / bipolar-dimension 通常做 6-12 个结果；level-band 通常做 4-6 个结果。多个结果可以共享同一个 primaryDimension，但每个 primaryDimension 必须是 dimensions 数组里的某一项。【强制】每一个维度都必须至少有一个结果以它为 primaryDimension——不能有"没人认领"的孤立维度。如果你有 5 个维度但只有 8 个结果，必须确保这 8 个结果的 primaryDimension 覆盖全部 5 个维度（可以多个结果共享同一维度，但不能有维度无人认领）。
-- 维度之间必须真正独立、正交，不能是同一特质的不同表述（如「理性」和「逻辑性」高度相关，不应同时作为维度）。
+-【关键约束】dimensionCount 和 questionCount 必须是纯整数，不能是字符串。dimensionCount 由主题复杂度、结果数量和结果之间真正需要区分的语义轴决定：可以是 3-6，不要默认 5。只有当结果之间确实存在足够多的独立分化轴时才增加维度，能用 4 个维度说清楚就不要硬上 5 或 6。
+- questionCount 由你根据主题复杂度决定；
+- 维度之间应尽量独立，避免把同一特质拆成两种说法（如「理性」和「逻辑性」高度相关，不应同时作为维度）。
 - dimensionSpecs 数量必须与 dimensions 严格一致，且顺序一一对应。每个维度必须写清 6 件事：名称、高分定义、低分定义、高分锚点、低分锚点、禁止误读。
 - highDefinition / lowDefinition 必须写成“做决定时优先看什么、遇事时先保什么、为了什么可以付代价”的行为原则，不能只是“更成熟”“更有魅力”这种评价词。
 - highAnchorResults / lowAnchorResults 必须从 results 里选，作为语义锚点。后续所有出题、profileHints、结果写作都必须与这些锚点一致。【强制一致性】如果一个结果出现在某维度的 highAnchorResults 里，它的 profileHints 里该维度必须是 "high"；如果出现在 lowAnchorResults 里，必须是 "low"。不一致的情况会被系统发现并丢弃，请生成时自行检查。
-- forbiddenInterpretations 必须明确写出这个维度不能被偷换成什么。例如：若维度是“公义优先”，则禁止误读成“有野心”“有立场”“行动果断”。
+- forbiddenInterpretations 应明确写出这个维度不能被偷换成什么。例如：若维度是“公义优先”，则禁止误读成“有野心”“有立场”“行动果断”。
 - resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
 - resultType=figure 时：所有结果 name 必须两两不同，严禁重复同一人物；必须使用该作品/领域里公认的标准写法，禁止错别字、昵称替代、近似拼写（如把「沈眉庄」写成「沈眉眉」）
+- resultType=figure 时：只能使用该作品/题材中真实存在、受众能识别的人物；不确定的人物宁可不用，也绝不能自创名字、拼接名字或用“看起来像真名”的泛化姓名
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
 - resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
-- profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异，并且必须服从 dimensionSpecs 的高低定义与锚点，不可自行偷换维度含义`;
+- profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异，并且必须服从 dimensionSpecs 的高低定义与锚点，不可自行偷换维度含义
+- 结果自检：每个结果的 primaryDimension 必须同时是它最能代表的高分维度。生成前先检查：如果某人物在常识上明显不属于该维度高分端，就不要把它设为该维度 primaryDimension`;
 
   const raw = await callAIImpl(system, user, 4500);
   const architecture = extractJSON(raw);
@@ -530,7 +539,7 @@ ${ resultType === "figure" ? `- verse 的来源必须与该人物强绑定——
 - 【强制】results 数组必须与 Phase 0 已确定原型一一对应，结果数量相同，每个结果的 title 必须是 Phase 0 原型的姓名（可缩短，如"霓凰郡主"→"霓凰"，但不能换成 Phase 0 没有的人物）。禁止自行替换或新增角色
 ` : "";
 
-  const system = `你是一位微信小程序测验产品策划专家，同时对「${topic}」这个领域有深入的专业知识。你的任务是为一道新测验设计整体框架，包括维度体系和每个结果的精准权重分布。这个测验的结果可能是人格原型、真实人物、具体事物、国家、或适合程度段位——你必须完全遵循 Phase 0 确定的 resultType 和结果名称，不得擅自改为人格类型。
+  const system = `你是一位测验产品策划专家，同时对「${topic}」这个领域有深入的专业知识。你的任务是为一道新测验设计整体框架，包括维度体系和每个结果的精准权重分布。这个测验的结果可能是人格原型、真实人物、具体事物、国家、或适合程度段位——你需要遵循 Phase 0 确定的 resultType 和结果名称，不要擅自改为别的人格类型。
 
 ${LITERARY_GUIDE}
 
@@ -543,18 +552,21 @@ ${hintBlock}${archContext}
 输出格式：
 {
   "id": "kebab-case英文id，与主题语义对应",
-  "title": "中文标题，20字以内。必须像正式成品标题，有主题张力。【硬性禁止词】：分身、镜像、角色匹配、人物匹配、角色测试、人物测试、哪个角色、哪位角色、相似度。【正面示例】：「权谋之心，你是哪种」「在情义与算计之间」「你藏锋还是亮剑」「江湖心法测」——聚焦用户自身特质或价值取向，不要把测验名写成'找到你的X'",
-  "subtitle": "副标题，15字以内。必须点出测验的价值主张或用户会发现的洞察。【硬性禁止词】：分身、找到你的、看看你像谁、测出你的角色、真实分身、剧中分身、角色分身。【正面示例】：「权与义之间，你会如何选择」「每一个选择都在暴露你的底色」",
-  "eyebrow": "短标签，3-8字，英文或中文。要有世界观气质，不可只是泛泛的「角色测试」「权谋中的你」「剧中分身」",
+  "title": "中文标题，20字以内。必须像正式成品标题，有主题张力。比如“你是希腊神话中哪个角色？ "你和哪位民国女性最像？" "你会拜入哪个金庸武侠门派？"'",
+  "subtitle": "副标题，15字以内。必须点出测验的价值主张或用户会发现的洞察。",
+  "eyebrow": "短标签，3-8字，英文或中文。要有世界观气质",
   "description": "测验介绍，80-120字，说清楚这个测验测什么、为什么有意义",
   "aestheticContext": "2-4句，描述题目应具备的氛围、场景感、意象来源。例如：「题目应发生在宋代文人的生活场景中：书房、酒楼、送别渡口、月夜独处。选项语言可带有词牌意象，但不能脱离真实人格选择。」后续题目和结果生成会直接使用这段描述约束场景风格。",
+  "writingVoice": "2-3句，自由描述这套题的语言语气和叙述人格。不要用枚举标签，而要直接写出：像谁在说话、句子应该多利落/多诗意/多口语、哪些腔调要避免。后续题目和结果生成会直接使用这段描述控制文风。",
   "dimensions": ["维度A", "维度B", "维度C", "维度D"],
   "dimensionAxes": [
     {
       "dimension": "维度A",
       "axisLabel": "这个轴的分类名，2-4字，例如「词风」「处世」「情感」",
       "lowPole": "维度A的对立面，2-4字，代表低分端的特质，例如「婉约含蓄」",
-      "insight": "描述这个维度高分端特质的一句洞察，30-50字，第二人称，具体描述这种性格倾向的表现和内在动因，语气温暖但不失锐度，禁止空泛夸奖"
+      "insight": "描述这个维度高分端特质的一句洞察，30-50字，第二人称，具体描述这种性格倾向的表现和内在动因，语气温暖但不失锐度，禁止空泛夸奖",
+      "highInsight": "若 scoringFamily=bipolar-dimension，写高分端洞察；否则可与 insight 相同",
+      "lowInsight": "若 scoringFamily=bipolar-dimension，写低分端洞察；否则可省略"
     }
   ],
   "results": [
@@ -573,26 +585,23 @@ ${hintBlock}${archContext}
 注意：dimension_profile 数值将由独立步骤生成，本步骤不需要输出。
 
 规则：
-- dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，严格使用 Phase 0 的维度，数量以 Phase 0 为准）
-- weighted-dimension / bipolar-dimension 的 results 通常 6-12 个；level-band 的 results 通常 4-6 个
+- dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，优先使用 Phase 0 的维度，数量以 Phase 0 为准）
+- weighted-dimension 的 results 通常 6-12 个；bipolar-dimension 可为 4-12 个（四象限/分学院类允许 4 个）；level-band 的 results 通常 4-6 个
 - 如果 scoringFamily = level-band，results 必须按从低到高的阶段顺序排列，不能写成互不相干的平行人格
 - 多个结果可以共享同一个 dimension；results越多则dimensions应越多（每2-3个结果需要1个独立维度）
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
 - 维度名称简洁，2-4字
 - axisLabel 是这条轴的"类别名"，lowPole 是该维度的反面特质
-- insight 必须是具体的、有画面感的描述，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌
+- insight 应是具体的、有画面感的描述，避免套话如"你是个…的人"开头，也避免空洞形容词堆砌
+- writingVoice 应该真的可执行，像给写作者的语气说明，不要只写“有古风感”“更现代”这种空话
 - 若 Phase 0 提供了 dimensionSpecs，dimensionAxes 的语义必须与之严格一致，不能把某个维度偷偷改写成别的意思
 - 不得违背 Phase 0 的高低定义、锚点人物和 forbiddenInterpretations；若某维度高分锚点是靖王、低分锚点是誉王，就不能在后续结构里把誉王写成该维度高分代表
-- quiz 的 title / subtitle / eyebrow 必须认真分工：
+- dimensionAxes.insight 默认只描述该维度的高分端行为，不能写成低分端；如果 scoringFamily=bipolar-dimension，额外填写 highInsight / lowInsight 两端描述
+- quiz 的 title / subtitle / eyebrow 要认真分工：
   1. title 负责“成品感”和识别度，读起来像一个真正会被点开的测验标题
   2. subtitle 负责“心理钩子”，要点出用户想知道的自我映射，不可只是重复 title
-  3. eyebrow 负责“世界观气质”，应来自该题材的核心氛围、关系张力或人物命运感
-- 禁止使用过泛包装：
-  1. title 禁止仅为「${topic}角色」「${topic}人物匹配」「${topic}测试」「你和${topic}哪个角色最相似」的轻微改写；也禁止使用「分身」「镜像」「人格镜像」「角色镜像」等可套在任何 IP 上的词
-  2. subtitle 禁止使用「找到你的剧中分身」「看看你像谁」「测出你的角色」「你是哪个角色」等空泛模板
-  3. eyebrow 禁止使用「角色测试」「角色原型测试」「权谋中的你」「江湖知己」等可套在任何作品上的词
-- title 好标题的标准：读起来有内容质感，要点出这个题材最独特的东西。例如「琅琊榜」这个 IP 的核心张力是"身份、权谋与情义的取舍"，好标题应该从这个独特性出发，而不是套用「分身」「镜像」等通用模板词
+  3. eyebrow 负责“世界观气质”
 - 结果要有辨识度，用户看到标题就能感知「这说的是我吗」`;
 
   const rawStem = Buffer.from(String(topic || "outline"), "utf8").toString("hex").slice(0, 32) || "outline";
@@ -704,16 +713,13 @@ ${profileTemplate}
 
 async function generateQuestionPlan(outline, total, dataDir, callAIImpl = callAI) {
   const dimensions = outline.dimensions;
-  const aestheticContext = formatAestheticContext(outline.aestheticContext);
+  const aestheticContext = formatAestheticContext(outline.aestheticContext, outline.writingVoice);
   const dimensionSpecs = Array.isArray(outline.architectureDimensionSpecs) ? outline.architectureDimensionSpecs : [];
   const dimensionSpecBlock = dimensionSpecs.length > 0
     ? `\n### 维度语义锚点\n${formatDimensionSpecs(dimensionSpecs)}\n`
     : "";
 
-  const crisisMax  = Math.floor(total * 0.40);
-  const perType    = Math.max(1, Math.floor((total - crisisMax) / 4));
-
-  const system = `你是一位中文测验内容专家。你的任务是为一套测验设计 ${total} 道题的「场景骨架」——只需要确定每道题的题型和场景设定，不需要写选项。
+  const system = `你是一位中文测验内容专家。你的任务是为一套测验设计 ${total} 道题的「出题计划」——只需要决定每道题主要测哪个维度，以及大致的价值冲突或观察角度。
 
 ${LITERARY_GUIDE}
 ${aestheticContext}
@@ -727,34 +733,24 @@ ${aestheticContext}
 - 评分维度：${dimensions.join("、")}
 ${dimensionSpecBlock}
 
-请为这套测验设计全部 ${total} 道题的场景骨架。输出格式：
+请为这套测验设计全部 ${total} 道题的出题计划。输出格式：
 {
   "plan": [
     {
       "id": "q1",
-      "type": "①危机行动",
-      "setting": "1-3句话描述场景，有具体时间/地点/人物状态，不含选项，不含结尾问句",
-      "dimension": "主要测试的维度（必须是以下之一：${dimensions.join("、")}）"
+      "dimension": "主要测试的维度（必须是以下之一：${dimensions.join("、")}）",
+      "angle": "这一题想照见的价值冲突/心理切口，10-20字",
+      "contrast": "和前后题相比，这题应避免重复的老套方向，8-16字"
     }
   ]
 }
 
-【五种题型说明】
-① 危机行动：遭遇困境/冲突，需要做出行动决策
-② 喜好本能：无压力场景，问你更愿意/更享受哪种
-③ 代价权衡：两个选项都有真实代价，没有明显正确答案，需要取舍
-④ 小事日常：非权谋/非危机，日常小事中暴露性格
-⑤ 观察投射：描述他人行为或一句话，问你的感受/第一反应
-
-【强制分配规则】
-1. ①危机行动类题目全套不得超过 ${crisisMax} 道，其余四种各至少 ${perType} 道
-2. 场景设计规则：
-   - 允许将2道相邻的题（如 q3+q4）安排在同一个场景中（"连场"），形成同一事件的连续决策——这是允许且鼓励的叙事手法
-   - 但同一场景最多连续2题，不得出现3题连场
-   - 非相邻的题目（如 q3 和 q8）必须使用完全不同的场景——不同地点、不同情境、不同人物组合
-   - 严禁跳跃重复：同类场景不得在全套中出现两次以上（如多次"发现密信"、多次"战场对峙"）
-3. 每个维度出现次数大致均衡，每个维度约 ${Math.round(total / dimensions.length * 10) / 10} 道
-4. 场景必须契合「${outline.title}」的历史/文化氛围`;
+规则：
+1. 每个维度出现次数大致均衡，每个维度约 ${Math.round(total / dimensions.length * 10) / 10} 道
+2. angle 只写“这题在测什么矛盾”，不要替写完整故事，不要指定具体地点，不要写过多场景细节
+3. 相邻题之间可以形成呼应，但不要把整套题写成同一种冲突模板
+4. contrast 用来提醒后续写题阶段避开什么重复套路，例如“不要再写朝堂问答”“不要再写独处赏月”
+5. 这一步只分配“测什么”，把“怎么写得好看”留给后续 question 生成`;
 
   const rawPath = path.join(dataDir, `${outline.id}.qplan.raw.txt`);
   const raw = await callAIImpl(system, user, 3000);
@@ -769,13 +765,13 @@ ${dimensionSpecBlock}
 
 async function generateQuestions(outline, startId, endId, batchLabel, total, dataDir, callAIImpl = callAI, questionPlan = []) {
   const dimensions = outline.dimensions;
-  const aestheticContext = formatAestheticContext(outline.aestheticContext);
+  const aestheticContext = formatAestheticContext(outline.aestheticContext, outline.writingVoice);
   const count = endId - startId + 1;
   const dimensionSpecs = Array.isArray(outline.architectureDimensionSpecs) ? outline.architectureDimensionSpecs : [];
   const scoringFamily = outline.architectureScoringFamily || "weighted-dimension";
   const scoringFamilyGuide = formatScoringFamilyGuidance(scoringFamily);
   const dimensionSpecBlock = dimensionSpecs.length > 0
-    ? `\n### 维度语义锚点（出题时必须严格服从）\n${formatDimensionSpecs(dimensionSpecs)}\n`
+    ? `\n### 维度语义锚点（出题时应尽量贴合）\n${formatDimensionSpecs(dimensionSpecs)}\n`
     : "";
   const scoringGuideBlock = `\n### 当前评分框架\n- scoringFamily: ${scoringFamily}\n- guidance: ${scoringFamilyGuide}\n`;
   const optionTemplateA = scoringFamily === "bipolar-dimension"
@@ -795,7 +791,8 @@ ${aestheticContext}
 ### 输出格式
 严格输出一个 JSON 对象，只包含 "questions" 字段（${count}道题的数组，id从q${startId}到q${endId}）。不要输出其他内容，直接输出 JSON。`;
 
-  // Build plan block for this batch — each entry becomes a mandatory scene
+  // Build plan block for this batch — each entry defines the target dimension and angle,
+  // but leaves the concrete scene open so the model can still write naturally.
   const batchPlan = questionPlan.filter(p => {
     const num = parseInt((p.id || "").replace(/\D/g, ""), 10);
     return num >= startId && num <= endId;
@@ -803,12 +800,12 @@ ${aestheticContext}
   const hasPlan = batchPlan.length > 0;
 
   const planBlock = hasPlan
-    ? `\n### 本批题目的场景骨架（必须严格按照以下设定扩写，不得改变场景地点或核心情境）\n` +
-      batchPlan.map(p => `- ${p.id}【${p.type}】主测维度「${p.dimension}」：${p.setting}`).join("\n") + "\n"
+    ? `\n### 本批题目的出题计划（应围绕这些维度与切口展开，具体场景由你来写）\n` +
+      batchPlan.map(p => `- ${p.id} 主测维度「${p.dimension}」；切口：${p.angle || ""}${p.contrast ? `；避免：${p.contrast}` : ""}`).join("\n") + "\n"
     : "";
 
   const taskLine = hasPlan
-    ? `将以下 ${count} 个场景骨架扩写为完整题目（共${total}道题的第${batchLabel}批，id q${startId}~q${endId}）：`
+    ? `将以下 ${count} 个出题计划扩写为完整题目（共${total}道题的第${batchLabel}批，id q${startId}~q${endId}）：`
     : `请生成 q${startId} 到 q${endId} 共${count}道全新场景题目（共${total}道题的第${batchLabel}批）：`;
 
   const user = `测验信息：
@@ -825,7 +822,7 @@ ${taskLine}
   "questions": [
     {
       "id": "q${startId}",
-      "text": "在骨架 setting 基础上扩写，40-70字。加入感官细节（光线/声音/气味/人物神情/动作），再以问句结尾收束。禁止改变骨架规定的场景地点和核心情境。",
+      "text": "基于计划写成完整题目。长度按题意决定，不凑字数。每个细节最好服务于选择张力或世界感，并以问句收束。",
       "options": [
 ${optionTemplateA}
         { "id": "b", "text": "选项文本", "scores": { "维度": 2 } },
@@ -841,12 +838,13 @@ ${optionTemplateA}
 2. ${scoreRule}
 3. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
 4. 维度覆盖：本批 ${count} 道题，每个维度大致均匀出现（共 ${dimensions.length} 个维度，每维度约 ${Math.round(count / dimensions.length * 10) / 10} 道信号量）
-5. 每道题的高分选项必须服从维度语义锚点，不能偷换概念
+5. 每道题的高分选项应尽量贴合维度语义锚点，避免偷换概念
 6. 如果 scoringFamily = level-band，四个选项总分梯度必须明显拉开
 7. 如果 scoringFamily = bipolar-dimension，负分只能表示朝 lowDefinition 一侧移动
-8. 遵守 literary guide，列明的禁止句型一律不得出现
-9. 选项中"明哲保身"及等义表达（独善其身、静观其变、置身事外）本批最多出现 2 次
-10. 每道题的主测维度（骨架已标注）：四个选项中至少 2 个必须给该维度打正分（≥1分），否则该题对主测维度毫无贡献`;
+8. 遵守 literary guide，尽量避免出现已列明的 AI 腔句型
+9. 不要为了“有氛围”而堆砌光线、气味、眼神、月色等细节；删掉一句若题意不变，就不要那句
+10. 简单冲突题可以很短，诗意/特殊题材题可以稍长，但都必须信息有效，不能凑字数
+12. 每道题的主测维度（计划已标注）：最好让至少 2 个选项给该维度打正分（≥1分），否则这题对主测维度的区分会偏弱`;
 
   const raw = await callAIImpl(system, user, 6000);
   fs.writeFileSync(path.join(dataDir, `${outline.id}.q${batchLabel}.raw.txt`), raw);
@@ -872,16 +870,16 @@ async function generateResultsPlan(outline, dataDir, callAIImpl = callAI) {
 ${resultTitles}
 
 为每个结果分配：
-1. portraitAngle（1句，20-30字）：这个结果的 portrait 应从哪个切入角度写，必须与其他所有结果的角度完全不同
-2. strengthLabels（3个标签）：这个结果的3个优势标签，每个2-4字
-3. weaknessLabels（3个标签）：这个结果的3个局限标签，每个2-4字
+1. portraitAngle（1句，20-30字）：这个结果的 portrait 应从哪个切入角度写，和其他结果保持明显区分
+2. strengthLabels（3个标签）：这个结果的3个优势标签，每个2-7字
+3. weaknessLabels（3个标签）：这个结果的3个局限标签，每个2-7字
 
-【强制约束】
+【关键要求】
 - 所有 ${results.length} 个结果的 strengthLabels 合计 ${results.length * 3} 个标签，应尽量避免重复；理想是全不重复，允许少量重复，但同一标签绝不能泛滥
 - 所有 ${results.length} 个结果的 weaknessLabels 合计 ${results.length * 3} 个标签，应尽量避免重复；理想是全不重复，允许少量重复，但同一标签绝不能泛滥
 - 同一 strengthLabel 或 weaknessLabel 尽量不超过 2 次；如果某标签在全套结果中出现 4 次或以上，系统会判定为过于重复
-- 标签必须体现该结果的独特气质，禁止通用标签（如"行动力强""情绪稳定""共情力""情感丰富"等）
-- 每个结果的 portraitAngle 必须完全不同，代入该人物/原型最具辨识度的心理处境或行为模式
+- 标签应尽量体现该结果的独特气质，避免通用标签（如"行动力强""情绪稳定""共情力""情感丰富"等）
+- 每个结果的 portraitAngle 应有明显区分，代入该人物/原型更有辨识度的心理处境或行为模式
 
 输出格式：
 {
@@ -905,7 +903,7 @@ ${resultTitles}
 }
 
 async function generateResults(outline, resultSubset, dataDir, callAIImpl = callAI, previousResults = [], resultsPlan = []) {
-  const aestheticContext = formatAestheticContext(outline.aestheticContext);
+  const aestheticContext = formatAestheticContext(outline.aestheticContext, outline.writingVoice);
   const stub = resultSubset.map(r => ({
     id: r.id, title: r.title, subtitle: r.subtitle,
     token: r.token, verse: r.verse, verseSource: r.verseSource,
@@ -955,7 +953,7 @@ async function generateResults(outline, resultSubset, dataDir, callAIImpl = call
 
   const system = `你是一位中文测验内容专家，擅长写有深度、有辨识度的结果描述。结果可能是人格原型、真实人物、具体事物或适合程度段位，写作方式应与结果类型匹配，不要把所有结果都写成人格分析的口吻。
 
-【字数硬约束】严格遵守每个字段的字数要求，不得超过上限。portrait 每段严格100-150字，三段共300-450字；strengths/weaknesses 每条 description 严格2-3句共60-90字；其他字段按格式说明控制。宁可精炼，不可冗长。
+【字数建议】尽量控制在各字段的建议字数内，信息密度优先，不要为凑字数灌水。portrait 每段建议100-150字，三段合计约300-450字；strengths/weaknesses 每条 description 建议2-3句、约60-90字；其他字段也按格式说明大致控制。宁可精炼，不可冗长。
 
 ${LITERARY_GUIDE}
 ${aestheticContext}
@@ -974,7 +972,7 @@ ${aestheticContext}
   // even though it only writes one result per batch (R_BATCH_SIZE = 1).
   const siblingResults = outline.results.filter(r => !resultSubset.some(s => s.id === r.id));
   const siblingContext = siblingResults.length > 0
-    ? `\n### 其他结果概览（本次不写这些，但你的文字必须与它们有显著区分）\n` +
+    ? `\n### 其他结果概览（本次不写这些，但你的文字应与它们有明显区分）\n` +
       siblingResults.map(r => {
         const arch = archResults.find(a => a.name === r.title || a.conceptId === r.id);
         const identity = arch?.coreIdentity || r.subtitle || "";
@@ -993,12 +991,12 @@ ${aestheticContext}
     return [
       `- 【${r.title}（${r.id}）】`,
       `  portrait 切入角度：${p.portraitAngle || ""}`,
-      `  strengths labels 必须严格原文使用（按序）：${sLabels}`,
-      `  weaknesses labels 必须严格原文使用（按序）：${wLabels}`,
+      `  strengths labels 优先使用（按序）：${sLabels}`,
+      `  weaknesses labels 优先使用（按序）：${wLabels}`,
     ].join("\n");
   }).filter(Boolean).join("\n");
   const planBlock = planConstraintsBlock
-    ? `\n### 内容骨架（必须严格遵守，标签必须原文使用，不得替换或自创）\n${planConstraintsBlock}\n`
+    ? `\n### 内容骨架（优先参考；必要时可微调措辞以保证自然，但尽量保留这些标签与切入角度）\n${planConstraintsBlock}\n`
     : "";
 
   // Summaries of results already written in earlier batches — avoid repeating themes/labels
@@ -1016,10 +1014,10 @@ ${aestheticContext}
 
   const portraitDepthGuide = hasField("portrait") ? `
 ## portrait 写作原则：让用户感到"被发现了"
-portrait 是结果页最核心的内容，必须让用户读完产生"这说的就是我"的共鸣感。
+portrait 是结果页最核心的内容，应尽量让用户读完产生"这说的就是我"的共鸣感。
 
 ### 每段字数要求
-每段严格100-150字，三段合计300-450字。禁止写空洞的概括句，每一句都必须承载具体信息。
+每段建议100-150字，三段合计约300-450字。避免写空洞的概括句，尽量让每一句都承载具体信息。
 
 ### 让用户"被发现"的写法技巧
 1. **命名内在体验**：说出用户感受到但从未能表达的内心状态。不写"你很敏感"，写"你常常在人群散去之后才意识到自己其实很疲惫，但你很少在当下说出来"。
@@ -1034,9 +1032,9 @@ portrait 是结果页最核心的内容，必须让用户读完产生"这说的�
 - portrait【第二段，100-150字】：将这个结果（事物/国家/地方）的文化或精神特质与用户的内在世界对应起来——不是介绍它，而是解释为什么它们之间会产生共鸣，这种共鸣是什么质地的。
 - portrait【第三段，100-150字】：写出这种匹配在现实中的张力——用户在这里/与这个事物相遇会获得什么，同时又要承担什么代价或面对什么挑战。`,
     figure: `## 结构：先介绍人物，再写人格共鸣
-- portrait【第一段，100-150字】：介绍人物的真实生平与历史定位——代表事件、名言警句、所处时代的重量。让读者感受到这个人的存在感和历史厚度。
-- portrait【第二段，100-150字】：写这个人物的内在气质与处世哲学——他/她如何面对命运、做出选择、处理关系，以及他们身上哪些东西让后人反复回望。
-- portrait【第三段，100-150字】：用"被发现了"的方式写用户与此人的精神共鸣——命名用户继承了此人的哪种内在结构，以及这种结构带来的未竟之事或无法解决的命题。`,
+- portrait【第一段，100-150字】：介绍人物的真实生平与历史定位——代表事件、关键处境、所处时代的重量。让读者感受到这个人的存在感和历史厚度。
+- portrait【第二段，100-150字】：写这个人物的内在气质与处世哲学——他/她如何面对命运、做出选择、处理关系，以及哪些东西构成其最稳定的精神骨架。
+- portrait【第三段，100-150字】：写用户为何会与此人产生共鸣，但避免把用户直接写成“你就是一个很X的人”。要写成“你和此人的相似处在于……”，点出这种共鸣带来的代价与命题。`,
     archetype: `## 结构：先介绍原型，再写人格共鸣
 - portrait【第一段，100-150字】：介绍这个原型/角色的来源、形象、在神话/文学/文化中的象征意义。即使用户不熟悉，读完也能感受到它的独特魅力。
 - portrait【第二段，100-150字】：从这个原型的象征气质出发，用具体行为场景描述拥有此人格的人——不是说他们"很xxx"，而是说他们在具体情境下会怎么做、怎么感受、怎么被他人误解。
@@ -1047,7 +1045,7 @@ portrait 是结果页最核心的内容，必须让用户读完产生"这说的�
     item: `- strengths label：必须从该事物的真实物理/文化特质提炼（如「折射万千」「压力成型」「历久弥新」），description 再延伸到人格含义。
 - weaknesses label：同样来自事物特质的阴影面（如「易碎于冲击」「光芒招觊觎」），description 写出这在人际或自我认知中的代价。
 - 禁止使用通用人格标签（如"共情力强""行动力强""情绪稳定"）作为 label。`,
-    figure: `- strengths/weaknesses label：基于该人物历史上真实展现的特质，用该人物的标志性意象提炼，而非抽象人格词汇。`,
+    figure: `- strengths/weaknesses label：基于该人物历史上真实展现的特质，用该人物的标志性意象提炼，而非抽象人格词汇。label 允许 2-7 字，不必硬凑四字成语。`,
     archetype: `- strengths/weaknesses label：带有该原型/角色的独特意象，不使用完全通用的人格词汇。`,
   }[resultType] || "") : "";
 
@@ -1068,19 +1066,20 @@ ${figureContext}${siblingContext}${planBlock}${writtenContext}
 
 ${contentGuide}
 
-【严格约束】本次只需生成以下 ${stub.length} 个结果，不要生成其他结果：
+【范围约束】本次只需生成以下 ${stub.length} 个结果，不要生成其他结果：
 ${JSON.stringify(stub, null, 2)}
 
-每个结果的输出格式（严格遵守，字段名和数据类型不得更改）：
+每个结果的输出格式如下；字段名和数据类型不要更改：
 ${buildResultTemplate(resultFields, resultType)}
 
 规则：
 - 只生成上方 ${stub.length} 个结果，不多不少。
 - 只生成格式中出现的字段，不要添加其他字段。
-- strengths 和 weaknesses 必须是对象数组，每项必须有 "label"（2-4字）和 "description"（2-3句话）两个字段，不能是纯字符串数组。
+- strengths 和 weaknesses 需要是对象数组，每项都要有 "label"（2-7字）和 "description"（2-3句话）两个字段，不能是纯字符串数组。
 - lifeAdvice 必须是字符串（string），不能是数组。
-- portrait 必须是三段结构；如果不是三段，就视为不合格。
-- 不同结果的 dimension_profile 虽然由 Phase 1 决定，但你的文字必须强化区分度，不能把两个结果写成只有措辞不同、人格几乎一样。
+- portrait 以三段结构为宜；如果明显不是三段，系统会视为不合格。
+- 不同结果的 dimension_profile 虽然由 Phase 1 决定，但你的文字应强化区分度，不能把两个结果写成只有措辞不同、人格几乎一样。
+- resultType=figure 时，如果你拿不准某句是否是原作台词，就不要伪装成原句；宁可写成气质归纳，也不要编造出处。
 - 遵守 literary guide，禁止出现被列明的句型。`;
 
   const raw = await callAIImpl(system, user, 10000);

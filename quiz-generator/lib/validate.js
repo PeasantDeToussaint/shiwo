@@ -36,6 +36,7 @@ function nameSimilarity(a, b) {
 function validateArchitecture(architecture) {
   const errors = [];
   const scoringFamily = architecture?.scoringFamily;
+  const resultType = architecture?.resultType || "archetype";
   const dimensionCount = architecture?.dimensionCount;
   const dimensions = Array.isArray(architecture?.dimensions) ? architecture.dimensions : [];
   const dimensionSpecs = Array.isArray(architecture?.dimensionSpecs) ? architecture.dimensionSpecs : [];
@@ -73,16 +74,26 @@ function validateArchitecture(architecture) {
   if (scoringFamily === "level-band" && (results.length < 4 || results.length > 6)) {
     errors.push(`level-band results.length should be 4-6 (got ${results.length})`);
   }
-  if ((scoringFamily === "weighted-dimension" || scoringFamily === "bipolar-dimension") && (results.length < 6 || results.length > 12)) {
-    errors.push(`${scoringFamily} results.length should be 6-12 (got ${results.length})`);
+  if (scoringFamily === "weighted-dimension" && (results.length < 6 || results.length > 12)) {
+    errors.push(`weighted-dimension results.length should be 6-12 (got ${results.length})`);
+  }
+  if (scoringFamily === "bipolar-dimension" && (results.length < 4 || results.length > 12)) {
+    errors.push(`bipolar-dimension results.length should be 4-12 (got ${results.length})`);
   }
 
   const dimSet = new Set(dimensions);
   const resultNameSet = new Set(results.map(r => r?.name).filter(Boolean));
+  const resultByName = new Map(results.map(r => [normalizeResultName(r?.name), r]));
   const normalizedNames = results.map(r => normalizeResultName(r?.name)).filter(Boolean);
   const duplicateNames = normalizedNames.filter((n, i) => normalizedNames.indexOf(n) !== i);
   if (duplicateNames.length > 0) {
     errors.push(`results contain duplicate names: ${Array.from(new Set(duplicateNames)).join('、')}`);
+  }
+  if (resultType === "figure") {
+    for (const r of results) {
+      if (!String(r?.name || "").trim()) errors.push(`figure result missing name`);
+      if (!String(r?.nameContext || "").trim()) errors.push(`${r?.name || r?.conceptId || "figure result"}: nameContext missing`);
+    }
   }
   for (const [i, spec] of dimensionSpecs.entries()) {
     if (!spec?.dimension || spec.dimension !== dimensions[i]) {
@@ -101,9 +112,19 @@ function validateArchitecture(architecture) {
     }
     for (const name of (spec?.highAnchorResults || [])) {
       if (!resultNameSet.has(name)) errors.push(`${spec.dimension}: highAnchorResults contains unknown result "${name}"`);
+      const anchored = resultByName.get(normalizeResultName(name));
+      const hint = anchored?.profileHints?.[spec.dimension];
+      if (anchored && hint && hint !== "high") {
+        errors.push(`${spec.dimension}: highAnchorResult "${name}" has profileHint "${hint}" instead of "high"`);
+      }
     }
     for (const name of (spec?.lowAnchorResults || [])) {
       if (!resultNameSet.has(name)) errors.push(`${spec.dimension}: lowAnchorResults contains unknown result "${name}"`);
+      const anchored = resultByName.get(normalizeResultName(name));
+      const hint = anchored?.profileHints?.[spec.dimension];
+      if (anchored && hint && hint !== "low") {
+        errors.push(`${spec.dimension}: lowAnchorResult "${name}" has profileHint "${hint}" instead of "low"`);
+      }
     }
   }
   for (const r of results) {
@@ -117,6 +138,9 @@ function validateArchitecture(architecture) {
       }
       for (const k of keys) {
         if (!dimSet.has(k)) errors.push(`${r?.conceptId || r?.name || "result"}: profileHints has unknown dimension "${k}"`);
+      }
+      if (r?.primaryDimension && r.profileHints[r.primaryDimension] !== "high") {
+        errors.push(`${r?.conceptId || r?.name || "result"}: primaryDimension "${r.primaryDimension}" must be "high" in profileHints`);
       }
     }
   }
@@ -141,6 +165,7 @@ function validateOutlineStructure(outline, architecture) {
   const title = String(outline?.title || "").trim();
   const subtitle = String(outline?.subtitle || "").trim();
   const eyebrow = String(outline?.eyebrow || "").trim();
+  const resultType = architecture?.resultType || "archetype";
 
   if (dimensions.length === 0) errors.push("outline.dimensions missing or empty");
   if (!title) errors.push("outline.title missing or empty");
@@ -189,6 +214,12 @@ function validateOutlineStructure(outline, architecture) {
     }
   }
 
+  const normalizedOutlineTitles = results.map(r => normalizeResultName(r?.title)).filter(Boolean);
+  const duplicateOutlineTitles = normalizedOutlineTitles.filter((n, i) => normalizedOutlineTitles.indexOf(n) !== i);
+  if (duplicateOutlineTitles.length > 0) {
+    errors.push(`outline results contain duplicate titles: ${Array.from(new Set(duplicateOutlineTitles)).join("、")}`);
+  }
+
   if (architecture?.dimensions?.length) {
     const archDims = architecture.dimensions;
     if (archDims.length !== dimensions.length || archDims.some((d, i) => d !== dimensions[i])) {
@@ -202,8 +233,9 @@ function validateOutlineStructure(outline, architecture) {
   if (architecture?.results?.length && results.length > 0) {
     const archNames = architecture.results.map(r => String(r?.name || "")).filter(Boolean);
     const outlineTitles = results.map(r => String(r?.title || "")).filter(Boolean);
+    const matchThreshold = resultType === "figure" ? 0.75 : 0.6;
     const unmatched = outlineTitles.filter(title => {
-      return !archNames.some(archName => nameSimilarity(archName, title) >= 0.6);
+      return !archNames.some(archName => nameSimilarity(archName, title) >= matchThreshold);
     });
     if (unmatched.length > 0) {
       errors.push(
@@ -395,6 +427,7 @@ function validateDimensionProfiles(results, dimensions, options = {}) {
   const warnings = [];
   const dimSet = new Set(dimensions);
   const scoringType = options.scoringType || "weighted-dimension";
+  const primaryDimensions = options.primaryDimensions || null;
 
   for (const r of results) {
     const profile = r.dimension_profile;
@@ -417,6 +450,20 @@ function validateDimensionProfiles(results, dimensions, options = {}) {
 
     for (const issue of collectDominanceIssues(results, dimensions)) {
       warnings.push(issue);
+    }
+  }
+
+  if (primaryDimensions) {
+    for (const r of results) {
+      const profile = r.dimension_profile || {};
+      const expected = primaryDimensions[r.id];
+      if (!expected || !profile || typeof profile !== "object") continue;
+      const keys = Object.keys(profile).filter(k => dimSet.has(k));
+      if (keys.length === 0) continue;
+      const peak = keys.reduce((best, k) => ((profile[k] ?? -Infinity) > (profile[best] ?? -Infinity) ? k : best), keys[0]);
+      if (peak !== expected) {
+        warnings.push(`${r.id}: primary dimension expected "${expected}" but profile peak is "${peak}"`);
+      }
     }
   }
 
@@ -444,33 +491,10 @@ function validateQuestionPlan(plan, dimensions, total) {
   if (maxDim - minDim > Math.ceil(total / dimensions.length))
     errors.push(`dimension distribution too uneven: max ${maxDim}, min ${minDim} — ${JSON.stringify(dimCounts)}`);
 
-  // Crisis type cap: ① must not exceed 45%
-  const crisisCount = plan.filter(p => (p.type || "").startsWith("①")).length;
-  const crisisMax = Math.ceil(total * 0.45);
-  if (crisisCount > crisisMax)
-    errors.push(`too many ①危机行动 scenarios: ${crisisCount}/${total} (max ${crisisMax})`);
-
-  // Each non-crisis type (②③④⑤) must appear at least once
-  for (const t of ["②", "③", "④", "⑤"]) {
-    if (!plan.some(p => (p.type || "").startsWith(t)))
-      errors.push(`no questions of type ${t} in plan — all types must be represented`);
-  }
-
-  // Setting overlap detection: consecutive overlaps are allowed (same scene / chapter),
-  // but non-consecutive overlaps (|i-j| > 1) are always an error.
-  const settings = plan.map(p => (p.setting || "").replace(/\s/g, ""));
-  for (let i = 0; i < settings.length; i++) {
-    const a = settings[i];
-    if (a.length < 10) continue;
-    for (let j = i + 2; j < settings.length; j++) {   // skip j = i+1 (consecutive)
-      const b = settings[j];
-      for (let k = 0; k <= a.length - 10; k++) {
-        if (b.includes(a.slice(k, k + 10))) {
-          errors.push(`${plan[i].id} and ${plan[j].id} have overlapping settings (non-consecutive)`);
-          break;
-        }
-      }
-    }
+  for (const p of plan) {
+    if (!String(p?.angle || "").trim()) errors.push(`${p?.id || "plan item"}: missing angle`);
+    if (String(p?.angle || "").trim().length < 4) errors.push(`${p?.id || "plan item"}: angle too short`);
+    if (p?.contrast && String(p.contrast).trim().length < 2) errors.push(`${p?.id || "plan item"}: contrast too short`);
   }
 
   return errors;

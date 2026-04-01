@@ -13,9 +13,9 @@ const path = require("path");
 const config = require("./lib/config");
 const { createClient, configure: configureAI } = require("./lib/ai");
 const { sleep, withRetry } = require("./lib/http");
-const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestionPlan, generateQuestions, generateResultsPlan, generateResults } = require("./lib/prompts");
+const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestions, generateResults } = require("./lib/prompts");
 const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, spreadProfiles, enforceUniquePeaks, applyProfilesFromHints } = require("./lib/assemble");
-const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, validateQuestionPlan, validateScoreMap, validateResultsPlan, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
+const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, validateScoreMap, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
 const { evaluateQuiz, printEvalReport } = require("./lib/eval");
 const { uploadQuiz } = require("./lib/wechat");
 const { saveCheckpoint, loadCheckpoint, clearCheckpoints } = require("./lib/checkpoint");
@@ -84,6 +84,27 @@ function printTimingSummary() {
   }
   const total = Object.values(PHASE_TIMES).reduce((a, b) => a + b, 0);
   console.log(`     ${"TOTAL".padEnd(20)} ${(total / 1000).toFixed(1)}s`);
+}
+
+function buildDeterministicQuestionPlan(outline, total) {
+  const dimensions = Array.isArray(outline?.dimensions) ? outline.dimensions : [];
+  const specs = Array.isArray(outline?.architectureDimensionSpecs) ? outline.architectureDimensionSpecs : [];
+  const specByDim = Object.fromEntries(specs.map(spec => [spec.dimension, spec]));
+  if (dimensions.length === 0) return [];
+  const orderedDimensions = Array.from({ length: total }, (_, i) => dimensions[i % dimensions.length]);
+  return orderedDimensions.map((dimension, i) => {
+    const spec = specByDim[dimension] || {};
+    const highDef = String(spec.highDefinition || "").split(/[，。；]/)[0].trim();
+    const forbidden = Array.isArray(spec.forbiddenInterpretations) && spec.forbiddenInterpretations.length > 0
+      ? String(spec.forbiddenInterpretations[0] || "").trim()
+      : "";
+    return {
+      id: `q${i + 1}`,
+      dimension,
+      angle: highDef ? `围绕「${highDef}」的取舍` : `围绕「${dimension}」的取舍`,
+      contrast: forbidden ? `不要写成${forbidden}` : `不要重复上一题的冲突模板`,
+    };
+  });
 }
 
 // ── Main ─────────────────────────────────────────────────────────
@@ -182,7 +203,10 @@ async function main() {
   const outlineProfileWarnings = validateDimensionProfiles(
     outline.results.map(r => ({ id: r.id, dimension_profile: r.dimension_profile })),
     outline.dimensions,
-    { scoringType: outline.architectureScoringFamily || architecture.scoringFamily || "weighted-dimension" }
+    {
+      scoringType: outline.architectureScoringFamily || architecture.scoringFamily || "weighted-dimension",
+      primaryDimensions: Object.fromEntries((outline.results || []).map(r => [r.id, r.dimension])),
+    }
   );
   printWarnings("outline profiles", outlineProfileWarnings);
   assertNoCriticalWarnings("outline profiles", outlineProfileWarnings);
@@ -200,30 +224,15 @@ async function main() {
     return { startId, endId, label: String(i + 1) };
   }).filter(b => b.startId <= Q_TOTAL);
 
-  // Phase 2a: Question plan — generate all scenario skeletons in one call
-  startPhase("2a-qplan");
-  let questionPlan = RESUME ? loadCheckpoint(TOPIC_ARG, "phase2a-qplan") : null;
-  if (questionPlan) {
-    console.log(`\n📋  Question plan: resumed ${questionPlan.length} items from checkpoint`);
-  } else {
-    console.log(`\n📋  [2/3] Generating question plan (${Q_TOTAL} scenarios)...`);
-    questionPlan = await withRetry("question-plan", async () => {
-      const plan = await generateQuestionPlan(outline, Q_TOTAL, DATA_DIR, aiClient.callAI);
-      const planErrors = validateQuestionPlan(plan, outline.dimensions, Q_TOTAL);
-      const overlapWarnings = planErrors.filter(e => e.includes("overlapping settings"));
-      const fatalPlanErrors = planErrors.filter(e => !e.includes("overlapping settings"));
-      if (overlapWarnings.length > 0)
-        console.warn(`  ⚠   setting overlaps (non-fatal): ${overlapWarnings.join("; ")}`);
-      if (fatalPlanErrors.length > 0)
-        throw new Error(`Question plan invalid: ${fatalPlanErrors.join("; ")}`);
-      return plan;
-    }, 5, 5000);
-    saveCheckpoint(TOPIC_ARG, "phase2a-qplan", questionPlan);
-  }
-  console.log(`     ✓  plan: ${questionPlan.map(p => `${p.id}[${p.type?.slice(0,1)}]`).join(" ")}`);
-  console.log(`     (${endPhase("2a-qplan")}s)`);
+  // Phase 2a-lite: deterministic question plan — allocate dimensions locally, let the
+  // model decide the actual scenes. This removes one heavyweight AI call.
+  startPhase("2a-qplan-lite");
+  const questionPlan = buildDeterministicQuestionPlan(outline, Q_TOTAL);
+  console.log(`\n📋  [2/3] Question plan (lite): locally allocated ${Q_TOTAL} prompts across ${outline.dimensions.length} dimensions`);
+  console.log(`     ✓  plan: ${questionPlan.map(p => `${p.id}[${p.dimension}]`).join(" ")}`);
+  console.log(`     (${endPhase("2a-qplan-lite")}s)`);
 
-  await sleep(3000);
+  await sleep(1500);
 
   // Phase 2b: Question generation (each batch expands plan skeletons)
   startPhase("2-questions");
@@ -274,31 +283,17 @@ async function main() {
   }
   console.log(`     (${endPhase("2-questions")}s)`);
 
-  await sleep(4000);
+  await sleep(2500);
 
-  // Phase 3a: Results plan — pre-assign portrait angles and labels for all results in one call
-  startPhase("3a-rplan");
-  let resultsPlan = RESUME ? loadCheckpoint(TOPIC_ARG, "phase3a-rplan") : null;
-  if (resultsPlan) {
-    console.log(`\n📋  Results plan: resumed ${resultsPlan.length} items from checkpoint`);
-  } else {
-    console.log(`\n📋  [2.5/3] Generating results plan (${outline.results.length} results)...`);
-    resultsPlan = await withRetry("results-plan", async () => {
-      const plan = await generateResultsPlan(outline, DATA_DIR, aiClient.callAI);
-      const planErrors = validateResultsPlan(plan, outline.results);
-      if (planErrors.length > 0) throw new Error(`Results plan invalid: ${planErrors.join("; ")}`);
-      return plan;
-    }, 3, 5000);
-    saveCheckpoint(TOPIC_ARG, "phase3a-rplan", resultsPlan);
-  }
-  console.log(`     ✓  plan: ${resultsPlan.map(p => p.id).join(" ")}`);
-  console.log(`     (${endPhase("3a-rplan")}s)`);
-
-  await sleep(3000);
+  // Phase 3a-lite: skip the standalone results planner by default.
+  // The generator still receives previous results for differentiation, but we avoid
+  // another long global planning call here.
+  const resultsPlan = [];
+  console.log(`\n📋  [2.5/3] Results planner skipped (lite mode)`);
 
   // Phase 3: Results
   const rTotal      = outline.results.length;
-  const R_BATCH_SIZE = 1;
+  const R_BATCH_SIZE = Math.min(2, Math.max(1, Math.ceil(rTotal / 4)));
   const rBatchCount = Math.ceil(rTotal / R_BATCH_SIZE);
   const R_BATCHES   = Array.from({ length: rBatchCount }, (_, i) =>
     outline.results.slice(i * R_BATCH_SIZE, (i + 1) * R_BATCH_SIZE)
@@ -337,7 +332,10 @@ async function main() {
   const finalProfileWarnings = validateDimensionProfiles(
     quiz.results,
     quiz.scoring.dimensions,
-    { scoringType: quiz.scoring.type || "weighted-dimension" }
+    {
+      scoringType: quiz.scoring.type || "weighted-dimension",
+      primaryDimensions: Object.fromEntries(((quiz.scoring || {}).results || []).map(r => [r.id, r.dimension])),
+    }
   );
   printWarnings("final profiles", finalProfileWarnings);
   assertNoCriticalWarnings("final profiles", finalProfileWarnings);

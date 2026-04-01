@@ -117,6 +117,10 @@ Page({
     ((quiz.scoring || {}).dimensionAxes || []).forEach(a => {
       axesMap[a.dimension] = a;
     });
+    const peakValue = dimensions.reduce((max, dim) => {
+      const { id } = this._dimEntry(dim);
+      return Math.max(max, normalized[id] || 0);
+    }, 0) || 1;
     const bars = dimensions.map((dim) => {
       const { id, label } = this._dimEntry(dim);
       const axis = axesMap[id] || {};
@@ -138,15 +142,18 @@ Page({
           fillLeft: dominantSide === "high" ? 50 : Math.max(0, 50 - fillPct),
           axisLabel: axis.axisLabel || "",
           lowPole: axis.lowPole || "",
-          insight: axis.insight || "",
+          insight: dominantSide === "high"
+            ? (axis.highInsight || axis.insight || "")
+            : (axis.lowInsight || axis.lowPole || ""),
         };
       }
       return {
         label,
-        pct: Math.round((value || 0) * 100),
+        pct: Math.round(((value || 0) / peakValue) * 100),
+        rawPct: Math.round((value || 0) * 100),
         axisLabel: axis.axisLabel || "",
         lowPole:   axis.lowPole || "",
-        insight:   axis.insight || "",
+        insight:   axis.highInsight || axis.insight || "",
       };
     });
     bars.sort((a, b) => {

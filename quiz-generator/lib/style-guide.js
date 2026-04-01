@@ -58,22 +58,29 @@ const LITERARY_GUIDE = `
 
 ### 四、强项/弱项写法
 - 数量：强项3个，弱项3个
-- 标签（label）：2-4字，用能力或行为描述，不用形容词堆砌
-  好：「快速排查问题」「压力下冷静」「实践操作」
+- 标签（label）：2-7字，用能力、行为或判断方式描述，不强行限定成四字成语
+  好：「快速排查问题」「压力下冷静」「实践操作」「观察入微」「敢于承担」
   差：「独立自主的天性」「深刻的洞察力」
 - 描述（description）：2-3句，写得更展开，直接点出这个特质在现实中的表现、影响和代价，不解释来源，不道歉
   好：「重复或单调的任务容易让你失去兴趣，导致拖延和效率下降。」
   差：「你会在重复的环境中感到窒息，这是你追求新鲜感的必然代价。」
 
 ### 五、题目要求
-- 根据语境、文化、背景，有时写出写出具体场景，例如在唐诗背景下，要根据经典唐诗重现诗意场景（只是个例子），避免"你会怎么做？"这种宽泛问法
+- 根据语境、文化、背景，有时写出具体场景，例如在唐诗背景下，要根据经典唐诗重现诗意场景（只是个例子），避免"你会怎么做？"这种宽泛问法
+- 场景描写不是越多越好。每个细节要么加深选择张力，要么构建必要的世界感；删掉一句后如果题意和选项都不变，那句就不该存在
 - 每个选项代表一种真实的思维方式或行为倾向，不是对错之分
 
 `;
 
-function formatAestheticContext(aestheticContext) {
-  if (!aestheticContext) return "";
-  return `\n### 这道测验的氛围与场景要求\n${aestheticContext}\n题目场景必须契合上述氛围，不能写成通用的现代职场或生活题。`;
+function formatAestheticContext(aestheticContext, writingVoice) {
+  const blocks = [];
+  if (aestheticContext) {
+    blocks.push(`### 这道测验的氛围与场景要求\n${aestheticContext}\n题目场景必须契合上述氛围，不能写成通用的现代职场或生活题。`);
+  }
+  if (writingVoice) {
+    blocks.push(`### 这道测验的语言语气\n${writingVoice}\n文风要跟着这个语气走，不要默认套用统一的现代心理测评腔。`);
+  }
+  return blocks.length ? `\n${blocks.join("\n\n")}` : "";
 }
 
 module.exports = { LITERARY_GUIDE, formatAestheticContext };
