@@ -13,7 +13,7 @@ Page({
     quickCategories: [],
     comingSoon: [],
     statusBarHeight: 0,
-    searchQuery: "",   // Only written on clear — never during typing (avoids WeChat IME reset)
+    searchKey: 0,      // Increment on clear to force-recreate the uncontrolled <input>
     lastQuery: "",     // Display copy, written when search runs
     searchResults: [],
     searchDone: false,
@@ -21,7 +21,7 @@ Page({
   },
 
   _allItems: [],
-  _searchQuery: "",   // Live input value tracked in JS, never round-tripped through setData
+  _searchQuery: "",   // Live input value — never round-tripped through setData
 
   onLoad() {
     const { statusBarHeight } = wx.getWindowInfo();
@@ -60,15 +60,17 @@ Page({
   onSearchInput(e) {
     const raw = e.detail.value || "";
     this._searchQuery = raw;
-    const q = raw.trim().toLowerCase();
     const isSearching = raw.length > 0;
-
-    if (!q) {
-      // Don't touch searchQuery — only clear the results state
-      this.setData({ isSearching, searchResults: [], searchDone: false });
+    if (!isSearching) {
+      this.setData({ isSearching: false, searchResults: [], searchDone: false });
       return;
     }
+    this._runSearch(raw);
+  },
 
+  _runSearch(raw) {
+    const q = raw.trim().toLowerCase();
+    if (!q) return;
     const searchResults = this._allItems.filter((item) => {
       const fields = [
         item.title,
@@ -80,8 +82,7 @@ Page({
       ];
       return fields.some((field) => field && String(field).toLowerCase().includes(q));
     });
-    // Never write searchQuery here — it resets WeChat's soft keyboard IME on real device
-    this.setData({ isSearching, searchResults, searchDone: true, lastQuery: raw.trim() });
+    this.setData({ isSearching: true, searchResults, searchDone: true, lastQuery: raw.trim() });
     this._resolveSearchImages(searchResults);
   },
 
@@ -113,10 +114,15 @@ Page({
     return Promise.all(tasks);
   },
 
+  onSearchConfirm() {
+    // Trigger search on keyboard "搜索" button as an extra entry point
+    if (this._searchQuery) this._runSearch(this._searchQuery);
+  },
+
   onSearchClear() {
     this._searchQuery = "";
     this.setData({
-      searchQuery: "",   // This clears the controlled input value
+      searchKey: this.data.searchKey + 1,   // Recreates the <input> element → clears it
       lastQuery: "",
       searchResults: [],
       searchDone: false,

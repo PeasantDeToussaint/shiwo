@@ -10,11 +10,12 @@
       <view class="exp-search">
         <text class="exp-search-label">搜索测验</text>
         <input
+          key="si-{{searchKey}}"
           class="exp-search-input"
-          value="{{searchQuery}}"
           placeholder="输入关键词"
           placeholder-class="exp-search-placeholder"
           bindinput="onSearchInput"
+          bindconfirm="onSearchConfirm"
           confirm-type="search"
           adjust-position="{{false}}"
         />
