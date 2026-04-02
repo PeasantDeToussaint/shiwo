@@ -25,7 +25,7 @@
 
     <block wx:if="{{isSearching}}">
       <view wx:if="{{searchDone && searchResults.length === 0}}" class="exp-search-empty motion-enter">
-        <text class="exp-search-empty-text">没有找到「{{searchQuery}}」相关的测验</text>
+        <text class="exp-search-empty-text">没有找到「{{lastQuery}}」相关的测验</text>
       </view>
       <view wx:else class="exp-grid exp-search-grid motion-enter">
         <block wx:for="{{searchResults}}" wx:key="id" wx:for-item="quiz">

@@ -13,13 +13,15 @@ Page({
     quickCategories: [],
     comingSoon: [],
     statusBarHeight: 0,
-    searchQuery: "",
+    searchQuery: "",   // Only written on clear — never during typing (avoids WeChat IME reset)
+    lastQuery: "",     // Display copy, written when search runs
     searchResults: [],
     searchDone: false,
     isSearching: false,
   },
 
   _allItems: [],
+  _searchQuery: "",   // Live input value tracked in JS, never round-tripped through setData
 
   onLoad() {
     const { statusBarHeight } = wx.getWindowInfo();
@@ -57,11 +59,15 @@ Page({
 
   onSearchInput(e) {
     const raw = e.detail.value || "";
+    this._searchQuery = raw;
     const q = raw.trim().toLowerCase();
     const isSearching = raw.length > 0;
-    // Always store the raw value so the controlled input doesn't fight the user's cursor
-    this.setData({ searchQuery: raw, isSearching, searchResults: [], searchDone: false });
-    if (!q) return;
+
+    if (!q) {
+      // Don't touch searchQuery — only clear the results state
+      this.setData({ isSearching, searchResults: [], searchDone: false });
+      return;
+    }
 
     const searchResults = this._allItems.filter((item) => {
       const fields = [
@@ -74,7 +80,8 @@ Page({
       ];
       return fields.some((field) => field && String(field).toLowerCase().includes(q));
     });
-    this.setData({ searchResults, searchDone: true });
+    // Never write searchQuery here — it resets WeChat's soft keyboard IME on real device
+    this.setData({ isSearching, searchResults, searchDone: true, lastQuery: raw.trim() });
     this._resolveSearchImages(searchResults);
   },
 
@@ -107,8 +114,10 @@ Page({
   },
 
   onSearchClear() {
+    this._searchQuery = "";
     this.setData({
-      searchQuery: "",
+      searchQuery: "",   // This clears the controlled input value
+      lastQuery: "",
       searchResults: [],
       searchDone: false,
       isSearching: false,
