@@ -521,6 +521,19 @@ function extractJSON(raw) {
   }
 }
 
+/** 模型常把 dimensionCount / questionCount 输出成字符串 "3"，校验要求整数 — 与 quiz-generator 一致先强制转换 */
+function coerceArchitectureIntFields(architecture) {
+  if (!architecture || typeof architecture !== "object") return;
+  if (typeof architecture.dimensionCount === "string") {
+    const n = parseInt(architecture.dimensionCount, 10);
+    if (Number.isFinite(n)) architecture.dimensionCount = n;
+  }
+  if (typeof architecture.questionCount === "string") {
+    const n = parseInt(architecture.questionCount, 10);
+    if (Number.isFinite(n)) architecture.questionCount = n;
+  }
+}
+
 function validateArchitecture(architecture) {
   const errors = [];
   const dimensionCount = architecture?.dimensionCount;
@@ -968,6 +981,7 @@ scoringFamily 选择规则：
 
   const raw = await callAI(system, user, 2500);
   const architecture = extractJSON(raw);
+  coerceArchitectureIntFields(architecture);
   const errors = validateArchitecture(architecture);
   if (errors.length > 0) throw new Error(`Architecture invalid: ${errors.join("; ")}`);
   return architecture;
