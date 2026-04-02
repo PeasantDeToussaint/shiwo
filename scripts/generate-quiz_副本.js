@@ -124,15 +124,45 @@ function inferHintsFromTopic(topic) {
     autoHints.push(`resultType必须是item，每个结果是真实存在的国家或城市名称`);
   }
 
+  // Pattern 4: 亲密关系边界/忠诚/抗诱惑等 — 测的是倾向强度，不是「像哪位名人」
+  if (
+    /抗出轨|出轨倾向|忠诚测试|专一程度|婚外情|第三者|劈腿|抗诱惑|边界感|承诺感/u.test(topic) ||
+    (/(出轨|忠诚|专一|诱惑)/u.test(topic) && /(测试|测验|有多强|多强|能力)/u.test(topic))
+  ) {
+    if (!/(哪位|哪个角色|和谁最像|《[^》]+》)/u.test(topic)) {
+      autoHints.push(
+        `本主题测的是亲密关系中边界、自制与承诺倾向的强度或段位，不是历史人物或明星匹配；resultType禁止为figure；results的name禁止使用真实人物姓名（含历史、文学、神话人物），应使用程度段位或抽象关系气质的原型命名。`
+      );
+    }
+  }
+
+  // Pattern 5: 「有多强」「能力」类（非明确人物题）→ 避免 figure
+  if (/(有多强|强不强|能力有多|水平如何|段位)/u.test(topic) && !/(哪位|哪个角色|和谁最像|诗人|词人|角色|人物)/u.test(topic)) {
+    autoHints.push(
+      `主题为强度/能力/水平类测验：除非用户明确列举具体人物名单，否则resultType禁止为figure，results禁止套用与主题无关的历史或娱乐名人。`
+    );
+  }
+
   return autoHints;
 }
 
-const AUTO_HINTS  = inferHintsFromTopic(TOPIC_ARG);
+const AUTO_HINTS = inferHintsFromTopic(TOPIC_ARG);
+/** Phase 0 在 --scoring 覆盖之前执行：必须把 CLI 选定的框架提前写进提示，否则会先产出错误 resultType。 */
+const ARCH_HINTS_FROM_CLI = [];
+if (OVERRIDE_SCORING === "level-band") {
+  ARCH_HINTS_FROM_CLI.push(
+    `scoringFamily必须为level-band。resultType禁止为figure。每个结果name表示同一连续谱上从弱到强（或从低到高）的不同段位，禁止使用真实人物、神话人物或明星姓名；results建议4-6个且名称能排成清晰递增（或递减）序列。`
+  );
+}
 if (AUTO_HINTS.length > 0) {
   console.log(`📌  Auto-detected constraints:`);
   AUTO_HINTS.forEach(h => console.log(`     • ${h}`));
 }
-const ALL_HINTS   = [...AUTO_HINTS, ...HINT_ARGS];
+if (ARCH_HINTS_FROM_CLI.length > 0) {
+  console.log(`📌  CLI architecture hints (--scoring):`);
+  ARCH_HINTS_FROM_CLI.forEach(h => console.log(`     • ${h}`));
+}
+const ALL_HINTS = [...AUTO_HINTS, ...ARCH_HINTS_FROM_CLI, ...HINT_ARGS];
 const HINT_BLOCK  = ALL_HINTS.length > 0
   ? `\n### 创作者硬性约束（必须严格遵守，不得偏离）\n${ALL_HINTS.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n`
   : "";
@@ -849,6 +879,7 @@ ${HINT_BLOCK}
 
 【重要】如果主题或约束中明确说明结果应该是某类真实事物（国家、城市、食物、运动等），必须选 item，不能选 archetype。
 【重要】如果主题的格式是「你和《XXX》中的谁最像」「你是《XXX》中的哪个角色/人物」，resultType 必须是 figure，name 必须是该作品中真实存在的角色姓名，绝对禁止自创象征性称谓（如「深渊潜行者」「命运织女」）代替角色名。
+【重要】如果主题是「有多强」「能力」「水平」「段位」「是否适合」「抗X能力」等强度或适配类测验，且未要求列举具体人物名单，禁止选 figure，禁止用与主题无关的历史/文学/神话名人凑数；应选 archetype（可带比喻）或配合 level-band 的段位命名。
 
 第二步：基于领域知识设计维度和原型
 
@@ -857,7 +888,7 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 输出格式：
 {
   "domainInsight": "4-6句，说明这个主题最核心的人格分化轴是什么，为什么这样划分比其他方式更准确",
-  "scoringFamily": "weighted-dimension 或 bipolar-dimension 二选一",
+  "scoringFamily": "weighted-dimension、bipolar-dimension 或 level-band 三选一（强度/段位/适合度序列用 level-band）",
   "resultType": "figure、item 或 archetype 三选一",
   "resultFields": [
     { "key": "portrait", "label": "气质画像", "standard": true },
@@ -921,9 +952,11 @@ scoringFamily 选择规则：
 【概念区分】
 - bipolar-dimension（极性维度）：心理测量意义上的"真维度"——每条轴有两个对立端，用户在两端之间的某一位置。类似 MBTI 的 I-E 轴：既不是"有多少外向"，而是"更偏哪一端"。
 - weighted-dimension（特质权重）：不是维度，而是"特质成分"——每条特质是单向积累，高分=这类特质更突出，多条特质可以同时都高。类似大五人格里的"开放性"——只有多少之分，没有对立端。这里"dimension"是技术字段名，实际概念是「特质」。
+- level-band（程度段位）：结果是同一维度上从弱到强、从低到高或可排序的「阶段/层级」，不是彼此无关的平行名人或平行物品。适合「有多强」「是否适合」「抗X能力」「准备度」等。禁止用真实人物姓名当结果名。
 
 - 选 bipolar-dimension：轴两端有对立的极点，用户的回答天然是"偏哪边"的选择。适合价值观冲突型（理性vs感性、秩序vs自由）、人格两极型、立场对立型。结果通常 4-8 个，按象限或对角组合设计。
 - 选 weighted-dimension：每条特质是单向积累，高分代表"这类特质更突出"，特质之间可以同时都高。适合多元能力型、气质成分型（你更像哪朵花、哪种咖啡）、兴趣偏向型。results 6-9 个。
+- 选 level-band：结果 4-6 个，名称体现同一连续谱上的不同档位，必须可排序；resultType 一般为 archetype（意象化段位名），不得为 figure。
 
 规则：
 -【关键约束】dimensionCount 由你根据主题复杂度决定；dimensions 数量必须与 dimensionCount 严格一致。results 4-9 个（bipolar 可少至4个），与 dimensions 数量无关。多个结果可以共享同一个 primaryDimension。每个 primaryDimension 必须是 dimensions 数组里的某一项。

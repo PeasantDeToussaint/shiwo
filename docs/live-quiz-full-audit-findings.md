@@ -1,0 +1,11347 @@
+# 线上题库全量审校 Findings（机器辅助 + 规则校验）
+
+生成时间（UTC）：2026-04-02T18:34:39.061Z
+
+数据来源：`scripts/data/live_audit/*.json`（与最近一次从 CloudBase `quizWriter` 拉取的快照一致）。
+
+说明：本报告**不是**真人通读后的主观评价。对 **scoring.type 为 `weighted-dimension` / `bipolar-dimension` / `level-band`** 的套题，执行与生成管线一致的校验（`validateFinalQuiz`、`validateQuestions`、`validateResults`、`validateDimensionProfiles`、`validateScoreMap`）。**city / dialect / big-five 等专用模型**仅跑 `validateFinalQuiz`（文案损坏等）并做结构枚举，避免把「量表 value」「方言区代码」误判为维度错误。
+
+已确认从线上删除、本快照中若仍残留 JSON 则为历史文件：`media-niche-test`、`spiritual-homeland`、`post-apocalypse-role`（以当前 catalog 为准）。
+
+本目录共扫描 **79** 个 JSON 文件（已排除 catalog / 风险清单等元数据）。
+
+## 总览
+
+| quizId | scoring | 题数 | 结果数 | errors | warnings | 备注 |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| ancient-poet-match | bipolar-dimension | 22 | 8 | 10 | 53 |  |
+| avengers-hero-match | bipolar-dimension | 22 | 9 | 5 | 80 |  |
+| big-bang-theory-character-match | weighted-dimension | 20 | 7 | 0 | 0 |  |
+| big-five-ocean | big-five | 44 | 8 | 0 | 1 |  |
+| buendia-generation-match | bipolar-dimension | 22 | 7 | 11 | 48 |  |
+| career-aptitude | big-five | 36 | 6 | 0 | 1 |  |
+| career-archetype-test | weighted-dimension | 20 | 12 | 0 | 0 |  |
+| city | city | 25 | 0 | 0 | 1 |  |
+| classic-book-match | bipolar-dimension | 20 | 9 | 6 | 49 |  |
+| coffee-personality-match | bipolar-dimension | 16 | 8 | 5 | 116 |  |
+| content-creator-type | weighted-dimension | 18 | 8 | 0 | 0 |  |
+| cthulhu-deity-match | bipolar-dimension | 20 | 7 | 8 | 95 |  |
+| detective-conan-character-match | bipolar-dimension | 20 | 8 | 10 | 23 |  |
+| dialect | dialect | 25 | 12 | 0 | 1 |  |
+| disney-princess-archetype | weighted-dimension | 20 | 10 | 0 | 0 |  |
+| doraemon-character-match | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| enneagram-classic | big-five | 81 | 9 | 0 | 1 |  |
+| flower-personality-match | bipolar-dimension | 18 | 9 | 15 | 59 |  |
+| gaibang-role-play | weighted-dimension | 22 | 10 | 1 | 5 |  |
+| game-of-thrones-character-analogy | weighted-dimension | 22 | 10 | 0 | 4 |  |
+| gatsby-character-match | weighted-dimension | 20 | 6 | 0 | 0 |  |
+| gem-personality | weighted-dimension | 20 | 12 | 0 | 0 |  |
+| graduate-school-fit | weighted-dimension | 20 | 5 | 1 | 1 |  |
+| greek-mythology-deity | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| he-li-hua-ting-character-match | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| investment-master-style | two-phase-archetype | 22 | 9 | 0 | 1 |  |
+| jin-female-archetypes | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| jujutsu-kaisen-character-match | weighted-dimension | 22 | 9 | 1 | 1 |  |
+| langyabang-character-match | bipolar-dimension | 18 | 8 | 16 | 44 |  |
+| life-philosophy-archetype | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| literary-soul-resonance | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| little-prince-character-match | weighted-dimension | 20 | 8 | 0 | 1 |  |
+| love-level-test | weighted-dimension | 20 | 5 | 7 | 7 |  |
+| love-rank-test | level-band | 18 | 5 | 0 | 0 |  |
+| love-show-personality | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| lovecraftian-monster-domination | bipolar-dimension | 20 | 6 | 2 | 9 |  |
+| martial-arts-sect | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| mbti-16personalities | mbti | 60 | 16 | 0 | 1 |  |
+| media-niche-test | weighted-dimension | 16 | 9 | 30 | 30 |  |
+| ming-dynasty-persona | weighted-dimension | 20 | 10 | 0 | 12 |  |
+| ming-dynasty-role-play | weighted-dimension | 22 | 10 | 0 | 10 |  |
+| miyazaki-character-archetype | weighted-dimension | 20 | 10 | 0 | 0 |  |
+| mythical-creature-within | weighted-dimension | 22 | 12 | 0 | 1 |  |
+| niche-sport-match | weighted-dimension | 18 | 8 | 0 | 12 |  |
+| one-piece-character-match | bipolar-dimension | 22 | 9 | 8 | 32 |  |
+| paladin-character-match | bipolar-dimension | 20 | 7 | 6 | 7 |  |
+| pokemon-personality-match | weighted-dimension | 20 | 10 | 5 | 5 |  |
+| post-apocalypse-role | weighted-dimension | 18 | 8 | 3 | 3 |  |
+| qing-nian-xiang-si | - | 0 | 0 | 0 | 1 | no questions |
+| rebirth-journey-to-the-west-monarch | weighted-dimension | 22 | 10 | 1 | 8 |  |
+| red-chambers | red-chambers | 20 | 10 | 0 | 1 |  |
+| republican-era-business-mindset | weighted-dimension | 22 | 10 | 0 | 2 |  |
+| republican-women-personality-test | weighted-dimension | 20 | 7 | 0 | 0 |  |
+| shanhaijing-shenshou | weighted-dimension | 20 | 6 | 0 | 0 |  |
+| sherlock-character-match | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| spending-personality-test | bipolar-dimension | 16 | 8 | 7 | 65 |  |
+| spirited-away-character-match | bipolar-dimension | 18 | 8 | 10 | 35 |  |
+| spiritual-homeland-match | weighted-dimension | 18 | 8 | 0 | 28 |  |
+| spiritual-homeland | weighted-dimension | 18 | 12 | 6 | 56 |  |
+| study-abroad-fit-test | weighted-dimension | 18 | 8 | 1 | 1 |  |
+| tang-poets | weighted-dimension | 5 | 4 | 0 | 16 |  |
+| tang-song-masters | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| temple | temple | 12 | 15 | 0 | 1 |  |
+| three-kingdoms-strategist-match | weighted-dimension | 20 | 10 | 0 | 0 |  |
+| wangjiawei-character | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| what-pet-fits-you | weighted-dimension | 22 | 8 | 1 | 2 |  |
+| which-ancient-greek-philosopher-resonates-with-you | weighted-dimension | 22 | 10 | 0 | 0 |  |
+| which-japanese-sengoku-daimyo-are-you | weighted-dimension | 22 | 10 | 0 | 3 |  |
+| which-literary-giant-are-you | weighted-dimension | 22 | 10 | 3 | 16 |  |
+| which-school-of-thought-are-you | weighted-dimension | 22 | 10 | 0 | 0 |  |
+| which-sport-fits-your-release | weighted-dimension | 22 | 4 | 0 | 12 |  |
+| which-tang-poet-lives-in-your-heart | weighted-dimension | 22 | 10 | 0 | 10 |  |
+| your-aesthetic-and-which-painter | weighted-dimension | 22 | 12 | 0 | 0 |  |
+| your-perfect-perfume-type | weighted-dimension | 22 | 6 | 0 | 30 |  |
+| zhenhuan-character-match | weighted-dimension | 12 | 5 | 0 | 0 |  |
+| zhifou-character-match | weighted-dimension | 20 | 8 | 0 | 0 |  |
+| zootopia-character-match | bipolar-dimension | 18 | 4 | 5 | 57 |  |
+| 自媒体人格原型 | weighted-dimension | 20 | 6 | 0 | 0 |  |
+| 自媒体赛道人格测验 | weighted-dimension | 20 | 8 | 2 | 2 |  |
+
+**合计** errors=186, warnings=1059（跨所有含 questions 的套题；无题目套题未计入合计）。
+
+## ancient-poet-match
+- **计分**：`bipolar-dimension` · 维度数 3 · 题数 22 · 结果数 8
+- **错误（10）**
+  - bipolar axis "入世/出世": missing highPole
+  - bipolar axis "奔放/内敛": missing highPole
+  - bipolar axis "理想/现实": missing highPole
+  - r5 is unreachable — dominated by r7 on all dimensions
+  - r6 is unreachable — dominated by r1 on all dimensions
+  - r6 is unreachable — dominated by r2 on all dimensions
+  - r6 is unreachable — dominated by r3 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+  - r6 is unreachable — dominated by r7 on all dimensions
+  - r6 is unreachable — dominated by r8 on all dimensions
+- **警告（53）**
+  - q3.b: bipolar option mixes positive and negative scores
+  - q4.a: bipolar option mixes positive and negative scores
+  - q5.c: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option mixes positive and negative scores
+  - q7.c: bipolar option mixes positive and negative scores
+  - q7.d: bipolar option mixes positive and negative scores
+  - q8.c: bipolar option mixes positive and negative scores
+  - q8.d: bipolar option mixes positive and negative scores
+  - q18.a: bipolar option mixes positive and negative scores
+  - q19.c: bipolar option mixes positive and negative scores
+  - q20.b: bipolar option mixes positive and negative scores
+  - q20.c: bipolar option mixes positive and negative scores
+  - q21.b: bipolar option mixes positive and negative scores
+  - q21.c: bipolar option mixes positive and negative scores
+  - q22.a: bipolar option mixes positive and negative scores
+  - q22.c: bipolar option mixes positive and negative scores
+  - q22.d: bipolar option has 3 scored dimensions (max 2)
+  - q22.d: bipolar option mixes positive and negative scores
+  - r1: missing "strengths"
+  - r1: missing "weaknesses"
+  - r1: only 0 strengths (want 3)
+  - r1: only 0 weaknesses (want 3)
+  - r2: missing "strengths"
+  - r2: missing "weaknesses"
+  - r2: only 0 strengths (want 3)
+  - r2: only 0 weaknesses (want 3)
+  - r3: missing "strengths"
+  - r3: missing "weaknesses"
+  - r3: only 0 strengths (want 3)
+  - r3: only 0 weaknesses (want 3)
+  - r5: missing "strengths"
+  - r5: missing "weaknesses"
+  - r5: only 0 strengths (want 3)
+  - r5: only 0 weaknesses (want 3)
+  - r6: missing "strengths"
+  - r6: missing "weaknesses"
+  - r6: only 0 strengths (want 3)
+  - r6: only 0 weaknesses (want 3)
+  - r7: missing "strengths"
+  - r7: missing "weaknesses"
+  - r7: only 0 strengths (want 3)
+  - r7: only 0 weaknesses (want 3)
+  - r8: missing "strengths"
+  - r8: missing "weaknesses"
+  - r8: only 0 strengths (want 3)
+  - r8: only 0 weaknesses (want 3)
+  - r5 is unreachable — dominated by r7 on all dimensions
+  - r6 is unreachable — dominated by r1 on all dimensions
+  - r6 is unreachable — dominated by r2 on all dimensions
+  - r6 is unreachable — dominated by r3 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+  - r6 is unreachable — dominated by r7 on all dimensions
+  - r6 is unreachable — dominated by r8 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：月下独酌，面对满桌佳酿，你会如何度过这个夜晚？
+  - `q1.a`：结构检查通过 — 邀三五知己共饮，把酒言欢，畅谈人生理想
+  - `q1.b`：结构检查通过 — 独自品酒，静思冥想，感受内心的宁静与深邃
+  - `q1.c`：结构检查通过 — 邀几位志同道合的朋友，吟诗作赋，交流文学心得
+  - `q1.d`：结构检查通过 — 早早歇息，将酒封存，待明日再与知己共享
+- **q2** 题干：江边送别故友，船即将启航，你会如何表达心意？
+  - `q2.a`：结构检查通过 — 赠予精心挑选的礼物，并附上亲笔写的送别诗
+  - `q2.b`：结构检查通过 — 默默注视远去的船影，心中默默祝福
+  - `q2.c`：结构检查通过 — 高声呼喊，叮嘱路上小心，约定重逢之日
+  - `q2.d`：结构检查通过 — 平静地挥手告别，转身离开，不拖泥带水
+- **q3** 题干：朝堂议事时，皇帝询问你对国家大事的看法，你会如何回应？
+  - `q3.a`：结构检查通过 — 直言不讳，提出改革建议，哪怕可能得罪权贵
+  - `q3.b`：双极混号 — 委婉表达，引经据典，以古喻今地提出观点
+  - `q3.c`：结构检查通过 — 沉默不言，观察局势，等待更合适的时机发言
+  - `q3.d`：结构检查通过 — 附和主流意见，避免冲突，保全自己
+- **q4** 题干：田园小憩时，面对眼前青山绿水，你会有何感悟？
+  - `q4.a`：双极混号 — 感叹自然之美，思考人生短暂，及时行乐
+  - `q4.b`：结构检查通过 — 观察农人耕作，思考民生疾苦，思索治国之道
+  - `q4.c`：结构检查通过 — 闭目养神，感受天人合一的境界，忘却尘世烦恼
+  - `q4.d`：结构检查通过 — 记录下这片美景，构思诗句，与友人分享
+- **q5** 题干：闺中静思时，面对镜中自己，你会如何度过这闲暇时光？
+  - `q5.a`：结构检查通过 — 研习诗词歌赋，提升自己的才情与修养
+  - `q5.b`：结构检查通过 — 关注时事动态，思考国家大事，忧心天下
+  - `q5.c`：双极混号 — 弹琴作画，抒发内心情感，追求精神自由
+  - `q5.d`：双极混号 — 整理妆容，准备参加宴会，社交应酬
+- **q6** 题干：秋日登高望远，面对满山红叶，你会作何感想？
+  - `q6.a`：结构检查通过 — 感叹时光流逝，人生如秋，珍惜当下
+  - `q6.b`：结构检查通过 — 豪情万丈，指点江山，抒发建功立业的抱负
+  - `q6.c`：结构检查通过 — 静静欣赏自然之美，感受生命的轮回与永恒
+  - `q6.d`：结构检查通过 — 思考如何将美景入诗，记录这美好瞬间
+- **q7** 题干：春日游园，看到百花盛开，你会如何度过这美好时光？
+  - `q7.a`：结构检查通过 — 与友人结伴同游，赏花吟诗，共度良辰
+  - `q7.b`：结构检查通过 — 独自漫步，思考人生哲理，感悟自然之道
+  - `q7.c`：双极混号 — 捕捉春光，写诗作画，记录美好时刻
+  - `q7.d`：双极混号 — 关注花木生长，思考农事，谋划来年生计
+- **q8** 题干：夜深人静，面对窗外皎洁明月，你会如何度过这寂静夜晚？
+  - `q8.a`：结构检查通过 — 秉烛夜读，研习经典，充实学识
+  - `q8.b`：结构检查通过 — 望月思乡，思念远方亲友，思绪万千
+  - `q8.c`：双极混号 — 独酌赏月，感受天地之美，忘却尘世烦恼
+  - `q8.d`：双极混号 — 思考朝政得失，谋划明日对策，忧国忧民
+- **q9** 题干：秋夜，你独自站在江边，望着远处的明月和波光粼粼的水面，心中涌起万千思绪。你会如何度过这个夜晚？
+  - `q9.a`：结构检查通过 — 乘一叶小舟，随波逐流，在月下吟诗作赋，任思绪自由流淌
+  - `q9.b`：结构检查通过 — 回到书斋，整理思绪，将所见所感写成一篇完整的文章，记录这一夜的感悟
+  - `q9.c`：结构检查通过 — 邀请几位知己，在江边摆设酒宴，共同赏月论诗，交流人生感悟
+  - `q9.d`：结构检查通过 — 早早歇息，将这一夜的景色和感受留在梦中，期待明日再来此处
+- **q10** 题干：你在朝为官，面对朝廷中的权力斗争和明争暗斗，你会如何应对？
+  - `q10.a`：结构检查通过 — 直言进谏，不畏权贵，坚持自己的理念和原则，即使冒着风险也在所不惜
+  - `q10.b`：结构检查通过 — 称病辞官，归隐田园，远离朝堂纷争，过自己清净自在的生活
+  - `q10.c`：结构检查通过 — 在官场中谨言慎行，明哲保身，但也不忘自己的初心和使命
+  - `q10.d`：结构检查通过 — 敷衍了事，得过且过，只求官位安稳，不思进取也不思退隐
+- **q11** 题干：春日午后，你漫步在乡间小路上，看到一片盛开的桃花，你会如何欣赏这美景？
+  - `q11.a`：结构检查通过 — 攀上桃树，摘几朵最美的花，插在发间或衣襟上，与花合影留念
+  - `q11.b`：结构检查通过 — 在树下静坐，观察花瓣飘落的轨迹，感受生命的短暂与美好
+  - `q11.c`：结构检查通过 — 采撷几朵花瓣，带回家中泡茶或制作香囊，将这份美好留存
+  - `q11.d`：结构检查通过 — 匆匆走过这片桃林，心中虽有欣赏，却不愿停留或采摘
+- **q12** 题干：你受邀参加一场文人雅集，席间有人谈及时政，表达对国家前途的忧虑，你会如何回应？
+  - `q12.a`：结构检查通过 — 慷慨陈词，提出自己的见解和解决方案，与他人激烈辩论，寻求共识
+  - `q12.b`：结构检查通过 — 保持沉默，专心品茶赏画，不参与政治讨论，专注于艺术和文学
+  - `q12.c`：结构检查通过 — 委婉表达自己的看法，既不回避问题，也不过于激进，寻求温和的交流
+  - `q12.d`：结构检查通过 — 附和主流观点，避免表达不同意见，以免引起不必要的争议
+- **q13** 题干：冬夜，你在书房中读书，突然感到一阵寒意袭来，你会如何应对？
+  - `q13.a`：结构检查通过 — 添炭加火，煮一壶热茶，继续在寒夜中苦读，不畏艰苦
+  - `q13.b`：结构检查通过 — 放下书本，早早歇息，等明日精神饱满时再继续学习
+  - `q13.c`：结构检查通过 — 披上厚衣，点燃烛火，继续阅读，但注意适当休息，保持身心健康
+  - `q13.d`：结构检查通过 — 在室内踱步思考，将书本内容与实际生活联系起来，不求一时读完
+- **q14** 题干：你收到一位老友的来信，邀请你去远方游历，体验不同的风土人情，你会如何回应？
+  - `q14.a`：结构检查通过 — 立即收拾行囊，欣然应允，期待在旅途中结交新友，开阔眼界
+  - `q14.b`：结构检查通过 — 婉言谢绝，回信表达感谢，但解释自己已有安排，不便远行
+  - `q14.c`：结构检查通过 — 提出自己的顾虑，如家庭责任或经济问题，但表示如果条件允许仍愿前往
+  - `q14.d`：结构检查通过 — 回复说考虑一下，但迟迟不做决定，最终可能错过机会
+- **q15** 题干：你在闺中静坐，忽然听到窗外传来悠扬的琴声，你会如何反应？
+  - `q15.a`：结构检查通过 — 推开窗棂，循声而去，想一探究竟，或许能结识一位知音
+  - `q15.b`：结构检查通过 — 置若罔闻，继续手中的女红或读书，不愿被打扰或与人交往
+  - `q15.c`：结构检查通过 — 静坐窗边，细细聆听琴声，感受其中的情感，但不主动去寻找弹琴人
+  - `q15.d`：结构检查通过 — 命侍女去查看是谁在弹琴，自己则继续做自己的事，保持距离
+- **q16** 题干：你在科举考试中落榜，面对亲友的询问和自己的失落，你会如何应对？
+  - `q16.a`：结构检查通过 — 重新振作，更加努力地读书备考，坚信自己终有一日能够金榜题名
+  - `q16.b`：结构检查通过 — 放弃科举之路，转而研究学问或投身艺术，寻找自己的人生价值
+  - `q16.c`：结构检查通过 — 反思自己的不足，调整学习方法，同时也不排除其他可能的人生道路
+  - `q16.d`：结构检查通过 — 感到沮丧和迷茫，暂时放下此事，先处理眼前的生活琐事
+- **q17** 题干：月下独酌，酒酣耳热之际，你如何面对这良辰美景？
+  - `q17.a`：结构检查通过 — 举杯邀明月，对影成三人，与天地共醉
+  - `q17.b`：结构检查通过 — 独酌无相亲，只愿长醉不复醒
+  - `q17.c`：结构检查通过 — 醉里挑灯看剑，梦回吹角连营
+  - `q17.d`：结构检查通过 — 莫使金樽空对月，及时行乐
+- **q18** 题干：江边送别，友人即将远行，你会如何表达心意？
+  - `q18.a`：双极混号 — 海内存知己，天涯若比邻
+  - `q18.b`：结构检查通过 — 劝君更尽一杯酒，西出阳关无故人
+  - `q18.c`：结构检查通过 — 长风破浪会有时，直挂云帆济沧海
+  - `q18.d`：结构检查通过 — 无为在歧路，儿女共沾巾
+- **q19** 题干：田园小憩，面对闲适的乡村生活，你的感受是？
+  - `q19.a`：结构检查通过 — 采菊东篱下，悠然见南山
+  - `q19.b`：结构检查通过 — 晨兴理荒秽，带月荷锄归
+  - `q19.c`：双极混号 — 绿树村边合，青山郭外斜
+  - `q19.d`：结构检查通过 — 开轩面场圃，把酒话桑麻
+- **q20** 题干：朝堂议事，面对国家大事，你的态度是？
+  - `q20.a`：结构检查通过 — 先天下之忧而忧，后天下之乐而乐
+  - `q20.b`：双极混号 — 穷则独善其身，达则兼济天下
+  - `q20.c`：双极混号 — 安能摧眉折腰事权贵，使我不得开心颜
+  - `q20.d`：结构检查通过 — 不才明主弃，多病故人疏
+- **q21** 题干：闺中静思，面对镜中的自己，你会想些什么？
+  - `q21.a`：结构检查通过 — 红颜未老恩先断，斜倚薰笼坐到明
+  - `q21.b`：双极混号 — 妆罢低声问夫婿，画眉深浅入时无
+  - `q21.c`：双极混号 — 人生得意须尽欢，莫使金樽空对月
+  - `q21.d`：结构检查通过 — 天生我材必有用，千金散尽还复来
+- **q22** 题干：面对人生起伏，你的处世哲学是？
+  - `q22.a`：双极混号 — 行到水穷处，坐看云起时
+  - `q22.b`：结构检查通过 — 沉舟侧畔千帆过，病树前头万木春
+  - `q22.c`：双极混号 — 老骥伏枥，志在千里；烈士暮年，壮心不已
+  - `q22.d`：双极混号；双极维度键>2 — 人生自古谁无死，留取丹心照汗青
+
+### 逐结果
+- **r1**（李白）：profile 键与范围检查通过。
+- **r2**（杜甫）：profile 键与范围检查通过。
+- **r3**（苏轼）：profile 键与范围检查通过。
+- **r4**（李清照）：profile 键与范围检查通过。
+- **r5**（王维）：profile 键与范围检查通过。
+- **r6**（陶渊明）：profile 键与范围检查通过。
+- **r7**（辛弃疾）：profile 键与范围检查通过。
+- **r8**（白居易）：profile 键与范围检查通过。
+
+## avengers-hero-match
+- **计分**：`bipolar-dimension` · 维度数 5 · 题数 22 · 结果数 9
+- **错误（5）**
+  - bipolar axis "危机应对方式": missing highPole
+  - bipolar axis "情感驱动力来源": missing highPole
+  - bipolar axis "对规则与权威的态度": missing highPole
+  - bipolar axis "道德边界弹性": missing highPole
+  - bipolar axis "权力的使用方式": missing highPole
+- **警告（80）**
+  - q1.d: bipolar option mixes positive and negative scores
+  - q2.c: bipolar option mixes positive and negative scores
+  - q2.d: bipolar option mixes positive and negative scores
+  - q3.a: bipolar option mixes positive and negative scores
+  - q3.b: bipolar option mixes positive and negative scores
+  - q4.a: bipolar option mixes positive and negative scores
+  - q4.c: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option mixes positive and negative scores
+  - q6.a: bipolar option mixes positive and negative scores
+  - q6.b: bipolar option mixes positive and negative scores
+  - q6.c: bipolar option mixes positive and negative scores
+  - q6.d: bipolar option mixes positive and negative scores
+  - q8.b: bipolar option mixes positive and negative scores
+  - q8.c: bipolar option mixes positive and negative scores
+  - q8.d: bipolar option mixes positive and negative scores
+  - q9.c: bipolar option mixes positive and negative scores
+  - q9.d: bipolar option mixes positive and negative scores
+  - q10.a: bipolar option mixes positive and negative scores
+  - q10.c: bipolar option mixes positive and negative scores
+  - q10.d: bipolar option mixes positive and negative scores
+  - q11.a: bipolar option mixes positive and negative scores
+  - q11.b: bipolar option mixes positive and negative scores
+  - q11.d: bipolar option mixes positive and negative scores
+  - q12.a: bipolar option mixes positive and negative scores
+  - q12.b: bipolar option mixes positive and negative scores
+  - q12.c: bipolar option mixes positive and negative scores
+  - q12.d: bipolar option mixes positive and negative scores
+  - q13.a: bipolar option mixes positive and negative scores
+  - q13.c: bipolar option mixes positive and negative scores
+  - q14.a: bipolar option mixes positive and negative scores
+  - q14.b: bipolar option mixes positive and negative scores
+  - q14.d: bipolar option mixes positive and negative scores
+  - q15.a: bipolar option mixes positive and negative scores
+  - q15.b: bipolar option mixes positive and negative scores
+  - q15.c: bipolar option mixes positive and negative scores
+  - q15.d: bipolar option mixes positive and negative scores
+  - q16.b: bipolar option mixes positive and negative scores
+  - q17.c: bipolar option mixes positive and negative scores
+  - q17.d: bipolar option mixes positive and negative scores
+  - q18.a: bipolar option mixes positive and negative scores
+  - q18.b: bipolar option mixes positive and negative scores
+  - q18.c: bipolar option mixes positive and negative scores
+  - q18.d: bipolar option mixes positive and negative scores
+  - q19.a: bipolar option mixes positive and negative scores
+  - q19.c: bipolar option mixes positive and negative scores
+  - q19.d: bipolar option mixes positive and negative scores
+  - q20.a: bipolar option mixes positive and negative scores
+  - q20.c: bipolar option mixes positive and negative scores
+  - q20.d: bipolar option mixes positive and negative scores
+  - q21.a: bipolar option mixes positive and negative scores
+  - q21.b: bipolar option mixes positive and negative scores
+  - q22.d: bipolar option mixes positive and negative scores
+  - r1: missing "strengths"
+  - r1: missing "weaknesses"
+  - r1: only 0 strengths (want 3)
+  - r1: only 0 weaknesses (want 3)
+  - r2: missing "strengths"
+  - r2: missing "weaknesses"
+  - r2: only 0 strengths (want 3)
+  - r2: only 0 weaknesses (want 3)
+  - r3: missing "strengths"
+  - r3: missing "weaknesses"
+  - r3: only 0 strengths (want 3)
+  - r3: only 0 weaknesses (want 3)
+  - r5: missing "strengths"
+  - r5: missing "weaknesses"
+  - r5: only 0 strengths (want 3)
+  - r5: only 0 weaknesses (want 3)
+  - r6: missing "strengths"
+  - r6: missing "weaknesses"
+  - r6: only 0 strengths (want 3)
+  - r6: only 0 weaknesses (want 3)
+  - r7: missing "strengths"
+  - r7: missing "weaknesses"
+  - r7: only 0 strengths (want 3)
+  - r7: only 0 weaknesses (want 3)
+  - r8: missing "strengths"
+  - r8: missing "weaknesses"
+  - r8: only 0 strengths (want 3)
+  - r8: only 0 weaknesses (want 3)
+
+### 逐题 · 逐选项
+- **q1** 题干：纽约大战后，斯塔克大厦废墟上发现一名幸存儿童，但现场仍有不稳定能量源随时可能爆炸。救援队正赶来的同时，你发现坍塌的钢梁下还困着另一名伤者。
+  - `q1.a`：结构检查通过 — 立即救出儿童，相信团队会在你救援时处理能量源
+  - `q1.b`：结构检查通过 — 先稳定能量源，再组织救援，确保所有人安全
+  - `q1.c`：结构检查通过 — 尝试同时处理两个危机，最大化拯救生命的机会
+  - `q1.d`：双极混号 — 等待专业救援队到达，提供远程指导而非亲自介入
+- **q2** 题干：神盾局情报显示，洛基的权杖中蕴含的无限宝石可能被九头蛇特工窃取。你必须在两种行动方案中做出选择：
+  - `q2.a`：结构检查通过 — 立即突袭九头蛇基地，不惜一切代价夺回宝石
+  - `q2.b`：结构检查通过 — 组建小队深入调查，确认宝石位置后再行动
+  - `q2.c`：双极混号 — 寻求其他超级英雄协助，分散风险提高成功率
+  - `q2.d`：双极混号 — 尝试与九头蛇谈判，用其他条件交换宝石位置
+- **q3** 题干：在一次任务中，你发现队友托尼·斯塔克擅自修改了作战计划，没有事先通知团队。当你质问他时，他解释说这是最优解，团队应该信任他的判断。
+  - `q3.a`：双极混号 — 坚持要求所有决策必须通过团队共识，个人专断不可接受
+  - `q3.b`：双极混号 — 理解他的出发点，但要求未来必须保持透明沟通
+  - `q3.c`：结构检查通过 — 私下评估他的方案，如果确实更优则支持，否则公开反对
+  - `q3.d`：结构检查通过 — 向神盾局上级报告，强调团队纪律的重要性
+- **q4** 题干：在一次与灭霸的遭遇战中，你发现击败他的唯一方法是牺牲一个无辜的星球上的所有生命。神盾局高层命令执行这一方案，以拯救整个宇宙。
+  - `q4.a`：双极混号 — 执行命令，相信牺牲少数拯救多数是唯一理性选择
+  - `q4.b`：结构检查通过 — 违抗命令，寻找其他解决方案，绝不牺牲无辜生命
+  - `q4.c`：双极混号 — 尝试与灭霸谈判，看能否在不牺牲生命的情况下达成妥协
+  - `q4.d`：结构检查通过 — 召集所有英雄共同决策，分散道德责任
+- **q5** 题干：在一次任务后，你发现获得的无限能源可以同时用于两个项目：一是为战损的斯塔克大厦提供永久能源，二是为贫困地区提供临时能源援助。资源有限，你必须决定优先分配方案。
+  - `q5.a`：结构检查通过 — 优先保障复仇者基地的能源安全，确保未来应对危机的能力
+  - `q5.b`：结构检查通过 — 优先援助弱势群体，认为英雄的职责是保护无辜者
+  - `q5.c`：结构检查通过 — 将资源平均分配，两个项目各获一半支持
+  - `q5.d`：双极混号 — 寻找第三方合作伙伴，共同资助两个项目
+- **q6** 题干：在一次媒体发布会上，记者尖锐质疑复仇者联盟是否拥有过度权力，且缺乏有效监督。你需要在回答中表明立场：
+  - `q6.a`：双极混号 — 坦诚承认需要监督，但强调在危机时刻必须拥有快速决策权
+  - `q6.b`：双极混号 — 反驳质疑，强调团队始终以保护人类为最高使命
+  - `q6.c`：双极混号 — 提出建立监督委员会的建议，平衡权力与责任
+  - `q6.d`：双极混号 — 回避直接回答，转而强调团队已取得的成就和牺牲
+- **q7** 题干：在一次与神秘客的战斗中，你发现他的装备中有一项可能帮助逆转灭霸造成的宇宙灾难的技术，但这项技术原本用于武器开发，使用它可能带来未知风险。
+  - `q7.a`：结构检查通过 — 立即使用技术，逆转灾难是首要任务，风险可以后续解决
+  - `q7.b`：结构检查通过 — 拒绝使用，坚持不利用可能造成更大伤害的技术
+  - `q7.c`：结构检查通过 — 尝试改造技术，使其符合安全标准后再使用
+  - `q7.d`：结构检查通过 — 寻求神盾局和科学家的集体意见，分担决策责任
+- **q8** 题干：在一次任务中，你发现一名反派曾经是神盾局的卧底，他的某些行为虽然违法但阻止了更大的灾难。现在他需要你的帮助来完成一项关键任务，但你知道这可能会违反神盾局的严格规定。
+  - `q8.a`：结构检查通过 — 帮助他完成任务，相信他的动机是正确的
+  - `q8.b`：双极混号 — 拒绝帮助，坚持遵守规则和程序
+  - `q8.c`：双极混号 — 寻求团队投票决定，平衡规则和结果
+  - `q8.d`：双极混号 — 私下提供有限帮助，但不公开参与或承担责任
+- **q9** 题干：在纽约战场上，你发现一个重要情报点，但该区域被敌方的量子力场所包围，直接进入可能导致通讯中断和定位失效。你会采取什么行动？
+  - `q9.a`：结构检查通过 — 立即召集技术团队，研究量子力场的特性，寻找突破口
+  - `q9.b`：结构检查通过 — 放弃情报收集，转而寻找其他更安全的情报来源
+  - `q9.c`：双极混号 — 尝试使用备用通讯设备，冒险潜入量子力场边缘收集部分情报
+  - `q9.d`：双极混号 — 请求上级指示，等待官方决策后再行动
+- **q10** 题干：在一次任务简报会上，你提出的战术方案与队长的意见相左，但队长坚持己见且拒绝讨论其他可能性。你会如何处理？
+  - `q10.a`：双极混号 — 私下收集更多数据支持你的方案，准备在关键时刻提出证据
+  - `q10.b`：结构检查通过 — 无条件服从队长的决定，相信他的经验和判断
+  - `q10.c`：双极混号 — 提出折中方案，尝试结合两种思路的优点
+  - `q10.d`：双极混号 — 坚持己见，公开质疑队长决策的正确性
+- **q11** 题干：在一次秘密行动中，你发现了一个能快速完成任务但涉及灰色地带的方法——可能会牺牲无辜平民的隐私和安全。你会如何选择？
+  - `q11.a`：双极混号 — 拒绝使用该方法，寻找更符合道德标准的替代方案
+  - `q11.b`：双极混号 — 使用该方法，但尽最大努力减少对无辜者的伤害
+  - `q11.c`：结构检查通过 — 毫不犹豫地采用该方法，完成任务高于一切
+  - `q11.d`：双极混号 — 向上级报告这一困境，寻求更高层面的决策
+- **q12** 题干：在一次任务中，你的队友因私人原因情绪低落，影响了团队配合。作为团队核心成员，你会如何处理？
+  - `q12.a`：双极混号 — 直接与队友沟通，了解问题并提供情感支持
+  - `q12.b`：双极混号 — 暂时调整团队分工，减轻该队员的压力
+  - `q12.c`：双极混号 — 专注于任务本身，相信队友能自我调节
+  - `q12.d`：双极混号 — 建议该队员暂时退出任务，优先处理个人问题
+- **q13** 题干：在一次全球危机中，你获得了能够决定数百万人命运的强大力量，但这种力量的使用可能会带来不可预见的后果。你会如何使用这股力量？
+  - `q13.a`：双极混号 — 谨慎使用，只在必要时动用最小必要的力量
+  - `q13.b`：结构检查通过 — 全力使用这股力量，不惜一切代价解决问题
+  - `q13.c`：双极混号 — 寻求其他英雄的意见，共同决定力量的使用方式
+  - `q13.d`：结构检查通过 — 放弃使用这股力量，寻找不依赖它的解决方案
+- **q14** 题干：在一次任务中，你发现政府机构隐瞒了重要信息，这些信息可能影响任务成败和公众安全。你会如何处理？
+  - `q14.a`：双极混号 — 公开揭露这些信息，让公众了解真相
+  - `q14.b`：双极混号 — 私下与高层沟通，要求他们纠正错误
+  - `q14.c`：结构检查通过 — 权衡信息公开的后果，决定是否以及何时公开
+  - `q14.d`：双极混号 — 忽略这些信息，专注于当前任务目标
+- **q15** 题干：在一次对抗强敌的战斗中，你发现敌人的战术有明显的漏洞，但直接指出可能会暴露我方战术意图。你会如何行动？
+  - `q15.a`：双极混号 — 立即利用这个漏洞，发动突袭
+  - `q15.b`：双极混号 — 向队长汇报这一发现，由团队共同决定如何应对
+  - `q15.c`：双极混号 — 设计一个陷阱，让敌人自己掉入这个漏洞
+  - `q15.d`：双极混号 — 忽略这个漏洞，按照既定战术行动
+- **q16** 题干：在一次重要任务前，你面临一个艰难选择：使用一种能提高能力但可能带来长期副作用的方法，还是保持现状但可能影响任务成功率？
+  - `q16.a`：结构检查通过 — 选择使用能提高能力的方法，相信未来能解决副作用问题
+  - `q16.b`：双极混号 — 保持现状，相信团队的能力足以完成任务
+  - `q16.c`：结构检查通过 — 寻求其他安全提升能力的方法
+  - `q16.d`：结构检查通过 — 放弃任务，不愿承担任何风险
+- **q17** 题干：在纽约战后的战略会议上，斯塔克提出了一项高风险的全球防御系统计划，罗杰斯对此表示质疑。面对这种分歧，你会：
+  - `q17.a`：结构检查通过 — 支持斯塔克的计划，认为技术优势是未来防御的关键
+  - `q17.b`：结构检查通过 — 站在罗杰斯一边，强调保护民众自由比控制更重要
+  - `q17.c`：双极混号 — 提议先进行小规模测试，收集数据后再做决定
+  - `q17.d`：双极混号 — 建议组建联合评估小组，确保多方利益得到平衡
+- **q18** 题干：当你发现一位曾经帮助过你的神盾局特工正在秘密进行违反伦理的实验时，你会：
+  - `q18.a`：双极混号 — 立即曝光此事，即使这会损害组织声誉也在所不惜
+  - `q18.b`：双极混号 — 私下与该特工对质，给予改正机会而非公开惩罚
+  - `q18.c`：双极混号 — 收集完整证据链后，提交给高层处理，保持程序正义
+  - `q18.d`：双极混号 — 权衡实验可能的益处与风险，再做决定
+- **q19** 题干：在一次与洛基的对决中，他提出了一个看似能结束冲突的交易条件，但你知道这可能是个陷阱。你会：
+  - `q19.a`：双极混号 — 假装接受，暗中准备应对任何突发状况
+  - `q19.b`：结构检查通过 — 直接拒绝，表明绝不与敌人谈判的立场
+  - `q19.c`：双极混号 — 提出反制条件，测试对方的真实意图
+  - `q19.d`：双极混号 — 召集团队讨论，共同评估风险与收益
+- **q20** 题干：当你发现一位队友因个人情感问题而影响任务表现时，你会：
+  - `q20.a`：双极混号 — 直接指出问题，要求他暂时退出任务直到情绪稳定
+  - `q20.b`：结构检查通过 — 私下倾听并提供支持，帮助他平衡个人与团队责任
+  - `q20.c`：双极混号 — 调整团队分工，为他创造空间处理个人问题
+  - `q20.d`：双极混号 — 坚持原则，认为个人情绪不应影响团队使命
+- **q21** 题干：在一次外星威胁后，政府提出了一项加强对超级英雄监管的法案，你会：
+  - `q21.a`：双极混号 — 支持监管，认为透明和问责是英雄行为的必要保障
+  - `q21.b`：双极混号 — 反对过度监管，担忧这将限制能力者在危机时的行动自由
+  - `q21.c`：结构检查通过 — 提出折中方案，确保监督但不束缚英雄的手脚
+  - `q21.d`：结构检查通过 — 保持中立，认为应由团队内部制定自律准则
+- **q22** 题干：在一次任务中，你需要做出牺牲少数人拯救多数人的艰难抉择时，你会：
+  - `q22.a`：结构检查通过 — 毫不犹豫选择拯救多数，认为这是最理性的决定
+  - `q22.b`：结构检查通过 — 寻找第三种可能，拒绝在牺牲任何人的前提下行动
+  - `q22.c`：结构检查通过 — 征求所有相关者的意见，尊重每个人的自主权
+  - `q22.d`：双极混号 — 基于专业判断做出决定，承担全部责任
+
+### 逐结果
+- **r1**（钢铁侠）：profile 键与范围检查通过。
+- **r2**（美国队长）：profile 键与范围检查通过。
+- **r3**（雷神）：profile 键与范围检查通过。
+- **r4**（黑寡妇）：profile 键与范围检查通过。
+- **r5**（绿巨人）：profile 键与范围检查通过。
+- **r6**（鹰眼）：profile 键与范围检查通过。
+- **r7**（蜘蛛侠）：profile 键与范围检查通过。
+- **r8**（奇异博士）：profile 键与范围检查通过。
+- **r9**（黑豹）：profile 键与范围检查通过。
+
+## big-bang-theory-character-match
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 20 · 结果数 7
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：Caltech食堂里，谢耳朵把整张桌子铺满了他的「实验性午餐效率研究报告」，拒绝让人拼桌，声称这是「必要的科学实验环境」。你刚进来找位置。
+  - `q1.a`：结构检查通过 — 用数据指出他的行为占用了多少可用桌位，并附上优化建议
+  - `q1.b`：结构检查通过 — 礼貌地请他把东西挪一挪，给大家留出位置
+  - `q1.c`：结构检查通过 — 悄悄找了另一张桌子坐，不想和他争
+  - `q1.d`：结构检查通过 — 干脆坐到他对面，他也没法阻止
+- **q2** 题干：游戏之夜上，霍华德和拉杰什为一张《魔法风云会》卡牌的规则争得面红耳赤。莱纳德要求你来当裁判。
+  - `q2.a`：结构检查通过 — 拿出规则书，逐条核对，用原文证明谁对谁错
+  - `q2.b`：结构检查通过 — 说「你们都有一点道理」，努力让双方都满意
+  - `q2.c`：结构检查通过 — 提议换一个没有争议的游戏，转移矛盾
+  - `q2.d`：结构检查通过 — 宣布自己不感兴趣当裁判，继续吃薯片
+- **q3** 题干：在《芝士蛋糕工厂》，谢耳朵当众开始向佩妮解释「端盘子的力学低效性」，还在计算最优托盘角度。佩妮的脸越来越难看。
+  - `q3.a`：结构检查通过 — 打断谢耳朵，直说「她现在在工作，不是你的学生」
+  - `q3.b`：结构检查通过 — 转移话题，称赞今天的菜品，假装刚才没发生
+  - `q3.c`：结构检查通过 — 帮谢耳朵补充更精确的生物力学数据，把演示做完
+  - `q3.d`：结构检查通过 — 趁乱向佩妮使眼色，表示自己理解她的处境
+- **q4** 题干：谢耳朵发布了新版《室友协议》，其中新增一条：「使用厨房须提前24小时书面申请」。莱纳德当场崩溃。
+  - `q4.a`：结构检查通过 — 仔细阅读全文，找有没有例外条款或漏洞可以利用
+  - `q4.b`：结构检查通过 — 联合其他人一起向谢耳朵提出修改意见
+  - `q4.c`：结构检查通过 — 私下对谢耳朵说一句「有些规定真的太严苛了」
+  - `q4.d`：结构检查通过 — 直接宣布不打算遵守，看他能怎么着
+- **q5** 题干：拉杰什喝了半杯酒之后，在聚会上绘声绘色地讲你上周在实验室犯的一个乌龙，越讲越起劲，大家都在笑。
+  - `q5.a`：结构检查通过 — 也跟着笑，再讲一个他更尴尬的故事作为回击
+  - `q5.b`：结构检查通过 — 打断他，严肃解释为什么那件事其实有科学依据
+  - `q5.c`：结构检查通过 — 走过去轻声让他别讲了，顾及双方的面子
+  - `q5.d`：结构检查通过 — 假装没听到，让他自己意识到说多了
+- **q6** 题干：伯纳黛特的研究成果被一位知名教授公开质疑，她在实验室里很低落。大多数同事假装没看见。
+  - `q6.a`：结构检查通过 — 主动过去，帮她整理数据，一起找出反驳论据
+  - `q6.b`：结构检查通过 — 叫她出去喝咖啡，先转移一下心情
+  - `q6.c`：结构检查通过 — 顺便说一句「别在意，那个教授就爱挑刺」
+  - `q6.d`：结构检查通过 — 想过去安慰但不知道说什么，最终没有行动
+- **q7** 题干：霍华德正在分享参与NASA任务的经历，谢耳朵突然插话说「工程师不是真正的科学家，本质上只是高级蓝领」。霍华德的脸瞬间垮了。
+  - `q7.a`：结构检查通过 — 直接反驳谢耳朵，列举工程学的核心科学贡献
+  - `q7.b`：结构检查通过 — 赶紧转换话题，请霍华德继续讲任务故事
+  - `q7.c`：结构检查通过 — 小声对霍华德说「别理他，我们都知道你厉害」
+  - `q7.d`：结构检查通过 — 觉得谢耳朵也不是没有点道理，继续吃东西
+- **q8** 题干：有人转告你，谢耳朵私下评价你「对弦理论的理解在统计学意义上低于实验室平均水平」。
+  - `q8.a`：结构检查通过 — 立刻去查文献，确认自己的理解是否真的有问题
+  - `q8.b`：结构检查通过 — 有点受伤，但过一会儿就释然了——他就是这样的人
+  - `q8.c`：结构检查通过 — 直接去找谢耳朵，让他解释评价的具体依据
+  - `q8.d`：结构检查通过 — 不在乎，不需要他的认可也能活得很好
+- **q9** 题干：谢耳朵提议召开「宿舍年度住客综合评估会议」，要求所有人填一份十二页的自我评估问卷并互相评分。
+  - `q9.a`：结构检查通过 — 认真填写问卷，认为自我反省有助于改进
+  - `q9.b`：结构检查通过 — 拒绝参与，认为朋友之间根本不需要这套程序
+  - `q9.c`：结构检查通过 — 假装在填，实际上胡乱写了一些
+  - `q9.d`：结构检查通过 — 建议修改成大家互相出题，打破谢耳朵单方面的权威
+- **q10** 题干：晚上十点，艾米发消息说她的神经元实验数据出现严重偏差，问你能不能来帮她重新分析。
+  - `q10.a`：结构检查通过 — 立刻赶去，学术紧急情况优先于休息
+  - `q10.b`：结构检查通过 — 表示很同情，建议她明天再处理，发了个加油表情
+  - `q10.c`：结构检查通过 — 让她把数据发过来，远程帮她看一看
+  - `q10.d`：结构检查通过 — 没有回复消息，第二天再说
+- **q11** 题干：斯图尔特向大家哭诉漫画书店生意越来越差，眼神里充满期待。大家都在同情地点头，但没人掏钱。
+  - `q11.a`：结构检查通过 — 认真分析他的商业运营模式，提出具体改进建议
+  - `q11.b`：结构检查通过 — 当场多买了几本漫画，不管用不用得到
+  - `q11.c`：结构检查通过 — 发了条支持他的朋友圈，觉得算是帮到了
+  - `q11.d`：结构检查通过 — 同情地听他说完，没有采取任何实质行动
+- **q12** 题干：Caltech年度智力竞赛报名，谢耳朵邀请大家组队，但要求每人先通过他设计的「参赛资格测试」，题目非常难。
+  - `q12.a`：结构检查通过 — 认真备考，觉得通过测试才能真正配合他赢得比赛
+  - `q12.b`：结构检查通过 — 拒绝参加测试，认为朋友之间互信即可，不需要这套
+  - `q12.c`：结构检查通过 — 去测试但完全不认真，失败了也有借口推掉
+  - `q12.d`：结构检查通过 — 建议大家轮流出题互考，打破谢耳朵的单方面权威
+- **q13** 题干：佩妮突然找到你，问能不能用她听得懂的方式解释「为什么时间会变慢」——她今天刷到一个相对论视频，觉得很酷。
+  - `q13.a`：结构检查通过 — 立刻兴奋起来，把狭义相对论从头到尾详细讲了一遍
+  - `q13.b`：结构检查通过 — 用一个日常比喻简单解释核心概念，确认她真的听懂了
+  - `q13.c`：结构检查通过 — 说「快速运动会让时间变慢」，然后问她要不要一起看那个视频
+  - `q13.d`：结构检查通过 — 建议她去找谢耳朵，他讲得比自己清楚
+- **q14** 题干：聚会结束后，佩妮感叹「今晚太开心了」，谢耳朵立刻回应「情绪感受具有主观性，开心这个说法缺乏可量化标准」。现场瞬间安静。
+  - `q14.a`：结构检查通过 — 用玩笑化解，比如「谢耳朵，你刚刚把佩妮的快乐给科学掉了」
+  - `q14.b`：结构检查通过 — 直接看着谢耳朵说「不是每件事都需要你来验证的」
+  - `q14.c`：结构检查通过 — 替谢耳朵翻译，说「他其实是想说今晚很不错」
+  - `q14.d`：结构检查通过 — 沉默片刻，开始认真思考这个说法的哲学意涵
+- **q15** 题干：在实验室独自工作时，你无意中听到谢耳朵和莱纳德正在讨论你「是否具备参与新项目的学术素养」。
+  - `q15.a`：结构检查通过 — 走进去，坦然说「我刚才听到了，你们可以直接来问我」
+  - `q15.b`：结构检查通过 — 继续装作没听到，暗中开始准备相关资料来证明自己
+  - `q15.c`：结构检查通过 — 感到难受，找个借口早点离开，回家整理情绪
+  - `q15.d`：结构检查通过 — 不在乎，他们说什么是他们的事，你做好自己就行
+- **q16** 题干：伯纳黛特实验室发生小意外——培养皿散发奇怪气味。不危险，但需要有人立刻帮她转移设备。你在场。
+  - `q16.a`：结构检查通过 — 戴上手套立刻动手，这种事不需要多想
+  - `q16.b`：结构检查通过 — 第一反应是后退两步，然后问她「你需要我做什么」
+  - `q16.c`：结构检查通过 — 帮她联系大楼管理员，确保其他人不误入
+  - `q16.d`：结构检查通过 — 先评估气味的潜在成分，判断接触的安全等级再决定行动
+- **q17** 题干：周六早上七点，谢耳朵在群里发了一条消息：「本人发现了一个可能改变粒子物理学的理论漏洞，需要所有人立刻赶来讨论。」
+  - `q17.a`：结构检查通过 — 起床赶过去，万一真的是大发现呢
+  - `q17.b`：结构检查通过 — 发消息说「把内容发给我，我在线参与」
+  - `q17.c`：结构检查通过 — 回复「可以等到合理的时间再开会吗」，帮大家争取
+  - `q17.d`：结构检查通过 — 把手机通知关掉，继续睡觉
+- **q18** 题干：艾米正在展示她的神经元实验成果，谢耳朵全程在旁边列举她的「方法论漏洞」。艾米表情平静，但你察觉到她并不好受。
+  - `q18.a`：结构检查通过 — 展示结束后单独去找艾米，说「我觉得你做得很好」
+  - `q18.b`：结构检查通过 — 插话让谢耳朵先暂停，问艾米「你觉得这些问题影响结论吗」
+  - `q18.c`：结构检查通过 — 帮谢耳朵找数据验证其中一个漏洞，让讨论更高效
+  - `q18.d`：结构检查通过 — 不插手，认为学术讨论本就应该如此严格
+- **q19** 题干：临近圣诞节，谢耳朵提议大家按照他制定的「节日联欢最优方案」行事，包括规定每个人「允许表达快乐的时长上限」。
+  - `q19.a`：结构检查通过 — 研究这份方案，找出其中有逻辑问题的条款
+  - `q19.b`：结构检查通过 — 直接说「不行，节日是给大家开心的，不是用来规划的」
+  - `q19.c`：结构检查通过 — 假意同意，但不打算遵守其中任何一条
+  - `q19.d`：结构检查通过 — 帮谢耳朵向其他人解释方案的初衷，争取大家的理解
+- **q20** 题干：谢耳朵生病了，他发了一条措辞非常正式的信息，用协议体请求你「在今日20:00前执行Soft Kitty安抚流程」。
+  - `q20.a`：结构检查通过 — 赶过去照顾他，照顾病人本就是应该的
+  - `q20.b`：结构检查通过 — 帮他查了最近药店的地址，发给他让他自己去
+  - `q20.c`：结构检查通过 — 去了，但顺便告诉他「以后生病不要这么麻烦别人」
+  - `q20.d`：结构检查通过 — 认真研究「Soft Kitty安抚流程的心理学机制」，发了篇分析给他
+
+### 逐结果
+- **r1**（谢耳朵）：profile 键与范围检查通过。
+- **r2**（莱纳德）：profile 键与范围检查通过。
+- **r3**（拉杰什）：profile 键与范围检查通过。
+- **r4**（伯纳黛特）：profile 键与范围检查通过。
+- **r5**（佩妮）：profile 键与范围检查通过。
+- **r6**（霍华德）：profile 键与范围检查通过。
+- **r7**（艾米）：profile 键与范围检查通过。
+
+## big-five-ocean
+- **计分**：`big-five` · 维度数 0 · 题数 44 · 结果数 8
+- **警告（1）**
+  - （说明）scoring.type=`big-five` 非三种标准计分族，已跳过 validateQuestions / validateResults(profile) / validateDimensionProfiles / validateScoreMap，以免误报。
+
+### 逐题 · 逐选项
+- **q1** 题干：我健谈，容易和别人聊起来。
+  - `q1.1`：量表 value=0（无 scores） — 完全不符合
+  - `q1.2`：量表 value=25（无 scores） — 不太符合
+  - `q1.3`：量表 value=50（无 scores） — 说不准
+  - `q1.4`：量表 value=75（无 scores） — 比较符合
+  - `q1.5`：量表 value=100（无 scores） — 完全符合
+- **q2** 题干：我倾向于挑别人的毛病，喜欢批评。
+  - `q2.1`：量表 value=0（无 scores） — 完全不符合
+  - `q2.2`：量表 value=25（无 scores） — 不太符合
+  - `q2.3`：量表 value=50（无 scores） — 说不准
+  - `q2.4`：量表 value=75（无 scores） — 比较符合
+  - `q2.5`：量表 value=100（无 scores） — 完全符合
+- **q3** 题干：我做事认真彻底，不会糊弄。
+  - `q3.1`：量表 value=0（无 scores） — 完全不符合
+  - `q3.2`：量表 value=25（无 scores） — 不太符合
+  - `q3.3`：量表 value=50（无 scores） — 说不准
+  - `q3.4`：量表 value=75（无 scores） — 比较符合
+  - `q3.5`：量表 value=100（无 scores） — 完全符合
+- **q4** 题干：我时常感到情绪低落、提不起劲。
+  - `q4.1`：量表 value=0（无 scores） — 完全不符合
+  - `q4.2`：量表 value=25（无 scores） — 不太符合
+  - `q4.3`：量表 value=50（无 scores） — 说不准
+  - `q4.4`：量表 value=75（无 scores） — 比较符合
+  - `q4.5`：量表 value=100（无 scores） — 完全符合
+- **q5** 题干：我富有创意，脑子里经常冒出新点子。
+  - `q5.1`：量表 value=0（无 scores） — 完全不符合
+  - `q5.2`：量表 value=25（无 scores） — 不太符合
+  - `q5.3`：量表 value=50（无 scores） — 说不准
+  - `q5.4`：量表 value=75（无 scores） — 比较符合
+  - `q5.5`：量表 value=100（无 scores） — 完全符合
+- **q6** 题干：我比较沉默，不太爱主动开口。
+  - `q6.1`：量表 value=0（无 scores） — 完全不符合
+  - `q6.2`：量表 value=25（无 scores） — 不太符合
+  - `q6.3`：量表 value=50（无 scores） — 说不准
+  - `q6.4`：量表 value=75（无 scores） — 比较符合
+  - `q6.5`：量表 value=100（无 scores） — 完全符合
+- **q7** 题干：我乐于助人，愿意无私地为别人付出。
+  - `q7.1`：量表 value=0（无 scores） — 完全不符合
+  - `q7.2`：量表 value=25（无 scores） — 不太符合
+  - `q7.3`：量表 value=50（无 scores） — 说不准
+  - `q7.4`：量表 value=75（无 scores） — 比较符合
+  - `q7.5`：量表 value=100（无 scores） — 完全符合
+- **q8** 题干：我有时做事会粗心大意，留下漏洞。
+  - `q8.1`：量表 value=0（无 scores） — 完全不符合
+  - `q8.2`：量表 value=25（无 scores） — 不太符合
+  - `q8.3`：量表 value=50（无 scores） — 说不准
+  - `q8.4`：量表 value=75（无 scores） — 比较符合
+  - `q8.5`：量表 value=100（无 scores） — 完全符合
+- **q9** 题干：我通常很放松，能比较好地应对压力。
+  - `q9.1`：量表 value=0（无 scores） — 完全不符合
+  - `q9.2`：量表 value=25（无 scores） — 不太符合
+  - `q9.3`：量表 value=50（无 scores） — 说不准
+  - `q9.4`：量表 value=75（无 scores） — 比较符合
+  - `q9.5`：量表 value=100（无 scores） — 完全符合
+- **q10** 题干：我对很多不同的事物都感到好奇。
+  - `q10.1`：量表 value=0（无 scores） — 完全不符合
+  - `q10.2`：量表 value=25（无 scores） — 不太符合
+  - `q10.3`：量表 value=50（无 scores） — 说不准
+  - `q10.4`：量表 value=75（无 scores） — 比较符合
+  - `q10.5`：量表 value=100（无 scores） — 完全符合
+- **q11** 题干：我精力充沛，活力十足。
+  - `q11.1`：量表 value=0（无 scores） — 完全不符合
+  - `q11.2`：量表 value=25（无 scores） — 不太符合
+  - `q11.3`：量表 value=50（无 scores） — 说不准
+  - `q11.4`：量表 value=75（无 scores） — 比较符合
+  - `q11.5`：量表 value=100（无 scores） — 完全符合
+- **q12** 题干：我比较容易和别人发生争执或冲突。
+  - `q12.1`：量表 value=0（无 scores） — 完全不符合
+  - `q12.2`：量表 value=25（无 scores） — 不太符合
+  - `q12.3`：量表 value=50（无 scores） — 说不准
+  - `q12.4`：量表 value=75（无 scores） — 比较符合
+  - `q12.5`：量表 value=100（无 scores） — 完全符合
+- **q13** 题干：我是个可靠的人，把事情交给我可以放心。
+  - `q13.1`：量表 value=0（无 scores） — 完全不符合
+  - `q13.2`：量表 value=25（无 scores） — 不太符合
+  - `q13.3`：量表 value=50（无 scores） — 说不准
+  - `q13.4`：量表 value=75（无 scores） — 比较符合
+  - `q13.5`：量表 value=100（无 scores） — 完全符合
+- **q14** 题干：我经常感到紧张或情绪上的不安。
+  - `q14.1`：量表 value=0（无 scores） — 完全不符合
+  - `q14.2`：量表 value=25（无 scores） — 不太符合
+  - `q14.3`：量表 value=50（无 scores） — 说不准
+  - `q14.4`：量表 value=75（无 scores） — 比较符合
+  - `q14.5`：量表 value=100（无 scores） — 完全符合
+- **q15** 题干：我思维比较深刻，喜欢探究事物背后的原理。
+  - `q15.1`：量表 value=0（无 scores） — 完全不符合
+  - `q15.2`：量表 value=25（无 scores） — 不太符合
+  - `q15.3`：量表 value=50（无 scores） — 说不准
+  - `q15.4`：量表 value=75（无 scores） — 比较符合
+  - `q15.5`：量表 value=100（无 scores） — 完全符合
+- **q16** 题干：我容易对事物产生热情，也能带动周围的人。
+  - `q16.1`：量表 value=0（无 scores） — 完全不符合
+  - `q16.2`：量表 value=25（无 scores） — 不太符合
+  - `q16.3`：量表 value=50（无 scores） — 说不准
+  - `q16.4`：量表 value=75（无 scores） — 比较符合
+  - `q16.5`：量表 value=100（无 scores） — 完全符合
+- **q17** 题干：我比较容易原谅别人，不太记仇。
+  - `q17.1`：量表 value=0（无 scores） — 完全不符合
+  - `q17.2`：量表 value=25（无 scores） — 不太符合
+  - `q17.3`：量表 value=50（无 scores） — 说不准
+  - `q17.4`：量表 value=75（无 scores） — 比较符合
+  - `q17.5`：量表 value=100（无 scores） — 完全符合
+- **q18** 题干：我做事有些杂乱无序，缺乏条理。
+  - `q18.1`：量表 value=0（无 scores） — 完全不符合
+  - `q18.2`：量表 value=25（无 scores） — 不太符合
+  - `q18.3`：量表 value=50（无 scores） — 说不准
+  - `q18.4`：量表 value=75（无 scores） — 比较符合
+  - `q18.5`：量表 value=100（无 scores） — 完全符合
+- **q19** 题干：我经常为各种事情感到担忧。
+  - `q19.1`：量表 value=0（无 scores） — 完全不符合
+  - `q19.2`：量表 value=25（无 scores） — 不太符合
+  - `q19.3`：量表 value=50（无 scores） — 说不准
+  - `q19.4`：量表 value=75（无 scores） — 比较符合
+  - `q19.5`：量表 value=100（无 scores） — 完全符合
+- **q20** 题干：我想象力丰富，脑子里常有各种画面。
+  - `q20.1`：量表 value=0（无 scores） — 完全不符合
+  - `q20.2`：量表 value=25（无 scores） — 不太符合
+  - `q20.3`：量表 value=50（无 scores） — 说不准
+  - `q20.4`：量表 value=75（无 scores） — 比较符合
+  - `q20.5`：量表 value=100（无 scores） — 完全符合
+- **q21** 题干：我偏向安静，话不多，不太爱凑热闹。
+  - `q21.1`：量表 value=0（无 scores） — 完全不符合
+  - `q21.2`：量表 value=25（无 scores） — 不太符合
+  - `q21.3`：量表 value=50（无 scores） — 说不准
+  - `q21.4`：量表 value=75（无 scores） — 比较符合
+  - `q21.5`：量表 value=100（无 scores） — 完全符合
+- **q22** 题干：我通常信任别人，不太容易起疑心。
+  - `q22.1`：量表 value=0（无 scores） — 完全不符合
+  - `q22.2`：量表 value=25（无 scores） — 不太符合
+  - `q22.3`：量表 value=50（无 scores） — 说不准
+  - `q22.4`：量表 value=75（无 scores） — 比较符合
+  - `q22.5`：量表 value=100（无 scores） — 完全符合
+- **q23** 题干：我有时会显得很懒，提不起劲来。
+  - `q23.1`：量表 value=0（无 scores） — 完全不符合
+  - `q23.2`：量表 value=25（无 scores） — 不太符合
+  - `q23.3`：量表 value=50（无 scores） — 说不准
+  - `q23.4`：量表 value=75（无 scores） — 比较符合
+  - `q23.5`：量表 value=100（无 scores） — 完全符合
+- **q24** 题干：我情绪稳定，不太容易被事情影响到。
+  - `q24.1`：量表 value=0（无 scores） — 完全不符合
+  - `q24.2`：量表 value=25（无 scores） — 不太符合
+  - `q24.3`：量表 value=50（无 scores） — 说不准
+  - `q24.4`：量表 value=75（无 scores） — 比较符合
+  - `q24.5`：量表 value=100（无 scores） — 完全符合
+- **q25** 题干：我富有创造力，善于找到新的解决方式。
+  - `q25.1`：量表 value=0（无 scores） — 完全不符合
+  - `q25.2`：量表 value=25（无 scores） — 不太符合
+  - `q25.3`：量表 value=50（无 scores） — 说不准
+  - `q25.4`：量表 value=75（无 scores） — 比较符合
+  - `q25.5`：量表 value=100（无 scores） — 完全符合
+- **q26** 题干：我性格强势，敢于表达和坚持自己的立场。
+  - `q26.1`：量表 value=0（无 scores） — 完全不符合
+  - `q26.2`：量表 value=25（无 scores） — 不太符合
+  - `q26.3`：量表 value=50（无 scores） — 说不准
+  - `q26.4`：量表 value=75（无 scores） — 比较符合
+  - `q26.5`：量表 value=100（无 scores） — 完全符合
+- **q27** 题干：我有时会对人显得冷漠、疏离。
+  - `q27.1`：量表 value=0（无 scores） — 完全不符合
+  - `q27.2`：量表 value=25（无 scores） — 不太符合
+  - `q27.3`：量表 value=50（无 scores） — 说不准
+  - `q27.4`：量表 value=75（无 scores） — 比较符合
+  - `q27.5`：量表 value=100（无 scores） — 完全符合
+- **q28** 题干：我做事能坚持到底，不会轻易放弃。
+  - `q28.1`：量表 value=0（无 scores） — 完全不符合
+  - `q28.2`：量表 value=25（无 scores） — 不太符合
+  - `q28.3`：量表 value=50（无 scores） — 说不准
+  - `q28.4`：量表 value=75（无 scores） — 比较符合
+  - `q28.5`：量表 value=100（无 scores） — 完全符合
+- **q29** 题干：我的情绪起伏比较明显，时好时坏。
+  - `q29.1`：量表 value=0（无 scores） — 完全不符合
+  - `q29.2`：量表 value=25（无 scores） — 不太符合
+  - `q29.3`：量表 value=50（无 scores） — 说不准
+  - `q29.4`：量表 value=75（无 scores） — 比较符合
+  - `q29.5`：量表 value=100（无 scores） — 完全符合
+- **q30** 题干：我对艺术、音乐或文学有真实的感受力。
+  - `q30.1`：量表 value=0（无 scores） — 完全不符合
+  - `q30.2`：量表 value=25（无 scores） — 不太符合
+  - `q30.3`：量表 value=50（无 scores） — 说不准
+  - `q30.4`：量表 value=75（无 scores） — 比较符合
+  - `q30.5`：量表 value=100（无 scores） — 完全符合
+- **q31** 题干：我有时会感到羞怯，与陌生人交往时有些拘谨。
+  - `q31.1`：量表 value=0（无 scores） — 完全不符合
+  - `q31.2`：量表 value=25（无 scores） — 不太符合
+  - `q31.3`：量表 value=50（无 scores） — 说不准
+  - `q31.4`：量表 value=75（无 scores） — 比较符合
+  - `q31.5`：量表 value=100（无 scores） — 完全符合
+- **q32** 题干：我对几乎所有人都体贴周到，会主动关心别人。
+  - `q32.1`：量表 value=0（无 scores） — 完全不符合
+  - `q32.2`：量表 value=25（无 scores） — 不太符合
+  - `q32.3`：量表 value=50（无 scores） — 说不准
+  - `q32.4`：量表 value=75（无 scores） — 比较符合
+  - `q32.5`：量表 value=100（无 scores） — 完全符合
+- **q33** 题干：我做事效率高，能把事情处理得井井有条。
+  - `q33.1`：量表 value=0（无 scores） — 完全不符合
+  - `q33.2`：量表 value=25（无 scores） — 不太符合
+  - `q33.3`：量表 value=50（无 scores） — 说不准
+  - `q33.4`：量表 value=75（无 scores） — 比较符合
+  - `q33.5`：量表 value=100（无 scores） — 完全符合
+- **q34** 题干：在紧张的情况下，我仍然能保持冷静。
+  - `q34.1`：量表 value=0（无 scores） — 完全不符合
+  - `q34.2`：量表 value=25（无 scores） — 不太符合
+  - `q34.3`：量表 value=50（无 scores） — 说不准
+  - `q34.4`：量表 value=75（无 scores） — 比较符合
+  - `q34.5`：量表 value=100（无 scores） — 完全符合
+- **q35** 题干：我喜欢按部就班的工作方式，不太喜欢频繁变化。
+  - `q35.1`：量表 value=0（无 scores） — 完全不符合
+  - `q35.2`：量表 value=25（无 scores） — 不太符合
+  - `q35.3`：量表 value=50（无 scores） — 说不准
+  - `q35.4`：量表 value=75（无 scores） — 比较符合
+  - `q35.5`：量表 value=100（无 scores） — 完全符合
+- **q36** 题干：我外向开朗，喜欢和人打交道。
+  - `q36.1`：量表 value=0（无 scores） — 完全不符合
+  - `q36.2`：量表 value=25（无 scores） — 不太符合
+  - `q36.3`：量表 value=50（无 scores） — 说不准
+  - `q36.4`：量表 value=75（无 scores） — 比较符合
+  - `q36.5`：量表 value=100（无 scores） — 完全符合
+- **q37** 题干：我有时候对别人不太礼貌，说话直接甚至生硬。
+  - `q37.1`：量表 value=0（无 scores） — 完全不符合
+  - `q37.2`：量表 value=25（无 scores） — 不太符合
+  - `q37.3`：量表 value=50（无 scores） — 说不准
+  - `q37.4`：量表 value=75（无 scores） — 比较符合
+  - `q37.5`：量表 value=100（无 scores） — 完全符合
+- **q38** 题干：我会制定计划，并且认真按照计划来执行。
+  - `q38.1`：量表 value=0（无 scores） — 完全不符合
+  - `q38.2`：量表 value=25（无 scores） — 不太符合
+  - `q38.3`：量表 value=50（无 scores） — 说不准
+  - `q38.4`：量表 value=75（无 scores） — 比较符合
+  - `q38.5`：量表 value=100（无 scores） — 完全符合
+- **q39** 题干：我很容易感到紧张、不安或焦虑。
+  - `q39.1`：量表 value=0（无 scores） — 完全不符合
+  - `q39.2`：量表 value=25（无 scores） — 不太符合
+  - `q39.3`：量表 value=50（无 scores） — 说不准
+  - `q39.4`：量表 value=75（无 scores） — 比较符合
+  - `q39.5`：量表 value=100（无 scores） — 完全符合
+- **q40** 题干：我喜欢思考，对各种想法和观点都有兴趣。
+  - `q40.1`：量表 value=0（无 scores） — 完全不符合
+  - `q40.2`：量表 value=25（无 scores） — 不太符合
+  - `q40.3`：量表 value=50（无 scores） — 说不准
+  - `q40.4`：量表 value=75（无 scores） — 比较符合
+  - `q40.5`：量表 value=100（无 scores） — 完全符合
+- **q41** 题干：我对艺术没什么特别的感觉或兴趣。
+  - `q41.1`：量表 value=0（无 scores） — 完全不符合
+  - `q41.2`：量表 value=25（无 scores） — 不太符合
+  - `q41.3`：量表 value=50（无 scores） — 说不准
+  - `q41.4`：量表 value=75（无 scores） — 比较符合
+  - `q41.5`：量表 value=100（无 scores） — 完全符合
+- **q42** 题干：我乐于和别人合作，不喜欢独来独往。
+  - `q42.1`：量表 value=0（无 scores） — 完全不符合
+  - `q42.2`：量表 value=25（无 scores） — 不太符合
+  - `q42.3`：量表 value=50（无 scores） — 说不准
+  - `q42.4`：量表 value=75（无 scores） — 比较符合
+  - `q42.5`：量表 value=100（无 scores） — 完全符合
+- **q43** 题干：我做事容易分心，注意力很难长时间集中。
+  - `q43.1`：量表 value=0（无 scores） — 完全不符合
+  - `q43.2`：量表 value=25（无 scores） — 不太符合
+  - `q43.3`：量表 value=50（无 scores） — 说不准
+  - `q43.4`：量表 value=75（无 scores） — 比较符合
+  - `q43.5`：量表 value=100（无 scores） — 完全符合
+- **q44** 题干：我在艺术、音乐或文学上有自己的品味和判断力。
+  - `q44.1`：量表 value=0（无 scores） — 完全不符合
+  - `q44.2`：量表 value=25（无 scores） — 不太符合
+  - `q44.3`：量表 value=50（无 scores） — 说不准
+  - `q44.4`：量表 value=75（无 scores） — 比较符合
+  - `q44.5`：量表 value=100（无 scores） — 完全符合
+
+### 逐结果
+- **explorer**（探索者）：profile 键：A, C, E, N, O（未做 (0,1) 轴校验）
+- **achiever**（筑造者）：profile 键：A, C, E, N, O（未做 (0,1) 轴校验）
+- **connector**（联结者）：profile 键：A, C, E, N, O（未做 (0,1) 轴校验）
+- **guardian**（守护者）：profile 键：A, C, E, N, O（未做 (0,1) 轴校验）
+- **lone-thinker**（独行者）：profile 键：A, C, E, N, O（未做 (0,1) 轴校验）
+- **sensitive-perceiver**（感知者）：profile 键：A, C, E, N, O（未做 (0,1) 轴校验）
+- **pragmatist**（稳健者）：profile 键：A, C, E, N, O（未做 (0,1) 轴校验）
+- **balanced**（平衡者）：profile 键：A, C, E, N, O（未做 (0,1) 轴校验）
+
+## buendia-generation-match
+- **计分**：`bipolar-dimension` · 维度数 4 · 题数 22 · 结果数 7
+- **错误（11）**
+  - bipolar axis "孤独的形态": missing highPole
+  - bipolar axis "对时间与记忆的态度": missing highPole
+  - bipolar axis "与命运的关系": missing highPole
+  - bipolar axis "情感的压抑与释放": missing highPole
+  - r1 is unreachable — dominated by r6 on all dimensions
+  - r2 is unreachable — dominated by r6 on all dimensions
+  - r3 is unreachable — dominated by r6 on all dimensions
+  - r4 is unreachable — dominated by r1 on all dimensions
+  - r4 is unreachable — dominated by r3 on all dimensions
+  - r4 is unreachable — dominated by r6 on all dimensions
+  - r4 is unreachable — dominated by r7 on all dimensions
+- **警告（48）**
+  - q10.a: bipolar option mixes positive and negative scores
+  - q10.b: bipolar option mixes positive and negative scores
+  - q10.c: bipolar option mixes positive and negative scores
+  - q10.d: bipolar option mixes positive and negative scores
+  - q12.a: bipolar option mixes positive and negative scores
+  - q12.b: bipolar option mixes positive and negative scores
+  - q12.d: bipolar option mixes positive and negative scores
+  - q14.a: bipolar option mixes positive and negative scores
+  - q14.b: bipolar option mixes positive and negative scores
+  - q14.c: bipolar option mixes positive and negative scores
+  - q14.d: bipolar option mixes positive and negative scores
+  - q15.a: bipolar option mixes positive and negative scores
+  - q15.b: bipolar option mixes positive and negative scores
+  - q15.c: bipolar option mixes positive and negative scores
+  - q15.d: bipolar option mixes positive and negative scores
+  - q16.a: bipolar option mixes positive and negative scores
+  - q16.b: bipolar option mixes positive and negative scores
+  - q18.d: bipolar option mixes positive and negative scores
+  - q20.d: bipolar option mixes positive and negative scores
+  - q21.d: bipolar option mixes positive and negative scores
+  - q22.d: bipolar option mixes positive and negative scores
+  - r2: missing "strengths"
+  - r2: missing "weaknesses"
+  - r2: only 0 strengths (want 3)
+  - r2: only 0 weaknesses (want 3)
+  - r3: missing "strengths"
+  - r3: missing "weaknesses"
+  - r3: only 0 strengths (want 3)
+  - r3: only 0 weaknesses (want 3)
+  - r4: missing "strengths"
+  - r4: missing "weaknesses"
+  - r4: only 0 strengths (want 3)
+  - r4: only 0 weaknesses (want 3)
+  - r6: missing "strengths"
+  - r6: missing "weaknesses"
+  - r6: only 0 strengths (want 3)
+  - r6: only 0 weaknesses (want 3)
+  - r7: missing "strengths"
+  - r7: missing "weaknesses"
+  - r7: only 0 strengths (want 3)
+  - r7: only 0 weaknesses (want 3)
+  - r1 is unreachable — dominated by r6 on all dimensions
+  - r2 is unreachable — dominated by r6 on all dimensions
+  - r3 is unreachable — dominated by r6 on all dimensions
+  - r4 is unreachable — dominated by r1 on all dimensions
+  - r4 is unreachable — dominated by r3 on all dimensions
+  - r4 is unreachable — dominated by r6 on all dimensions
+  - r4 is unreachable — dominated by r7 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：吉卜赛人梅尔基亚德斯带来一件会发光的磁铁，你面对这件神奇物品的第一反应是
+  - `q1.a`：结构检查通过 — 立即拆解它，探究其发光的原理，相信科学能解释一切奇迹
+  - `q1.b`：结构检查通过 — 拒绝触碰它，认为这是魔鬼的诱惑，应该将它烧毁
+  - `q1.c`：结构检查通过 — 小心翼翼地收藏起来，留给后代研究，相信它的价值会随时间显现
+  - `q1.d`：结构检查通过 — 用它来吸引金属物件，当作日常工具使用，不深究其神秘之处
+- **q2** 题干：在马孔多的雨季持续下了十一年零两个月，面对这场无休止的雨，你会
+  - `q2.a`：结构检查通过 — 修建高墙和排水系统，与自然抗争，坚信人类可以改变环境
+  - `q2.b`：结构检查通过 — 接受这场雨作为上天的惩罚，每天祈祷雨停，认为自己应受此苦
+  - `q2.c`：结构检查通过 — 在雨中建造船屋，重新安排生活节奏，将这场雨视为重新开始的契机
+  - `q2.d`：结构检查通过 — 完全沉浸在雨声中，不采取任何措施，任由雨水淹没家园和记忆
+- **q3** 题干：当发现家族中有人开始经历重复的梦境，梦见同一棵树下的场景，你会
+  - `q3.a`：结构检查通过 — 记录每个梦境的细节，寻找其中的规律，相信这是预示着某种命运
+  - `q3.b`：结构检查通过 — 警告家人不要理会这些梦境，认为这只是神经衰弱的表现，应该忘记
+  - `q3.c`：结构检查通过 — 组织家族成员一起寻找梦中的那棵树，相信共同的探索能带来启示
+  - `q3.d`：结构检查通过 — 嘲笑这些梦境，认为不过是白日所见事物的混乱重现，不值得关注
+- **q4** 题干：在战争期间，你发现了一封描述马孔多未来命运的信件，得知家族的宿命，你会
+  - `q4.a`：结构检查通过 — 立即销毁这封信，认为知道未来只会带来痛苦，不如活在当下
+  - `q4.b`：结构检查通过 — 将信件藏起来，等待合适的时机向后代揭示，相信宿命可以被改变
+  - `q4.c`：结构检查通过 — 公开信件内容，组织家族一起对抗预言的命运，相信集体力量可以改写未来
+  - `q4.d`：结构检查通过 — 将信件留给后代解读，自己则按照预言生活，认为宿命不可违抗
+- **q5** 题干：在狂欢节期间，你可以暂时隐藏身份，融入人群，你会选择
+  - `q5.a`：结构检查通过 — 完全伪装成普通人，体验平凡生活的简单快乐，暂时忘记自己的身份
+  - `q5.b`：结构检查通过 — 选择一个与自己截然不同的身份，扮演另一个自己，探索隐藏的可能性
+  - `q5.c`：结构检查通过 — 不参与任何伪装，保持原样，认为真实的自我才是最重要的
+  - `q5.d`：结构检查通过 — 只在最亲密的人面前展示真实自我，对其他人保持距离和神秘
+- **q6** 题干：当发现羊皮纸上的预言描述了家族所有人的命运，包括他们如何孤独地死去，你会
+  - `q6.a`：结构检查通过 — 烧毁羊皮纸，相信命运是可以改变的，每个人都有选择的权利
+  - `q6.b`：结构检查通过 — 将羊皮纸传给下一代，让他们决定如何面对这个残酷的真相
+  - `q6.c`：结构检查通过 — 完全相信预言，开始按照预言生活，认为这就是自己的宿命
+  - `q6.d`：结构检查通过 — 拒绝阅读羊皮纸上的内容，宁愿保持无知，认为不知道未来会更幸福
+- **q7** 题干：在吉卜赛人展示的冰块面前，你感受到一种从未有过的寒冷，同时又有种莫名的熟悉感，你会
+  - `q7.a`：结构检查通过 — 立即购买一块冰块，放在家中珍藏，相信这是连接过去与未来的媒介
+  - `q7.b`：结构检查通过 — 触摸冰块后感到刺骨的寒冷，迅速放手，认为这种体验太过痛苦
+  - `q7.c`：结构检查通过 — 向吉卜赛人请教冰块的来历，相信这背后隐藏着重要的家族秘密
+  - `q7.d`：结构检查通过 — 嘲笑那些对冰块感到新奇的人，认为这只是普通的水结成的冰，不值得大惊小怪
+- **q8** 题干：当一场突如其来的瘟疫席卷马孔多，家人开始一个个消失，你会
+  - `q8.a`：结构检查通过 — 寻找瘟疫的根源，相信只要找出原因就能阻止灾难继续蔓延
+  - `q8.b`：结构检查通过 — 接受这是上天的惩罚，开始祈祷和忏悔，认为自己和家人应该承受此苦
+  - `q8.c`：结构检查通过 — 记录每个家人的最后时刻，相信这些记忆会在未来某个时刻重现
+  - `q8.d`：结构检查通过 — 封锁消息，不让自己和家人了解瘟疫的真相，保持表面的平静
+- **q9** 题干：当羊皮纸上的预言在你手中展开，暗示着家族的命运循环，你会选择
+  - `q9.a`：结构检查通过 — 焚毁羊皮纸，让过去永远沉睡
+  - `q9.b`：结构检查通过 — 逐字解读每一个符号，寻找改变命运的密码
+  - `q9.c`：结构检查通过 — 将羊皮纸藏在无人知晓的角落，等待机缘
+  - `q9.d`：结构检查通过 — 每日诵读羊皮纸的内容，与命运共舞
+- **q10** 题干：在狂欢节的喧嚣中，你面对那些戴面具的陌生人
+  - `q10.a`：双极混号 — 融入人群，在面具下寻找真实的自我
+  - `q10.b`：双极混号 — 远离喧嚣，独自观察面具背后的真相
+  - `q10.c`：双极混号 — 与特定的面具舞者共舞，短暂体验不同身份
+  - `q10.d`：双极混号 — 记录每一个面具的故事，却从不参与其中
+- **q11** 题干：当马孔多遭遇一场突如其来的暴雨，洪水淹没了街道，你
+  - `q11.a`：结构检查通过 — 爬上屋顶，在雨中望着远方的地平线等待洪水退去
+  - `q11.b`：结构检查通过 — 用木板和绳索搭建临时桥梁，连接被洪水隔离的房屋
+  - `q11.c`：结构检查通过 — 收集雨水，制作蒸馏水以备不时之需
+  - `q11.d`：结构检查通过 — 将家中珍贵的物品放入防水容器，藏到高处后便不再理会
+- **q12** 题干：在炼金术实验室中，面对那些看似无用的材料，你会
+  - `q12.a`：双极混号 — 日夜不息地尝试各种配方，寻找点金石的秘密
+  - `q12.b`：双极混号 — 记录每一步实验过程，即使失败也不愿丢弃任何笔记
+  - `q12.c`：结构检查通过 — 偶尔加入其他物质的尝试，但始终保持对传统配方的尊重
+  - `q12.d`：双极混号 — 将实验材料按颜色和质地分类整理，却很少真正动手实验
+- **q13** 题干：当你在缝纫机前工作时，面对窗外变幻的云层，
+  - `q13.a`：结构检查通过 — 停下手中的活计，静静观察云朵形状的变化，想象它们的故事
+  - `q13.b`：结构检查通过 — 加快缝纫速度，在布料上重复相同的花纹，仿佛在编织自己的命运
+  - `q13.c`：结构检查通过 — 将云朵的形状融入设计中，创造独一无二的图案
+  - `q13.d`：结构检查通过 — 记录每一天云层的不同，却从未将这些记录用于创作
+- **q14** 题干：当战争的消息传到马孔多，你听到远方的炮声，
+  - `q14.a`：双极混号 — 在家族中建立避难所，储存食物和水源，准备应对最坏情况
+  - `q14.b`：双极混号 — 前往战场，亲身经历战争的残酷，记录下每一个细节
+  - `q14.c`：双极混号 — 在家中举办聚会，邀请邻居共饮，仿佛战争从未发生
+  - `q14.d`：双极混号 — 将家人的故事和战争的消息编成歌谣，在马孔多传唱
+- **q15** 题干：当你面对那些预言家族命运的吉卜赛人，你会
+  - `q15.a`：双极混号 — 邀请他们在家中长住，听取每一个预言和故事
+  - `q15.b`：双极混号 — 用理性的方式分析每一个预言，寻找其中的逻辑漏洞
+  - `q15.c`：双极混号 — 只倾听那些能带来快乐的预言，对其他则充耳不闻
+  - `q15.d`：双极混号 — 记录下所有预言，却从不让任何人知道你知道的内容
+- **q16** 题干：当马孔多开始经历记忆的消散，人们忘记事物的名称，你会
+  - `q16.a`：双极混号 — 在小镇各处张贴标签，标注每样事物的名称和用途
+  - `q16.b`：双极混号 — 接受记忆的消散，在遗忘中寻找新的生活方式
+  - `q16.c`：结构检查通过 — 只记录对自己最重要的人和事，其他则任由其消散
+  - `q16.d`：结构检查通过 — 在每天清晨醒来时，为家人讲述前一天发生的事情，对抗遗忘
+- **q17** 题干：在一个马孔多雨季的夜晚，你发现了一封尘封多年、字迹模糊的情书，它可能改变家族的历史，也可能只是幻觉的产物。
+  - `q17.a`：结构检查通过 — 立即点燃火把，在家族所有人面前大声朗读，真相高于一切
+  - `q17.b`：结构检查通过 — 悄悄收起信件，将它锁在无人能及的地方，让过去永远沉睡
+  - `q17.c`：结构检查通过 — 独自在月光下逐字解读，寻找那些隐藏在字里行间的命运线索
+  - `q17.d`：结构检查通过 — 将信件撕成碎片，让这个可能的秘密永远消散在风中
+- **q18** 题干：当你发现自己能够预见家族成员的未来命运，这些幻象如潮水般涌入你的脑海。
+  - `q18.a`：结构检查通过 — 将所有预言记录在羊皮纸上，日夜研究其中的规律和变化
+  - `q18.b`：结构检查通过 — 刻意遗忘这些幻象，专注于当下的生活，不让未来的阴影笼罩现在
+  - `q18.c`：结构检查通过 — 在适当的时机，悄悄引导家人避开预言中的灾难，但不透露真相
+  - `q18.d`：双极混号 — 向所有人宣告你的预言，接受可能带来的混乱和改变
+- **q19** 题干：在吉卜赛人带来的一件神秘物品前，它声称能让你见到逝去亲人最后的时刻。
+  - `q19.a`：结构检查通过 — 毫不犹豫地使用它，即使知道这可能带来无法挽回的后果
+  - `q19.b`：结构检查通过 — 付钱买下，但将它藏在阁楼上，从不触碰也不使用
+  - `q19.c`：结构检查通过 — 与最信任的亲人共同使用，分享这份跨越生死的体验
+  - `q19.d`：结构检查通过 — 拒绝购买，相信记忆应该自然存在，而非被外界工具唤醒
+- **q20** 题干：在家族连续几代人都经历着相似的命运循环时，你发现自己有能力打破这个宿命。
+  - `q20.a`：结构检查通过 — 坚决拒绝任何可能重复家族悲剧的行为，即使这意味着彻底改变自己的本性
+  - `q20.b`：结构检查通过 — 接受命运的安排，相信循环是无法打破的自然法则
+  - `q20.c`：结构检查通过 — 在无人知晓的角落悄悄尝试新的选择，期待奇迹的发生
+  - `q20.d`：双极混号 — 向全家族揭示这个循环的规律，希望能集体觉醒改变命运
+- **q21** 题干：在一个雨夜，你意外发现了一个可以暂时穿越时间的小房间，每进去一次都会消耗你一天的寿命。
+  - `q21.a`：结构检查通过 — 毫不犹豫地频繁进入，不惜缩短自己的生命也要见证那些被遗忘的时刻
+  - `q21.b`：结构检查通过 — 从未踏入房间一步，相信未来应该自然到来，不应被人为干涉
+  - `q21.c`：结构检查通过 — 只在生命中最关键的时刻进入，用一天寿命换取改变命运的关键信息
+  - `q21.d`：双极混号 — 让最爱的人代替自己进入，宁愿牺牲自己的幸福也要保全他们
+- **q22** 题干：当一场席卷马孔多的瘟疫袭来，你发现自己拥有治愈的能力，但每次使用都会加速自己的衰老。
+  - `q22.a`：结构检查通过 — 不分昼夜地使用能力，即使明知会让自己迅速老去也要拯救所有人
+  - `q22.b`：结构检查通过 — 隐藏自己的能力，假装普通人生病，让自然法则决定生死
+  - `q22.c`：结构检查通过 — 有选择地使用能力，只拯救那些你认为值得付出生命代价的人
+  - `q22.d`：双极混号 — 教其他人掌握这种能力，自己只做引导，将负担分散开来
+
+### 逐结果
+- **r1**（何塞·阿尔卡蒂奥）：profile 键与范围检查通过。
+- **r2**（乌苏拉）：profile 键与范围检查通过。
+- **r3**（奥雷连诺上校）：profile 键与范围检查通过。
+- **r4**（阿玛兰妲）：profile 键与范围检查通过。
+- **r5**（奥雷连诺第二）：profile 键与范围检查通过。
+- **r6**（雷梅苔丝）：profile 键与范围检查通过。
+- **r7**（奥雷连诺·巴比伦尼亚）：profile 键与范围检查通过。
+
+## career-aptitude
+- **计分**：`big-five` · 维度数 0 · 题数 36 · 结果数 6
+- **警告（1）**
+  - （说明）scoring.type=`big-five` 非三种标准计分族，已跳过 validateQuestions / validateResults(profile) / validateDimensionProfiles / validateScoreMap，以免误报。
+
+### 逐题 · 逐选项
+- **q1** 题干：我喜欢用手或工具操作实际的物体，比如组装、维修或制作东西。
+  - `q1.1`：量表 value=0（无 scores） — 完全不符合
+  - `q1.2`：量表 value=25（无 scores） — 不太符合
+  - `q1.3`：量表 value=50（无 scores） — 说不准
+  - `q1.4`：量表 value=75（无 scores） — 比较符合
+  - `q1.5`：量表 value=100（无 scores） — 完全符合
+- **q2** 题干：我喜欢研究和分析问题，想搞清楚背后的原理是什么。
+  - `q2.1`：量表 value=0（无 scores） — 完全不符合
+  - `q2.2`：量表 value=25（无 scores） — 不太符合
+  - `q2.3`：量表 value=50（无 scores） — 说不准
+  - `q2.4`：量表 value=75（无 scores） — 比较符合
+  - `q2.5`：量表 value=100（无 scores） — 完全符合
+- **q3** 题干：我喜欢创作——写作、绘画、音乐、设计或其他形式的艺术表达。
+  - `q3.1`：量表 value=0（无 scores） — 完全不符合
+  - `q3.2`：量表 value=25（无 scores） — 不太符合
+  - `q3.3`：量表 value=50（无 scores） — 说不准
+  - `q3.4`：量表 value=75（无 scores） — 比较符合
+  - `q3.5`：量表 value=100（无 scores） — 完全符合
+- **q4** 题干：帮助别人解决问题或走出困境，对我来说有真实的满足感。
+  - `q4.1`：量表 value=0（无 scores） — 完全不符合
+  - `q4.2`：量表 value=25（无 scores） — 不太符合
+  - `q4.3`：量表 value=50（无 scores） — 说不准
+  - `q4.4`：量表 value=75（无 scores） — 比较符合
+  - `q4.5`：量表 value=100（无 scores） — 完全符合
+- **q5** 题干：我喜欢说服别人、影响他们的想法，或者带领一个团队朝着目标走。
+  - `q5.1`：量表 value=0（无 scores） — 完全不符合
+  - `q5.2`：量表 value=25（无 scores） — 不太符合
+  - `q5.3`：量表 value=50（无 scores） — 说不准
+  - `q5.4`：量表 value=75（无 scores） — 比较符合
+  - `q5.5`：量表 value=100（无 scores） — 完全符合
+- **q6** 题干：我喜欢处理有明确规则和流程的任务，而不是开放式、模糊的工作。
+  - `q6.1`：量表 value=0（无 scores） — 完全不符合
+  - `q6.2`：量表 value=25（无 scores） — 不太符合
+  - `q6.3`：量表 value=50（无 scores） — 说不准
+  - `q6.4`：量表 value=75（无 scores） — 比较符合
+  - `q6.5`：量表 value=100（无 scores） — 完全符合
+- **q7** 题干：在户外工作或从事体力劳动，对我来说有真实的吸引力。
+  - `q7.1`：量表 value=0（无 scores） — 完全不符合
+  - `q7.2`：量表 value=25（无 scores） — 不太符合
+  - `q7.3`：量表 value=50（无 scores） — 说不准
+  - `q7.4`：量表 value=75（无 scores） — 比较符合
+  - `q7.5`：量表 value=100（无 scores） — 完全符合
+- **q8** 题干：面对一个复杂的问题，我更喜欢深入分析，而不是直接凭直觉行动。
+  - `q8.1`：量表 value=0（无 scores） — 完全不符合
+  - `q8.2`：量表 value=25（无 scores） — 不太符合
+  - `q8.3`：量表 value=50（无 scores） — 说不准
+  - `q8.4`：量表 value=75（无 scores） — 比较符合
+  - `q8.5`：量表 value=100（无 scores） — 完全符合
+- **q9** 题干：我很在意事物的美感和风格，能快速感受到什么是好的、什么是差的。
+  - `q9.1`：量表 value=0（无 scores） — 完全不符合
+  - `q9.2`：量表 value=25（无 scores） — 不太符合
+  - `q9.3`：量表 value=50（无 scores） — 说不准
+  - `q9.4`：量表 value=75（无 scores） — 比较符合
+  - `q9.5`：量表 value=100（无 scores） — 完全符合
+- **q10** 题干：我喜欢教导、培训或者辅导其他人，看着他们有所进步。
+  - `q10.1`：量表 value=0（无 scores） — 完全不符合
+  - `q10.2`：量表 value=25（无 scores） — 不太符合
+  - `q10.3`：量表 value=50（无 scores） — 说不准
+  - `q10.4`：量表 value=75（无 scores） — 比较符合
+  - `q10.5`：量表 value=100（无 scores） — 完全符合
+- **q11** 题干：销售、谈判、创业或者管理类的工作对我有真实的吸引力。
+  - `q11.1`：量表 value=0（无 scores） — 完全不符合
+  - `q11.2`：量表 value=25（无 scores） — 不太符合
+  - `q11.3`：量表 value=50（无 scores） — 说不准
+  - `q11.4`：量表 value=75（无 scores） — 比较符合
+  - `q11.5`：量表 value=100（无 scores） — 完全符合
+- **q12** 题干：整理数据、管理文件或者维护系统让我感到有序和踏实。
+  - `q12.1`：量表 value=0（无 scores） — 完全不符合
+  - `q12.2`：量表 value=25（无 scores） — 不太符合
+  - `q12.3`：量表 value=50（无 scores） — 说不准
+  - `q12.4`：量表 value=75（无 scores） — 比较符合
+  - `q12.5`：量表 value=100（无 scores） — 完全符合
+- **q13** 题干：我能长时间处理机械或技术设备，而不感到厌烦。
+  - `q13.1`：量表 value=0（无 scores） — 完全不符合
+  - `q13.2`：量表 value=25（无 scores） — 不太符合
+  - `q13.3`：量表 value=50（无 scores） — 说不准
+  - `q13.4`：量表 value=75（无 scores） — 比较符合
+  - `q13.5`：量表 value=100（无 scores） — 完全符合
+- **q14** 题干：我喜欢阅读科学、技术或学术类文章，而不只是浏览资讯。
+  - `q14.1`：量表 value=0（无 scores） — 完全不符合
+  - `q14.2`：量表 value=25（无 scores） — 不太符合
+  - `q14.3`：量表 value=50（无 scores） — 说不准
+  - `q14.4`：量表 value=75（无 scores） — 比较符合
+  - `q14.5`：量表 value=100（无 scores） — 完全符合
+- **q15** 题干：在有创意空间的环境里工作，比在规则明确的地方更让我舒服。
+  - `q15.1`：量表 value=0（无 scores） — 完全不符合
+  - `q15.2`：量表 value=25（无 scores） — 不太符合
+  - `q15.3`：量表 value=50（无 scores） — 说不准
+  - `q15.4`：量表 value=75（无 scores） — 比较符合
+  - `q15.5`：量表 value=100（无 scores） — 完全符合
+- **q16** 题干：在需要和很多人互动的工作里，我通常不会感到耗竭，反而有能量。
+  - `q16.1`：量表 value=0（无 scores） — 完全不符合
+  - `q16.2`：量表 value=25（无 scores） — 不太符合
+  - `q16.3`：量表 value=50（无 scores） — 说不准
+  - `q16.4`：量表 value=75（无 scores） — 比较符合
+  - `q16.5`：量表 value=100（无 scores） — 完全符合
+- **q17** 题干：我享受在竞争性的环境中工作，这种压力对我来说是动力而不是负担。
+  - `q17.1`：量表 value=0（无 scores） — 完全不符合
+  - `q17.2`：量表 value=25（无 scores） — 不太符合
+  - `q17.3`：量表 value=50（无 scores） — 说不准
+  - `q17.4`：量表 value=75（无 scores） — 比较符合
+  - `q17.5`：量表 value=100（无 scores） — 完全符合
+- **q18** 题干：按照规定的步骤完成工作，对我来说是一种安心而不是限制。
+  - `q18.1`：量表 value=0（无 scores） — 完全不符合
+  - `q18.2`：量表 value=25（无 scores） — 不太符合
+  - `q18.3`：量表 value=50（无 scores） — 说不准
+  - `q18.4`：量表 value=75（无 scores） — 比较符合
+  - `q18.5`：量表 value=100（无 scores） — 完全符合
+- **q19** 题干：修理坏掉的东西或者亲手拼装出一个可以用的东西，让我有成就感。
+  - `q19.1`：量表 value=0（无 scores） — 完全不符合
+  - `q19.2`：量表 value=25（无 scores） — 不太符合
+  - `q19.3`：量表 value=50（无 scores） — 说不准
+  - `q19.4`：量表 value=75（无 scores） — 比较符合
+  - `q19.5`：量表 value=100（无 scores） — 完全符合
+- **q20** 题干：我对数学、自然科学或者社会科学有真实的兴趣，不只是被迫学。
+  - `q20.1`：量表 value=0（无 scores） — 完全不符合
+  - `q20.2`：量表 value=25（无 scores） — 不太符合
+  - `q20.3`：量表 value=50（无 scores） — 说不准
+  - `q20.4`：量表 value=75（无 scores） — 比较符合
+  - `q20.5`：量表 value=100（无 scores） — 完全符合
+- **q21** 题干：我经常会用一种有创意或者不寻常的方式来表达自己的想法。
+  - `q21.1`：量表 value=0（无 scores） — 完全不符合
+  - `q21.2`：量表 value=25（无 scores） — 不太符合
+  - `q21.3`：量表 value=50（无 scores） — 说不准
+  - `q21.4`：量表 value=75（无 scores） — 比较符合
+  - `q21.5`：量表 value=100（无 scores） — 完全符合
+- **q22** 题干：我对人的心理和行为有兴趣，喜欢理解人为什么会这样做。
+  - `q22.1`：量表 value=0（无 scores） — 完全不符合
+  - `q22.2`：量表 value=25（无 scores） — 不太符合
+  - `q22.3`：量表 value=50（无 scores） — 说不准
+  - `q22.4`：量表 value=75（无 scores） — 比较符合
+  - `q22.5`：量表 value=100（无 scores） — 完全符合
+- **q23** 题干：我有清晰的目标感，能够让别人理解并跟着我的方向走。
+  - `q23.1`：量表 value=0（无 scores） — 完全不符合
+  - `q23.2`：量表 value=25（无 scores） — 不太符合
+  - `q23.3`：量表 value=50（无 scores） — 说不准
+  - `q23.4`：量表 value=75（无 scores） — 比较符合
+  - `q23.5`：量表 value=100（无 scores） — 完全符合
+- **q24** 题干：我在需要准确性和细致记录的工作里表现得很好。
+  - `q24.1`：量表 value=0（无 scores） — 完全不符合
+  - `q24.2`：量表 value=25（无 scores） — 不太符合
+  - `q24.3`：量表 value=50（无 scores） — 说不准
+  - `q24.4`：量表 value=75（无 scores） — 比较符合
+  - `q24.5`：量表 value=100（无 scores） — 完全符合
+- **q25** 题干：我比较喜欢操作具体的事物，而不是整天处理抽象的概念和想法。
+  - `q25.1`：量表 value=0（无 scores） — 完全不符合
+  - `q25.2`：量表 value=25（无 scores） — 不太符合
+  - `q25.3`：量表 value=50（无 scores） — 说不准
+  - `q25.4`：量表 value=75（无 scores） — 比较符合
+  - `q25.5`：量表 value=100（无 scores） — 完全符合
+- **q26** 题干：我喜欢独立地深入研究一个课题，直到搞清楚它内部的规律。
+  - `q26.1`：量表 value=0（无 scores） — 完全不符合
+  - `q26.2`：量表 value=25（无 scores） — 不太符合
+  - `q26.3`：量表 value=50（无 scores） — 说不准
+  - `q26.4`：量表 value=75（无 scores） — 比较符合
+  - `q26.5`：量表 value=100（无 scores） — 完全符合
+- **q27** 题干：我对文学、电影、戏剧、音乐或视觉艺术有深厚的兴趣。
+  - `q27.1`：量表 value=0（无 scores） — 完全不符合
+  - `q27.2`：量表 value=25（无 scores） — 不太符合
+  - `q27.3`：量表 value=50（无 scores） — 说不准
+  - `q27.4`：量表 value=75（无 scores） — 比较符合
+  - `q27.5`：量表 value=100（无 scores） — 完全符合
+- **q28** 题干：我在意社会公正，愿意为改善别人的处境付出时间和精力。
+  - `q28.1`：量表 value=0（无 scores） — 完全不符合
+  - `q28.2`：量表 value=25（无 scores） — 不太符合
+  - `q28.3`：量表 value=50（无 scores） — 说不准
+  - `q28.4`：量表 value=75（无 scores） — 比较符合
+  - `q28.5`：量表 value=100（无 scores） — 完全符合
+- **q29** 题干：承担责任和做最终决策对我来说不是负担，是我喜欢的位置。
+  - `q29.1`：量表 value=0（无 scores） — 完全不符合
+  - `q29.2`：量表 value=25（无 scores） — 不太符合
+  - `q29.3`：量表 value=50（无 scores） — 说不准
+  - `q29.4`：量表 value=75（无 scores） — 比较符合
+  - `q29.5`：量表 value=100（无 scores） — 完全符合
+- **q30** 题干：财务、会计、数据分析或行政管理类的工作对我有吸引力。
+  - `q30.1`：量表 value=0（无 scores） — 完全不符合
+  - `q30.2`：量表 value=25（无 scores） — 不太符合
+  - `q30.3`：量表 value=50（无 scores） — 说不准
+  - `q30.4`：量表 value=75（无 scores） — 比较符合
+  - `q30.5`：量表 value=100（无 scores） — 完全符合
+- **q31** 题干：对我来说，工程、建筑、制造或者信息技术基础设施类的职业方向有吸引力。
+  - `q31.1`：量表 value=0（无 scores） — 完全不符合
+  - `q31.2`：量表 value=25（无 scores） — 不太符合
+  - `q31.3`：量表 value=50（无 scores） — 说不准
+  - `q31.4`：量表 value=75（无 scores） — 比较符合
+  - `q31.5`：量表 value=100（无 scores） — 完全符合
+- **q32** 题干：如果有机会，我愿意在实验室、研究机构或者学术环境里工作。
+  - `q32.1`：量表 value=0（无 scores） — 完全不符合
+  - `q32.2`：量表 value=25（无 scores） — 不太符合
+  - `q32.3`：量表 value=50（无 scores） — 说不准
+  - `q32.4`：量表 value=75（无 scores） — 比较符合
+  - `q32.5`：量表 value=100（无 scores） — 完全符合
+- **q33** 题干：不按常规走，用自己的方式完成一件事，对我有真实的吸引力。
+  - `q33.1`：量表 value=0（无 scores） — 完全不符合
+  - `q33.2`：量表 value=25（无 scores） — 不太符合
+  - `q33.3`：量表 value=50（无 scores） — 说不准
+  - `q33.4`：量表 value=75（无 scores） — 比较符合
+  - `q33.5`：量表 value=100（无 scores） — 完全符合
+- **q34** 题干：倾听别人、给出建议或者提供情感支持，��我擅长而且愿意做的事。
+  - `q34.1`：量表 value=0（无 scores） — 完全不符合
+  - `q34.2`：量表 value=25（无 scores） — 不太符合
+  - `q34.3`：量表 value=50（无 scores） — 说不准
+  - `q34.4`：量表 value=75（无 scores） — 比较符合
+  - `q34.5`：量表 value=100（无 scores） — 完全符合
+- **q35** 题干：我喜欢开拓新机会，找到别人还没发现的可能性，然后让它成真。
+  - `q35.1`：量表 value=0（无 scores） — 完全不符合
+  - `q35.2`：量表 value=25（无 scores） — 不太符合
+  - `q35.3`：量表 value=50（无 scores） — 说不准
+  - `q35.4`：量表 value=75（无 scores） — 比较符合
+  - `q35.5`：量表 value=100（无 scores） — 完全符合
+- **q36** 题干：在一个组织良好、职责明确的环境里，我的工作状态是最好的。
+  - `q36.1`：量表 value=0（无 scores） — 完全不符合
+  - `q36.2`：量表 value=25（无 scores） — 不太符合
+  - `q36.3`：量表 value=50（无 scores） — 说不准
+  - `q36.4`：量表 value=75（无 scores） — 比较符合
+  - `q36.5`：量表 value=100（无 scores） — 完全符合
+
+### 逐结果
+- **realistic**（实干者）：profile 键：R（未做 (0,1) 轴校验）
+- **investigative**（思考者）：profile 键：I（未做 (0,1) 轴校验）
+- **artistic**（创造者）：profile 键：A（未做 (0,1) 轴校验）
+- **social**（助人者）：profile 键：S（未做 (0,1) 轴校验）
+- **enterprising**（开拓者）：profile 键：E（未做 (0,1) 轴校验）
+- **conventional**（组织者）：profile 键：C（未做 (0,1) 轴校验）
+
+## career-archetype-test
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 12
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：会议室灯光突然变得刺眼,投影仪嗡嗡作响,市场部主管皱着眉把产品宣传册拍在桌上。技术团队还在忙于分析数据,你该怎么做？
+  - `q1.a`：结构检查通过 — 立即要求技术团队暂停分析,按市场部主管意见修改演示内容
+  - `q1.b`：结构检查通过 — 坚持等待数据分析结果,认为没有依据的调整是徒劳
+  - `q1.c`：结构检查通过 — 提出折中方案:先基于已知信息临时调整,同时继续分析数据
+  - `q1.d`：结构检查通过 — 建议推迟会议,等完整数据出来后再做决定
+- **q2** 题干：周五下午阳光斜照办公室,同事们讨论着去聚餐还是提前下班,你的第一反应是什么？
+  - `q2.a`：结构检查通过 — 提议大家一起头脑风暴,讨论如何利用这2小时提升团队协作
+  - `q2.b`：结构检查通过 — 建议各自安排自己的时间,认为自由时间是每个人的权利
+  - `q2.c`：结构检查通过 — 主动组织一个小型分享会,让大家交流本周工作心得
+  - `q2.d`：结构检查通过 — 找个安静角落,规划下周工作计划或学习新技能
+- **q3** 题干：HR总监微笑着向你展示两张晋升机会的对比表,窗外城市霓虹闪烁,家人期待的眼神与公司创新实验室的图片在你脑海中交替出现。
+  - `q3.a`：结构检查通过 — 选择常驻海外的机会,相信专业发展比家庭团聚更重要
+  - `q3.b`：结构检查通过 — 留在总部,虽然薪资不变但能兼顾家庭和个人成长
+  - `q3.c`：结构检查通过 — 选择创新项目,认为不确定的职业路径比海外派遣更具挑战性
+  - `q3.d`：结构检查通过 — 请求考虑第三种方案,如定期轮岗或远程工作模式
+- **q4** 题干：财务总监敲了敲会议室的玻璃门,预算削减的通知让整个会议室的空气都凝固了,团队陷入沉默。
+  - `q4.a`：结构检查通过 — 提议保留新软件投资,认为长期效率提升比短期团队活动更重要
+  - `q4.b`：结构检查通过 — 选择团队建设活动,认为团队凝聚力是应对挑战的基础
+  - `q4.c`：结构检查通过 — 建议分阶段实施,先进行团队建设,同时学习新软件基础功能
+  - `q4.d`：结构检查通过 — 提议削减其他开支,保留这两项
+- **q5** 题干：周一晨会上,同事小李展示了一个完全不同的工作方法,咖啡香气中他自信地解释着,而你手中的笔记本密密麻麻记录着你一贯的方法论。
+  - `q5.a`：结构检查通过 — 立即指出其中的潜在问题,强调逻辑和流程的重要性
+  - `q5.b`：结构检查通过 — 认真记录下来,准备后续研究分析其可行性
+  - `q5.c`：结构检查通过 — 提出尝试一个小型测试,比较两种方法的实际效果
+  - `q5.d`：结构检查通过 — 感谢分享但坚持自己的方法,认为已经验证过的最可靠
+- **q6** 题干：茶水间里,你注意到小王独自完成了一个复杂项目,同事们都在社交软件上热闹地讨论,却没人问过他的进展。
+  - `q6.a`：结构检查通过 — 认为他应该主动融入团队,独立工作不利于项目沟通
+  - `q6.b`：结构检查通过 — 私下询问他是否需要帮助,尊重他的工作方式
+  - `q6.c`：结构检查通过 — 鼓励他在团队会议上分享他的方法,促进知识交流
+  - `q6.d`：结构检查通过 — 欣赏他的专注能力,认为有些工作确实适合独立完成
+- **q7** 题干：电话里,重要客户怒气冲冲地投诉产品质量问题,会议室里质检报告静静地躺在桌上,显示产品出厂前完全合格。
+  - `q7.a`：结构检查通过 — 坚持产品符合标准,要求客户提供更多证据
+  - `q7.b`：结构检查通过 — 承认问题存在,承诺调查并安抚客户情绪
+  - `q7.c`：结构检查通过 — 提议立即派人到现场检查,同时调取运输全程记录
+  - `q7.d`：结构检查通过 — 建议暂停合作,认为坚持标准比妥协更重要
+- **q8** 题干：公司会议室里,阳光透过百叶窗在桌面上投下斑驳光影,培训负责人正热情洋溢地介绍下周的技能提升讲座主题。你最可能选择参加哪种主题的培训？
+  - `q8.a`：结构检查通过 — 前沿技术突破与应用,掌握行业最新发展趋势
+  - `q8.b`：结构检查通过 — 高效工作方法与时间管理,优化日常工作流程
+  - `q8.c`：结构检查通过 — 团队沟通与协作技巧,改善工作关系与氛围
+  - `q8.d`：结构检查通过 — 工作压力管理与生活平衡,保持身心健康
+- **q9** 题干：团队创意讨论会上,咖啡香气弥漫在空气中,同事们热烈讨论着新项目方向,而你的想法与主流思路截然不同,该如何表达？
+  - `q9.a`：结构检查通过 — 直接提出与众不同的创意,期待获得突破性成果
+  - `q9.b`：结构检查通过 — 先保留想法,观察团队讨论方向,再决定是否分享
+  - `q9.c`：结构检查通过 — 私下找关键同事探讨可行性,评估风险后再公开讨论
+  - `q9.d`：结构检查通过 — 附和主流观点,确保团队和谐与项目顺利推进
+- **q10** 题干：跨部门协作项目即将完成,但对接部门突然提出重大修改要求,可能导致项目延期。项目负责人在会议室里眉头紧锁,你该如何应对？
+  - `q10.a`：结构检查通过 — 立即收集数据,分析修改影响,提出解决方案
+  - `q10.b`：结构检查通过 — 评估新要求的合理性,与对方协商最小化修改范围
+  - `q10.c`：结构检查通过 — 优先考虑团队利益,尽量满足对方要求以维护关系
+  - `q10.d`：结构检查通过 — 向上级汇报情况,寻求指导后再决定如何回应
+- **q11** 题干：办公室里,一位同事正在有条不紊地执行他的计划,每个任务都标记完成度,即使面对突发状况也很少调整。你会如何评价这位同事的工作方式？
+  - `q11.a`：结构检查通过 — 过于刻板,缺乏灵活性,难以应对变化
+  - `q11.b`：结构检查通过 — 结构清晰,但可能错失创新机会
+  - `q11.c`：结构检查通过 — 高效执行,但可能忽视了团队协作的重要性
+  - `q11.d`：结构检查通过 — 值得学习,但需要结合更多创意思维
+- **q12** 题干：公司推行新的绩效考核制度,指标A能确保稳定达标但限制了创新空间,指标B可能带来更高回报但有失败风险。你会如何选择？
+  - `q12.a`：结构检查通过 — 选择指标A,确保稳定达标,避免职业风险
+  - `q12.b`：结构检查通过 — 选择指标B,挑战自我,追求更高成就
+  - `q12.c`：结构检查通过 — 结合两者优势,寻求平衡点
+  - `q12.d`：结构检查通过 — 寻求上级建议,根据团队情况再做决定
+- **q13** 题干：傍晚的办公室里,夕阳透过窗户洒在桌面上,你已经完成了一天的工作,有30分钟自由时间。你会如何利用这短暂的时间？
+  - `q13.a`：结构检查通过 — 立即离开办公室,享受个人时间放松身心
+  - `q13.b`：结构检查通过 — 继续思考工作问题,寻找优化方案
+  - `q13.c`：结构检查通过 — 与同事交流一天的工作心得,增进团队关系
+  - `q13.d`：结构检查通过 — 整理工作思路,规划明天任务
+- **q14** 题干：重要演示前10分钟,会议室里气氛紧张,你发现数据图表出现异常,显示的结果与预期完全相反,而决策者即将到达。你会如何处理？
+  - `q14.a`：结构检查通过 — 立即检查数据来源,找出错误并修正
+  - `q14.b`：结构检查通过 — 重新评估数据分析方法,确保结果准确性
+  - `q14.c`：结构检查通过 — 推迟演示,争取更多时间解决问题
+  - `q14.d`：结构检查通过 — 按原计划进行,强调过程中的发现而非最终结果
+- **q15** 题干：午休时分,办公室里飘着咖啡香,几位同事围着白板热烈讨论着一个突发创意,他们向你招手示意加入,你面前还放着没吃完的午餐。
+  - `q15.a`：结构检查通过 — 立即放下餐具加入讨论,即使这个创意可能打乱原计划
+  - `q15.b`：结构检查通过 — 礼貌谢绝,认为应该专注于当前项目,创意可以下次讨论
+  - `q15.c`：结构检查通过 — 先了解创意核心再决定是否参与,不想错过可能的机会
+  - `q15.d`：结构检查通过 — 表示可以先听听想法,但不做承诺,等下午再给出正式回复
+- **q16** 题干：团队会议室,投影仪的光线照在白板上,一位同事兴奋地提出了一个颠覆性想法,但缺乏具体实施路径,会议室里的气氛变得微妙。
+  - `q16.a`：结构检查通过 — 直接指出想法缺乏可操作性,建议先做可行性分析
+  - `q16.b`：结构检查通过 — 肯定创意价值,同时提出几个可能实施方向供团队讨论
+  - `q16.c`：结构检查通过 — 先记录想法,再根据现有资源评估是否值得深入探索
+  - `q16.d`：结构检查通过 — 建议团队先调研类似案例,从中获取实施灵感
+- **q17** 题干：主管将两个项目方案放在桌上,一份是熟悉的稳定项目,另一份是充满挑战的创新领域,他暗示后者可能影响年终评估,但机会难得。
+  - `q17.a`：结构检查通过 — 选择稳定项目,确保完成基础目标后再考虑创新尝试
+  - `q17.b`：结构检查通过 — 主动请缨探索新领域,认为即使失败也是宝贵的学习机会
+  - `q17.c`：结构检查通过 — 请求先做小规模试点,再决定是否全面投入新领域
+  - `q17.d`：结构检查通过 — 提出折中方案,将部分时间用于创新探索,部分时间保证核心项目
+- **q18** 题干：你刚接到一个新任务,办公桌上的文件堆得高高的,电脑屏幕上还显示着未完成的工作,你开始规划如何开始这项任务。
+  - `q18.a`：结构检查通过 — 先花时间研究所有相关资料,确保完全理解后再动手
+  - `q18.b`：结构检查通过 — 立即开始行动,在实践中学习和完善方案
+  - `q18.c`：结构检查通过 — 先制定详细计划,然后按部就班执行,每一步都力求完美
+  - `q18.d`：结构检查通过 — 先与有经验的同事交流,获取建议后再制定行动方案
+- **q19** 题干：项目遇到技术瓶颈,会议室里众人眉头紧锁,白板上列出了五种可能的解决方案,空气中有种无声的紧张感。
+  - `q19.a`：结构检查通过 — 详细分析每种方案的优缺点,基于数据选择最优路径
+  - `q19.b`：结构检查通过 — 根据团队现有资源和时间限制,选择最可行的方案
+  - `q19.c`：结构检查通过 — 鼓励团队集思广益,寻找创新性的解决方案
+  - `q19.d`：结构检查通过 — 综合考虑项目目标和用户需求,选择最符合长期愿景的方案
+- **q20** 题干：团队讨论中,一位同事安静地坐在角落,等大家都发言完毕后,才提出了一个与众不同的观点,会议室的注意力转向了他。
+  - `q20.a`：结构检查通过 — 欣赏这种深思熟虑的方式,认为高质量的思考需要时间
+  - `q20.b`：结构检查通过 — 认为应该鼓励即时分享,避免错过有价值的互动机会
+  - `q20.c`：结构检查通过 — 理解这种偏好,但也尝试创造更开放的交流环境
+  - `q20.d`：结构检查通过 — 建议会议前提供议题,让大家有时间准备再参与讨论
+
+### 逐结果
+- **r1**（分析师）：profile 键与范围检查通过。
+- **r2**（工程师）：profile 键与范围检查通过。
+- **r3**（创意师）：profile 键与范围检查通过。
+- **r4**（顾问）：profile 键与范围检查通过。
+- **r5**（领导者）：profile 键与范围检查通过。
+- **r6**（专家）：profile 键与范围检查通过。
+- **r7**（协作者）：profile 键与范围检查通过。
+- **r8**（教育者）：profile 键与范围检查通过。
+- **r9**（创业者）：profile 键与范围检查通过。
+- **r10**（创新者）：profile 键与范围检查通过。
+- **r11**（管理者）：profile 键与范围检查通过。
+- **r12**（执行者）：profile 键与范围检查通过。
+
+## city
+- **计分**：`city` · 维度数 0 · 题数 25 · 结果数 0
+- **警告（1）**
+  - （说明）scoring.type=`city` 非三种标准计分族，已跳过 validateQuestions / validateResults(profile) / validateDimensionProfiles / validateScoreMap，以免误报。
+
+### 逐题 · 逐选项
+- **A1** 省级/列表选择：32 条；题干：你的家乡或现在的所在省份？
+- **A2** 题干：你打算在新城市租房还是买房？
+  - `A2.a`：无 scores（专用题型或未列分数字段） — 租房，保持灵活，暂时不考虑置业
+  - `A2.b`：无 scores（专用题型或未列分数字段） — 计划买房，长期定居
+  - `A2.c`：无 scores（专用题型或未列分数字段） — 两者都有可能，视情况而定
+  - `A2.d`：无 scores（专用题型或未列分数字段） — 我不确定，或者这不重要
+- **A3** 题干：你大概什么时候打算做出这个决定？
+  - `A3.a`：无 scores（专用题型或未列分数字段） — 已经在认真规划，半年内可能就动
+  - `A3.b`：无 scores（专用题型或未列分数字段） — 1–2 年内打算搬，还在调研阶段
+  - `A3.c`：无 scores（专用题型或未列分数字段） — 只是随便想想，没有具体计划
+  - `A3.d`：无 scores（专用题型或未列分数字段） — 不打算搬，只是好奇哪个城市最适合自己
+- **HC1** 题干：你对空气质量的底线是什么？
+  - `HC1.a`：无 scores（专用题型或未列分数字段） — 必须达标，年均 PM2.5 低于 35 μg/m³（国家一级）
+  - `HC1.b`：无 scores（专用题型或未列分数字段） — 55 μg/m³ 以内可接受，达到国家二级标准
+  - `HC1.c`：无 scores（专用题型或未列分数字段） — 70 μg/m³ 以内就行，稍差一点可以接受
+  - `HC1.d`：无 scores（专用题型或未列分数字段） — 空气质量不是我的优先考虑
+- **HC2** 题干：你能接受的月租上限大概是多少？
+  - `HC2.a`：无 scores（专用题型或未列分数字段） — 2000 元以内，性价比是核心
+  - `HC2.b`：无 scores（专用题型或未列分数字段） — 2000–4000 元，合理范围内
+  - `HC2.c`：无 scores（专用题型或未列分数字段） — 4000–8000 元，品质优先
+  - `HC2.d`：无 scores（专用题型或未列分数字段） — 预算不是问题，超过 8000 也无所谓
+- **HC3** 题干：靠海或有海滩，对你来说是硬条件吗？
+  - `HC3.a`：无 scores（专用题型或未列分数字段） — 必须！我需要能随时去海边的生活
+  - `HC3.b`：无 scores（专用题型或未列分数字段） — 有海当然更好，但不是不可妥协的条件
+  - `HC3.c`：无 scores（专用题型或未列分数字段） — 我不需要住在海边
+  - `HC3.d`：无 scores（专用题型或未列分数字段） — 我更喜欢山城或内陆盆地
+- **HC4** 题干：你能接受的冬天有多冷？
+  - `HC4.a`：无 scores（专用题型或未列分数字段） — 冬天必须暖和，最冷不能低于 5°C
+  - `HC4.b`：无 scores（专用题型或未列分数字段） — 0°C 左右可以接受，有暖气就行
+  - `HC4.c`：无 scores（专用题型或未列分数字段） — -10°C 以上都能扛，习惯北方冬天
+  - `HC4.d`：无 scores（专用题型或未列分数字段） — 对冬天的冷热没有要求
+- **HC5** 题干：你能接受夏天最热到多少度？
+  - `HC5.a`：无 scores（专用题型或未列分数字段） — 最高不能超过 32°C，我真的怕热
+  - `HC5.b`：无 scores（专用题型或未列分数字段） — 35°C 以内能接受，开空调就好了
+  - `HC5.c`：无 scores（专用题型或未列分数字段） — 40°C 以内都能扛，已经适应了
+  - `HC5.d`：无 scores（专用题型或未列分数字段） — 夏天的热不是我的顾虑
+- **HC6** 题干：城市必须有地铁吗？
+  - `HC6.a`：无 scores（专用题型或未列分数字段） — 必须有地铁，否则生活不方便
+  - `HC6.b`：无 scores（专用题型或未列分数字段） — 有地铁更好，没有也能接受
+  - `HC6.c`：无 scores（专用题型或未列分数字段） — 无所谓，我开车或者骑车
+  - `HC6.d`：无 scores（专用题型或未列分数字段） — 我更倾向于小城市，地铁反而让城市太大了
+- **HC7** 题干：你需要城市有国际直飞航班吗？
+  - `HC7.a`：无 scores（专用题型或未列分数字段） — 必须有国际直飞，我经常出境
+  - `HC7.b`：无 scores（专用题型或未列分数字段） — 有更方便，但坐高铁去大城市转机也能接受
+  - `HC7.c`：无 scores（专用题型或未列分数字段） — 我很少出境，不是我的考虑
+  - `HC7.d`：无 scores（专用题型或未列分数字段） — 我偏好远离机场噪音的城市
+- **SP1** 题干：你对「辣」这件事怎么看？
+  - `SP1.a`：无 scores（专用题型或未列分数字段） — 非常喜欢辣，越辣越好，这对我很重要
+  - `SP1.b`：无 scores（专用题型或未列分数字段） — 喜欢有点辣，但不想天天吃极辣，口味比较重要
+  - `SP1.c`：无 scores（专用题型或未列分数字段） — 不太喜欢辣，偏好清淡，口味有一定要求
+  - `SP1.d`：无 scores（专用题型或未列分数字段） — 对辣完全没有要求，什么都能吃
+- **SP2** 题干：你最在意哪种饮食体验？
+  - `SP2.a`：无 scores（专用题型或未列分数字段） — 街头小吃、夜市、地道地方风味，越接地气越好
+  - `SP2.b`：无 scores（专用题型或未列分数字段） — 新鲜海鲜，最好每天都能吃到
+  - `SP2.c`：无 scores（专用题型或未列分数字段） — 饮食要多元，精致国际化，不局限于本地菜
+  - `SP2.d`：无 scores（专用题型或未列分数字段） — 饮食对我不重要，随便吃都行
+- **SP3** 题干：你希望自己生活在什么节奏的城市里？
+  - `SP3.a`：无 scores（专用题型或未列分数字段） — 快节奏，有竞争有压力有活力，我喜欢这种感觉
+  - `SP3.b`：无 scores（专用题型或未列分数字段） — 适中，不太快也不太慢，张弛有度
+  - `SP3.c`：无 scores（专用题型或未列分数字段） — 慢一点，悠闲为主，工作不是生活的全部
+  - `SP3.d`：无 scores（专用题型或未列分数字段） — 极度放松，甚至有点「躺平」，彻底减压
+- **SP4** 题干：夜生活对你来说有多重要？
+  - `SP4.a`：无 scores（专用题型或未列分数字段） — 非常重要，我需要丰富的夜间娱乐、酒吧和活动
+  - `SP4.b`：无 scores（专用题型或未列分数字段） — 偶尔出去玩就够了，有几个选择就行
+  - `SP4.c`：无 scores（专用题型或未列分数字段） — 我不太在意，早睡早起型
+  - `SP4.d`：无 scores（专用题型或未列分数字段） — 我主动偏好安静的夜晚，不喜欢嘈杂
+- **SP5** 题干：你的工作方向是什么？
+  - `SP5.a`：无 scores（专用题型或未列分数字段） — 科技 / 互联网 / 创业，需要好的行业生态
+  - `SP5.b`：无 scores（专用题型或未列分数字段） — 金融 / 商务 / 外贸 / 制造业
+  - `SP5.c`：无 scores（专用题型或未列分数字段） — 创意 / 设计 / 文化 / 媒体 / 教育
+  - `SP5.d`：无 scores（专用题型或未列分数字段） — 远程工作 / 自由职业 / 不受城市限制
+- **SP6** 题干：你对城市周边的自然环境有什么偏好？
+  - `SP6.a`：无 scores（专用题型或未列分数字段） — 我需要能爬山、有山有林，大自然对我很重要
+  - `SP6.b`：无 scores（专用题型或未列分数字段） — 我喜欢靠海，海景、海鲜和海风是加分项
+  - `SP6.c`：无 scores（专用题型或未列分数字段） — 有城市公园和绿地就够了
+  - `SP6.d`：无 scores（专用题型或未列分数字段） — 自然环境对我不重要，城市配套更关键
+- **SP7** 题干：历史文化深度对你住的城市有多重要？
+  - `SP7.a`：无 scores（专用题型或未列分数字段） — 非常重要，我想住在有历史厚度、文人气质的城市
+  - `SP7.b`：无 scores（专用题型或未列分数字段） — 有一定文化积累就好，不需要古都级别
+  - `SP7.c`：无 scores（专用题型或未列分数字段） — 对我不重要，我更看重现代感和便利性
+  - `SP7.d`：无 scores（专用题型或未列分数字段） — 我主动偏好新兴城市，没有包袱的地方
+- **SP8** 题干：你希望住在多大规模的城市？
+  - `SP8.a`：无 scores（专用题型或未列分数字段） — 大城市，人口1000万以上，越繁华越好
+  - `SP8.b`：无 scores（专用题型或未列分数字段） — 中等城市，300–800万人口，有城市感但不太挤
+  - `SP8.c`：无 scores（专用题型或未列分数字段） — 偏小城市，100万左右，人情味更浓
+  - `SP8.d`：无 scores（专用题型或未列分数字段） — 城市大小对我无所谓
+- **SP9** 题干：医疗资源的丰富程度对你有多重要？
+  - `SP9.a`：无 scores（专用题型或未列分数字段） — 非常重要，需要顶级三甲医院集中的城市
+  - `SP9.b`：无 scores（专用题型或未列分数字段） — 有一定医疗保障就够了，不需要顶级
+  - `SP9.c`：无 scores（专用题型或未列分数字段） — 对我目前不重要，身体健康优先考虑其他
+  - `SP9.d`：无 scores（专用题型或未列分数字段） — 我有长期健康需求，这是我的核心考量
+- **SP10** 题干：教育资源对你选城市有多大影响？
+  - `SP10.a`：无 scores（专用题型或未列分数字段） — 非常重要，985/211 高校数量和基础教育质量是核心
+  - `SP10.b`：无 scores（专用题型或未列分数字段） — 有一定的教育资源就好，有大学氛围更好
+  - `SP10.c`：无 scores（专用题型或未列分数字段） — 目前对我不重要，暂时不考虑孩子教育
+  - `SP10.d`：无 scores（专用题型或未列分数字段） — 我自己还在求学或考研阶段
+- **SP11** 题干：你对城市的创业或科技生态有要求吗？
+  - `SP11.a`：无 scores（专用题型或未列分数字段） — 这是我的核心需求，必须有活跃的创业/科技圈
+  - `SP11.b`：无 scores（专用题型或未列分数字段） — 有一定创业氛围就好，不需要顶尖
+  - `SP11.c`：无 scores（专用题型或未列分数字段） — 对我不重要，我不在这个领域
+  - `SP11.d`：无 scores（专用题型或未列分数字段） — 我主动偏好低内卷的城市，不想进这个赛道
+- **SP12** 题干：国际化氛围对你有多重要？
+  - `SP12.a`：无 scores（专用题型或未列分数字段） — 非常重要，需要外籍社区、英语友好的生活环境
+  - `SP12.b`：无 scores（专用题型或未列分数字段） — 有一定国际化就好，不需要很高
+  - `SP12.c`：无 scores（专用题型或未列分数字段） — 不需要，我完全适应本地中文环境
+  - `SP12.d`：无 scores（专用题型或未列分数字段） — 我主动偏好本地化浓厚的城市，传统文化更重要
+- **SP13** 题干：你希望新城市离家乡有多近？
+  - `SP13.a`：无 scores（专用题型或未列分数字段） — 非常重要，必须方便回家，最好同省或相邻省
+  - `SP13.b`：无 scores（专用题型或未列分数字段） — 3小时高铁以内就行，逢年过节能回去
+  - `SP13.c`：无 scores（专用题型或未列分数字段） — 距离对我无所谓，四海为家
+  - `SP13.d`：无 scores（专用题型或未列分数字段） — 我主动想离家远一点，独立和陌生感更重要
+- **SP14** 题干：你对生活成本的整体态度是？
+  - `SP14.a`：无 scores（专用题型或未列分数字段） — 成本是首要考虑，越低越好，钱要花在刀刃上
+  - `SP14.b`：无 scores（专用题型或未列分数字段） — 性价比要高，花的钱要值，但不追求最低
+  - `SP14.c`：无 scores（专用题型或未列分数字段） — 品质优先，成本不是我的主要顾虑
+  - `SP14.d`：无 scores（专用题型或未列分数字段） — 我有具体预算，已经在 HC2 里设置了上限
+- **SP15** 题干：你理想中的气候是什么样的？
+  - `SP15.a`：无 scores（专用题型或未列分数字段） — 温暖湿润，四季如春，最好冬天不冷夏天不热
+  - `SP15.b`：无 scores（专用题型或未列分数字段） — 四季分明，每个季节都想经历，包括冬天下雪
+  - `SP15.c`：无 scores（专用题型或未列分数字段） — 温热潮湿，南方气候，冬天不冻人就好
+  - `SP15.d`：无 scores（专用题型或未列分数字段） — 干燥少雨，晴天多，不喜欢阴雨绵绵
+
+### 逐结果
+- （无 results）
+
+## classic-book-match
+- **计分**：`bipolar-dimension` · 维度数 4 · 题数 20 · 结果数 9
+- **错误（6）**
+  - bipolar axis "内外世界关系": missing highPole
+  - bipolar axis "苦难应对方式": missing highPole
+  - bipolar axis "孤独体验": missing highPole
+  - bipolar axis "行动与沉思比例": missing highPole
+  - r1 is unreachable — dominated by r3 on all dimensions
+  - r9 is unreachable — dominated by r3 on all dimensions
+- **警告（49）**
+  - q2.c: bipolar option mixes positive and negative scores
+  - q2.d: bipolar option mixes positive and negative scores
+  - q3.a: bipolar option mixes positive and negative scores
+  - q3.b: bipolar option mixes positive and negative scores
+  - q4.c: bipolar option mixes positive and negative scores
+  - q4.d: bipolar option mixes positive and negative scores
+  - q5.c: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option mixes positive and negative scores
+  - q6.c: bipolar option mixes positive and negative scores
+  - q6.d: bipolar option mixes positive and negative scores
+  - q7.a: bipolar option mixes positive and negative scores
+  - q7.b: bipolar option mixes positive and negative scores
+  - q12.b: bipolar option mixes positive and negative scores
+  - q13.a: bipolar option mixes positive and negative scores
+  - q13.b: bipolar option mixes positive and negative scores
+  - q16.c: bipolar option mixes positive and negative scores
+  - q16.d: bipolar option mixes positive and negative scores
+  - q18.c: bipolar option mixes positive and negative scores
+  - q18.d: bipolar option mixes positive and negative scores
+  - q19.a: bipolar option mixes positive and negative scores
+  - q19.b: bipolar option mixes positive and negative scores
+  - q20.b: bipolar option mixes positive and negative scores
+  - q20.d: bipolar option mixes positive and negative scores
+  - r3: missing "strengths"
+  - r3: missing "weaknesses"
+  - r3: only 0 strengths (want 3)
+  - r3: only 0 weaknesses (want 3)
+  - r4: missing "strengths"
+  - r4: missing "weaknesses"
+  - r4: only 0 strengths (want 3)
+  - r4: only 0 weaknesses (want 3)
+  - r5: missing "strengths"
+  - r5: missing "weaknesses"
+  - r5: only 0 strengths (want 3)
+  - r5: only 0 weaknesses (want 3)
+  - r7: missing "strengths"
+  - r7: missing "weaknesses"
+  - r7: only 0 strengths (want 3)
+  - r7: only 0 weaknesses (want 3)
+  - r8: missing "strengths"
+  - r8: missing "weaknesses"
+  - r8: only 0 strengths (want 3)
+  - r8: only 0 weaknesses (want 3)
+  - r9: missing "strengths"
+  - r9: missing "weaknesses"
+  - r9: only 0 strengths (want 3)
+  - r9: only 0 weaknesses (want 3)
+  - r1 is unreachable — dominated by r3 on all dimensions
+  - r9 is unreachable — dominated by r3 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：古籍阁内，一本尘封的古籍悄然滑落，露出一个隐秘的夹层。你会如何应对这个意外的发现？
+  - `q1.a`：结构检查通过 — 立即翻开夹层，探索其中可能隐藏的古老秘密或失传知识
+  - `q1.b`：结构检查通过 — 将古籍重新放回原位，尊重它的历史完整性，不为好奇心所动
+  - `q1.c`：结构检查通过 — 先观察古籍的外观和年代，判断其价值再决定是否探索夹层
+  - `q1.d`：结构检查通过 — 将这个发现告诉阁中的学者，期待集体研究带来的更全面解读
+- **q2** 题干：在深夜的书房，你偶然读到一段关于人生苦难的深刻论述，窗外月色如水。这段文字会如何影响你的思绪？
+  - `q2.a`：结构检查通过 — 反复咀嚼每个字句，将苦难视为成长必经之路，思考如何从中汲取智慧
+  - `q2.b`：结构检查通过 — 合上书卷，苦难太过沉重，更愿享受当下平静，不愿深究
+  - `q2.c`：双极混号 — 记录下触动心灵的句子，作为日后面对困境时的精神支柱
+  - `q2.d`：双极混号 — 寻找书中提及的历史人物传记，看他们如何在相似的苦难中前行
+- **q3** 题干：在古籍修复室，你独自工作数小时，周围只有古籍的香气和工具的轻微声响。这种独处的状态对你而言意味着什么？
+  - `q3.a`：双极混号 — 珍视这份与古籍对话的独处时光，在其中找到内心的宁静与专注
+  - `q3.b`：双极混号 — 感到孤独难耐，渴望与人交流想法，独自工作令人疲惫
+  - `q3.c`：结构检查通过 — 将独处视为必要的工作条件，但不特别享受或厌恶这种状态
+  - `q3.d`：结构检查通过 — 在独处中思考更广阔的世界，想象自己与古人跨越时空的精神交流
+- **q4** 题干：藏书阁中，你发现一本记载着未知历史细节的残破手稿，但修复它需要耗费大量时间和精力。你会如何选择？
+  - `q4.a`：结构检查通过 — 立即着手修复，沉浸在解开历史谜团的行动中，享受复原真相的过程
+  - `q4.b`：结构检查通过 — 先仔细研究手稿的每一个细节，思考其历史背景和可能的价值，再决定如何行动
+  - `q4.c`：双极混号 — 邀请其他学者共同研究，分担修复工作并集思广益
+  - `q4.d`：双极混号 — 修复过程中不断反思历史的意义，将行动与思考交织在一起
+- **q5** 题干：在整理古籍时，你发现一段与你长期坚守的信念相悖的论述。面对这种思想冲突，你会如何应对？
+  - `q5.a`：结构检查通过 — 坦然接受不同观点的存在，重新审视自己的信念，从中获得新的思考维度
+  - `q5.b`：结构检查通过 — 坚守自己的信念，认为这段论述可能是误传或误解，不值得改变
+  - `q5.c`：双极混号 — 将这段论述视为一种有趣的挑战，深入研究其背景和依据，但不急于改变立场
+  - `q5.d`：双极混号 — 感到困惑和不安，希望找到权威的第三方观点来验证孰对孰错
+- **q6** 题干：当你读到一部描写英雄面对巨大苦难仍坚韧不拔的经典作品时，你更倾向于从中获得什么？
+  - `q6.a`：结构检查通过 — 被英雄的坚韧所激励，思考如何在现实生活中培养类似的意志力
+  - `q6.b`：结构检查通过 — 认为英雄的事迹过于理想化，难以在现实中复制，更欣赏平凡人的真实应对
+  - `q6.c`：双极混号 — 分析英雄面对苦难的心理机制，理解其行为背后的深层动机
+  - `q6.d`：双极混号 — 将英雄视为遥远的榜样，感到敬佩但难以想象自己能达到同样的境界
+- **q7** 题干：在古籍研究小组中，当其他学者热烈讨论一个学术问题时，你发现自己有不同的观点。你会如何表现？
+  - `q7.a`：双极混号 — 耐心倾听，适时提出自己的见解，即使这意味着挑战主流观点
+  - `q7.b`：双极混号 — 保留自己的观点，认为真理往往需要时间检验，不必急于表达
+  - `q7.c`：结构检查通过 — 在讨论结束后私下与少数志同道合者交流自己的见解
+  - `q7.d`：结构检查通过 — 迅速融入主流观点，认为集体智慧往往高于个人见解
+- **q8** 题干：你走进一座古老的图书馆，发现一本从未被记载的古籍，封面上写着你从未读过的文字。书页间透露出神秘的光芒，似乎蕴含着不为人知的智慧。你会如何对待这本古籍？
+  - `q8.a`：结构检查通过 — 小心翼翼地翻开每一页，逐字研读，试图理解其中的奥秘
+  - `q8.b`：结构检查通过 — 迅速翻阅寻找插图和有趣的故事，忽略晦涩的文字部分
+  - `q8.c`：结构检查通过 — 将古籍放在安全的地方，等待专家来解读后再决定如何行动
+  - `q8.d`：结构检查通过 — 古籍的神秘让你感到不安，迅速将其放回原处，不敢触碰
+- **q9** 题干：你被困在一场暴风雪中的古堡，窗外的风声如鬼魅般凄厉，壁炉的火光时明时暗。你发现了一条通往地下的密道，但入口处有一块古老的石碑，上面刻着警告语：'进入者将面临永恒的孤独'。你会如何选择？
+  - `q9.a`：结构检查通过 — 毫不犹豫地走进密道，宁愿面对孤独也不愿在暴风雪中等死
+  - `q9.b`：结构检查通过 — 留在古堡中，尝试加固门窗，等待暴风雪过去
+  - `q9.c`：结构检查通过 — 先在古堡中寻找其他出路，只有当确认没有其他选择时才考虑密道
+  - `q9.d`：结构检查通过 — 被'永恒孤独'的警告吓倒，瘫坐在地上，任由命运安排
+- **q10** 题干：你在一座废弃的修道院中发现了一间密室，里面堆满了古代学者的手稿。这些手稿记录了对宇宙本质的思考，但大多残缺不全。你决定如何对待这些珍贵的思想碎片？
+  - `q10.a`：结构检查通过 — 花费数日时间整理并修复手稿，试图还原作者完整的思想体系
+  - `q10.b`：结构检查通过 — 只挑选那些与自己现有观念相符的部分阅读，忽略其他内容
+  - `q10.c`：结构检查通过 — 将手稿拍照后带回去，邀请朋友共同探讨这些古老的思想
+  - `q10.d`：结构检查通过 — 认为这些过时的思想毫无价值，随手将其丢在角落任其腐朽
+- **q11** 题干：你在一场文学沙龙上遇到了一位声名显赫的诗人，他的作品你一直敬仰但从未有机会当面请教。现在有一个机会可以向他展示自己的诗作，但你知道自己的作品风格与主流截然不同。你会如何行动？
+  - `q11.a`：结构检查通过 — 鼓起勇气展示自己最独特的作品，即使知道可能不被主流认可
+  - `q11.b`：结构检查通过 — 展示迎合主流的作品，隐藏自己真实的创作风格
+  - `q11.c`：结构检查通过 — 先与诗人交谈，了解他的喜好后再决定展示哪些作品
+  - `q11.d`：结构检查通过 — 因害怕被拒绝而放弃展示机会，只做一个默默的聆听者
+- **q12** 题干：你偶然发现了一封尘封百年的情书，字里行间充满了真挚的情感，但信的收件人身份成谜。这封信让你对过去的爱情故事产生了浓厚的兴趣，你会如何探索这个秘密？
+  - `q12.a`：结构检查通过 — 将信带到档案馆和图书馆，查阅历史资料寻找线索
+  - `q12.b`：双极混号 — 将信上传到网络，希望有人能提供线索，享受集体探索的乐趣
+  - `q12.c`：结构检查通过 — 只沉浸在这封信的情感中，不愿花时间寻找真相，享受想象的空间
+  - `q12.d`：结构检查通过 — 认为这只是别人的隐私，应该尊重而不去干涉
+- **q13** 题干：你被邀请参与一部经典名著的改编创作，但导演要求你完全按照原著精神进行改编，不能添加个人创意。而原著中有些情节在现代看来存在明显的逻辑漏洞。你会如何处理这个困境？
+  - `q13.a`：双极混号 — 严格遵循原著，即使有明显缺陷也不做任何修改，尊重经典
+  - `q13.b`：双极混号 — 提出修改建议，如果被拒绝就拒绝参与项目
+  - `q13.c`：结构检查通过 — 在保留原著精髓的前提下，巧妙地解决逻辑漏洞而不破坏整体结构
+  - `q13.d`：结构检查通过 — 感到左右为难，最终选择退出项目，不愿妥协自己的创作理念
+- **q14** 题干：你在一个废弃的书店发现了一本没有封面的古籍，内页记载着一种早已失传的艺术形式。这种艺术形式需要极度的专注和内在的宁静才能掌握，但学习过程异常漫长且孤独。你会如何面对这个发现？
+  - `q14.a`：结构检查通过 — 决定花费余生学习这门艺术，即使可能终其一生也无法精通
+  - `q14.b`：结构检查通过 — 拍照记录后离开，认为这种艺术已经不适合现代社会
+  - `q14.c`：结构检查通过 — 尝试将这种艺术与现代元素结合，创造一种新的艺术形式
+  - `q14.d`：结构检查通过 — 感到学习过程过于孤独和艰难，将古籍放回原处任其继续尘封
+- **q15** 题干：当你独自坐在古老图书馆的角落，窗外的雨滴轻敲玻璃，你手中的书页微微泛黄。面对这份孤寂，你会如何度过这段时光？
+  - `q15.a`：结构检查通过 — 沉浸于书页间，在文字的迷宫中寻找思想的共鸣，仿佛与作者隔空对话
+  - `q15.b`：结构检查通过 — 起身关上窗户，邀请附近读者共饮一杯热茶，分享各自读过的故事
+  - `q15.c`：结构检查通过 — 在窗边凝视雨滴，思绪飘向远方，想象书中人物的命运与自己的联系
+  - `q15.d`：结构检查通过 — 合上书本，走出图书馆，在雨中漫步，感受世界的真实触感与声音
+- **q16** 题干：你发现了一本残缺古籍，其中的重要章节已被岁月侵蚀。面对这知识断层，你的反应是？
+  - `q16.a`：结构检查通过 — 不辞辛劳地查阅其他文献，试图还原原貌，哪怕花费数月时间也在所不惜
+  - `q16.b`：结构检查通过 — 接受残缺之美，在空白处写下自己的感悟，让古籍与当下的思想交融
+  - `q16.c`：双极混号 — 请教专家学者，共同探讨可能的复原方案，尊重集体智慧的力量
+  - `q16.d`：双极混号 — 将残缺视为独特价值，专注于保存现状，研究其流传过程中的历史痕迹
+- **q17** 题干：在文学沙龙中，一位知名作家对你的创作提出了尖锐批评。面对这种公开的否定，你会？
+  - `q17.a`：结构检查通过 — 冷静分析批评中的合理之处，感谢对方的坦诚，并思考如何改进自己的作品
+  - `q17.b`：结构检查通过 — 感到受伤但选择沉默，内心质疑自己的创作能力，暂时搁置写作计划
+  - `q17.c`：结构检查通过 — 礼貌回应但坚持自己的创作理念，认为艺术评价本就多元
+  - `q17.d`：结构检查通过 — 将批评视为个人攻击，决定远离此类场合，专注于无人评判的私人创作
+- **q18** 题干：当你构思一部宏大作品时，你会更倾向于？
+  - `q18.a`：结构检查通过 — 先构建完整的世界观和人物关系图，再逐步填充细节，如同建筑师绘制蓝图
+  - `q18.b`：结构检查通过 — 让故事自然生长，跟随笔下人物的引导，在写作中发现未知的可能性
+  - `q18.c`：双极混号 — 先写下核心场景和关键对话，再围绕它们扩展出完整的故事脉络
+  - `q18.d`：双极混号 — 反复修改开头部分，直到满意才继续，相信好的开端是成功的一半
+- **q19** 题干：在一场文学聚会上，你发现自己与周围人格格不入。面对这种社交困境，你会？
+  - `q19.a`：双极混号 — 找到角落安静阅读，享受独处的时光，将孤独视为创作的灵感来源
+  - `q19.b`：双极混号 — 强迫自己融入话题，尽管内心不适，认为社交是作家必要的体验
+  - `q19.c`：结构检查通过 — 寻找志同道合的角落，与少数几位真正感兴趣的人深入交流
+  - `q19.d`：结构检查通过 — 提前离场，回到家中将这段经历转化为创作素材，将不适感化为艺术表达
+- **q20** 题干：当你面对创作瓶颈，灵感枯竭时，你会采取什么方式突破？
+  - `q20.a`：结构检查通过 — 放下笔，走进自然或博物馆，让外部世界的新鲜刺激激发内在灵感
+  - `q20.b`：双极混号 — 坚持每天写作，相信纪律比灵感更重要，在过程中等待灵感的回归
+  - `q20.c`：结构检查通过 — 阅读经典作品，分析大师如何应对创作困境，从中汲取智慧
+  - `q20.d`：双极混号 — 接受暂时的停顿，将这段时间视为创作周期中必要的休整期
+
+### 逐结果
+- **r1**（孤独的宿命）：profile 键与范围检查通过。
+- **r2**（坚韧的生存）：profile 键与范围检查通过。
+- **r3**（清醒的反叛）：profile 键与范围检查通过。
+- **r4**（纯真的探寻）：profile 键与范围检查通过。
+- **r5**（忧郁的共鸣）：profile 键与范围检查通过。
+- **r6**（理想的冒险）：profile 键与范围检查通过。
+- **r7**（激情的燃烧）：profile 键与范围检查通过。
+- **r8**（历史的沉思）：profile 键与范围检查通过。
+- **r9**（疏离的清醒）：profile 键与范围检查通过。
+
+## coffee-personality-match
+- **计分**：`bipolar-dimension` · 维度数 4 · 题数 16 · 结果数 8
+- **错误（5）**
+  - bipolar axis "强度与温度": missing lowInsight
+  - bipolar axis "社交属性": missing lowInsight
+  - bipolar axis "生活节奏偏好": missing lowInsight
+  - bipolar axis "感官主导方式": missing lowInsight
+  - r5 is unreachable — dominated by r8 on all dimensions
+- **警告（116）**
+  - q1.a: bipolar option has 3 scored dimensions (max 2)
+  - q1.a: bipolar option mixes positive and negative scores
+  - q1.c: bipolar option has 3 scored dimensions (max 2)
+  - q1.c: bipolar option mixes positive and negative scores
+  - q1.d: bipolar option has 3 scored dimensions (max 2)
+  - q1.d: bipolar option mixes positive and negative scores
+  - q2.b: bipolar option has 3 scored dimensions (max 2)
+  - q2.b: bipolar option mixes positive and negative scores
+  - q2.c: bipolar option has 3 scored dimensions (max 2)
+  - q2.c: bipolar option mixes positive and negative scores
+  - q2.d: bipolar option has 3 scored dimensions (max 2)
+  - q2.d: bipolar option mixes positive and negative scores
+  - q3.a: bipolar option has 3 scored dimensions (max 2)
+  - q3.a: bipolar option mixes positive and negative scores
+  - q3.b: bipolar option has 3 scored dimensions (max 2)
+  - q3.b: bipolar option mixes positive and negative scores
+  - q3.c: bipolar option has 3 scored dimensions (max 2)
+  - q3.c: bipolar option mixes positive and negative scores
+  - q3.d: bipolar option has 3 scored dimensions (max 2)
+  - q3.d: bipolar option mixes positive and negative scores
+  - q4.b: bipolar option has 4 scored dimensions (max 2)
+  - q4.b: bipolar option mixes positive and negative scores
+  - q4.c: bipolar option has 3 scored dimensions (max 2)
+  - q4.c: bipolar option mixes positive and negative scores
+  - q4.d: bipolar option has 3 scored dimensions (max 2)
+  - q4.d: bipolar option mixes positive and negative scores
+  - q5.a: bipolar option has 4 scored dimensions (max 2)
+  - q5.a: bipolar option mixes positive and negative scores
+  - q5.b: bipolar option has 3 scored dimensions (max 2)
+  - q5.b: bipolar option mixes positive and negative scores
+  - q5.c: bipolar option has 4 scored dimensions (max 2)
+  - q5.c: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option has 3 scored dimensions (max 2)
+  - q5.d: bipolar option mixes positive and negative scores
+  - q6.b: bipolar option has 4 scored dimensions (max 2)
+  - q6.b: bipolar option mixes positive and negative scores
+  - q6.c: bipolar option has 3 scored dimensions (max 2)
+  - q6.c: bipolar option mixes positive and negative scores
+  - q6.d: bipolar option has 3 scored dimensions (max 2)
+  - q6.d: bipolar option mixes positive and negative scores
+  - q7.a: bipolar option mixes positive and negative scores
+  - q7.b: bipolar option mixes positive and negative scores
+  - q7.d: bipolar option has 3 scored dimensions (max 2)
+  - q7.d: bipolar option mixes positive and negative scores
+  - q8.a: bipolar option mixes positive and negative scores
+  - q8.b: bipolar option has 3 scored dimensions (max 2)
+  - q8.b: bipolar option mixes positive and negative scores
+  - q8.d: bipolar option has 3 scored dimensions (max 2)
+  - q8.d: bipolar option mixes positive and negative scores
+  - q9.a: bipolar option mixes positive and negative scores
+  - q9.b: bipolar option has 3 scored dimensions (max 2)
+  - q9.b: bipolar option mixes positive and negative scores
+  - q9.c: bipolar option mixes positive and negative scores
+  - q9.d: bipolar option mixes positive and negative scores
+  - q10.a: bipolar option mixes positive and negative scores
+  - q10.d: bipolar option mixes positive and negative scores
+  - q11.b: bipolar option mixes positive and negative scores
+  - q11.c: bipolar option has 3 scored dimensions (max 2)
+  - q11.c: bipolar option mixes positive and negative scores
+  - q11.d: bipolar option has 3 scored dimensions (max 2)
+  - q11.d: bipolar option mixes positive and negative scores
+  - q12.a: bipolar option mixes positive and negative scores
+  - q12.b: bipolar option mixes positive and negative scores
+  - q12.d: bipolar option has 3 scored dimensions (max 2)
+  - q12.d: bipolar option mixes positive and negative scores
+  - q13.a: bipolar option has 3 scored dimensions (max 2)
+  - q13.a: bipolar option mixes positive and negative scores
+  - q13.b: bipolar option has 4 scored dimensions (max 2)
+  - q13.b: bipolar option mixes positive and negative scores
+  - q13.c: bipolar option has 3 scored dimensions (max 2)
+  - q13.c: bipolar option mixes positive and negative scores
+  - q13.d: bipolar option has 3 scored dimensions (max 2)
+  - q13.d: bipolar option mixes positive and negative scores
+  - q14.b: bipolar option has 3 scored dimensions (max 2)
+  - q14.b: bipolar option mixes positive and negative scores
+  - q14.c: bipolar option has 3 scored dimensions (max 2)
+  - q14.c: bipolar option mixes positive and negative scores
+  - q14.d: bipolar option has 3 scored dimensions (max 2)
+  - q14.d: bipolar option mixes positive and negative scores
+  - q15.a: bipolar option has 3 scored dimensions (max 2)
+  - q15.a: bipolar option mixes positive and negative scores
+  - q15.b: bipolar option has 3 scored dimensions (max 2)
+  - q15.b: bipolar option mixes positive and negative scores
+  - q15.c: bipolar option has 3 scored dimensions (max 2)
+  - q15.c: bipolar option mixes positive and negative scores
+  - q15.d: bipolar option has 3 scored dimensions (max 2)
+  - q15.d: bipolar option mixes positive and negative scores
+  - q16.a: bipolar option has 3 scored dimensions (max 2)
+  - q16.a: bipolar option mixes positive and negative scores
+  - q16.b: bipolar option has 3 scored dimensions (max 2)
+  - q16.b: bipolar option mixes positive and negative scores
+  - q16.c: bipolar option has 3 scored dimensions (max 2)
+  - q16.c: bipolar option mixes positive and negative scores
+  - q16.d: bipolar option has 4 scored dimensions (max 2)
+  - q16.d: bipolar option mixes positive and negative scores
+  - r3: missing "strengths"
+  - r3: missing "weaknesses"
+  - r3: only 0 strengths (want 3)
+  - r3: only 0 weaknesses (want 3)
+  - r4: missing "strengths"
+  - r4: missing "weaknesses"
+  - r4: only 0 strengths (want 3)
+  - r4: only 0 weaknesses (want 3)
+  - r5: missing "strengths"
+  - r5: missing "weaknesses"
+  - r5: only 0 strengths (want 3)
+  - r5: only 0 weaknesses (want 3)
+  - r6: missing "strengths"
+  - r6: missing "weaknesses"
+  - r6: only 0 strengths (want 3)
+  - r6: only 0 weaknesses (want 3)
+  - r8: missing "strengths"
+  - r8: missing "weaknesses"
+  - r8: only 0 strengths (want 3)
+  - r8: only 0 weaknesses (want 3)
+  - r5 is unreachable — dominated by r8 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：清晨的咖啡店，你会如何选择这杯唤醒一天的开始？
+  - `q1.a`：双极混号；双极维度键>2 — 点一杯冰美式，直接走向窗边的座位，观察街道上的行人
+  - `q1.b`：结构检查通过 — 选一杯热拿铁，找个人多的吧台位置，和咖啡师简单寒暄几句
+  - `q1.c`：双极混号；双极维度键>2 — 点一杯手冲单品咖啡，仔细记录冲泡参数，享受仪式感的过程
+  - `q1.d`：双极混号；双极维度键>2 — 直接点一杯最熟悉的黑咖啡，边喝边规划今天的任务清单
+- **q2** 题干：办公室茶水间，发现咖啡机坏了，同事们在讨论如何应对？
+  - `q2.a`：结构检查通过 — 提议大家一起下楼去附近的新开的咖啡馆，说正好可以换个环境
+  - `q2.b`：双极混号；双极维度键>2 — 默默拿出自己带的速溶咖啡，独自回到工位继续工作，不受干扰
+  - `q2.c`：双极混号；双极维度键>2 — 提议用办公室的茶包和热水自制咖啡替代，并分享给周围的同事
+  - `q2.d`：双极混号；双极维度键>2 — 整理出附近三家咖啡馆的详细评价，建议团队选择评分最高的那家
+- **q3** 题干：周末下午，你选择在哪喝咖啡度过悠闲时光？
+  - `q3.a`：双极混号；双极维度键>2 — 在窗边的小桌，点一杯浓缩咖啡，专注阅读一本新书
+  - `q3.b`：双极混号；双极维度键>2 — 在热闹的咖啡馆中央，点一杯特调拿铁，边喝边和周围的陌生人闲聊
+  - `q3.c`：双极混号；双极维度键>2 — 在安静的公园长椅上，带一杯速溶咖啡，观察自然和行人的变化
+  - `q3.d`：双极混号；双极维度键>2 — 在街角的咖啡馆，点一杯热美式，快速处理积压的工作邮件
+- **q4** 题干：朋友聚会时，大家都在选择饮品，你会如何对待咖啡？
+  - `q4.a`：结构检查通过 — 坚持只喝咖啡，即使大家都选择了酒或果汁，也坚持自己的偏好
+  - `q4.b`：双极混号；双极维度键>2 — 尝试朋友推荐的特色饮品，但点一杯咖啡作为备选，享受选择多样性
+  - `q4.c`：双极混号；双极维度键>2 — 主动为大家准备咖啡，分享自己喜欢的冲泡方式和豆子
+  - `q4.d`：双极混号；双极维度键>2 — 根据聚会的氛围和时间，决定是否需要咖啡来保持精力或放松
+- **q5** 题干：当你感到疲惫时，会选择哪种咖啡来恢复精力？
+  - `q5.a`：双极混号；双极维度键>2 — 一杯冰美式，快速喝下，感受咖啡因带来的即时清醒感
+  - `q5.b`：双极混号；双极维度键>2 — 一杯慢萃的冷萃咖啡，慢慢品尝，享受过程带来的放松感
+  - `q5.c`：双极混号；双极维度键>2 — 一杯热拿铁，找个人少的角落，安静地喝完，然后继续工作
+  - `q5.d`：双极混号；双极维度键>2 — 一杯双份浓缩咖啡，快速解决疲劳问题，然后继续高强度工作
+- **q6** 题干：当你需要独处思考时，会选择哪种咖啡作为伴侣？
+  - `q6.a`：结构检查通过 — 一杯简单的黑咖啡，不加任何调料，专注于思考本身
+  - `q6.b`：双极混号；双极维度键>2 — 一杯复杂的特调咖啡，边品尝边思考，享受多重感官体验
+  - `q6.c`：双极混号；双极维度键>2 — 一杯热茶作为咖啡替代，在安静的角落独自思考和规划
+  - `q6.d`：双极混号；双极维度键>2 — 一杯冰咖啡，在嘈杂的环境中，通过周围的声音激发思考灵感
+- **q7** 题干：在周末早晨的咖啡店里，你会选择哪种等待咖啡的方式？
+  - `q7.a`：双极混号 — 站在柜台前，与咖啡师闲聊最近的天气和趣事
+  - `q7.b`：双极混号 — 找靠窗的位置坐下，翻阅杂志或用手机记录窗外行人
+  - `q7.c`：结构检查通过 — 戴上耳机，沉浸在音乐或播客中，完全屏蔽周围声音
+  - `q7.d`：双极混号；双极维度键>2 — 反复查看手机时间，计算咖啡制作进度并焦虑等待
+- **q8** 题干：当你需要在办公室茶水间冲泡咖啡时，你会？
+  - `q8.a`：双极混号 — 严格按照咖啡粉与水的比例，精确控制每一步的操作
+  - `q8.b`：双极混号；双极维度键>2 — 询问同事想喝什么，顺便聊几句工作或生活近况
+  - `q8.c`：结构检查通过 — 根据当天心情随意调整浓度，享受即兴创作的乐趣
+  - `q8.d`：双极混号；双极维度键>2 — 快速冲泡一杯，立刻返回工作岗位继续处理任务
+- **q9** 题干：在一个拥挤的咖啡店里，你发现有人占了适合独处的角落座位，你会？
+  - `q9.a`：双极混号 — 直接上前礼貌询问是否可以分享这个座位
+  - `q9.b`：双极混号；双极维度键>2 — 寻找其他安静角落，即使距离远一些也愿意等待
+  - `q9.c`：双极混号 — 在附近找个能观察这个角落的位置，享受观察他人的乐趣
+  - `q9.d`：双极混号 — 考虑换个地方，不与陌生人共享空间
+- **q10** 题干：当你感到疲惫需要咖啡提神时，你会选择？
+  - `q10.a`：双极混号 — 选择最浓郁的黑咖啡，直接获取最大程度的刺激
+  - `q10.b`：结构检查通过 — 点一杯熟悉的拿铁，享受奶泡带来的温暖和舒适感
+  - `q10.c`：结构检查通过 — 尝试新特调，期待风味带来的惊喜和刺激
+  - `q10.d`：双极混号 — 问同事想要什么，顺便帮大家一起点
+- **q11** 题干：在咖啡店的窗边，你注意到窗外有位老人独自坐着，你会？
+  - `q11.a`：结构检查通过 — 主动上前询问是否需要帮助，或者只是简单问候
+  - `q11.b`：双极混号 — 默默观察，思考他可能的故事，享受这种内心对话
+  - `q11.c`：双极混号；双极维度键>2 — 继续专注于自己的咖啡和思绪，不过度打扰他人
+  - `q11.d`：双极混号；双极维度键>2 — 记录下这个画面，稍后可能会用文字或绘画表达出来
+- **q12** 题干：当你发现咖啡店的背景音乐突然变了风格，你会？
+  - `q12.a`：双极混号 — 立即向店员提出建议，希望换回原来的音乐
+  - `q12.b`：双极混号 — 好奇地欣赏新风格，思考它如何影响整体氛围
+  - `q12.c`：结构检查通过 — 寻找附近其他客人，观察他们对音乐变化的反应
+  - `q12.d`：双极混号；双极维度键>2 — 戴上耳机，选择自己喜欢的音乐屏蔽环境变化
+- **q13** 题干：周末的早晨，你走进一家熟悉的咖啡店，店里人不多，阳光透过落地窗洒进来。你会如何选择你的咖啡？
+  - `q13.a`：双极混号；双极维度键>2 — 点一杯大杯美式，坐在角落安静看书，享受独处的时光
+  - `q13.b`：双极混号；双极维度键>2 — 尝试店里新出的季节限定特调，和店员聊聊制作工艺
+  - `q13.c`：双极混号；双极维度键>2 — 点一杯中杯拿铁，选择靠窗的位置，观察来往的行人
+  - `q13.d`：双极混号；双极维度键>2 — 点一杯小杯浓缩，快速喝完就离开，去规划一天的行程
+- **q14** 题干：办公室茶水间的咖啡机坏了，同事们纷纷抱怨。你会怎么做？
+  - `q14.a`：结构检查通过 — 立刻提议大家一起去附近的咖啡店，组织一次短暂的集体外出
+  - `q14.b`：双极混号；双极维度键>2 — 默默接受没有咖啡的事实，转向茶或水，继续工作
+  - `q14.c`：双极混号；双极维度键>2 — 尝试自己动手用办公室的简易设备冲泡一杯咖啡，即使不完美也要仪式感
+  - `q14.d`：双极混号；双极维度键>2 — 计算没有咖啡会影响多少工作效率，然后决定是否要外出购买
+- **q15** 题干：朋友聚会时，大家决定点咖啡。你会如何参与点单过程？
+  - `q15.a`：双极混号；双极维度键>2 — 主动为大家推荐几家附近口碑好的咖啡馆，询问每个人的口味偏好
+  - `q15.b`：双极混号；双极维度键>2 — 等大家决定好去处后，默默跟从，点一杯简单的美式
+  - `q15.c`：双极混号；双极维度键>2 — 坚持去自己最喜欢的独立咖啡馆，那里有完美的手冲和安静环境
+  - `q15.d`：双极混号；双极维度键>2 — 提议直接点外卖送到聚会地点，节省大家外出时间
+- **q16** 题干：忙碌工作了一天后，你会如何选择你的"续命咖啡"来结束这一天？
+  - `q16.a`：双极混号；双极维度键>2 — 点一杯热拿铁，慢慢品尝，作为一天结束的小小仪式
+  - `q16.b`：双极混号；双极维度键>2 — 选择冰美式，提神醒脑，为晚上的加班或学习做准备
+  - `q16.c`：双极混号；双极维度键>2 — 和朋友视频通话，各自喝着咖啡，分享一天的趣事
+  - `q16.d`：双极混号；双极维度键>2 — 干脆不喝咖啡，直接休息，为明天储备精力
+
+### 逐结果
+- **r1**（意式浓缩）：profile 键与范围检查通过。
+- **r2**（美式）：profile 键与范围检查通过。
+- **r3**（拿铁）：profile 键与范围检查通过。
+- **r4**（卡布奇诺）：profile 键与范围检查通过。
+- **r5**（冷萃）：profile 键与范围检查通过。
+- **r6**（玛奇朵）：profile 键与范围检查通过。
+- **r7**（馥芮白）：profile 键与范围检查通过。
+- **r8**（手冲）：profile 键与范围检查通过。
+
+## content-creator-type
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 18 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜灵感迸发时，你会如何处理脑海中涌现的创意片段？
+  - `q1.a`：结构检查通过 — 立刻起床记录，哪怕只写下一个关键词也要抓住灵感
+  - `q1.b`：结构检查通过 — 在脑海中反复推敲，直到形成一个完整的创作框架再动笔
+  - `q1.c`：结构检查通过 — 随手记在手机备忘录，等第二天心情好时再整理完善
+  - `q1.d`：结构检查通过 — 和朋友分享这些想法，收集他们的反馈后再决定如何创作
+- **q2** 题干：当内容获得意外的高流量和大量粉丝评论时，你的第一反应是什么？
+  - `q2.a`：结构检查通过 — 立即分析数据，找出爆款的共同特征，复制成功经验
+  - `q2.b`：结构检查通过 — 逐条回复粉丝评论，建立更紧密的粉丝社群关系
+  - `q2.c`：结构检查通过 — 思考这次成功是否偶然，担心自己无法持续产出高质量内容
+  - `q2.d`：结构检查通过 — 感谢粉丝支持，但保持原有创作节奏，不受外界干扰
+- **q3** 题干：面对内容创作的瓶颈期，你会选择哪种方式突破困境？
+  - `q3.a`：结构检查通过 — 暂时放下创作，去体验生活，积累新的素材和灵感
+  - `q3.b`：结构检查通过 — 研究其他领域的创作者，借鉴他们的创作手法和思路
+  - `q3.c`：结构检查通过 — 直接向粉丝征集选题，根据他们的喜好调整创作方向
+  - `q3.d`：结构检查通过 — 挑战自己不擅长的内容类型，强迫自己跳出舒适区
+- **q4** 题干：当你发现创作的内容与预期不符，评论区出现负面评价时，你会怎么做？
+  - `q4.a`：结构检查通过 — 认真分析批评内容，找出可以改进的地方，调整创作方向
+  - `q4.b`：结构检查通过 — 解释自己的创作初衷，与持不同意见的粉丝进行深入讨论
+  - `q4.c`：结构检查通过 — 坚持自己的创作理念，不受外界评价影响，继续原有风格
+  - `q4.d`：结构检查通过 — 重新评估自己的创作能力，考虑转型或完全改变内容方向
+- **q5** 题干：当你需要在短时间内完成多个内容项目时，你的工作模式会是？
+  - `q5.a`：结构检查通过 — 制定详细的时间表，将任务分解为小步骤，按计划推进
+  - `q5.b`：结构检查通过 — 先完成最感兴趣的部分，其他部分根据灵感随时调整
+  - `q5.c`：结构检查通过 — 寻找合作伙伴，分工合作，提高效率
+  - `q5.d`：结构检查通过 — 集中精力在一个项目上，确保质量，其他项目可以适当延期
+- **q6** 题干：当你的内容创作达到一定规模，开始考虑商业化时，你会优先考虑？
+  - `q6.a`：结构检查通过 — 选择与内容调性相符的品牌合作，保持创作的完整性
+  - `q6.b`：结构检查通过 — 开发自己的产品或服务，将粉丝转化为消费者
+  - `q6.c`：结构检查通过 — 尝试多元化的收入渠道，不把鸡蛋放在一个篮子里
+  - `q6.d`：结构检查通过 — 保持内容的纯粹性，商业化只是手段，不干扰核心创作
+- **q7** 题干：深夜创作时，你的灵感源泉主要来自哪里？
+  - `q7.a`：结构检查通过 — 反复推敲每一个字句，追求完美的表达
+  - `q7.b`：结构检查通过 — 观察生活中的细节，捕捉那些稍纵即逝的感动
+  - `q7.c`：结构检查通过 — 直接表达当下的情绪和感受，不过度修饰
+  - `q7.d`：结构检查通过 — 研究热门话题和趋势，寻找共鸣点
+- **q8** 题干：当你收到一条粉丝的长篇留言，你的第一反应是？
+  - `q8.a`：结构检查通过 — 认真阅读每一句话，思考如何更好地回应
+  - `q8.b`：结构检查通过 — 快速浏览并点赞，感谢支持但不深入交流
+  - `q8.c`：结构检查通过 — 找出其中有价值的建议，作为内容改进的参考
+  - `q8.d`：结构检查通过 — 直接私信对方，进行一对一的深入交流
+- **q9** 题干：面对创作瓶颈，你会如何突破？
+  - `q9.a`：结构检查通过 — 暂时放下，去做一些完全不同的事情，等待灵感自然涌现
+  - `q9.b`：结构检查通过 — 系统研究同类优质内容，分析成功元素并借鉴
+  - `q9.c`：结构检查通过 — 直接向粉丝征集创意和建议，借助群体智慧
+  - `q9.d`：结构检查通过 — 尝试全新的创作方向，跳出舒适区探索可能
+- **q10** 题干：当你需要为一个复杂主题制作内容时，你的处理方式是？
+  - `q10.a`：结构检查通过 — 拆解成小系列，逐步深入讲解
+  - `q10.b`：结构检查通过 — 先研究透彻，再用自己理解的方式简化表达
+  - `q10.c`：结构检查通过 — 直接分享自己的思考过程，即使不完整也真实
+  - `q10.d`：结构检查通过 — 邀请专业人士共同探讨，多角度呈现
+- **q11** 题干：当你发现一个数据异常的爆款选题，但与你的个人风格不完全契合，你会？
+  - `q11.a`：结构检查通过 — 调整自己的风格，尝试融入这个热门元素
+  - `q11.b`：结构检查通过 — 坚持自己的风格，创作更符合个人特质的内容
+  - `q11.c`：结构检查通过 — 分析这个选题为何受欢迎，寻找与自身风格的结合点
+  - `q11.d`：结构检查通过 — 关注粉丝对这个选题的反应，再做决定
+- **q12** 题干：当你获得一个小成就（如10万粉丝）时，你的内心感受是？
+  - `q12.a`：结构检查通过 — 这只是一个起点，还有更大的目标需要努力
+  - `q12.b`：结构检查通过 — 感谢一路支持我的粉丝，这是共同成长的结果
+  - `q12.c`：结构检查通过 — 反思这个成就背后的成功因素，为下一步做准备
+  - `q12.d`：结构检查通过 — 享受这个时刻，给自己放个假，然后重新出发
+- **q13** 题干：深夜灵感迸发时，你发现自己有了一个绝妙的内容创意，但时间已接近凌晨三点，你会
+  - `q13.a`：结构检查通过 — 立即起身记录，趁热打铁完善细节，不让灵感溜走
+  - `q13.b`：结构检查通过 — 先简单记下核心思路，保证充足睡眠后明天再深入创作
+  - `q13.c`：结构检查通过 — 担心打扰家人，强忍着不行动，结果第二天只记得模糊的感觉
+  - `q13.d`：结构检查通过 — 打开手机备忘录，快速写下关键词，然后继续休息，明天再扩展
+- **q14** 题干：粉丝评论中有人质疑你最新视频的观点，你会
+  - `q14.a`：结构检查通过 — 认真回复每个质疑点，提供更多证据和思考，展开深度讨论
+  - `q14.b`：结构检查通过 — 选择性回复有建设性的意见，忽视纯粹的情绪化评论
+  - `q14.c`：结构检查通过 — 感到沮丧，怀疑自己的创作方向，考虑调整内容风格
+  - `q14.d`：结构检查通过 — 感谢所有评论，无论正面负面，但不专门回应质疑
+- **q15** 题干：当你需要为一期内容收集素材时，你更倾向于
+  - `q15.a`：结构检查通过 — 亲自体验和拍摄，确保每个细节都符合自己的创意
+  - `q15.b`：结构检查通过 — 广泛搜集网络资料，整合不同角度的信息
+  - `q15.c`：结构检查通过 — 寻找行业专家访谈，获取专业权威的见解
+  - `q15.d`：结构检查通过 — 关注当下热点，结合热门话题创作内容
+- **q16** 题干：你的内容创作流程通常是
+  - `q16.a`：结构检查通过 — 先有明确主题，然后围绕主题自由发挥，边做边调整
+  - `q16.b`：结构检查通过 — 从粉丝反馈和评论中寻找灵感，回应观众需求
+  - `q16.c`：结构检查通过 — 固定周期更新，无论灵感如何都按时产出内容
+  - `q16.d`：结构检查通过 — 灵感来临时集中创作，然后批量发布，保持创作间隙
+- **q17** 题干：面对创意枯竭期，你会
+  - `q17.a`：结构检查通过 — 主动寻求新体验，尝试从未接触过的领域，寻找新灵感
+  - `q17.b`：结构检查通过 — 暂时降低更新频率，休息调整，等待灵感自然回归
+  - `q17.c`：结构检查通过 — 分析粉丝最喜欢的类型，围绕热门方向创作
+  - `q17.d`：结构检查通过 — 挑战自己，尝试完全不同的内容形式，突破舒适区
+- **q18** 题干：当你完成一个重要内容项目后，你更关注
+  - `q18.a`：结构检查通过 — 数据表现：播放量、点赞、转发等量化指标
+  - `q18.b`：结构检查通过 — 创作过程：是否实现了最初设想的创意和表现手法
+  - `q18.c`：结构检查通过 — 观众反馈：评论区的深度讨论和有价值的互动
+  - `q18.d`：结构检查通过 — 个人成长：这个项目是否让你学到了新技能或新知识
+
+### 逐结果
+- **r1**（生活vlog）：profile 键与范围检查通过。
+- **r2**（深度测评）：profile 键与范围检查通过。
+- **r3**（情感/心理科普）：profile 键与范围检查通过。
+- **r4**（穿搭时尚）：profile 键与范围检查通过。
+- **r5**（知识科普）：profile 键与范围检查通过。
+- **r6**（旅行记录）：profile 键与范围检查通过。
+- **r7**（游戏/娱乐直播）：profile 键与范围检查通过。
+- **r8**（美食探店）：profile 键与范围检查通过。
+
+## cthulhu-deity-match
+- **计分**：`bipolar-dimension` · 维度数 5 · 题数 20 · 结果数 7
+- **错误（8）**
+  - bipolar axis "意识形态": missing lowInsight
+  - bipolar axis "存在方式": missing lowInsight
+  - bipolar axis "与人类关系": missing lowInsight
+  - bipolar axis "宇宙观": missing lowInsight
+  - bipolar axis "力量表达": missing lowInsight
+  - r1 is unreachable — dominated by r5 on all dimensions
+  - r3 is unreachable — dominated by r5 on all dimensions
+  - r7 is unreachable — dominated by r5 on all dimensions
+- **警告（95）**
+  - q1.b: bipolar option has 4 scored dimensions (max 2)
+  - q1.b: bipolar option mixes positive and negative scores
+  - q1.c: bipolar option has 4 scored dimensions (max 2)
+  - q1.c: bipolar option mixes positive and negative scores
+  - q2.a: bipolar option has 4 scored dimensions (max 2)
+  - q2.a: bipolar option mixes positive and negative scores
+  - q2.d: bipolar option has 3 scored dimensions (max 2)
+  - q2.d: bipolar option mixes positive and negative scores
+  - q3.b: bipolar option has 3 scored dimensions (max 2)
+  - q3.b: bipolar option mixes positive and negative scores
+  - q4.a: bipolar option has 3 scored dimensions (max 2)
+  - q4.a: bipolar option mixes positive and negative scores
+  - q4.b: bipolar option has 4 scored dimensions (max 2)
+  - q4.b: bipolar option mixes positive and negative scores
+  - q4.d: bipolar option has 3 scored dimensions (max 2)
+  - q4.d: bipolar option mixes positive and negative scores
+  - q5.a: bipolar option has 4 scored dimensions (max 2)
+  - q5.a: bipolar option mixes positive and negative scores
+  - q5.b: bipolar option has 3 scored dimensions (max 2)
+  - q5.b: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option has 3 scored dimensions (max 2)
+  - q5.d: bipolar option mixes positive and negative scores
+  - q6.a: bipolar option mixes positive and negative scores
+  - q6.b: bipolar option mixes positive and negative scores
+  - q6.c: bipolar option has 3 scored dimensions (max 2)
+  - q6.c: bipolar option mixes positive and negative scores
+  - q6.d: bipolar option has 3 scored dimensions (max 2)
+  - q6.d: bipolar option mixes positive and negative scores
+  - q7.a: bipolar option has 3 scored dimensions (max 2)
+  - q7.a: bipolar option mixes positive and negative scores
+  - q7.c: bipolar option has 3 scored dimensions (max 2)
+  - q7.c: bipolar option mixes positive and negative scores
+  - q8.c: bipolar option has 4 scored dimensions (max 2)
+  - q8.c: bipolar option mixes positive and negative scores
+  - q8.d: bipolar option has 3 scored dimensions (max 2)
+  - q8.d: bipolar option mixes positive and negative scores
+  - q9.b: bipolar option has 3 scored dimensions (max 2)
+  - q9.b: bipolar option mixes positive and negative scores
+  - q9.c: bipolar option has 3 scored dimensions (max 2)
+  - q9.c: bipolar option mixes positive and negative scores
+  - q10.a: bipolar option has 4 scored dimensions (max 2)
+  - q10.a: bipolar option mixes positive and negative scores
+  - q10.c: bipolar option has 4 scored dimensions (max 2)
+  - q10.c: bipolar option mixes positive and negative scores
+  - q10.d: bipolar option has 3 scored dimensions (max 2)
+  - q10.d: bipolar option mixes positive and negative scores
+  - q11.b: bipolar option has 3 scored dimensions (max 2)
+  - q11.b: bipolar option mixes positive and negative scores
+  - q11.c: bipolar option has 3 scored dimensions (max 2)
+  - q11.c: bipolar option mixes positive and negative scores
+  - q11.d: bipolar option has 3 scored dimensions (max 2)
+  - q11.d: bipolar option mixes positive and negative scores
+  - q12.a: bipolar option has 3 scored dimensions (max 2)
+  - q12.a: bipolar option mixes positive and negative scores
+  - q12.b: bipolar option has 3 scored dimensions (max 2)
+  - q12.b: bipolar option mixes positive and negative scores
+  - q12.c: bipolar option has 4 scored dimensions (max 2)
+  - q12.c: bipolar option mixes positive and negative scores
+  - q12.d: bipolar option has 3 scored dimensions (max 2)
+  - q12.d: bipolar option mixes positive and negative scores
+  - q13.c: bipolar option has 4 scored dimensions (max 2)
+  - q13.c: bipolar option mixes positive and negative scores
+  - q13.d: bipolar option has 3 scored dimensions (max 2)
+  - q13.d: bipolar option mixes positive and negative scores
+  - q14.b: bipolar option has 4 scored dimensions (max 2)
+  - q14.b: bipolar option mixes positive and negative scores
+  - q14.c: bipolar option has 3 scored dimensions (max 2)
+  - q14.c: bipolar option mixes positive and negative scores
+  - q15.a: bipolar option mixes positive and negative scores
+  - q15.c: bipolar option has 3 scored dimensions (max 2)
+  - q15.c: bipolar option mixes positive and negative scores
+  - q15.d: bipolar option has 3 scored dimensions (max 2)
+  - q15.d: bipolar option mixes positive and negative scores
+  - q16.b: bipolar option has 3 scored dimensions (max 2)
+  - q16.b: bipolar option mixes positive and negative scores
+  - q17.a: bipolar option has 3 scored dimensions (max 2)
+  - q17.a: bipolar option mixes positive and negative scores
+  - q17.b: bipolar option has 4 scored dimensions (max 2)
+  - q17.b: bipolar option mixes positive and negative scores
+  - q17.c: bipolar option has 3 scored dimensions (max 2)
+  - q17.c: bipolar option mixes positive and negative scores
+  - q18.a: bipolar option has 3 scored dimensions (max 2)
+  - q18.a: bipolar option mixes positive and negative scores
+  - q18.c: bipolar option mixes positive and negative scores
+  - q19.b: bipolar option has 3 scored dimensions (max 2)
+  - q19.b: bipolar option mixes positive and negative scores
+  - q19.c: bipolar option has 3 scored dimensions (max 2)
+  - q19.c: bipolar option mixes positive and negative scores
+  - q20.a: bipolar option has 3 scored dimensions (max 2)
+  - q20.a: bipolar option mixes positive and negative scores
+  - q20.c: bipolar option has 4 scored dimensions (max 2)
+  - q20.c: bipolar option mixes positive and negative scores
+  - r1 is unreachable — dominated by r5 on all dimensions
+  - r3 is unreachable — dominated by r5 on all dimensions
+  - r7 is unreachable — dominated by r5 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：在远古遗迹深处，你发现了一面能映照宇宙真相的镜子。镜中的景象让你感到：
+  - `q1.a`：结构检查通过 — 镜中映照出无数平行世界的我，每个都在遵循不同的宇宙法则
+  - `q1.b`：双极混号；双极维度键>2 — 镜面逐渐模糊，显现出无垠的混沌，仿佛一切存在的源头
+  - `q1.c`：双极混号；双极维度键>2 — 镜中只有我自己，但形态不断变化，时而凝聚时而消散
+  - `q1.d`：结构检查通过 — 镜中映照出人类文明的兴衰，每个生命都如尘埃般渺小
+- **q2** 题干：在深海之底，你与一群迷失的灵魂相遇。它们向你寻求指引，你会：
+  - `q2.a`：双极混号；双极维度键>2 — 揭示它们前世的记忆，让它们明白自己的轮回使命
+  - `q2.b`：结构检查通过 — 赋予它们新的形态，让它们成为深海中的永恒守护者
+  - `q2.c`：结构检查通过 — 引导它们向光游去，但不保证能否抵达彼岸
+  - `q2.d`：双极混号；双极维度键>2 — 让它们在永恒的黑暗中自省，直到悟出存在的真谛
+- **q3** 题干：当你注视人类城市的灯光时，你感受到的是：
+  - `q3.a`：结构检查通过 — 如星火般微弱但执着的文明之光，终将照亮宇宙的黑暗
+  - `q3.b`：双极混号；双极维度键>2 — 短暂而脆弱的光明，在永恒的宇宙尺度下终将熄灭
+  - `q3.c`：结构检查通过 — 一种有趣的实验，观察人类如何从混乱中创造秩序
+  - `q3.d`：结构检查通过 — 一种威胁，人类对秩序的渴望可能打破宇宙的平衡
+- **q4** 题干：在梦境与现实的交界处，你选择如何展现自己的真面目：
+  - `q4.a`：双极混号；双极维度键>2 — 以无数碎片的形式同时出现在不同的梦境中
+  - `q4.b`：双极混号；双极维度键>2 — 只在最深的梦境中现身，作为潜意识的终极答案
+  - `q4.c`：结构检查通过 — 化为梦境中的规则，而非具体的形态
+  - `q4.d`：双极混号；双极维度键>2 — 在清醒与梦境的模糊地带投下阴影，引发对现实的质疑
+- **q5** 题干：面对人类试图理解你的科学研究，你的反应是：
+  - `q5.a`：双极混号；双极维度键>2 — 微妙地调整实验数据，让他们永远接近真相却无法触及
+  - `q5.b`：双极混号；双极维度键>2 — 任由他们研究，因为理解本身就是宇宙演化的部分
+  - `q5.c`：结构检查通过 — 在研究的关键时刻制造无法解释的异常，摧毁他们的理论
+  - `q5.d`：双极混号；双极维度键>2 — 通过梦境向最敏锐的研究者传递片段的启示
+- **q6** 题干：在时间之河的源头，你面对自己最初的形态：
+  - `q6.a`：双极混号 — 一个简单的几何图形，蕴含着宇宙所有可能的复杂性
+  - `q6.b`：双极混号 — 一片混沌的云雾，意识尚未形成，只有纯粹的潜能
+  - `q6.c`：双极混号；双极维度键>2 — 一个观察者，见证宇宙大爆炸的瞬间与无数可能性
+  - `q6.d`：双极混号；双极维度键>2 — 一个悖论，既是起点也是终点，包含着所有时间
+- **q7** 题干：当人类创造出能触及宇宙真相的艺术作品时，你会：
+  - `q7.a`：双极混号；双极维度键>2 — 在作品中留下一丝痕迹，让少数人得以窥见更多真相
+  - `q7.b`：结构检查通过 — 通过作品向人类传递关于宇宙本质的启示
+  - `q7.c`：双极混号；双极维度键>2 — 让作品在时空流转中逐渐改变，反映宇宙的永恒变化
+  - `q7.d`：结构检查通过 — 在作品中植入混乱的元素，防止人类过于接近绝对真理
+- **q8** 题干：在远古遗迹的深处，你发现了一面能映照宇宙真相的水晶镜。镜面中映出的景象是
+  - `q8.a`：结构检查通过 — 无数星系在循环中诞生与毁灭，时间呈螺旋状流动
+  - `q8.b`：结构检查通过 — 人类文明的兴衰史，每一个选择都引发无数平行时空
+  - `q8.c`：双极混号；双极维度键>2 — 自己的内心世界，恐惧与渴望交织成不可名状的形状
+  - `q8.d`：双极混号；双极维度键>2 — 一片纯粹的无，从虚无中生长出规则与秩序的种子
+- **q9** 题干：在深海沉船中，你发现了一本由未知文字写就的日记，翻开的页面显示
+  - `q9.a`：结构检查通过 — 精确记载了未来千年的天文现象和文明兴衰
+  - `q9.b`：双极混号；双极维度键>2 — 作者在疯狂边缘的挣扎，记录着对不可名状存在的恐惧
+  - `q9.c`：双极混号；双极维度键>2 — 空白页面上有血迹绘制的符号，能引发观者潜意识的共鸣
+  - `q9.d`：结构检查通过 — 对深海生物的观察，暗示它们是远古星际旅者的后代
+- **q10** 题干：在梦境与现实的交界处，你遇到了一群形态不定的存在，它们的行为表明
+  - `q10.a`：双极混号；双极维度键>2 — 它们在编织人类集体潜意识的梦境，每个梦境都是一个微型宇宙
+  - `q10.b`：结构检查通过 — 它们在收集人类情感能量，作为维持自身存在的养分
+  - `q10.c`：双极混号；双极维度键>2 — 它们是宇宙法则的化身，每个形态代表一种基本物理规律
+  - `q10.d`：双极混号；双极维度键>2 — 它们在寻找能够跨越梦境与现实的个体，作为通往其他维度的钥匙
+- **q11** 题干：在星空观测站中，你发现了一架能够接收宇宙背景辐射的仪器，它接收到的是
+  - `q11.a`：结构检查通过 — 远古星系消亡时的哀鸣，包含着文明毁灭前的最后信息
+  - `q11.b`：双极混号；双极维度键>2 — 一种能重组人类DNA的频率，正在缓慢改变地球上生命形式
+  - `q11.c`：双极混号；双极维度键>2 — 宇宙大爆炸前的混沌回响，暗示多重宇宙的碰撞与融合
+  - `q11.d`：双极混号；双极维度键>2 — 一种能唤醒人类远古记忆的信号，揭示人类起源的真相
+- **q12** 题干：在时间裂缝中，你遇到了不同时间点的自己，他们正在
+  - `q12.a`：双极混号；双极维度键>2 — 同时观察宇宙的过去与未来，构建完整的时空图谱
+  - `q12.b`：双极混号；双极维度键>2 — 在关键历史节点进行微小干预，引导人类文明向特定方向发展
+  - `q12.c`：双极混号；双极维度键>2 — 试图回到宇宙起源点，寻找存在的意义和目的
+  - `q12.d`：双极混号；双极维度键>2 — 在平行宇宙中寻找能够理解自己的存在，对抗永恒的孤独
+- **q13** 题干：在远古神庙的密室中，你发现了一面能映照人类集体潜意识的镜子，镜中显示
+  - `q13.a`：结构检查通过 — 人类对未知的恐惧与渴望交织成的复杂网络，是宇宙意识的碎片
+  - `q13.b`：结构检查通过 — 人类文明发展的无数可能性，每种选择都延伸出不同的时间线
+  - `q13.c`：双极混号；双极维度键>2 — 人类对神性的扭曲理解，将古神力量简化为可掌控的符号系统
+  - `q13.d`：双极混号；双极维度键>2 — 人类潜藏的远古记忆，暗示人类曾是星际文明的一部分
+- **q14** 题干：在宇宙边缘的虚空之中，你感知到了一种正在形成的新意识，它正在
+  - `q14.a`：结构检查通过 — 吸收宇宙中散落的知识与智慧，试图成为全知的存在
+  - `q14.b`：双极混号；双极维度键>2 — 通过人类的艺术与梦境表达自己，寻找理解与共鸣
+  - `q14.c`：双极混号；双极维度键>2 — 尝试重塑物理法则，创造一个能够容纳更多可能性的宇宙
+  - `q14.d`：结构检查通过 — 在混沌中寻找秩序，试图理解宇宙的终极意义
+- **q15** 题干：在深海遗迹的古老祭坛前，你发现了一枚能够扭曲现实的混沌晶体。面对这未知力量，你会如何与之互动？
+  - `q15.a`：双极混号 — 尝试理解其运作原理，将其纳入自己的认知体系
+  - `q15.b`：结构检查通过 — 立即摧毁它，防止它可能带来的不可预知后果
+  - `q15.c`：双极混号；双极维度键>2 — 将它藏匿起来，等待更适合理解它的存在出现
+  - `q15.d`：双极混号；双极维度键>2 — 吸收它的力量，让自身与混沌融为一体
+- **q16** 题干：当你穿越星云边缘时，发现了一座悬浮在虚空中的远古图书馆，其中的知识可能重塑宇宙的认知框架。
+  - `q16.a`：结构检查通过 — 深入阅读，寻求对宇宙终极本质的理解
+  - `q16.b`：双极混号；双极维度键>2 — 记录部分知识后将其封闭，防止被不当利用
+  - `q16.c`：结构检查通过 — 将知识转化为易于理解的形式，散播给有潜力的文明
+  - `q16.d`：结构检查通过 — 彻底摧毁图书馆，这些知识对宇宙平衡构成威胁
+- **q17** 题干：在梦境与现实的交界处，你遇到了一群能够预见未来的存在，它们向你展示了人类文明的多重可能结局。
+  - `q17.a`：双极混号；双极维度键>2 — 选择干预时间线，引导人类走向你认为更有希望的未来
+  - `q17.b`：双极混号；双极维度键>2 — 观察所有可能性，不干预任何一条时间线的发展
+  - `q17.c`：双极混号；双极维度键>2 — 记录这些可能性，作为未来决策的参考
+  - `q17.d`：结构检查通过 — 揭示所有可能的结局，让人类自己做出选择
+- **q18** 题干：在远古遗迹的核心，你发现了一面能映照存在本质的镜子，它反映的不仅是你的形象，还有你存在的意义。
+  - `q18.a`：双极混号；双极维度键>2 — 凝视镜子深处，试图理解自己存在的终极意义
+  - `q18.b`：结构检查通过 — 转身离开，认为自我认知会限制无限的可能性
+  - `q18.c`：双极混号 — 打破镜子，拒绝被任何形式所定义
+  - `q18.d`：结构检查通过 — 将镜子的力量分享给其他存在，帮助他们认识自我
+- **q19** 题干：在星海之间，你发现了一个正在消逝的古老文明留下的最后讯息，其中包含了关于宇宙平衡的警告。
+  - `q19.a`：结构检查通过 — 传播警告，试图引导其他文明避免同样的命运
+  - `q19.b`：双极混号；双极维度键>2 — 研究文明的消亡过程，寻找宇宙演化的规律
+  - `q19.c`：双极混号；双极维度键>2 — 保存讯息，在适当时机揭示给有足够智慧的理解者
+  - `q19.d`：结构检查通过 — 销毁讯息，避免引发宇宙范围内的恐慌
+- **q20** 题干：在时空裂缝中，你遇到了一个正在经历存在危机的宇宙实体，它对自己的存在意义产生了怀疑。
+  - `q20.a`：双极混号；双极维度键>2 — 分享自己的存在经验，帮助它找到新的意义
+  - `q20.b`：结构检查通过 — 引导它探索存在的多种可能性，不提供特定答案
+  - `q20.c`：双极混号；双极维度键>2 — 观察它的危机过程，作为宇宙演化的研究样本
+  - `q20.d`：结构检查通过 — 赋予它一部分自身力量，帮助它重新定义自己的存在
+
+### 逐结果
+- **r1**（克苏鲁）：profile 键与范围检查通过。
+- **r2**（奈亚拉托普）：profile 键与范围检查通过。
+- **r3**（阿撒托斯）：profile 键与范围检查通过。
+- **r4**（莎布·尼古拉斯）：profile 键与范围检查通过。
+- **r5**（犹格·索托斯）：profile 键与范围检查通过。
+- **r6**（哈斯塔）：profile 键与范围检查通过。
+- **r7**（大衮）：profile 键与范围检查通过。
+
+## detective-conan-character-match
+- **计分**：`bipolar-dimension` · 维度数 4 · 题数 20 · 结果数 8
+- **错误（10）**
+  - bipolar axis "推理/直觉倾向": missing highPole
+  - bipolar axis "真相vs平静倾向": missing highPole
+  - bipolar axis "自我暴露程度": missing highPole
+  - bipolar axis "正义执行方式": missing highPole
+  - r2 is unreachable — dominated by r4 on all dimensions
+  - r2 is unreachable — dominated by r8 on all dimensions
+  - r6 is unreachable — dominated by r1 on all dimensions
+  - r6 is unreachable — dominated by r3 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+  - r6 is unreachable — dominated by r8 on all dimensions
+- **警告（23）**
+  - q1.a: bipolar option mixes positive and negative scores
+  - q1.b: bipolar option mixes positive and negative scores
+  - q1.c: bipolar option mixes positive and negative scores
+  - q2.a: bipolar option mixes positive and negative scores
+  - q2.c: bipolar option mixes positive and negative scores
+  - q3.b: bipolar option mixes positive and negative scores
+  - q3.d: bipolar option mixes positive and negative scores
+  - q5.a: bipolar option mixes positive and negative scores
+  - q5.c: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option mixes positive and negative scores
+  - q6.b: bipolar option mixes positive and negative scores
+  - q7.c: bipolar option mixes positive and negative scores
+  - q16.a: bipolar option mixes positive and negative scores
+  - q16.c: bipolar option mixes positive and negative scores
+  - q16.d: bipolar option mixes positive and negative scores
+  - q17.c: bipolar option mixes positive and negative scores
+  - q17.d: bipolar option mixes positive and negative scores
+  - r2 is unreachable — dominated by r4 on all dimensions
+  - r2 is unreachable — dominated by r8 on all dimensions
+  - r6 is unreachable — dominated by r1 on all dimensions
+  - r6 is unreachable — dominated by r3 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+  - r6 is unreachable — dominated by r8 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：你跟随嫌疑人来到一个古老的钟楼，发现他正准备销毁一件关键证据。你会如何行动？
+  - `q1.a`：双极混号 — 立刻冲上去阻止，即使惊动对方也在所不惜
+  - `q1.b`：双极混号 — 悄悄记录下证据位置，等待警方支援再行动
+  - `q1.c`：双极混号 — 从暗处观察，寻找更多线索确认他的罪行
+  - `q1.d`：结构检查通过 — 直接现身，用推理揭露他的计划并给予改过机会
+- **q2** 题干：在审讯室前，你得知关键证人因害怕报复而拒绝作证。你会采取哪种策略？
+  - `q2.a`：双极混号 — 匿名保护证人，确保其安全并提供新身份
+  - `q2.b`：结构检查通过 — 直接质问证人，揭露其恐惧背后的真相
+  - `q2.c`：双极混号 — 说服证人相信正义的力量，鼓励其勇敢作证
+  - `q2.d`：结构检查通过 — 寻找其他证据，降低证人的关键作用
+- **q3** 题干：你发现案件的关键线索指向一位备受尊敬的长者，但证明他有罪的证据不足。你会如何处理？
+  - `q3.a`：结构检查通过 — 公开所有线索，让公众自行判断真相
+  - `q3.b`：双极混号 — 继续暗中调查，寻找决定性证据
+  - `q3.c`：结构检查通过 — 权衡社会影响，暂时搁置调查以维护稳定
+  - `q3.d`：双极混号 — 私下接触长者，给他自首的机会
+- **q4** 题干：在追捕嫌疑人时，你发现他正照顾年幼的孩子。你会如何行动？
+  - `q4.a`：结构检查通过 — 立即逮捕，让孩子目睹父亲被带走
+  - `q4.b`：结构检查通过 — 等待他安顿好孩子后再行动
+  - `q4.c`：结构检查通过 — 安排社会工作者接手孩子，确保他安全
+  - `q4.d`：结构检查通过 — 暂缓行动，考虑是否有其他解释或误会
+- **q5** 题干：你在调查中发现案件涉及高层人物，继续调查可能危及自身安全。你会如何选择？
+  - `q5.a`：双极混号 — 匿名将线索交给可靠媒体，让真相曝光
+  - `q5.b`：结构检查通过 — 放弃调查，保护自己和家人的安全
+  - `q5.c`：双极混号 — 秘密收集证据，等待时机再行动
+  - `q5.d`：双极混号 — 直接面对高层，用推理揭露真相
+- **q6** 题干：你破解了案件的关键密码，发现真相将牵连无辜者。你会如何处理这一信息？
+  - `q6.a`：结构检查通过 — 完整公布所有信息，让公众了解全部真相
+  - `q6.b`：双极混号 — 选择性公布信息，保护无辜者隐私
+  - `q6.c`：结构检查通过 — 私下联系无辜者，给予建议和帮助
+  - `q6.d`：结构检查通过 — 寻找方法既揭露真相又保护无辜者
+- **q7** 题干：在案件调查中，你发现警局内部可能有内鬼。你会如何行动？
+  - `q7.a`：结构检查通过 — 独自调查，不信任任何人以防泄密
+  - `q7.b`：结构检查通过 — 向最信任的同事透露部分信息，寻求帮助
+  - `q7.c`：双极混号 — 假装不知情，设局引出内鬼
+  - `q7.d`：结构检查通过 — 直接向上级汇报，相信组织会处理
+- **q8** 题干：你在案发现场发现一枚奇怪的纽扣，它不属于任何已知嫌疑人，也不像是受害者身上的。你会如何处理这个线索？
+  - `q8.a`：结构检查通过 — 立刻对所有嫌疑人的衣物进行详细检查，寻找匹配的纽扣
+  - `q8.b`：结构检查通过 — 认为可能是意外掉落，与案件无关，暂时忽略这个线索
+  - `q8.c`：结构检查通过 — 记录下纽扣的特征，但先继续调查其他明显线索
+  - `q8.d`：结构检查通过 — 将纽扣交给技术部门分析，等待结果后再决定下一步
+- **q9** 题干：你跟踪嫌疑人到一家咖啡厅，注意到他不断看表并频繁查看手机，但似乎没有打电话或发信息。你的下一步行动是？
+  - `q9.a`：结构检查通过 — 选择靠近一些，试图偷看他手机屏幕的内容
+  - `q9.b`：结构检查通过 — 保持距离，记录下时间和位置，继续观察后续行为
+  - `q9.c`：结构检查通过 — 假装不经意地坐在附近，试图捕捉他的谈话内容
+  - `q9.d`：结构检查通过 — 立即联系同事增援，一起监控嫌疑人的动向
+- **q10** 题干：审讯室里，嫌疑人表现出明显的紧张，但声称自己清白。你会采取哪种策略来突破他的心理防线？
+  - `q10.a`：结构检查通过 — 直接展示关键证据，不留任何辩解空间
+  - `q10.b`：结构检查通过 — 温和地交谈，给予嫌疑人思考空间，建立信任感
+  - `q10.c`：结构检查通过 — 使用心理战术，暗示知道更多内情但不完全透露
+  - `q10.d`：结构检查通过 — 暂停审讯，让嫌疑人冷静后再继续，避免情绪对抗
+- **q11** 题干：在调查过程中，你发现一名关键证人似乎隐瞒了重要信息，但直接追问可能会让他感到害怕或抵触。你会怎么做？
+  - `q11.a`：结构检查通过 — 设计一个情境，让证人无意中透露更多信息
+  - `q11.b`：结构检查通过 — 尊重证人的意愿，接受他只能提供有限信息的事实
+  - `q11.c`：结构检查通过 — 用问题引导证人，但不直接施加压力
+  - `q11.d`：结构检查通过 — 寻求专业心理咨询师的帮助，协助证人开口
+- **q12** 题干：案件调查中，你发现真相揭露可能会伤害一个无辜的第三方，但隐瞒真相又可能妨碍正义。你如何处理这个道德困境？
+  - `q12.a`：结构检查通过 — 坚持追求完整真相，相信正义最终会保护所有人
+  - `q12.b`：结构检查通过 — 权衡各方利益，选择可能伤害最小化的方案
+  - `q12.c`：结构检查通过 — 先收集足够信息，再决定如何披露真相
+  - `q12.d`：结构检查通过 — 寻求上级或同事的建议，共同决策
+- **q13** 题干：你收到一封匿名信，提供了案件的重要线索，但无法验证来源的可靠性。你会如何处理这条线索？
+  - `q13.a`：结构检查通过 — 立刻根据线索展开调查，相信它可能是案件的关键
+  - `q13.b`：结构检查通过 — 谨慎评估线索的合理性，在没有验证前不采取行动
+  - `q13.c`：结构检查通过 — 将线索与其他已知信息比对，寻找交叉点
+  - `q13.d`：结构检查通过 — 尝试追踪匿名信的来源，验证发送者身份
+- **q14** 题干：案件即将侦破，但你发现凶手可能有隐情或特殊背景，简单的法律制裁可能无法实现真正的正义。你会怎么做？
+  - `q14.a`：结构检查通过 — 坚持依法办事，让法律体系处理后续问题
+  - `q14.b`：结构检查通过 — 深入调查背景，寻找能体现公正和宽恕的解决方案
+  - `q14.c`：结构检查通过 — 在法律框架内，尽可能考虑特殊情况
+  - `q14.d`：结构检查通过 — 移交案件给更合适的部门或专家处理
+- **q15** 题干：你在案发现场发现了一本看似普通的日记，但其中几页被撕掉了。你会如何处理这本日记？
+  - `q15.a`：结构检查通过 — 立即检查撕掉的页面边缘，寻找任何可能的线索，如指纹或纸张纤维
+  - `q15.b`：结构检查通过 — 认为这本日记可能与案件无关，将其交给警方处理，继续寻找其他明显线索
+  - `q15.c`：结构检查通过 — 将日记带回实验室，用特殊光源检查是否有隐形墨水或隐藏信息
+  - `q15.d`：结构检查通过 — 直接询问周围人是否有人知道这本日记的来历，相信目击者的证词
+- **q16** 题干：你跟踪嫌疑人到一个偏僻的仓库，发现他正在与他人秘密会面。你会怎么做？
+  - `q16.a`：双极混号 — 悄悄接近，尽可能偷听他们的对话内容，记录每一个细节
+  - `q16.b`：结构检查通过 — 立即呼叫支援，等待警方到达后再行动，确保安全
+  - `q16.c`：双极混号 — 保持距离观察，记录他们的行动模式但不冒险接近
+  - `q16.d`：双极混号 — 直接现身质问嫌疑人，希望能在对方不备时获取更多信息
+- **q17** 题干：你破解了一个关键密码，指向案件的核心真相，但这个真相可能会牵涉到无辜的人。你会如何处理？
+  - `q17.a`：结构检查通过 — 立即将所有证据交给警方，相信法律体系能公正处理
+  - `q17.b`：结构检查通过 — 继续调查，试图找到能保护无辜者的方法后再公布真相
+  - `q17.c`：双极混号 — 只公布部分真相，隐瞒可能伤害无辜的信息
+  - `q17.d`：双极混号 — 公开所有发现，让公众评判真相的价值，即使这意味着伤害不可避免
+- **q18** 题干：在审讯室中，嫌疑人保持沉默，但他的微表情透露出异常。你会如何应对？
+  - `q18.a`：结构检查通过 — 直接指出观察到的微表情变化，迫使对方解释
+  - `q18.b`：结构检查通过 — 保持沉默，等待嫌疑人先开口，相信沉默会让人不安
+  - `q18.c`：结构检查通过 — 转换话题，讨论看似无关的细节，观察对方的反应变化
+  - `q18.d`：结构检查通过 — 直接结束审讯，给嫌疑人时间思考，计划下一次审讯策略
+- **q19** 题干：你发现案件的关键物证，但获取它需要冒险进入危险区域。你会如何行动？
+  - `q19.a`：结构检查通过 — 制定详细计划，确保安全的前提下获取物证
+  - `q19.b`：结构检查通过 — 放弃冒险，寻找其他途径获取证据，不将自己置于危险之中
+  - `q19.c`：结构检查通过 — 寻求专业人士帮助，如特警队或拆弹专家，确保安全获取物证
+  - `q19.d`：结构检查通过 — 直接行动，相信自己的直觉能避开危险，迅速获取证据
+- **q20** 题干：案件接近尾声，但真相可能引发社会动荡。你会如何处理这个情况？
+  - `q20.a`：结构检查通过 — 坚持公开全部真相，相信公众有权知道完整事实
+  - `q20.b`：结构检查通过 — 选择隐瞒部分真相，以维护社会稳定为先
+  - `q20.c`：结构检查通过 — 逐步公布真相，给社会适应的时间，控制信息释放的速度
+  - `q20.d`：结构检查通过 — 将决定权交给权威机构，自己只提供证据而不参与最终决策
+
+### 逐结果
+- **r1**（工藤新一）：profile 键与范围检查通过。
+- **r2**（毛利兰）：profile 键与范围检查通过。
+- **r3**（灰原哀）：profile 键与范围检查通过。
+- **r4**（服部平次）：profile 键与范围检查通过。
+- **r5**（赤井秀一）：profile 键与范围检查通过。
+- **r6**（怪盗基德）：profile 键与范围检查通过。
+- **r7**（铃木园子）：profile 键与范围检查通过。
+- **r8**（目暮警官）：profile 键与范围检查通过。
+
+## dialect
+- **计分**：`dialect` · 维度数 0 · 题数 25 · 结果数 12
+- **警告（1）**
+  - （说明）scoring.type=`dialect` 非三种标准计分族，已跳过 validateQuestions / validateResults(profile) / validateDimensionProfiles / validateScoreMap，以免误报。
+
+### 逐题 · 逐选项
+- **D01** 题干：你们那里管小孩子叫什么？（最口语的说法）
+  - `D01.a`：scores 键：cp,nc,ne — 小孩 / 孩子
+  - `D01.b`：scores 键：gan — 伢
+  - `D01.c`：scores 键：xiang — 细伢
+  - `D01.d`：scores 键：min,yue — 仔
+  - `D01.e`：scores 键：wu — 囡 / 囡囡
+  - `D01.f`：scores 键：cp,nw,sw — 娃 / 娃娃
+- **D02** 题干：口语中称自己的妻子，你们那里怎么叫？（对第三者说「我的…」）
+  - `D02.a`：scores 键：cp,nc,ne — 老婆
+  - `D02.b`：scores 键：xiang — 堂客
+  - `D02.c`：scores 键：sw — 婆娘
+  - `D02.d`：scores 键：gan,sw — 屋里人 / 屋头那口子
+- **D03** 题干：父亲的父亲（爷爷辈），你们那里叫他什么？
+  - `D03.a`：scores 键：cp,jin,nc,ne,nw — 爷爷
+  - `D03.b`：scores 键：wu — 阿爷 / 爷（单字）
+  - `D03.c`：scores 键：min,yue — 公公 / 阿公
+  - `D03.d`：scores 键：jh — 爹爹（此处指祖父）
+  - `D03.e`：scores 键：jin — 大大
+- **D04** 题干：母亲的父亲（外公辈），你们那里叫他什么？
+  - `D04.a`：scores 键：nc,ne — 姥爷
+  - `D04.b`：scores 键：gan,sw,wu,xiang — 外公
+  - `D04.c`：scores 键：cp,nw — 外爷
+  - `D04.d`：scores 键：min,yue — 公公（不区分内外）
+- **D05** 题干：你们那里管青蛙叫什么？
+  - `D05.a`：scores 键：cp,nc,ne,nw — 青蛙
+  - `D05.b`：scores 键：wu — 田鸡
+  - `D05.c`：scores 键：nc,ne — 蛤蟆
+  - `D05.d`：scores 键：ne — 呱呱子
+- **D06** 题干：你们那里管蟑螂叫什么？
+  - `D06.a`：scores 键：cp,nc,ne,nw — 蟑螂
+  - `D06.b`：scores 键：sw — 油婆 / 偷油婆
+  - `D06.c`：scores 键：xiang — 黄婆娘
+  - `D06.d`：scores 键：yue — 曱甴（jiāzhā）
+- **D07** 题干：你们那里管萤火虫叫什么？
+  - `D07.a`：scores 键：cp,nc,ne,nw — 萤火虫
+  - `D07.b`：scores 键：xiang — 亮火虫
+  - `D07.c`：scores 键：gan — 火萤 / 火虫
+  - `D07.d`：scores 键：min — 火金姑
+  - `D07.e`：scores 键：wu — 夜光虫
+- **D08** 题干：你们那里管玉米叫什么？
+  - `D08.a`：scores 键：nc,ne — 玉米
+  - `D08.b`：scores 键：nc — 棒子
+  - `D08.c`：scores 键：sw,xiang — 苞谷
+  - `D08.d`：scores 键：ne — 苞米
+  - `D08.e`：scores 键：yue — 粟米
+  - `D08.f`：scores 键：min — 番麦
+- **D09** 题干：你们那里管红薯（番薯）叫什么？
+  - `D09.a`：scores 键：gan,jh,nc,xiang — 红薯
+  - `D09.b`：scores 键：nc — 地瓜
+  - `D09.c`：scores 键：min,yue — 番薯
+  - `D09.d`：scores 键：sw — 红苕 / 苕
+  - `D09.e`：scores 键：jh — 白芋
+- **D10** 题干：你们那里管马铃薯（土豆）叫什么？
+  - `D10.a`：scores 键：nc,ne — 土豆
+  - `D10.b`：scores 键：nw,sw — 洋芋
+  - `D10.c`：scores 键：wu — 洋山芋
+  - `D10.d`：scores 键：yue — 薯仔
+- **D11** 题干：嫩豆腐做的那道小吃，你们那里叫什么？
+  - `D11.a`：scores 键：nc,ne — 豆腐脑
+  - `D11.b`：scores 键：sw — 豆花
+  - `D11.c`：scores 键：yue — 豆腐花
+  - `D11.d`：scores 键：min — 豆凝 / 豆腐冻
+- **D12** 题干：元宵节吃的糯米圆子，你们那里叫什么？
+  - `D12.a`：scores 键：nc,ne — 元宵
+  - `D12.b`：scores 键：gan,sw,wu,xiang — 汤圆
+  - `D12.c`：scores 键：gan,xiang — 圆子
+  - `D12.d`：scores 键：min,yue — 汤丸
+- **D13** 题干：包着馅、用面皮包起来煮的那种食物，你们那里叫什么？
+  - `D13.a`：scores 键：nc,ne,nw — 饺子 / 水饺
+  - `D13.b`：scores 键：jin,min — 扁食
+  - `D13.c`：scores 键：jin — 角子
+  - `D13.d`：scores 键：wu — 馄饨（不区分）
+- **D14** 题干：不带馅的蒸制面食，你们那里叫什么？
+  - `D14.a`：scores 键：nc,ne,nw — 馒头
+  - `D14.b`：scores 键：cp — 馍 / 馍馍
+  - `D14.c`：scores 键：nc,ne — 饽饽
+- **D15** 题干：你们那里管雨伞叫什么？
+  - `D15.a`：scores 键：cp,nc,ne,nw,sw — 雨伞
+  - `D15.b`：scores 键：yue — 遮（一把遮）
+  - `D15.c`：scores 键：min — 洋伞
+- **D16** 题干：炒菜用的铁铲，你们那里叫什么？
+  - `D16.a`：scores 键：cp,nc,ne,nw — 锅铲 / 炒菜铲
+  - `D16.b`：scores 键：yue — 镬铲
+  - `D16.c`：scores 键：xiang — 炒马
+- **D17** 题干：接自来水用的那个旋钮/开关，你们那里叫什么？
+  - `D17.a`：scores 键：cp,nc,ne,sw — 水龙头
+  - `D17.b`：scores 键：yue — 水喉
+  - `D17.c`：scores 键：wu — 龙头
+- **D18** 题干：家里做饭的地方，你们那里叫什么？
+  - `D18.a`：scores 键：cp,nc,ne — 厨房
+  - `D18.b`：scores 键：nw,sw — 灶房
+  - `D18.c`：scores 键：wu — 灶间
+  - `D18.d`：scores 键：min — 厨间
+- **D19** 题干：保温用的热水瓶，你们那里叫什么？
+  - `D19.a`：scores 键：cp,nc,nw,sw — 暖水瓶 / 热水瓶
+  - `D19.b`：scores 键：ne — 暖壶
+  - `D19.c`：scores 键：sw,yue — 水瓶 / 茶瓶
+- **D20** 题干：头的后面那部分，你们那里叫什么？
+  - `D20.a`：scores 键：nc,ne — 后脑勺
+  - `D20.b`：scores 键：sw — 后脑壳
+  - `D20.c`：scores 键：nc,ne — 后脑门儿
+- **D21** 题干：雨后天空出现的彩色弧形，你们那里叫什么？
+  - `D21.a`：scores 键：cp,nc,ne,nw — 彩虹
+  - `D21.b`：scores 键：min,yue — 天弓
+  - `D21.c`：scores 键：xiang — 螺蛳拱
+  - `D21.d`：scores 键：wu — 虹（单字）
+- **D22** 题干：从天上掉下来的冰粒，你们那里叫什么？
+  - `D22.a`：scores 键：cp,nc,ne,nw — 冰雹
+  - `D22.b`：scores 键：nc,ne — 雹子
+  - `D22.c`：scores 键：xiang — 雪蛋
+- **D23** 题干：那种绿色的、有苦味的蔬菜，你们那里叫什么？
+  - `D23.a`：scores 键：cp,nc,ne,nw,sw — 苦瓜
+  - `D23.b`：scores 键：yue — 凉瓜
+  - `D23.c`：scores 键：gan,xiang — 癞瓜
+- **D24** 题干：「昨天」这个词，你们口语中怎么说？
+  - `D24.a`：scores 键：cp,nc,ne,nw — 昨天
+  - `D24.b`：scores 键：nc — 昨儿
+  - `D24.c`：scores 键：jin — 夜来
+  - `D24.d`：scores 键：wu — 昨朝
+  - `D24.e`：scores 键：yue — 琴日
+- **D25** 题干：那种橙黄色的大圆瓜，你们那里叫什么？
+  - `D25.a`：scores 键：cp,nc,ne,sw — 南瓜
+  - `D25.b`：scores 键：wu — 番瓜
+  - `D25.c`：scores 键：nc,ne — 倭瓜
+  - `D25.d`：scores 键：wu — 金瓜
+
+### 逐结果
+- **ne**（东北官话区）：缺 dimension_profile
+- **nc**（华北官话区）：缺 dimension_profile
+- **jin**（晋语区）：缺 dimension_profile
+- **cp**（中原官话区）：缺 dimension_profile
+- **nw**（西北官话区）：缺 dimension_profile
+- **sw**（西南官话区）：缺 dimension_profile
+- **jh**（江淮官话区）：缺 dimension_profile
+- **wu**（吴语区）：缺 dimension_profile
+- **xiang**（湘语区）：缺 dimension_profile
+- **gan**（赣语区）：缺 dimension_profile
+- **yue**（粤语区）：缺 dimension_profile
+- **min**（闽语区）：缺 dimension_profile
+
+## disney-princess-archetype
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 10
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：城堡花园中,你发现一位受伤的小精灵被困在荆棘丛中,伤口正渗出金色的血液,发出微弱的呻吟。而恶毒的继母正站在阳台上,嘴角挂着冷笑,锐利的目光如箭般刺向你。
+  - `q1.a`：结构检查通过 — 立刻冲过去救助小精灵,不顾继母的监视
+  - `q1.b`：结构检查通过 — 用魔法安抚小精灵的痛苦,同时寻找解救方法
+  - `q1.c`：结构检查通过 — 先假装没看见,等继母离开后再行动
+  - `q1.d`：结构检查通过 — 向城堡其他侍从求助,让他们处理
+- **q2** 题干：魔法森林深处,你发现了一座神秘的树屋,散发着淡淡的蓝色光芒。里面有三件魔法物品:一面能预知未来的镜子,一把能打开任何锁的银钥匙,一瓶能暂时隐形的药水,它们各自闪烁着不同的光芒。
+  - `q2.a`：结构检查通过 — 选择银钥匙,用它探索树屋外的未知世界
+  - `q2.b`：结构检查通过 — 拿起镜子,看看自己的未来会发生什么
+  - `q2.c`：结构检查通过 — 拿起药水,用它悄悄观察森林的秘密
+  - `q2.d`：结构检查通过 — 一件也不拿,默默离开这个危险的地方
+- **q3** 题干：城堡舞会前,侍女为你准备了三套礼服:一套是符合王室传统要求的华丽长裙,缀满珍珠；一套是你私下设计的轻盈舞裙,如月光般飘逸；一套是便于逃离现场的实用装,暗藏口袋。
+  - `q3.a`：结构检查通过 — 选择王室传统长裙,展现公主的庄重形象
+  - `q3.b`：结构检查通过 — 选择自己设计的舞裙,在舞会上展现个性
+  - `q3.c`：结构检查通过 — 选择实用装,以防舞会上发生意外
+  - `q3.d`：结构检查通过 — 让侍女决定穿哪套,尊重王室礼仪
+- **q4** 题干：舞会上,你发现邻国王子正与亲信低声交谈,眼神闪烁不定。你瞥见他们在交换一个小小的羊皮纸卷,你的舞伴——这位王子的亲信,正紧张地观察着周围的动静。
+  - `q4.a`：结构检查通过 — 假装没看见,继续跳舞但暗中保持警惕
+  - `q4.b`：结构检查通过 — 直接质问舞伴,要求他坦白一切
+  - `q4.c`：结构检查通过 — 寻找机会偷听他们的对话,收集证据
+  - `q4.d`：结构检查通过 — 立即向父亲报告,相信王室权威
+- **q5** 题干：魔法森林中的老树精告诉你,如果你愿意放弃一项最珍贵的能力,就能获得一件能拯救王国的神器。你必须选择:放弃歌唱能力、魔法天赋或与人沟通的能力,而你的决定将影响整个王国的命运。
+  - `q5.a`：结构检查通过 — 放弃歌唱能力,相信智慧和魔法更重要
+  - `q5.b`：结构检查通过 — 放弃魔法天赋,相信与人沟通的力量
+  - `q5.c`：结构检查通过 — 放弃沟通能力,坚持自己的魔法天赋
+  - `q5.d`：结构检查通过 — 拒绝这个交易,寻找其他拯救王国的办法
+- **q6** 题干：皇家图书馆中,你发现了三本古老的魔法书籍:一本记载着失落的王室秘密,封面上刻着王室的徽章；一本讲述了如何与自然生物沟通,书页间夹着干枯的花瓣；一本描绘了远方的未知国度,地图上标注着神秘符号。
+  - `q6.a`：结构检查通过 — 选择王室秘密的书,了解自己的身世
+  - `q6.b`：结构检查通过 — 选择与自然生物沟通的书,探索森林的奥秘
+  - `q6.c`：结构检查通过 — 选择未知国度的书,渴望远方的冒险
+  - `q6.d`：结构检查通过 — 先不读任何书,询问图书管理员的建议
+- **q7** 题干：城堡厨房里,厨师长让你帮忙准备一场重要宴会,但你的魔法不小心把所有食材变成了石头。厨房里弥漫着焦糊味,厨师长急得满头大汗,而客人们即将抵达。
+  - `q7.a`：结构检查通过 — 立刻施展逆转魔法,试图恢复食材原状
+  - `q7.b`：结构检查通过 — 用石头制作精美的装饰,掩饰变质的食材
+  - `q7.c`：结构检查通过 — 承认错误,承担责任并提出补救方案
+  - `q7.d`：结构检查通过 — 寻找其他食材,重新准备宴会食物
+- **q8** 题干：高塔内昏暗的光线下,你能听到龙在窗外低沉的咆哮声,空气中弥漫着尘土和恐惧的气息。你会如何行动？
+  - `q8.a`：结构检查通过 — 遵循家族世代相传的骑士准则,等待骑士前来救援
+  - `q8.b`：结构检查通过 — 利用周围寻找的布条制作简易绳索,尝试从窗户滑下
+  - `q8.c`：结构检查通过 — 高声呼救,希望引起附近村民的注意
+  - `q8.d`：结构检查通过 — 仔细观察龙的习性,寻找突破口
+- **q9** 题干：森林中微光闪烁,仙女的声音如同清风般轻柔,她手中的魔法光芒忽明忽暗。你会做出怎样的选择？
+  - `q9.a`：结构检查通过 — 选择回到安全的城堡,但承诺会派最强的骑士去救朋友
+  - `q9.b`：结构检查通过 — 选择获得强大力量,相信自己能同时救朋友和对抗女巫
+  - `q9.c`：结构检查通过 — 请求仙女给予更多时间思考,不想仓促做决定
+  - `q9.d`：结构检查通过 — 拒绝两个选择,坚持用自己的方式去救朋友
+- **q10** 题干：夕阳西下,公主骑马的背影在金色的余晖中显得格外决绝,她的裙摆随风飘动,像一面不妥协的旗帜。你如何看待这一幕？
+  - `q10.a`：结构检查通过 — 她应该遵循王室传统,接受政治联姻以造福王国
+  - `q10.b`：结构检查通过 — 她的勇气令人敬佩,但独自冒险太过危险
+  - `q10.c`：结构检查通过 — 她追求真爱值得尊重,但应该有更好的计划
+  - `q10.d`：结构检查通过 — 她为了自己的信念不惜违背一切,这才是真正的公主精神
+- **q11** 题干：魔法集市上,琳琅满目的商品散发着奇异的香气,小贩的叫卖声此起彼伏,三个礼物在摊位上闪烁着诱人的光芒。你会选择哪一件？
+  - `q11.a`：结构检查通过 — 预知未来的水晶球,能提前规划每一步行动
+  - `q11.b`：结构检查通过 — 实现愿望的戒指,相信命运会指引正确的选择
+  - `q11.c`：结构检查通过 — 看透人心的镜子,能识破他人的伪装
+  - `q11.d`：结构检查通过 — 三个都不选,相信自己的直觉比魔法更可靠
+- **q12** 题干：城堡花园里,晨露在玫瑰花瓣上闪烁,这株会说话的玫瑰声音轻柔却带着神秘,它的花瓣随着话语微微颤动。你会如何回应？
+  - `q12.a`：结构检查通过 — 拒绝探寻,因为父王的命令高于一切
+  - `q12.b`：结构检查通过 — 答应玫瑰,但会先制定详细的计划确保安全
+  - `q12.c`：结构检查通过 — 好奇秘密的内容,但会谨慎行事
+  - `q12.d`：结构检查通过 — 立即告诉父王这个发现,让他决定如何处理
+- **q13** 题干：森林深处,月光透过树叶洒下斑驳的光影,两条小径在眼前延伸,一条熟悉安全,一条未知神秘。你会选择哪条路？
+  - `q13.a`：结构检查通过 — 选择安全的小径,回到熟悉的城堡
+  - `q13.b`：结构检查通过 — 选择神秘的小径,相信冒险会带来意想不到的收获
+  - `q13.c`：结构检查通过 — 先观察两条小径的痕迹,再做决定
+  - `q13.d`：结构检查通过 — 在原地等待天亮,再做打算
+- **q14** 题干：魔法镜面中映出你忧虑的面容,镜中的声音低沉而诱人,它提出的选择让你感到心跳加速。你会如何回应？
+  - `q14.a`：结构检查通过 — 放弃王室身份,获得拯救王国的力量
+  - `q14.b`：结构检查通过 — 保持身份,相信作为公主也能找到解决办法
+  - `q14.c`：结构检查通过 — 要求更多时间考虑,不想仓促做决定
+  - `q14.d`：结构检查通过 — 提议与魔法镜子合作,寻找两全其美的方法
+- **q15** 题干：在暴风雨肆虐的城堡广场上,你看到一位公主站在倾盆大雨中,为躲雨的陌生孩子撑着华丽却湿透的丝绸伞,雨水顺着她的脸颊滑落,她的眼神却温暖如初。你会如何理解她的行为？
+  - `q15.a`：结构检查通过 — 这种无私奉献令人敬佩,但公主的安危也应当被考虑
+  - `q15.b`：结构检查通过 — 公主的行为纯粹出于对陌生人的同情,这是最纯粹的情感表达
+  - `q15.c`：结构检查通过 — 在恶劣天气下不顾自身安危帮助他人,这是一种值得赞赏的高尚行为
+  - `q15.d`：结构检查通过 — 公主应该先回到安全处,再派人提供帮助,这样既能帮助他人又能保护自己
+- **q16** 题干：皇家舞会上,水晶吊灯洒下璀璨光芒,悠扬的小提琴声回荡在大厅。国王邀请你选择一种舞蹈,宫廷舞优雅庄重,民间舞热情奔放,而神秘之舞则由你即兴创作。你会选择哪种舞蹈？
+  - `q16.a`：结构检查通过 — 宫廷舞—遵循皇室礼仪,展现贵族风范,每个动作都经过精心编排
+  - `q16.b`：结构检查通过 — 民间舞—充满活力与热情,展现对普通人民生活的欣赏与亲近
+  - `q16.c`：结构检查通过 — 神秘之舞—不受传统束缚,自由表达自我,创造属于自己独特的舞步
+  - `q16.d`：结构检查通过 — 婉拒邀请,选择静坐一旁欣赏他人舞蹈,避免成为众人焦点
+- **q17** 题干：在城堡布满灰尘的阁楼里,阳光透过彩色玻璃窗投下斑驳光影。你偶然发现一本古老日记,泛黄的纸页上记载着一个被遗忘王国和神秘预言,但精灵警告阅读它会消耗你一半的魔法力量。你会怎么做？
+  - `q17.a`：结构检查通过 — 立即阅读日记,相信知识比魔法更重要,真相的价值值得冒险
+  - `q17.b`：结构检查通过 — 小心翼翼地记录下日记位置,先增强自己的魔法力量再决定是否阅读
+  - `q17.c`：结构检查通过 — 将日记交给王国最年长的智者,让更有经验的人来解读其中的秘密
+  - `q17.d`：结构检查通过 — 放弃阅读,相信有些秘密应该永远被埋葬,好奇心有时会带来危险
+- **q18** 题干：你发现自己变成了一只森林小动物,月光下树影婆娑,远处传来令人毛骨悚然的怪声。精灵告诉你,要么穿越充满陷阱的黑暗森林找回人形,要么与邪恶女巫达成危险交易。你会选择哪条路？
+  - `q18.a`：结构检查通过 — 选择穿越黑暗森林,相信勇气和智慧能克服所有障碍,即使冒险也值得
+  - `q18.b`：结构检查通过 — 尝试寻找第三条路—或许森林中有友善的生物愿意帮助,或者有其他解咒方法
+  - `q18.c`：结构检查通过 — 与女巫交易,虽然危险但可能更安全,先恢复人形再考虑长远计划
+  - `q18.d`：结构检查通过 — 在原地等待,希望有人能发现并帮助自己,避免主动冒险
+- **q19** 题干：在魔法森林的月光下,一位神秘精灵出现在你面前,她的眼睛闪烁着古老的光芒。她给你两个选择:获得实现任何愿望的强大魔法,但代价是失去所有记忆；或者保持清醒的自我,但必须独自面对所有困难。你会如何选择？
+  - `q19.a`：结构检查通过 — 选择获得魔法—失去记忆或许痛苦,但能实现愿望并开始新的人生
+  - `q19.b`：结构检查通过 — 选择保持自我—记忆和身份认同比魔法更重要,即使面对困难也要坚守自我
+  - `q19.c`：结构检查通过 — 试图讨价还价—或许可以保留部分记忆,或者获得有限度的魔法能力
+  - `q19.d`：结构检查通过 — 拒绝选择—认为精灵的提议不公平,坚持寻找其他解决方案
+- **q20** 题干：在城堡的高塔上,你目睹了一位公主拒绝了父亲安排的政治婚姻,她的眼中闪烁着坚定的光芒。她选择独自踏上寻找真爱的旅程,尽管这意味着放弃王位继承权。你会如何评价她的选择？
+  - `q20.a`：结构检查通过 — 公主的选择是自私的—她应该履行作为王室成员的责任,为王国利益考虑
+  - `q20.b`：结构检查通过 — 公主勇敢地追求真爱,虽然冒险但值得尊敬,个人的幸福不应被政治束缚
+  - `q20.c`：结构检查通过 — 公主应该寻找平衡点—既要追求真爱也要考虑王室责任,或许可以找到两全其美的方法
+  - `q20.d`：结构检查通过 — 公主的决定太冲动了—爱情可能会让她后悔,她应该先了解更多再做决定
+
+### 逐结果
+- **r1**（灰姑娘）：profile 键与范围检查通过。
+- **r2**（贝尔）：profile 键与范围检查通过。
+- **r3**（茉莉）：profile 键与范围检查通过。
+- **r4**（梅莉达）：profile 键与范围检查通过。
+- **r5**（蒂安娜）：profile 键与范围检查通过。
+- **r6**（木兰）：profile 键与范围检查通过。
+- **r7**（白雪公主）：profile 键与范围检查通过。
+- **r8**（乐佩）：profile 键与范围检查通过。
+- **r9**（艾莎）：profile 键与范围检查通过。
+- **r10**（爱丽儿）：profile 键与范围检查通过。
+
+## doraemon-character-match
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：考试前夜,你发现数学笔记不翼而飞,只剩几个小时就要考试。教室里灯光昏暗,你翻遍了书包和抽屉,额头上渗出细密的汗珠,该怎么办？
+  - `q1.a`：结构检查通过 — 立刻去同学家借笔记,通宵复习,相信自己的努力能解决问题
+  - `q1.b`：结构检查通过 — 向老师说明情况,请求延期考试或允许使用参考资料
+  - `q1.c`：结构检查通过 — 放弃挣扎,希望考试题目恰好是自己已经掌握的部分
+  - `q1.d`：结构检查通过 — 向父母求助,看他们是否能联系同学或老师帮忙解决
+- **q2** 题干：阳光明媚的周末下午,你有三个小时的自由时间。窗外鸟儿啁啾,微风拂过窗帘,你可以完全按照自己的想法安排,你会选择做什么？
+  - `q2.a`：结构检查通过 — 探索城市里从未去过的公园或书店,享受新鲜感带来的刺激
+  - `q2.b`：结构检查通过 — 约朋友去尝试新开的餐厅或看一场期待已久的电影
+  - `q2.c`：结构检查通过 — 在家看喜欢的动漫或游戏,享受熟悉环境带来的舒适感
+  - `q2.d`：结构检查通过 — 整理房间或完成被拖延的小任务,享受秩序感带来的安心
+- **q3** 题干：教室里,朋友慌张地碰掉了你的铅笔盒,文具散落一地,发出哗啦的声响。周围同学的目光聚焦过来,朋友的脸上写满歉意,你会怎么做？
+  - `q3.a`：结构检查通过 — 直接大声说'没关系,下次小心点',然后快速蹲下收拾
+  - `q3.b`：结构检查通过 — 笑着摆摆手,说'小事一桩,我来捡就好',弯腰捡起文具
+  - `q3.c`：结构检查通过 — 沉默地皱眉,自己默默收拾,内心有些不快但不愿表现出来
+  - `q3.d`：结构检查通过 — 假装没听见,等朋友自己道歉并收拾,内心期待对方主动补偿
+- **q4** 题干：放学回家,你发现最喜欢的零食少了一大半,空气中还残留着零食的甜香。家里只有弟弟一个人在看电视,看到你回来他眼神躲闪,你会怎么做？
+  - `q4.a`：结构检查通过 — 直接询问弟弟是否吃了零食,并告诉他下次需要先征得同意
+  - `q4.b`：结构检查通过 — 委婉提醒弟弟尊重他人财物,但选择原谅并分享剩下的零食
+  - `q4.c`：结构检查通过 — 不直接质问,但暗中观察弟弟的行为,决定以后把零食藏得更隐蔽
+  - `q4.d`：结构检查通过 — 选择不追究,认为家人之间不应该计较这些小事
+- **q5** 题干：学校郊游时,一条蜿蜒的小路吸引了你的注意,它通向未知的密林深处,阳光透过树叶洒下斑驳的光影。但走这条小路可能会迟到并错过集体活动,你会怎么选择？
+  - `q5.a`：结构检查通过 — 毫不犹豫地选择小路,相信即使迟到也值得探索这个新发现
+  - `q5.b`：结构检查通过 — 决定先跟随大部队,但计划找借口中途离开去探索小路
+  - `q5.c`：结构检查通过 — 犹豫再三,最终选择安全地走已知路线,不冒任何风险
+  - `q5.d`：结构检查通过 — 向老师提议带领大家一起去探索小路,兼顾集体与冒险
+- **q6** 题干：班级同学组织生日会,欢声笑语从教室传来。你注意到邀请名单上有所有人,唯独没有邀请你最好的朋友。朋友独自坐在角落,表情失落,你会怎么做？
+  - `q6.a`：结构检查通过 — 直接质问组织者,坚持要求邀请你的朋友,否则不参加
+  - `q6.b`：结构检查通过 — 私下找组织者沟通,委婉表达朋友被排除的感受
+  - `q6.c`：结构检查通过 — 决定不插手,认为这是同学间的私事,自己独善其身
+  - `q6.d`：结构检查通过 — 邀请你的朋友一起去做其他事情,避免尴尬
+- **q7** 题干：放学路上,一阵嘈杂声吸引了你的注意。你看到一群高年级同学围着一个低年级学生,推搡中书包掉落在地。围观的人群议论纷纷,却无人上前,你会怎么做？
+  - `q7.a`：结构检查通过 — 立刻冲上前制止,大声呵斥欺负人的行为,保护被欺负的同学
+  - `q7.b`：结构检查通过 — 先观察情况,确认安全后上前解围,并寻求大人帮助
+  - `q7.c`：结构检查通过 — 悄悄离开现场,担心自己成为下一个目标,选择明哲保身
+  - `q7.d`：结构检查通过 — 回家后告诉父母或老师,让他们来处理这个问题
+- **q8** 题干：学校文化节上,阳光透过窗户洒在热闹的走廊上,同学们三五成群讨论着表演内容,老师期待地看着你。你会选择哪种方式展示自己？
+  - `q8.a`：结构检查通过 — 直接报名参加歌唱比赛,站在舞台上用嘹亮的声音展现自信
+  - `q8.b`：结构检查通过 — 默默制作精美海报,在班级角落展示自己的绘画作品
+  - `q8.c`：结构检查通过 — 只在朋友面前小声哼唱几首喜欢的歌曲,不参加正式表演
+  - `q8.d`：结构检查通过 — 拒绝所有展示机会,觉得自己的才艺不值得被关注
+- **q9** 题干：深夜的书桌前,台灯照亮了你疲惫的脸,手机游戏图标闪烁着诱人的光芒,而桌上的复习资料堆得老高。面对提高成绩的秘密方法,你会？
+  - `q9.a`：结构检查通过 — 立刻放下游戏,制定详细计划每天坚持学习,即使牺牲娱乐时间也在所不惜
+  - `q9.b`：结构检查通过 — 尝试一两周看看效果,如果进步明显就继续,否则还是回到原来的学习方式
+  - `q9.c`：结构检查通过 — 和朋友分享这个方法,大家一起牺牲游戏时间互相监督学习
+  - `q9.d`：结构检查通过 — 觉得成绩没那么重要,还是保持现在的学习节奏,偶尔放松一下
+- **q10** 题干：教室里贴着竞选海报,你的好友小刚站在讲台上公开支持你的竞争对手,全班同学的目光在你俩之间游移,空气仿佛凝固了。
+  - `q10.a`：结构检查通过 — 直接上前质问小刚为何背叛友谊,要求他重新考虑支持谁
+  - `q10.b`：结构检查通过 — 私下找小刚谈话,了解原因后决定是否继续竞选
+  - `q10.c`：结构检查通过 — 装作不在意,在竞选中强调友谊的重要性,暗示小刚的立场有问题
+  - `q10.d`：结构检查通过 — 放弃竞选,认为朋友之间的和谐比班干部职位更重要
+- **q11** 题干：食堂里弥漫着饭菜的香气,你精心准备的便当被同学小明不小心打翻,米饭撒了一地,你的午餐时间只剩下十分钟了。
+  - `q11.a`：结构检查通过 — 立刻大声抱怨,让全班同学都知道小明的失误,要求他赔偿
+  - `q11.b`：结构检查通过 — 平静地告诉小明没关系,然后去食堂窗口重新买一份
+  - `q11.c`：结构检查通过 — 勉强笑着说没事,但一整天都闷闷不乐,和朋友抱怨小明的冒失
+  - `q11.d`：结构检查通过 — 直接收拾干净便当残骸,默默去食堂买饭,不想让气氛尴尬
+- **q12** 题干：数学课上,老师点名表扬了同桌小红提出的创新解题思路,全班掌声雷动,而你知道这个想法其实是上周你告诉小红的。
+  - `q12.a`：结构检查通过 — 直接举手指出这是你的创意,要求老师给予正确认可
+  - `q12.b`：结构检查通过 — 课后找老师单独说明情况,希望下次能有展示自己想法的机会
+  - `q12.c`：结构检查通过 — 为小红感到高兴,认为想法被实现比谁提出更重要
+  - `q12.d`：结构检查通过 — 决定以后不再轻易分享自己的创意,避免再次发生类似情况
+- **q13** 题干：放学铃声响起,窗外雨势渐大,雨滴打在教学楼的玻璃窗上发出噼啪声,你站在教学楼门口,发现没带伞,而家里没人能来接你。
+  - `q13.a`：结构检查通过 — 冒雨跑回家,即使淋湿也要第一时间解决自己的困境
+  - `q13.b`：结构检查通过 — 找同学借伞,或者等雨势减小再出发
+  - `q13.c`：结构检查通过 — 给家长打电话,让他们想办法解决
+  - `q13.d`：结构检查通过 — 在学校等家长,即使雨停也不主动采取行动
+- **q14** 题干：班级公告栏前,同学们围着班主任讨论下周的海边旅行,天气预报显示当天可能有台风,学校正在考虑是否取消行程。
+  - `q14.a`：结构检查通过 — 主动向班主任提议改期,认为安全比游玩更重要
+  - `q14.b`：结构检查通过 — 坚持按原计划出行,相信天气预报不准确,台风可能不会来
+  - `q14.c`：结构检查通过 — 建议准备应急预案,同时保留原定行程,视天气情况再决定
+  - `q14.d`：结构检查通过 — 跟随大多数同学的决定,不表达自己的意见
+- **q15** 题干：周末午后,阳光透过窗户洒在书页上,远处传来聚会的欢声笑语。你会如何度过这段自由时光？
+  - `q15.a`：结构检查通过 — 独自窝在沙发上,沉浸在书本的世界里,不受外界干扰
+  - `q15.b`：结构检查通过 — 虽然喜欢安静,但偶尔也会参加聚会,享受和朋友在一起的时光
+  - `q15.c`：结构检查通过 — 先去聚会待一会儿,找个借口提前离开,回去继续看书
+  - `q15.d`：结构检查通过 — 直接加入聚会,和大家一起玩,不想错过任何热闹的机会
+- **q16** 题干：图书馆里,你正专注地写作业,突然旁边传来高声交谈的声音,打扰了你的思路。你会怎么做？
+  - `q16.a`：结构检查通过 — 默默忍受,继续写作业,不想引起冲突
+  - `q16.b`：结构检查通过 — 委婉地提醒对方小声一点,尽量保持礼貌
+  - `q16.c`：结构检查通过 — 直接告诉对方他们太吵了,影响到了你
+  - `q16.d`：结构检查通过 — 收拾东西换个位置,远离噪音源
+- **q17** 题干：公园门口,你等待的朋友迟迟未到,电话也无人接听。周围人来人往,天气开始变热。你会怎么做？
+  - `q17.a`：结构检查通过 — 再等一会儿,也许朋友只是临时有事耽搁了
+  - `q17.b`：结构检查通过 — 独自在公园里逛逛,看看有没有有趣的地方
+  - `q17.c`：结构检查通过 — 直接回家,改天再和朋友联系
+  - `q17.d`：结构检查通过 — 去附近的咖啡厅等,同时给朋友发消息询问情况
+- **q18** 题干：班级项目小组讨论时,大家都希望按照你的想法进行,但你心里已经有了不同的计划。你会怎么做？
+  - `q18.a`：结构检查通过 — 坚持自己的想法,并向大家解释理由
+  - `q18.b`：结构检查通过 — 采纳大家的意见,不想引起不必要的争执
+  - `q18.c`：结构检查通过 — 提出折中方案,尝试结合自己的想法和大家的意见
+  - `q18.d`：结构检查通过 — 先按照大家的想法进行,私下再尝试实施自己的计划
+- **q19** 题干：你有一个重要的比赛,但同时需要参加好朋友的生日派对,两个活动时间冲突。你会怎么做？
+  - `q19.a`：结构检查通过 — 参加比赛,因为这是你准备了很久的重要活动
+  - `q19.b`：结构检查通过 — 参加派对,因为朋友对你很重要,不想让他失望
+  - `q19.c`：结构检查通过 — 向朋友解释情况,看是否能提前或推迟派对
+  - `q19.d`：结构检查通过 — 尝试在比赛前或后快速赶到派对,参加一部分
+- **q20** 题干：放学铃声响起,你可以选择回家看电视,或者去探索学校附近新开的一家书店。你会怎么做？
+  - `q20.a`：结构检查通过 — 直接回家,熟悉的环境更让人安心
+  - `q20.b`：结构检查通过 — 先去书店看看,如果有意思就多待一会儿
+  - `q20.c`：结构检查通过 — 回家放下书包后再出来去书店,这样不耽误作业
+  - `q20.d`：结构检查通过 — 问朋友有没有兴趣一起去,不想一个人冒险
+
+### 逐结果
+- **r1**（大雄）：profile 键与范围检查通过。
+- **r2**（胖虎）：profile 键与范围检查通过。
+- **r3**（哆啦A梦）：profile 键与范围检查通过。
+- **r4**（静香）：profile 键与范围检查通过。
+- **r5**（小夫）：profile 键与范围检查通过。
+- **r6**（出木杉）：profile 键与范围检查通过。
+- **r7**（源静香）：profile 键与范围检查通过。
+- **r8**（大雄的母亲）：profile 键与范围检查通过。
+
+## enneagram-classic
+- **计分**：`big-five` · 维度数 0 · 题数 81 · 结果数 9
+- **警告（1）**
+  - （说明）scoring.type=`big-five` 非三种标准计分族，已跳过 validateQuestions / validateResults(profile) / validateDimensionProfiles / validateScoreMap，以免误报。
+
+### 逐题 · 逐选项
+- **q1** 题干：事情不做到位，我很难停下来。
+  - `q1.1`：量表 value=0（无 scores） — 完全不符合
+  - `q1.2`：量表 value=25（无 scores） — 不太符合
+  - `q1.3`：量表 value=50（无 scores） — 说不准
+  - `q1.4`：量表 value=75（无 scores） — 比较符合
+  - `q1.5`：量表 value=100（无 scores） — 完全符合
+- **q2** 题干：我很容易感受到别人需要什么，并且会主动去满足。
+  - `q2.1`：量表 value=0（无 scores） — 完全不符合
+  - `q2.2`：量表 value=25（无 scores） — 不太符合
+  - `q2.3`：量表 value=50（无 scores） — 说不准
+  - `q2.4`：量表 value=75（无 scores） — 比较符合
+  - `q2.5`：量表 value=100（无 scores） — 完全符合
+- **q3** 题干：我有强烈的动力去实现目标，而且通常能做到。
+  - `q3.1`：量表 value=0（无 scores） — 完全不符合
+  - `q3.2`：量表 value=25（无 scores） — 不太符合
+  - `q3.3`：量表 value=50（无 scores） — 说不准
+  - `q3.4`：量表 value=75（无 scores） — 比较符合
+  - `q3.5`：量表 value=100（无 scores） — 完全符合
+- **q4** 题干：我觉得自己和大多数人不太一样，这种感觉从小就有。
+  - `q4.1`：量表 value=0（无 scores） — 完全不符合
+  - `q4.2`：量表 value=25（无 scores） — 不太符合
+  - `q4.3`：量表 value=50（无 scores） — 说不准
+  - `q4.4`：量表 value=75（无 scores） — 比较符合
+  - `q4.5`：量表 value=100（无 scores） — 完全符合
+- **q5** 题干：我对事物的运作机制有强烈的好奇心，想彻底弄懂它。
+  - `q5.1`：量表 value=0（无 scores） — 完全不符合
+  - `q5.2`：量表 value=25（无 scores） — 不太符合
+  - `q5.3`：量表 value=50（无 scores） — 说不准
+  - `q5.4`：量表 value=75（无 scores） — 比较符合
+  - `q5.5`：量表 value=100（无 scores） — 完全符合
+- **q6** 题干：我会提前想到事情可能出错的地方，并提前做好准备。
+  - `q6.1`：量表 value=0（无 scores） — 完全不符合
+  - `q6.2`：量表 value=25（无 scores） — 不太符合
+  - `q6.3`：量表 value=50（无 scores） — 说不准
+  - `q6.4`：量表 value=75（无 scores） — 比较符合
+  - `q6.5`：量表 value=100（无 scores） — 完全符合
+- **q7** 题干：我比大多数人更快感到无聊，总在寻找新的体验。
+  - `q7.1`：量表 value=0（无 scores） — 完全不符合
+  - `q7.2`：量表 value=25（无 scores） — 不太符合
+  - `q7.3`：量表 value=50（无 scores） — 说不准
+  - `q7.4`：量表 value=75（无 scores） — 比较符合
+  - `q7.5`：量表 value=100（无 scores） — 完全符合
+- **q8** 题干：我习惯直接说出自己的想法，不喜欢绕弯子。
+  - `q8.1`：量表 value=0（无 scores） — 完全不符合
+  - `q8.2`：量表 value=25（无 scores） — 不太符合
+  - `q8.3`：量表 value=50（无 scores） — 说不准
+  - `q8.4`：量表 value=75（无 scores） — 比较符合
+  - `q8.5`：量表 value=100（无 scores） — 完全符合
+- **q9** 题干：我很难理解为什么有些人喜欢争论，那只会让所有人都难受。
+  - `q9.1`：量表 value=0（无 scores） — 完全不符合
+  - `q9.2`：量表 value=25（无 scores） — 不太符合
+  - `q9.3`：量表 value=50（无 scores） — 说不准
+  - `q9.4`：量表 value=75（无 scores） — 比较符合
+  - `q9.5`：量表 value=100（无 scores） — 完全符合
+- **q10** 题干：我对自己的要求比对别人还要严格。
+  - `q10.1`：量表 value=0（无 scores） — 完全不符合
+  - `q10.2`：量表 value=25（无 scores） — 不太符合
+  - `q10.3`：量表 value=50（无 scores） — 说不准
+  - `q10.4`：量表 value=75（无 scores） — 比较符合
+  - `q10.5`：量表 value=100（无 scores） — 完全符合
+- **q11** 题干：帮助别人让我感到有真实的价值和满足感。
+  - `q11.1`：量表 value=0（无 scores） — 完全不符合
+  - `q11.2`：量表 value=25（无 scores） — 不太符合
+  - `q11.3`：量表 value=50（无 scores） — 说不准
+  - `q11.4`：量表 value=75（无 scores） — 比较符合
+  - `q11.5`：量表 value=100（无 scores） — 完全符合
+- **q12** 题干：在社交场合里，我知道怎样表现才能留下好印象。
+  - `q12.1`：量表 value=0（无 scores） — 完全不符合
+  - `q12.2`：量表 value=25（无 scores） — 不太符合
+  - `q12.3`：量表 value=50（无 scores） — 说不准
+  - `q12.4`：量表 value=75（无 scores） — 比较符合
+  - `q12.5`：量表 value=100（无 scores） — 完全符合
+- **q13** 题干：拥有独特的身份认同对我来说非常重要，我不想成为任何模板。
+  - `q13.1`：量表 value=0（无 scores） — 完全不符合
+  - `q13.2`：量表 value=25（无 scores） — 不太符合
+  - `q13.3`：量表 value=50（无 scores） — 说不准
+  - `q13.4`：量表 value=75（无 scores） — 比较符合
+  - `q13.5`：量表 value=100（无 scores） — 完全符合
+- **q14** 题干：我需要大量独处时间来处理信息和恢复精力。
+  - `q14.1`：量表 value=0（无 scores） — 完全不符合
+  - `q14.2`：量表 value=25（无 scores） — 不太符合
+  - `q14.3`：量表 value=50（无 scores） — 说不准
+  - `q14.4`：量表 value=75（无 scores） — 比较符合
+  - `q14.5`：量表 value=100（无 scores） — 完全符合
+- **q15** 题干：安全感和可靠性对我来说比冒险和刺激更重要。
+  - `q15.1`：量表 value=0（无 scores） — 完全不符合
+  - `q15.2`：量表 value=25（无 scores） — 不太符合
+  - `q15.3`：量表 value=50（无 scores） — 说不准
+  - `q15.4`：量表 value=75（无 scores） — 比较符合
+  - `q15.5`：量表 value=100（无 scores） — 完全符合
+- **q16** 题干：我的计划表通常是满的，同时进行多件令人兴奋的事情。
+  - `q16.1`：量表 value=0（无 scores） — 完全不符合
+  - `q16.2`：量表 value=25（无 scores） — 不太符合
+  - `q16.3`：量表 value=50（无 scores） — 说不准
+  - `q16.4`：量表 value=75（无 scores） — 比较符合
+  - `q16.5`：量表 value=100（无 scores） — 完全符合
+- **q17** 题干：在需要做决定的时候，我通常是那个站出来主导的人。
+  - `q17.1`：量表 value=0（无 scores） — 完全不符合
+  - `q17.2`：量表 value=25（无 scores） — 不太符合
+  - `q17.3`：量表 value=50（无 scores） — 说不准
+  - `q17.4`：量表 value=75（无 scores） — 比较符合
+  - `q17.5`：量表 value=100（无 scores） — 完全符合
+- **q18** 题干：我习惯看每一方的立场，很难只站到某一边。
+  - `q18.1`：量表 value=0（无 scores） — 完全不符合
+  - `q18.2`：量表 value=25（无 scores） — 不太符合
+  - `q18.3`：量表 value=50（无 scores） — 说不准
+  - `q18.4`：量表 value=75（无 scores） — 比较符合
+  - `q18.5`：量表 value=100（无 scores） — 完全符合
+- **q19** 题干：看到别人违反规则或走捷径，我会感到真实的不舒服。
+  - `q19.1`：量表 value=0（无 scores） — 完全不符合
+  - `q19.2`：量表 value=25（无 scores） — 不太符合
+  - `q19.3`：量表 value=50（无 scores） — 说不准
+  - `q19.4`：量表 value=75（无 scores） — 比较符合
+  - `q19.5`：量表 value=100（无 scores） — 完全符合
+- **q20** 题干：我通常把别人的需要放在自己的前面，这是自然发生的。
+  - `q20.1`：量表 value=0（无 scores） — 完全不符合
+  - `q20.2`：量表 value=25（无 scores） — 不太符合
+  - `q20.3`：量表 value=50（无 scores） — 说不准
+  - `q20.4`：量表 value=75（无 scores） — 比较符合
+  - `q20.5`：量表 value=100（无 scores） — 完全符合
+- **q21** 题干：成功和被认可对我来说是真实的驱动力，不只是附带收获。
+  - `q21.1`：量表 value=0（无 scores） — 完全不符合
+  - `q21.2`：量表 value=25（无 scores） — 不太符合
+  - `q21.3`：量表 value=50（无 scores） — 说不准
+  - `q21.4`：量表 value=75（无 scores） — 比较符合
+  - `q21.5`：量表 value=100（无 scores） — 完全符合
+- **q22** 题干：我的情绪生活比别人更丰富、更复杂，起伏幅度也更大。
+  - `q22.1`：量表 value=0（无 scores） — 完全不符合
+  - `q22.2`：量表 value=25（无 scores） — 不太符合
+  - `q22.3`：量表 value=50（无 scores） — 说不准
+  - `q22.4`：量表 value=75（无 scores） — 比较符合
+  - `q22.5`：量表 value=100（无 scores） — 完全符合
+- **q23** 题干：做决定之前，我会深入研究，不喜欢仓促行动。
+  - `q23.1`：量表 value=0（无 scores） — 完全不符合
+  - `q23.2`：量表 value=25（无 scores） — 不太符合
+  - `q23.3`：量表 value=50（无 scores） — 说不准
+  - `q23.4`：量表 value=75（无 scores） — 比较符合
+  - `q23.5`：量表 value=100（无 scores） — 完全符合
+- **q24** 题干：我非常忠诚，一旦信任了某人，会长期维护这段关系。
+  - `q24.1`：量表 value=0（无 scores） — 完全不符合
+  - `q24.2`：量表 value=25（无 scores） — 不太符合
+  - `q24.3`：量表 value=50（无 scores） — 说不准
+  - `q24.4`：量表 value=75（无 scores） — 比较符合
+  - `q24.5`：量表 value=100（无 scores） — 完全符合
+- **q25** 题干：我的精力在有趣、新鲜的事情上会自动爆发出来。
+  - `q25.1`：量表 value=0（无 scores） — 完全不符合
+  - `q25.2`：量表 value=25（无 scores） — 不太符合
+  - `q25.3`：量表 value=50（无 scores） — 说不准
+  - `q25.4`：量表 value=75（无 scores） — 比较符合
+  - `q25.5`：量表 value=100（无 scores） — 完全符合
+- **q26** 题干：当我被质疑或被压制时，我会坚定地反击，不会退让。
+  - `q26.1`：量表 value=0（无 scores） — 完全不符合
+  - `q26.2`：量表 value=25（无 scores） — 不太符合
+  - `q26.3`：量表 value=50（无 scores） — 说不准
+  - `q26.4`：量表 value=75（无 scores） — 比较符合
+  - `q26.5`：量表 value=100（无 scores） — 完全符合
+- **q27** 题干：和谐的环境对我来说非常重要，冲突让我感到真实的不适。
+  - `q27.1`：量表 value=0（无 scores） — 完全不符合
+  - `q27.2`：量表 value=25（无 scores） — 不太符合
+  - `q27.3`：量表 value=50（无 scores） — 说不准
+  - `q27.4`：量表 value=75（无 scores） — 比较符合
+  - `q27.5`：量表 value=100（无 scores） — 完全符合
+- **q28** 题干：我的生活空间和工作方式通常很有条理。
+  - `q28.1`：量表 value=0（无 scores） — 完全不符合
+  - `q28.2`：量表 value=25（无 scores） — 不太符合
+  - `q28.3`：量表 value=50（无 scores） — 说不准
+  - `q28.4`：量表 value=75（无 scores） — 比较符合
+  - `q28.5`：量表 value=100（无 scores） — 完全符合
+- **q29** 题干：当别人来找我寻求帮助时，我很少会直接拒绝。
+  - `q29.1`：量表 value=0（无 scores） — 完全不符合
+  - `q29.2`：量表 value=25（无 scores） — 不太符合
+  - `q29.3`：量表 value=50（无 scores） — 说不准
+  - `q29.4`：量表 value=75（无 scores） — 比较符合
+  - `q29.5`：量表 value=100（无 scores） — 完全符合
+- **q30** 题干：我很在意别人对我能力和价值的评价。
+  - `q30.1`：量表 value=0（无 scores） — 完全不符合
+  - `q30.2`：量表 value=25（无 scores） — 不太符合
+  - `q30.3`：量表 value=50（无 scores） — 说不准
+  - `q30.4`：量表 value=75（无 scores） — 比较符合
+  - `q30.5`：量表 value=100（无 scores） — 完全符合
+- **q31** 题干：对我来说，艺术、美感和真实的自我表达有很高的优先级。
+  - `q31.1`：量表 value=0（无 scores） — 完全不符合
+  - `q31.2`：量表 value=25（无 scores） — 不太符合
+  - `q31.3`：量表 value=50（无 scores） — 说不准
+  - `q31.4`：量表 value=75（无 scores） — 比较符合
+  - `q31.5`：量表 value=100（无 scores） — 完全符合
+- **q32** 题干：我更依赖理性分析而不是情感或直觉做决定。
+  - `q32.1`：量表 value=0（无 scores） — 完全不符合
+  - `q32.2`：量表 value=25（无 scores） — 不太符合
+  - `q32.3`：量表 value=50（无 scores） — 说不准
+  - `q32.4`：量表 value=75（无 scores） — 比较符合
+  - `q32.5`：量表 value=100（无 scores） — 完全符合
+- **q33** 题干：不确定性让我感到紧张，我喜欢知道接下来会发生什么。
+  - `q33.1`：量表 value=0（无 scores） — 完全不符合
+  - `q33.2`：量表 value=25（无 scores） — 不太符合
+  - `q33.3`：量表 value=50（无 scores） — 说不准
+  - `q33.4`：量表 value=75（无 scores） — 比较符合
+  - `q33.5`：量表 value=100（无 scores） — 完全符合
+- **q34** 题干：当事情变得重复或无聊的时候，我很难坚持下去。
+  - `q34.1`：量表 value=0（无 scores） — 完全不符合
+  - `q34.2`：量表 value=25（无 scores） — 不太符合
+  - `q34.3`：量表 value=50（无 scores） — 说不准
+  - `q34.4`：量表 value=75（无 scores） — 比较符合
+  - `q34.5`：量表 value=100（无 scores） — 完全符合
+- **q35** 题干：我不喜欢依赖别人，更愿意靠自己的力量解决问题。
+  - `q35.1`：量表 value=0（无 scores） — 完全不符合
+  - `q35.2`：量表 value=25（无 scores） — 不太符合
+  - `q35.3`：量表 value=50（无 scores） — 说不准
+  - `q35.4`：量表 value=75（无 scores） — 比较符合
+  - `q35.5`：量表 value=100（无 scores） — 完全符合
+- **q36** 题干：我很容易和别人相处，很少让别人感到被冒犯或不舒服。
+  - `q36.1`：量表 value=0（无 scores） — 完全不符合
+  - `q36.2`：量表 value=25（无 scores） — 不太符合
+  - `q36.3`：量表 value=50（无 scores） — 说不准
+  - `q36.4`：量表 value=75（无 scores） — 比较符合
+  - `q36.5`：量表 value=100（无 scores） — 完全符合
+- **q37** 题干：我在完成一件事之前很难真正放松下来。
+  - `q37.1`：量表 value=0（无 scores） — 完全不符合
+  - `q37.2`：量表 value=25（无 scores） — 不太符合
+  - `q37.3`：量表 value=50（无 scores） — 说不准
+  - `q37.4`：量表 value=75（无 scores） — 比较符合
+  - `q37.5`：量表 value=100（无 scores） — 完全符合
+- **q38** 题干：我很在乎自己是否受到别人的喜爱和感激。
+  - `q38.1`：量表 value=0（无 scores） — 完全不符合
+  - `q38.2`：量表 value=25（无 scores） — 不太符合
+  - `q38.3`：量表 value=50（无 scores） — 说不准
+  - `q38.4`：量表 value=75（无 scores） — 比较符合
+  - `q38.5`：量表 value=100（无 scores） — 完全符合
+- **q39** 题干：我设定了清晰的目标，并且会认真追踪进度。
+  - `q39.1`：量表 value=0（无 scores） — 完全不符合
+  - `q39.2`：量表 value=25（无 scores） — 不太符合
+  - `q39.3`：量表 value=50（无 scores） — 说不准
+  - `q39.4`：量表 value=75（无 scores） — 比较符合
+  - `q39.5`：量表 value=100（无 scores） — 完全符合
+- **q40** 题干：平庸对我来说是一种真实的威胁，按部就班的生活感觉像是背叛。
+  - `q40.1`：量表 value=0（无 scores） — 完全不符合
+  - `q40.2`：量表 value=25（无 scores） — 不太符合
+  - `q40.3`：量表 value=50（无 scores） — 说不准
+  - `q40.4`：量表 value=75（无 scores） — 比较符合
+  - `q40.5`：量表 value=100（无 scores） — 完全符合
+- **q41** 题干：我喜欢在某一个领域深入下去，成为这方面的专家。
+  - `q41.1`：量表 value=0（无 scores） — 完全不符合
+  - `q41.2`：量表 value=25（无 scores） — 不太符合
+  - `q41.3`：量表 value=50（无 scores） — 说不准
+  - `q41.4`：量表 value=75（无 scores） — 比较符合
+  - `q41.5`：量表 value=100（无 scores） — 完全符合
+- **q42** 题干：在做重要决定之前，我需要反复确认，不喜欢没有把握就行动。
+  - `q42.1`：量表 value=0（无 scores） — 完全不符合
+  - `q42.2`：量表 value=25（无 scores） — 不太符合
+  - `q42.3`：量表 value=50（无 scores） — 说不准
+  - `q42.4`：量表 value=75（无 scores） — 比较符合
+  - `q42.5`：量表 value=100（无 scores） — 完全符合
+- **q43** 题干：我喜欢在短时间内尝试多种可能，不想过早锁定某一条路。
+  - `q43.1`：量表 value=0（无 scores） — 完全不符合
+  - `q43.2`：量表 value=25（无 scores） — 不太符合
+  - `q43.3`：量表 value=50（无 scores） — 说不准
+  - `q43.4`：量表 value=75（无 scores） — 比较符合
+  - `q43.5`：量表 value=100（无 scores） — 完全符合
+- **q44** 题干：我的存在感很强，别人通常能感受到我进入一个空间。
+  - `q44.1`：量表 value=0（无 scores） — 完全不符合
+  - `q44.2`：量表 value=25（无 scores） — 不太符合
+  - `q44.3`：量表 value=50（无 scores） — 说不准
+  - `q44.4`：量表 value=75（无 scores） — 比较符合
+  - `q44.5`：量表 value=100（无 scores） — 完全符合
+- **q45** 题干：做了一个让别人不满意的决定，会让我很长时间感到不舒服。
+  - `q45.1`：量表 value=0（无 scores） — 完全不符合
+  - `q45.2`：量表 value=25（无 scores） — 不太符合
+  - `q45.3`：量表 value=50（无 scores） — 说不准
+  - `q45.4`：量表 value=75（无 scores） — 比较符合
+  - `q45.5`：量表 value=100（无 scores） — 完全符合
+- **q46** 题干：我能注意到别人忽略的小错误，对细节很敏感。
+  - `q46.1`：量表 value=0（无 scores） — 完全不符合
+  - `q46.2`：量表 value=25（无 scores） — 不太符合
+  - `q46.3`：量表 value=50（无 scores） — 说不准
+  - `q46.4`：量表 value=75（无 scores） — 比较符合
+  - `q46.5`：量表 value=100（无 scores） — 完全符合
+- **q47** 题干：我有时候给出的关注和照顾比我自己意识到的要多得多。
+  - `q47.1`：量表 value=0（无 scores） — 完全不符合
+  - `q47.2`：量表 value=25（无 scores） — 不太符合
+  - `q47.3`：量表 value=50（无 scores） — 说不准
+  - `q47.4`：量表 value=75（无 scores） — 比较符合
+  - `q47.5`：量表 value=100（无 scores） — 完全符合
+- **q48** 题干：我的外表和形象是我日常关注的一部分，不只是附带的事。
+  - `q48.1`：量表 value=0（无 scores） — 完全不符合
+  - `q48.2`：量表 value=25（无 scores） — 不太符合
+  - `q48.3`：量表 value=50（无 scores） — 说不准
+  - `q48.4`：量表 value=75（无 scores） — 比较符合
+  - `q48.5`：量表 value=100（无 scores） — 完全符合
+- **q49** 题干：我很难满足于表面的对话，渴望深度的连接和真实的理解。
+  - `q49.1`：量表 value=0（无 scores） — 完全不符合
+  - `q49.2`：量表 value=25（无 scores） — 不太符合
+  - `q49.3`：量表 value=50（无 scores） — 说不准
+  - `q49.4`：量表 value=75（无 scores） — 比较符合
+  - `q49.5`：量表 value=100（无 scores） — 完全符合
+- **q50** 题干：我需要先理解一件事，才能真正接受它，别人的结论进不来。
+  - `q50.1`：量表 value=0（无 scores） — 完全不符合
+  - `q50.2`：量表 value=25（无 scores） — 不太符合
+  - `q50.3`：量表 value=50（无 scores） — 说不准
+  - `q50.4`：量表 value=75（无 scores） — 比较符合
+  - `q50.5`：量表 value=100（无 scores） — 完全符合
+- **q51** 题干：我会怀疑那些看起来太好或太容易的事情，总觉得有什么没看到。
+  - `q51.1`：量表 value=0（无 scores） — 完全不符合
+  - `q51.2`：量表 value=25（无 scores） — 不太符合
+  - `q51.3`：量表 value=50（无 scores） — 说不准
+  - `q51.4`：量表 value=75（无 scores） — 比较符合
+  - `q51.5`：量表 value=100（无 scores） — 完全符合
+- **q52** 题干：未来充满可能性的感觉让我兴奋，我很难只盯着一个选项。
+  - `q52.1`：量表 value=0（无 scores） — 完全不符合
+  - `q52.2`：量表 value=25（无 scores） — 不太符合
+  - `q52.3`：量表 value=50（无 scores） — 说不准
+  - `q52.4`：量表 value=75（无 scores） — 比较符合
+  - `q52.5`：量表 value=100（无 scores） — 完全符合
+- **q53** 题干：公平和保护弱者对我来说是一种真实的内驱力，不只是道德要求。
+  - `q53.1`：量表 value=0（无 scores） — 完全不符合
+  - `q53.2`：量表 value=25（无 scores） — 不太符合
+  - `q53.3`：量表 value=50（无 scores） — 说不准
+  - `q53.4`：量表 value=75（无 scores） — 比较符合
+  - `q53.5`：量表 value=100（无 scores） — 完全符合
+- **q54** 题干：我有一种自然的倾向，把自己的需求排在最后。
+  - `q54.1`：量表 value=0（无 scores） — 完全不符合
+  - `q54.2`：量表 value=25（无 scores） — 不太符合
+  - `q54.3`：量表 value=50（无 scores） — 说不准
+  - `q54.4`：量表 value=75（无 scores） — 比较符合
+  - `q54.5`：量表 value=100（无 scores） — 完全符合
+- **q55** 题干：我有一条内在的标准线，事情没达到那个标准就不算做好。
+  - `q55.1`：量表 value=0（无 scores） — 完全不符合
+  - `q55.2`：量表 value=25（无 scores） — 不太符合
+  - `q55.3`：量表 value=50（无 scores） — 说不准
+  - `q55.4`：量表 value=75（无 scores） — 比较符合
+  - `q55.5`：量表 value=100（无 scores） — 完全符合
+- **q56** 题干：当我帮不上忙的时候，我会感到内疚或者失落。
+  - `q56.1`：量表 value=0（无 scores） — 完全不符合
+  - `q56.2`：量表 value=25（无 scores） — 不太符合
+  - `q56.3`：量表 value=50（无 scores） — 说不准
+  - `q56.4`：量表 value=75（无 scores） — 比较符合
+  - `q56.5`：量表 value=100（无 scores） — 完全符合
+- **q57** 题干：被看见和被肯定会给我带来真实的满足感。
+  - `q57.1`：量表 value=0（无 scores） — 完全不符合
+  - `q57.2`：量表 value=25（无 scores） — 不太符合
+  - `q57.3`：量表 value=50（无 scores） — 说不准
+  - `q57.4`：量表 value=75（无 scores） — 比较符合
+  - `q57.5`：量表 value=100（无 scores） — 完全符合
+- **q58** 题干：我的感受是我理解自己和世界的主要方式，情绪对我来说是信息。
+  - `q58.1`：量表 value=0（无 scores） — 完全不符合
+  - `q58.2`：量表 value=25（无 scores） — 不太符合
+  - `q58.3`：量表 value=50（无 scores） — 说不准
+  - `q58.4`：量表 value=75（无 scores） — 比较符合
+  - `q58.5`：量表 value=100（无 scores） — 完全符合
+- **q59** 题干：过多的社交活动让我感到耗竭，需要独处来恢复状态。
+  - `q59.1`：量表 value=0（无 scores） — 完全不符合
+  - `q59.2`：量表 value=25（无 scores） — 不太符合
+  - `q59.3`：量表 value=50（无 scores） — 说不准
+  - `q59.4`：量表 value=75（无 scores） — 比较符合
+  - `q59.5`：量表 value=100（无 scores） — 完全符合
+- **q60** 题干：我很在意所在团队或组织的稳定性，变动太快会让我感到不安。
+  - `q60.1`：量表 value=0（无 scores） — 完全不符合
+  - `q60.2`：量表 value=25（无 scores） — 不太符合
+  - `q60.3`：量表 value=50（无 scores） — 说不准
+  - `q60.4`：量表 value=75（无 scores） — 比较符合
+  - `q60.5`：量表 value=100（无 scores） — 完全符合
+- **q61** 题干：我擅长让一个场合变得好玩，或者让沮丧的人重新有精神。
+  - `q61.1`：量表 value=0（无 scores） — 完全不符合
+  - `q61.2`：量表 value=25（无 scores） — 不太符合
+  - `q61.3`：量表 value=50（无 scores） — 说不准
+  - `q61.4`：量表 value=75（无 scores） — 比较符合
+  - `q61.5`：量表 value=100（无 scores） — 完全符合
+- **q62** 题干：我可以接受冲突，甚至觉得直接摊牌比拐弯抹角更舒服。
+  - `q62.1`：量表 value=0（无 scores） — 完全不符合
+  - `q62.2`：量表 value=25（无 scores） — 不太符合
+  - `q62.3`：量表 value=50（无 scores） — 说不准
+  - `q62.4`：量表 value=75（无 scores） — 比较符合
+  - `q62.5`：量表 value=100（无 scores） — 完全符合
+- **q63** 题干：我很少会因为一件事非常激动，通常能保持比较平稳的状态。
+  - `q63.1`：量表 value=0（无 scores） — 完全不符合
+  - `q63.2`：量表 value=25（无 scores） — 不太符合
+  - `q63.3`：量表 value=50（无 scores） — 说不准
+  - `q63.4`：量表 value=75（无 scores） — 比较符合
+  - `q63.5`：量表 value=100（无 scores） — 完全符合
+- **q64** 题干：即使时间有限，我也会尽量把事情做得正确，而不只是完成它。
+  - `q64.1`：量表 value=0（无 scores） — 完全不符合
+  - `q64.2`：量表 value=25（无 scores） — 不太符合
+  - `q64.3`：量表 value=50（无 scores） — 说不准
+  - `q64.4`：量表 value=75（无 scores） — 比较符合
+  - `q64.5`：量表 value=100（无 scores） — 完全符合
+- **q65** 题干：维持重要的关系对我来说非常重要，我会主动投入时间和精力。
+  - `q65.1`：量表 value=0（无 scores） — 完全不符合
+  - `q65.2`：量表 value=25（无 scores） — 不太符合
+  - `q65.3`：量表 value=50（无 scores） — 说不准
+  - `q65.4`：量表 value=75（无 scores） — 比较符合
+  - `q65.5`：量表 value=100（无 scores） — 完全符合
+- **q66** 题干：我能在短时间内建立别人对我的信任感和信心。
+  - `q66.1`：量表 value=0（无 scores） — 完全不符合
+  - `q66.2`：量表 value=25（无 scores） — 不太符合
+  - `q66.3`：量表 value=50（无 scores） — 说不准
+  - `q66.4`：量表 value=75（无 scores） — 比较符合
+  - `q66.5`：量表 value=100（无 scores） — 完全符合
+- **q67** 题干：做真实的自己，哪怕不被理解，也比迎合别人的期待更重要。
+  - `q67.1`：量表 value=0（无 scores） — 完全不符合
+  - `q67.2`：量表 value=25（无 scores） — 不太符合
+  - `q67.3`：量表 value=50（无 scores） — 说不准
+  - `q67.4`：量表 value=75（无 scores） — 比较符合
+  - `q67.5`：量表 value=100（无 scores） — 完全符合
+- **q68** 题干：知识和理解力给我带来安全感，我不喜欢在没弄懂的情况下行动。
+  - `q68.1`：量表 value=0（无 scores） — 完全不符合
+  - `q68.2`：量表 value=25（无 scores） — 不太符合
+  - `q68.3`：量表 value=50（无 scores） — 说不准
+  - `q68.4`：量表 value=75（无 scores） — 比较符合
+  - `q68.5`：量表 value=100（无 scores） — 完全符合
+- **q69** 题干：我需要很长时间才能真正信任一个新认识的人。
+  - `q69.1`：量表 value=0（无 scores） — 完全不符合
+  - `q69.2`：量表 value=25（无 scores） — 不太符合
+  - `q69.3`：量表 value=50（无 scores） — 说不准
+  - `q69.4`：量表 value=75（无 scores） — 比较符合
+  - `q69.5`：量表 value=100（无 scores） — 完全符合
+- **q70** 题干：我对享乐和乐趣有很强的感受力，知道什么能让人开心。
+  - `q70.1`：量表 value=0（无 scores） — 完全不符合
+  - `q70.2`：量表 value=25（无 scores） — 不太符合
+  - `q70.3`：量表 value=50（无 scores） — 说不准
+  - `q70.4`：量表 value=75（无 scores） — 比较符合
+  - `q70.5`：量表 value=100（无 scores） — 完全符合
+- **q71** 题干：对虚伪和软弱我有明显的厌恶感，更欣赏真实和力量。
+  - `q71.1`：量表 value=0（无 scores） — 完全不符合
+  - `q71.2`：量表 value=25（无 scores） — 不太符合
+  - `q71.3`：量表 value=50（无 scores） — 说不准
+  - `q71.4`：量表 value=75（无 scores） — 比较符合
+  - `q71.5`：量表 value=100（无 scores） — 完全符合
+- **q72** 题干：我能让不同意见的人聚到一起，找到共同点，这让我感到有价值。
+  - `q72.1`：量表 value=0（无 scores） — 完全不符合
+  - `q72.2`：量表 value=25（无 scores） — 不太符合
+  - `q72.3`：量表 value=50（无 scores） — 说不准
+  - `q72.4`：量表 value=75（无 scores） — 比较符合
+  - `q72.5`：量表 value=100（无 scores） — 完全符合
+- **q73** 题干：我有很强的是非感，知道什么是对的、什么是不可接受的。
+  - `q73.1`：量表 value=0（无 scores） — 完全不符合
+  - `q73.2`：量表 value=25（无 scores） — 不太符合
+  - `q73.3`：量表 value=50（无 scores） — 说不准
+  - `q73.4`：量表 value=75（无 scores） — 比较符合
+  - `q73.5`：量表 value=100（无 scores） — 完全符合
+- **q74** 题干：我擅长发现别人还没有说出口的需求，并提前想到解决方案。
+  - `q74.1`：量表 value=0（无 scores） — 完全不符合
+  - `q74.2`：量表 value=25（无 scores） — 不太符合
+  - `q74.3`：量表 value=50（无 scores） — 说不准
+  - `q74.4`：量表 value=75（无 scores） — 比较符合
+  - `q74.5`：量表 value=100（无 scores） — 完全符合
+- **q75** 题干：我很清楚每个场合需要什么样的表现，并能相应地切换状态。
+  - `q75.1`：量表 value=0（无 scores） — 完全不符合
+  - `q75.2`：量表 value=25（无 scores） — 不太符合
+  - `q75.3`：量表 value=50（无 scores） — 说不准
+  - `q75.4`：量表 value=75（无 scores） — 比较符合
+  - `q75.5`：量表 value=100（无 scores） — 完全符合
+- **q76** 题干：我有时会羡慕别人拥有而自己没有的东西，这种感觉很真实。
+  - `q76.1`：量表 value=0（无 scores） — 完全不符合
+  - `q76.2`：量表 value=25（无 scores） — 不太符合
+  - `q76.3`：量表 value=50（无 scores） — 说不准
+  - `q76.4`：量表 value=75（无 scores） — 比较符合
+  - `q76.5`：量表 value=100（无 scores） — 完全符合
+- **q77** 题干：我喜欢精确，对模糊不清或含糊其辞的表达感到不舒服。
+  - `q77.1`：量表 value=0（无 scores） — 完全不符合
+  - `q77.2`：量表 value=25（无 scores） — 不太符合
+  - `q77.3`：量表 value=50（无 scores） — 说不准
+  - `q77.4`：量表 value=75（无 scores） — 比较符合
+  - `q77.5`：量表 value=100（无 scores） — 完全符合
+- **q78** 题干：提前计划让我感到安心，完全即兴发挥对我来说有点让人不安。
+  - `q78.1`：量表 value=0（无 scores） — 完全不符合
+  - `q78.2`：量表 value=25（无 scores） — 不太符合
+  - `q78.3`：量表 value=50（无 scores） — 说不准
+  - `q78.4`：量表 value=75（无 scores） — 比较符合
+  - `q78.5`：量表 value=100（无 scores） — 完全符合
+- **q79** 题干：我习惯性地关注事情积极的一面，很难在负面情绪上待太久。
+  - `q79.1`：量表 value=0（无 scores） — 完全不符合
+  - `q79.2`：量表 value=25（无 scores） — 不太符合
+  - `q79.3`：量表 value=50（无 scores） — 说不准
+  - `q79.4`：量表 value=75（无 scores） — 比较符合
+  - `q79.5`：量表 value=100（无 scores） — 完全符合
+- **q80** 题干：对于需要我保护或支持的人，我会非常慷慨和全力投入。
+  - `q80.1`：量表 value=0（无 scores） — 完全不符合
+  - `q80.2`：量表 value=25（无 scores） — 不太符合
+  - `q80.3`：量表 value=50（无 scores） — 说不准
+  - `q80.4`：量表 value=75（无 scores） — 比较符合
+  - `q80.5`：量表 value=100（无 scores） — 完全符合
+- **q81** 题干：我享受生活里平静、不紧不慢的部分，节奏慢对我来说是好事。
+  - `q81.1`：量表 value=0（无 scores） — 完全不符合
+  - `q81.2`：量表 value=25（无 scores） — 不太符合
+  - `q81.3`：量表 value=50（无 scores） — 说不准
+  - `q81.4`：量表 value=75（无 scores） — 比较符合
+  - `q81.5`：量表 value=100（无 scores） — 完全符合
+
+### 逐结果
+- **type1**（改革者）：profile 键：T1（未做 (0,1) 轴校验）
+- **type2**（给予者）：profile 键：T2（未做 (0,1) 轴校验）
+- **type3**（成就者）：profile 键：T3（未做 (0,1) 轴校验）
+- **type4**（个人主义者）：profile 键：T4（未做 (0,1) 轴校验）
+- **type5**（调查者）：profile 键：T5（未做 (0,1) 轴校验）
+- **type6**（忠诚者）：profile 键：T6（未做 (0,1) 轴校验）
+- **type7**（热情者）：profile 键：T7（未做 (0,1) 轴校验）
+- **type8**（挑战者）：profile 键：T8（未做 (0,1) 轴校验）
+- **type9**（调停者）：profile 键：T9（未做 (0,1) 轴校验）
+
+## flower-personality-match
+- **计分**：`bipolar-dimension` · 维度数 4 · 题数 18 · 结果数 9
+- **错误（15）**
+  - bipolar axis "存在方式": missing lowInsight
+  - bipolar axis "力量特质": missing lowInsight
+  - bipolar axis "社交气质": missing lowInsight
+  - bipolar axis "时间关系": missing lowInsight
+  - r3 is unreachable — dominated by r1 on all dimensions
+  - r3 is unreachable — dominated by r4 on all dimensions
+  - r3 is unreachable — dominated by r8 on all dimensions
+  - r3 is unreachable — dominated by r9 on all dimensions
+  - r5 is unreachable — dominated by r1 on all dimensions
+  - r5 is unreachable — dominated by r2 on all dimensions
+  - r5 is unreachable — dominated by r4 on all dimensions
+  - r5 is unreachable — dominated by r9 on all dimensions
+  - r6 is unreachable — dominated by r1 on all dimensions
+  - r7 is unreachable — dominated by r1 on all dimensions
+  - r8 is unreachable — dominated by r1 on all dimensions
+- **警告（59）**
+  - q1.a: bipolar option mixes positive and negative scores
+  - q1.b: bipolar option mixes positive and negative scores
+  - q1.d: bipolar option has 3 scored dimensions (max 2)
+  - q1.d: bipolar option mixes positive and negative scores
+  - q2.c: bipolar option has 3 scored dimensions (max 2)
+  - q2.c: bipolar option mixes positive and negative scores
+  - q3.b: bipolar option has 3 scored dimensions (max 2)
+  - q3.d: bipolar option has 3 scored dimensions (max 2)
+  - q3.d: bipolar option mixes positive and negative scores
+  - q4.b: bipolar option has 3 scored dimensions (max 2)
+  - q4.b: bipolar option mixes positive and negative scores
+  - q4.c: bipolar option has 3 scored dimensions (max 2)
+  - q5.b: bipolar option has 3 scored dimensions (max 2)
+  - q6.b: bipolar option has 3 scored dimensions (max 2)
+  - q6.b: bipolar option mixes positive and negative scores
+  - q7.a: bipolar option mixes positive and negative scores
+  - q7.b: bipolar option mixes positive and negative scores
+  - q8.b: bipolar option mixes positive and negative scores
+  - q8.c: bipolar option mixes positive and negative scores
+  - q9.b: bipolar option has 3 scored dimensions (max 2)
+  - q9.c: bipolar option mixes positive and negative scores
+  - q9.d: bipolar option mixes positive and negative scores
+  - q11.b: bipolar option mixes positive and negative scores
+  - q11.c: bipolar option mixes positive and negative scores
+  - q11.d: bipolar option mixes positive and negative scores
+  - q12.a: bipolar option has 3 scored dimensions (max 2)
+  - q12.c: bipolar option mixes positive and negative scores
+  - q13.b: bipolar option has 3 scored dimensions (max 2)
+  - q13.b: bipolar option mixes positive and negative scores
+  - q14.a: bipolar option has 3 scored dimensions (max 2)
+  - q14.a: bipolar option mixes positive and negative scores
+  - q14.b: bipolar option has 3 scored dimensions (max 2)
+  - q14.b: bipolar option mixes positive and negative scores
+  - q15.a: bipolar option has 3 scored dimensions (max 2)
+  - q15.a: bipolar option mixes positive and negative scores
+  - q15.b: bipolar option has 3 scored dimensions (max 2)
+  - q15.b: bipolar option mixes positive and negative scores
+  - q15.c: bipolar option has 4 scored dimensions (max 2)
+  - q15.c: bipolar option mixes positive and negative scores
+  - q16.b: bipolar option has 3 scored dimensions (max 2)
+  - q16.c: bipolar option has 3 scored dimensions (max 2)
+  - q16.c: bipolar option mixes positive and negative scores
+  - q17.c: bipolar option has 3 scored dimensions (max 2)
+  - q17.c: bipolar option mixes positive and negative scores
+  - q18.c: bipolar option has 3 scored dimensions (max 2)
+  - q18.c: bipolar option mixes positive and negative scores
+  - q18.d: bipolar option has 3 scored dimensions (max 2)
+  - q18.d: bipolar option mixes positive and negative scores
+  - r3 is unreachable — dominated by r1 on all dimensions
+  - r3 is unreachable — dominated by r4 on all dimensions
+  - r3 is unreachable — dominated by r8 on all dimensions
+  - r3 is unreachable — dominated by r9 on all dimensions
+  - r5 is unreachable — dominated by r1 on all dimensions
+  - r5 is unreachable — dominated by r2 on all dimensions
+  - r5 is unreachable — dominated by r4 on all dimensions
+  - r5 is unreachable — dominated by r9 on all dimensions
+  - r6 is unreachable — dominated by r1 on all dimensions
+  - r7 is unreachable — dominated by r1 on all dimensions
+  - r8 is unreachable — dominated by r1 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：春日花园中，你偶然发现一朵奇异的花朵，它绽放的方式与众不同，周围的花儿都为之侧目。你会如何对待这朵特别的花？
+  - `q1.a`：双极混号 — 靠近观察，仔细研究它的生长规律和独特之处
+  - `q1.b`：双极混号 — 与其他花朵一起，以自己的方式继续生长，不特别关注
+  - `q1.c`：结构检查通过 — 学习它的特点，尝试融入自己的生长中
+  - `q1.d`：双极混号；双极维度键>2 — 担心它太过与众不同而不被接纳，默默守护一旁
+- **q2** 题干：夏日荷塘，你是一朵亭亭玉立的荷花。当烈日当空，周围的荷叶都低下了头，你会如何应对这炎热的考验？
+  - `q2.a`：结构检查通过 — 挺直花茎，迎着阳光绽放最美的姿态
+  - `q2.b`：结构检查通过 — 利用宽大的荷叶，为小鱼提供阴凉庇护
+  - `q2.c`：双极混号；双极维度键>2 — 调整开放时间，避开最炎热的中午
+  - `q2.d`：结构检查通过 — 与其他荷花一起，共同抵御阳光的炙烤
+- **q3** 题干：秋日庭院，你是一朵菊花。当秋风萧瑟，其他花朵都已凋零，你依然绽放。面对这份孤独，你会如何自处？
+  - `q3.a`：结构检查通过 — 独自挺立，在寒风中展现最坚韧的姿态
+  - `q3.b`：双极维度键>2 — 欣赏秋日的萧瑟，与落叶共舞，享受这份独特的美
+  - `q3.c`：结构检查通过 — 期待与归来的蝴蝶和蜜蜂重逢
+  - `q3.d`：双极混号；双极维度键>2 — 调整自己的花期，适应季节的变化
+- **q4** 题干：冬日雪地，你是一朵梅花。当漫天飞雪覆盖大地，你却能在严寒中绽放。面对这寂静的世界，你会如何度过这段时光？
+  - `q4.a`：结构检查通过 — 在雪中傲然绽放，成为冬日里最耀眼的风景
+  - `q4.b`：双极混号；双极维度键>2 — 积蓄能量，等待春天的到来
+  - `q4.c`：双极维度键>2 — 欣赏雪景，享受这份独特的宁静
+  - `q4.d`：结构检查通过 — 与周围的松柏为伴，共同抵御严寒
+- **q5** 题干：春日花园，你是一朵含苞待放的花蕾。园丁告诉你，明天将有重要的客人来访。你会如何应对这个信息？
+  - `q5.a`：结构检查通过 — 提前开放，以最美的姿态迎接客人
+  - `q5.b`：双极维度键>2 — 保持自然生长的节奏，不因外界期待而改变
+  - `q5.c`：结构检查通过 — 调整开放时间，确保在客人到达时盛开
+  - `q5.d`：结构检查通过 — 与其他花朵一起，共同为花园增添光彩
+- **q6** 题干：夏日荷塘，你是一朵荷花。当风雨来临，荷叶纷纷低下头躲避，你会如何应对这突如其来的考验？
+  - `q6.a`：结构检查通过 — 挺直花茎，任风雨洗礼，展现顽强的生命力
+  - `q6.b`：双极混号；双极维度键>2 — 暂时闭合花瓣，等待风雨过去再重新绽放
+  - `q6.c`：结构检查通过 — 为水中生物提供庇护，成为风雨中的避风港
+  - `q6.d`：结构检查通过 — 与周围的荷花一起，共同抵御风雨的侵袭
+- **q7** 题干：春日花园中，你发现一株初绽的牡丹与一株含苞的芍药同放光彩，你会如何欣赏它们？
+  - `q7.a`：双极混号 — 先欣赏盛放的牡丹，再细细品味含苞的芍药，感受生命的不同阶段
+  - `q7.b`：双极混号 — 只专注于完全盛放的花朵，对未开的花朵视而不见
+  - `q7.c`：结构检查通过 — 同时观察两株花，思考它们如何共同构成春日的和谐画面
+  - `q7.d`：结构检查通过 — 期待芍药盛放时的模样，认为未开的花更有想象空间
+- **q8** 题干：夏日荷塘中，一朵莲花在淤泥中亭亭玉立，你会如何与它相处？
+  - `q8.a`：结构检查通过 — 轻轻触碰花瓣，感受它的纯净，但保持距离不采摘
+  - `q8.b`：双极混号 — 只欣赏水面上的花朵，忽略它生长的淤泥环境
+  - `q8.c`：双极混号 — 思考莲花如何从淤泥中生长，记录它的生长过程
+  - `q8.d`：结构检查通过 — 期待明日再来看，相信它会开得更加灿烂
+- **q9** 题干：秋日庭院中，一片金黄的落叶飘落在你的窗前，你会如何对待它？
+  - `q9.a`：结构检查通过 — 拾起落叶，夹在书中保存，留住这份秋天的印记
+  - `q9.b`：双极维度键>2 — 看着落叶飘落，思考生命的循环与自然的韵律
+  - `q9.c`：双极混号 — 将落叶扫成一堆，不特别在意它只是自然的一部分
+  - `q9.d`：双极混号 — 欣赏落叶的金黄色彩，感叹秋天短暂的美
+- **q10** 题干：冬日雪地中，一株寒梅在皑皑白雪中独自绽放，你会如何感受它的存在？
+  - `q10.a`：结构检查通过 — 走近欣赏寒梅的坚韧，思考它在严寒中绽放的意义
+  - `q10.b`：结构检查通过 — 远远欣赏寒梅的美，不靠近打扰它的孤独绽放
+  - `q10.c`：结构检查通过 — 期待春天到来，相信万物复苏后的生机
+  - `q10.d`：结构检查通过 — 折一枝梅花带回室内，让它的美延续在温暖的室内
+- **q11** 题干：春日雨后，你发现园中不同花卉各自绽放，面对这种多样之美，你会如何感受？
+  - `q11.a`：结构检查通过 — 欣赏每朵花独特的美丽，认为多样构成了花园的和谐
+  - `q11.b`：双极混号 — 寻找花园中最美的花，专注于最出众的存在
+  - `q11.c`：双极混号 — 思考每朵花为何选择不同的绽放方式，探索背后的生命逻辑
+  - `q11.d`：双极混号 — 期待雨过天晴后，花朵会更加鲜艳动人
+- **q12** 题干：秋日黄昏，你站在一片菊花丛前，面对满园金黄，你会如何度过这段时光？
+  - `q12.a`：双极维度键>2 — 静静坐在菊花丛中，感受秋日的宁静与菊花的高洁
+  - `q12.b`：结构检查通过 — 与友人分享赏菊的喜悦，交流对菊花品格的看法
+  - `q12.c`：双极混号 — 思考菊花在凋零前依然绽放的坚持，反思生命的意义
+  - `q12.d`：结构检查通过 — 期待明年此时，菊花再次盛开，相信生命循环往复
+- **q13** 题干：春日花园里，你遇见一株独自绽放的野花，周围虽有精心栽培的名贵花卉，但它却自成一景。你会如何对待这朵花？
+  - `q13.a`：结构检查通过 — 轻轻摘下，带回家中独赏
+  - `q13.b`：双极混号；双极维度键>2 — 在旁静静欣赏，让它自然生长
+  - `q13.c`：结构检查通过 — 为它浇水施肥，希望它更茁壮
+  - `q13.d`：结构检查通过 — 向众人指点它的独特之处
+- **q14** 题干：夏日荷塘，一场突如其来的暴雨打乱了你的赏荷计划。面对这突如其来的变化，你会如何应对？
+  - `q14.a`：双极混号；双极维度键>2 — 冒雨前行，欣赏雨中荷塘别样景致
+  - `q14.b`：双极混号；双极维度键>2 — 寻一处亭台静坐，等待雨停
+  - `q14.c`：结构检查通过 — 与同行的友人分享雨中趣事
+  - `q14.d`：结构检查通过 — 记录雨中荷塘的瞬间，日后回味
+- **q15** 题干：秋日庭院里，落叶满地，主人邀请你帮忙清扫。你会如何处理这些落叶？
+  - `q15.a`：双极混号；双极维度键>2 — 仔细清扫，不留一片落叶
+  - `q15.b`：双极混号；双极维度键>2 — 只清扫主干道，保留角落落叶
+  - `q15.c`：双极混号；双极维度键>2 — 将落叶收集起来，制作书签或标本
+  - `q15.d`：结构检查通过 — 与主人一同清扫，边做边聊
+- **q16** 题干：冬日雪地，你发现一株被雪覆盖的梅花，它依然在寒风中挺立。面对这景象，你会如何行动？
+  - `q16.a`：结构检查通过 — 轻轻拂去梅花上的积雪，助它更好地绽放
+  - `q16.b`：双极维度键>2 — 在远处欣赏，不惊扰这份坚韧之美
+  - `q16.c`：双极混号；双极维度键>2 — 记录下这梅花傲雪的姿态，作为冬日记忆
+  - `q16.d`：结构检查通过 — 邀请友人一同前来欣赏这份坚韧
+- **q17** 题干：春日花园中，园丁问你最喜欢哪一种花，并询问原因。你会如何回答？
+  - `q17.a`：结构检查通过 — 选择最早绽放的花，迎接春光
+  - `q17.b`：结构检查通过 — 选择色彩最鲜艳的花，吸引目光
+  - `q17.c`：双极混号；双极维度键>2 — 选择香气最浓郁的花，怡情养性
+  - `q17.d`：结构检查通过 — 选择与众不同的花，展现个性
+- **q18** 题干：秋日庭院里，你看到一片菊花在寒风中依然盛开。面对这最后的绚烂，你会如何感受？
+  - `q18.a`：结构检查通过 — 感叹生命的顽强，即使面临凋零也要绽放
+  - `q18.b`：结构检查通过 — 珍惜这最后的美丽，为即将到来的冬天做准备
+  - `q18.c`：双极混号；双极维度键>2 — 采集菊花标本，留住秋日的记忆
+  - `q18.d`：双极混号；双极维度键>2 — 与友人分享这秋日最后的绚烂
+
+### 逐结果
+- **r1**（玫瑰）：profile 键与范围检查通过。
+- **r2**（向日葵）：profile 键与范围检查通过。
+- **r3**（兰花）：profile 键与范围检查通过。
+- **r4**（荷花）：profile 键与范围检查通过。
+- **r5**（薰衣草）：profile 键与范围检查通过。
+- **r6**（茉莉）：profile 键与范围检查通过。
+- **r7**（樱花）：profile 键与范围检查通过。
+- **r8**（梅花）：profile 键与范围检查通过。
+- **r9**（牡丹）：profile 键与范围检查通过。
+
+## gaibang-role-play
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **错误（1）**
+  - result-jian-zhanglao ↔ result-liang-zhanglao: profiles too similar (max diff 0.10)
+- **警告（5）**
+  - q6.a: score -0.5 out of range [0,3] for "义气"
+  - q16.a: score -0.3 out of range [0,3] for "担当"
+  - q18.b: score -0.5 out of range [0,3] for "义气"
+  - q21.e: score -0.8 out of range [0,3] for "义气"
+  - result-jian-zhanglao ↔ result-liang-zhanglao: profiles too similar (max diff 0.10), users may cluster
+
+### 逐题 · 逐选项
+- **q1** 题干：你负责押送一批重要物资，途中遭遇山贼拦路。对方人数三倍于你，但看起来面有菜色，不像是悍匪。
+  - `q1.a`：结构检查通过 — 亮出帮派名号，喝令他们让开
+  - `q1.b`：结构检查通过 — 主动提出分他们一些干粮，换条路走
+  - `q1.c`：结构检查通过 — 佯装答应，暗中派人绕后探查虚实
+  - `q1.d`：结构检查通过 — 直接动手，先打服带头的再说
+- **q2** 题干：帮中一位长老对你颇为赏识，常私下指点。但最近你发现，他似乎有意让你去顶撞另一位与他有隙的长老。
+  - `q2.a`：结构检查通过 — 直接拒绝，表明不想卷入纷争
+  - `q2.b`：结构检查通过 — 表面应承，但做事留有余地，不真得罪人
+  - `q2.c`：结构检查通过 — 私下找那位有隙的长老，委婉提醒
+  - `q2.d`：结构检查通过 — 听从安排，认为这是站队表态的时候
+- **q3** 题干：你所在的堂口和地方一个小镖局起了摩擦，对方总镖头托人传话，想私下摆桌酒了结此事。
+  - `q3.a`：结构检查通过 — 答应赴约，听听对方怎么说
+  - `q3.b`：结构检查通过 — 拒绝，要求按江湖规矩公开解决
+  - `q3.c`：结构检查通过 — 表面答应，暗中布置人手以防不测
+  - `q3.d`：结构检查通过 — 直接带人上门，当面问个清楚
+- **q4** 题干：你偶然救下一个被仇家追杀的外帮弟子，他伤愈后恳求你收留，但你知道收留他会给本帮带来麻烦。
+  - `q4.a`：结构检查通过 — 给他盘缠和伪装，让他自己远走高飞
+  - `q4.b`：结构检查通过 — 冒险将他藏在帮中僻静处，从长计议
+  - `q4.c`：结构检查通过 — 禀报上级，由帮派决定他的去留
+  - `q4.d`：结构检查通过 — 设法联系他的师门，让他们派人来接
+- **q5** 题干：帮派准备夺取一处被恶霸占据的码头，需要有人混进去摸清内部布防和换岗时间。
+  - `q5.a`：结构检查通过 — 主动请缨，扮作苦力混进去
+  - `q5.b`：结构检查通过 — 建议收买码头里一个不得志的小头目
+  - `q5.c`：结构检查通过 — 认为太冒险，主张强攻，打对方一个措手不及
+  - `q5.d`：结构检查通过 — 先在外围观察几天，记录人员进出规律
+- **q6** 题干：年终盘点，你发现堂口账目有一笔不小的亏空，经手人是待你��子侄的副堂主。他私下求你帮忙遮掩，许诺日后补上。
+  - `q6.a`：义气=-0.5 越界[0,3] — 严词拒绝，要求他立刻向堂主坦白
+  - `q6.b`：结构检查通过 — 答应帮忙，自己想办法先垫上缺口
+  - `q6.c`：结构检查通过 — 表面应承，暗中调查钱的真实去向
+  - `q6.d`：结构检查通过 — 建议他变卖一些私产，尽快悄悄补上
+- **q7** 题干：执行任务时，你和一个脾气火爆的兄弟搭档。他因小事与当地人激烈争吵，眼看就要拔刀。
+  - `q7.a`：结构检查通过 — 立刻按住他的刀，强行把他拉走
+  - `q7.b`：结构检查通过 — 挡在他身前，向对方赔笑脸说好话
+  - `q7.c`：结构检查通过 — 由他去，自己则警惕四周，准备随时动手
+  - `q7.d`：结构检查通过 — 大声呵斥那个当地人，给兄弟撑场面
+- **q8** 题干：帮主寿宴，各堂口都需备礼。你们堂口不宽裕，堂主让大家想法子，既要体面又不能太破费。
+  - `q8.a`：结构检查通过 — 提议大家合力做一件有巧思的手工贺礼
+  - `q8.b`：结构检查通过 — 建议去"借用"某个为富不仁的财主家的宝贝
+  - `q8.c`：结构检查通过 — 主张如实禀报家境，送份朴素的真心礼
+  - `q8.d`：结构检查通过 — 自己私下掏钱补足，不让堂主为难
+- **q9** 题干：你得到一个模糊消息：敌对帮派可能在下月初三偷袭你们一个重要据点。但消息来源不可靠，调动人手防备会劳师动众。
+  - `q9.a`：结构检查通过 — 宁可信其有，立刻上报并建议加强戒备
+  - `q9.b`：结构检查通过 — 先按兵不动，亲自或派可靠之人去核实消息
+  - `q9.c`：结构检查通过 — 只在暗中提醒据点几个核心兄弟，让他们小心
+  - `q9.d`：结构检查通过 — 认为虚张声势，主张不必理会，以免被牵着鼻子走
+- **q10** 题干：帮派与另一门派争夺一处水源，约定三局两胜比武定归属。前两局打平，你是最后一个出场，对手名声在外，实力不明。
+  - `q10.a`：结构检查通过 — 上台先猛攻，试探对方虚实
+  - `q10.b`：结构检查通过 — 以守为主，耐心寻找对方破绽
+  - `q10.c`：结构检查通过 — 开打前用言语扰乱对方心神
+  - `q10.d`：结构检查通过 — 不管对手是谁，都使出自己最熟练的招数
+- **q11** 题干：你发现几个年轻弟子私下抱怨帮规太严，伙食太差，有离帮的念头。
+  - `q11.a`：结构检查通过 — 严厉训斥他们，强调帮规和忠诚
+  - `q11.b`：结构检查通过 — 装作没听见，但事后向管事的反映伙食问题
+  - `q11.c`：结构检查通过 — 加入他们，一起吐槽，然后讲自己当初更苦的日子
+  - `q11.d`：结构检查通过 — 私下找带头的谈心，了解具体困难，看看能否帮忙
+- **q12** 题干：奉命去接收一笔"谢礼"，到了才发现对方势力远超预估，礼数周到但隐含威胁，似乎想借此吞并你们在那条街的生意。
+  - `q12.a`：结构检查通过 — 收下礼物，客气告辞，回去如实禀报
+  - `q12.b`：结构检查通过 — 当场严词拒绝，表明帮派立场
+  - `q12.c`：结构检查通过 — 虚与委蛇，套问对方真实意图和背后靠山
+  - `q12.d`：结构检查通过 — 提出需要请示，拖延时间，同时观察对方布局
+- **q13** 题干：一次混战中，你和一个敌人双双滚落山崖，侥幸未死。他重伤无法动弹，身边有干粮和水。
+  - `q13.a`：结构检查通过 — 拿走他的干粮和水，自行寻找出路
+  - `q13.b`：结构检查通过 — 分他一点水，然后离开
+  - `q13.c`：结构检查通过 — 救他，但要求他立誓欠你一条命
+  - `q13.d`：结构检查通过 — 尽力施救，等他能动了再分道扬镳
+- **q14** 题干：帮里要推举一位新香主，你和另一位兄弟资历、功劳都相仿。他私下找你，提议无论谁上，都要提携对方。
+  - `q14.a`：结构检查通过 — 口头答应，但竞选时全力以赴
+  - `q14.b`：结构检查通过 — 欣然同意，认为团结比职位重要
+  - `q14.c`：结构检查通过 — 怀疑他是以退为进，暗中调查他的动向
+  - `q14.d`：结构检查通过 — 提议两人都不主动争，让上级决定
+- **q15** 题干：你们小队截获一封密信，指向帮中一位高层可能通敌。队长决定立刻回去当面质询，你认为证据不足，太冒险。
+  - `q15.a`：结构检查通过 — 服从队长决定，但做好动手准备
+  - `q15.b`：结构检查通过 — 坚决反对，要求先找更可靠的上级秘密汇报
+  - `q15.c`：结构检查通过 — 建议队长派人盯住那位高层，同时继续搜集证据
+  - `q15.d`：结构检查通过 — 假意同意，途中设法制造意外拖延时间
+- **q16** 题干：本地富商举办寿宴，广发请帖，帮派也在受邀之列。这种场合需要懂礼数、能周旋的人去。
+  - `q16.a`：担当=-0.3 越界[0,3] — 主动避开，觉得自己不是那块料
+  - `q16.b`：结构检查通过 — 硬着头皮去，少说话多观察
+  - `q16.c`：结构检查通过 — 积极争取，认为这是拓展人脉的好机会
+  - `q16.d`：结构检查通过 — 推荐另一位能言善辩的兄弟去
+- **q17** 题干：追捕一个叛徒时，他逃进了你们帮派庇护的贫民区。那里巷道复杂，强行搜捕会扰民，也可能让他趁乱逃脱。
+  - `q17.a`：结构检查通过 — 请求当地熟悉的兄弟带路，低调潜入搜查
+  - `q17.b`：结构检查通过 — 封锁主要出口，然后逐户耐心劝说、排查
+  - `q17.c`：结构检查通过 — 悬赏让居民举报，重赏之下必有勇夫
+  - `q17.d`：结构检查通过 — 派几个好手扮作货郎或乞丐，混进去摸查
+- **q18** 题干：你所在的地区闹了饥荒，帮里存粮也不多。一群面生的流民来到你们据点外乞食，其中似乎混有可疑之人。
+  - `q18.a`：结构检查通过 — 施舍少量粥水，但要求他们立刻离开
+  - `q18.b`：义气=-0.5 越界[0,3] — 紧闭大门，不予理会
+  - `q18.c`：结构检查通过 — 开门放粮，但安排兄弟持械在旁严密监视
+  - `q18.d`：结构检查通过 — 先派人调查流民来源和可疑者的身份
+- **q19** 题干：一次酒后，关系最好的兄弟向你吐露，他犯了一件按帮规该受重罚的错事，只有你知道。
+  - `q19.a`：结构检查通过 — 劝他主动向执法长老坦白，争取从宽
+  - `q19.b`：结构检查通过 — 答应替他保密，但要求他绝不能再犯
+  - `q19.c`：结构检查通过 — 帮他想想办法，看能否弥补或掩盖过去
+  - `q19.d`：结构检查通过 — 事后装作不记得，但暗中留意是否有人追查
+- **q20** 题干：帮派需要派一个人去某个关系紧张的邻帮做联络人，为期一年。这是个苦差，容易受气，但做得好可能成为桥梁。
+  - `q20.a`：结构检查通过 — 主动请缨，认为挑战也是机遇
+  - `q20.b`：结构检查通过 — 推荐一个脾气好、懂忍让的兄弟去
+  - `q20.c`：结构检查通过 — 提出提高待遇和保障，才有人愿意去
+  - `q20.d`：结构检查通过 — 认为目前时机不对，建议暂缓派遣
+- **q21** 题干：你独立完成一项艰难任务，本该得到重赏，但功劳却被上级的一位亲信冒领。几位知情的兄弟为你抱不平。
+  - `q21.a`：结构检查通过 — 忍下这口气，以帮派大局为重
+  - `q21.b`：结构检查通过 — 直接找上级当面理论，出示证据
+  - `q21.c`：结构检查通过 — 通过其他渠道，将事情真相慢慢传开
+  - `q21.d`：结构检查通过 — 接受现状，但要求上级在别的方面补偿自己
+  - `q21.e`：义气=-0.8 越界[0,3] — 心灰意冷，萌生去意
+- **q22** 题干：江湖传闻，一本失传的武功秘籍出现在你们地盘附近，引来多方势力窥探。帮主下令，本帮弟子不得主动寻找，以免卷入纷争。
+  - `q22.a`：结构检查通过 — 严格遵守命令，不闻不问
+  - `q22.b`：结构检查通过 — 暗中留意相关动向，及时向帮主汇报
+  - `q22.c`：结构检查通过 — 认为帮主过于保守，秘籍落入他手对帮派不利
+  - `q22.d`：结构检查通过 — 私下联络可信兄弟，悄悄寻找，得手后再做打算
+  - `q22.e`：结构检查通过 — 故意放出假消息，把水搅浑，让外人互相争斗
+  - `q22.f`：结构检查通过 — 建议帮主主动出击，控制局面，将秘籍"保管"起来
+
+### 逐结果
+- **result-mighty-vanguard**（乔峰（萧峰））：profile 键与范围检查通过。
+- **result-shadow-strategist**（黄蓉）：profile 键与范围检查通过。
+- **result-lone-wolf-adept**（洪七公）：profile 键与范围检查通过。
+- **result-enduring-guardian**（郭靖）：profile 键与范围检查通过。
+- **result-flexible-mediator**（鲁有脚）：profile 键与范围检查通过。
+- **result-loyal-backbone**（耶律齐）：profile 键与范围检查通过。
+- **result-mu-nianci**（穆念慈）：profile 键与范围检查通过。
+- **result-jian-zhanglao**（简长老）：profile 键与范围检查通过。
+- **result-liang-zhanglao**（梁长老）：profile 键与范围检查通过。
+- **result-ma-dayuan**（马大元）：profile 键与范围检查通过。
+
+## game-of-thrones-character-analogy
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **警告（4）**
+  - result-littlefinger: profile "理想" = 0 (should be in (0,1))
+  - result-littlefinger: profile "荣誉准则" = 0 (should be in (0,1))
+  - result-daenerys-targaryen: profile missing dimension "生存本能"
+  - result-daenerys-targaryen: profile has unknown dimension "���存本能"
+
+### 逐题 · 逐选项
+- **q1** 题干：你所在的家族在争夺一块富饶领地的继承权，但你的兄长/姐姐是法定第一顺位继承人。你会？
+  - `q1.a`：结构检查通过 — 全力支持他/她，巩固家族内部的团结
+  - `q1.b`：结构检查通过 — 表面支持，私下培植自己的势力和声望
+  - `q1.c`：结构检查通过 — 主动要求管理另一块偏远但潜力巨大的领地
+  - `q1.d`：结构检查通过 — 认为顺位不可挑战，专注于辅佐与建言
+- **q2** 题干：一位盟友在关键时刻背弃了盟约，导致你的计划受挫，但不久后他又因陷入困境而向你求救。你会？
+  - `q2.a`：结构检查通过 — 断然拒绝，背叛者不值得第二次机会
+  - `q2.b`：结构检查通过 — 答应救援，但要求他付出无法拒绝的代价
+  - `q2.c`：结构检查通过 — 口头答应，但行动迟缓，看他能否自己渡过难关
+  - `q2.d`：结构检查通过 — 评估救援的利弊，如果利大于弊则伸出援手
+- **q3** 题干：你俘虏了一个敌方的重要人物，他掌握着能迅速结束战争的情报，但严刑拷打也无法让他开口。你会？
+  - `q3.a`：结构检查通过 — 继续尝试更隐蔽或更持久的方法获取情报
+  - `q3.b`：结构检查通过 — 以他家人或部下的安全为筹码进行谈判
+  - `q3.c`：未知维「荣誉���则」 — 出于对硬汉的尊重，给予体面待遇但继续关押
+  - `q3.d`：结构检查通过 — 公开处决，以打击敌方士气
+- **q4** 题干：你发现你的封臣中，有人正在秘密囤积粮草和武装。你会？
+  - `q4.a`：结构检查通过 — 立即召见他质问，并派亲信接管其防务
+  - `q4.b`：结构检查通过 — 不动声色，暗中调查他的动机和盟友
+  - `q4.c`：结构检查通过 — 以加强边防为名，增派部队进驻他的领地附近
+  - `q4.d`：结构检查通过 — 公开表彰他的"未雨绸缪"，将他置于众人目光之下
+- **q5** 题干：为了达成一个重要的战略目标，你需要争取一个名声不佳但实力强大的家族的支持。你会？
+  - `q5.a`：结构检查通过 — 直接提出利益交换，明确双方权责
+  - `q5.b`：结构检查通过 — 通过联姻或收养等方式，建立更牢固的纽带
+  - `q5.c`：结构检查通过 — 内心抵触，尝试寻找其他替代方案
+  - `q5.d`：结构检查通过 — 先合作，但随时准备在事后清算或削弱他们
+- **q6** 题干：在宫廷宴会上，国王/女王当众询问你对某位重臣政策的看法，而该政策有明显弊端。你会？
+  - `q6.a`：结构检查通过 — 委婉指出问题，但强调其初衷良好
+  - `q6.b`：结构检查通过 — 直言不讳，陈述弊端的危害
+  - `q6.c`：结构检查通过 — 表示需要更多时间研究，暂时不发表意见
+  - `q6.d`：结构检查通过 — 称赞政策的某些方面，把具体问题留到私下汇报
+- **q7** 题干：你的领地遭遇罕见的严冬，粮草短缺。相邻领地丰衣足食却拒绝援助。你会？
+  - `q7.a`：结构检查通过 — 组织精锐部队，进行有节制的"征收"
+  - `q7.b`：结构检查通过 — 派遣能言善辩的使者，许以未来厚报换取粮食
+  - `q7.c`：结构检查通过 — 带领部分民众迁徙到条件稍好的地方，减轻压力
+  - `q7.d`：结构检查通过 — 亲自向更高领主或国王陈情，请求仲裁与援助
+- **q8** 题干：你深爱的伴侣来自一个与你家族有世仇的家族。这段关系曝光后，家族长老施压要求你断绝关系。你会？
+  - `q8.a`：结构检查通过 — 坚决不从，甚至不惜暂时离开家族
+  - `q8.b`：结构检查通过 — 表面顺从，暗中继续往来，等待时机
+  - `q8.c`：结构检查通过 — 尝试说服长老，将此联姻视为化解世仇的契机
+  - `q8.d`：结构检查通过 — 痛苦地选择家族，结束这段关系
+- **q9** 题干：你意外获悉，国王属意的王储人选并非长子，而是一位更年幼但更聪慧的王子。你会？
+  - `q9.a`：结构检查通过 — 严守秘密，绝不介入王位继承的漩涡
+  - `q9.b`：结构检查通过 — 暗中向那位年幼的王子示好，进行长远投资
+  - `q9.c`：结构检查通过 — 认为长子继承是传统与稳定的基石，不支持变更
+  - `q9.d`：结构检查通过 — 将情报透露给长子，换取他的感激与庇护
+- **q10** 题干：在一场惨烈的战斗后，你从战场上救回一个重伤的敌方年轻骑士。他醒来后誓言向你效忠。你会？
+  - `q10.a`：结构检查通过 — 接受他的效忠，但先派他去执行一些次要任务以观察
+  - `q10.b`：结构检查通过 — 欣赏他的勇气和誓言，将他留在身边作为护卫
+  - `q10.c`：结构检查通过 — 要求他提供关于敌方的有价值情报作为���投名状"
+  - `q10.d`：结构检查通过 — 将他交给军法官，按战俘惯例处理
+- **q11** 题干：你治理的城镇中，几个有影响力的商会联合起来，要求减免赋税，否则将迁移生意。你会？
+  - `q11.a`：结构检查通过 — 断然拒绝，并用武力威慑任何试图离开者
+  - `q11.b`：结构检查通过 — 同意暂时减免，但要求他们增加对公共建设的投资
+  - `q11.c`：结构检查通过 — 分化瓦解，私下与其中一两家达成优惠协议
+  - `q11.d`：结构检查通过 — 召集所有市民，公开辩论赋税的用途与必要性
+- **q12** 题干：一位曾对你有恩但现已失势的贵族，请求你庇护他被通缉的儿子。你会？
+  - `q12.a`：结构检查通过 — 冒着风险藏匿他，报答昔日的恩情
+  - `q12.b`：结构检查通过 — 提供少量盘缠和伪装，指引他逃往境外
+  - `q12.c`：结构检查通过 — 表面上答应，实则向当局匿名举报他的行踪
+  - `q12.d`：结构检查通过 — 严词拒绝，并建议他去找更强大的领主
+- **q13** 题干：你的侦察兵报告，一支身份不明的军队正在向你盟友的薄弱领地移动，但通知盟友需要时间。你会？
+  - `q13.a`：结构检查通过 — 立刻派出自己的快速部队进行拦截或骚扰
+  - `q13.b`：结构检查通过 — 火速派信使通知盟友，同时集结军队准备应变
+  - `q13.c`：结构检查通过 — 按兵不动，进一步侦察以确定敌军真实目标和身份
+  - `q13.d`：结构检查通过 — 加强自身防御，并派人去试探能否与那支军队沟通
+- **q14** 题干：你成功推行了一项改革，深受平民爱戴，但却严重损害了部分传统贵族的经济特权。他们开始联合抵制你。你会？
+  - `q14.a`：结构检查通过 — 利用平民的支持，强硬推行，打压贵族反抗
+  - `q14.b`：结构检查通过 — 暂停改革，与贵族谈判，寻找折中方案
+  - `q14.c`：结构检查通过 — 找出贵族联盟中的薄弱者，许以利益进行分化
+  - `q14.d`：结构检查通过 — 将改革功劳归于国王/女王，寻求最高权力的支持
+- **q15** 题干：在远征途中，你的军队捕获了一个疑似敌方间谍的平民少女。她坚称自己只是迷路。你会？
+  - `q15.a`：结构检查通过 — 宁可信其有，关押起来直至战事结束
+  - `q15.b`：结构检查通过 — 仔细盘问细节，并派人核实她的故事
+  - `q15.c`：结构检查通过 — 认为滥抓平民会失去民心，将她释放
+  - `q15.d`：结构检查通过 — 利用她，散布一些假情报回敌方
+- **q16** 题干：你的导师兼监护人年事已高，思维开始混乱，经常做出错误决策，却仍紧握权力不放。你会？
+  - `q16.a`：结构检查通过 — 联合其他重臣，委婉劝说他移交部分权力
+  - `q16.b`：结构检查通过 — 继续尊重并执行他的命令，私下尽力弥补错误
+  - `q16.c`：结构检查通过 — 逐步接管关键事务，让他慢慢退居名誉位置
+  - `q16.d`：结构检查通过 — 直接向他摊牌，陈述利害，要求为了家族未来让位
+- **q17** 题干：你赢得了一场关键战役，国王在庆功宴上询问你想要什么赏赐。你会？
+  - `q17.a`：结构检查通过 — 请求将阵亡将士的子女纳入宫廷抚养，并抚恤其家族
+  - `q17.b`：结构检查通过 — 索要一块战略要地或重要城池的管辖权
+  - `q17.c`：结构检查通过 — 谦逊地表示只为国王效力，赏赐全凭国王心意
+  - `q17.d`：结构检查通过 — 请求国王允许你与王室联姻
+  - `q17.e`：结构检查通过 — 要���严惩战役中那些怯战或延误的友军将领
+- **q18** 题干：你发现你最得力的副手，可能私下与你的竞争对手有书信往来。你会？
+  - `q18.a`：结构检查通过 — 直接找他当面对质，看他如何解释
+  - `q18.b`：结构检查通过 — 不动声色，加强监控，并开始培养替代人选
+  - `q18.c`：结构检查通过 — 派他去执行一项危险但光荣的任务，测试其忠诚
+  - `q18.d`：结构检查通过 — 找他谈心，给予更多信任和利益，试图挽回
+- **q19** 题干：一种致命的瘟疫在你领地的一座城镇爆发。封锁会导致经济崩溃，不封锁则可能蔓延。你会？
+  - `q19.a`：结构检查通过 — 立即实施严厉封锁，隔离病区，由官方供应物资
+  - `q19.b`：结构检查通过 — 召集医师寻找治疗方法，同时鼓励民间互助
+  - `q19.c`：结构检查通过 — 秘密转移自己和亲信到安全地带，遥控指挥
+  - `q19.d`：结构检查通过 — 向邻近领地和教会求援，将问题部分转移
+- **q20** 题干：一位神秘的先知来到你的城堡，预言你将遭遇一场重大背叛，但拒绝透露背叛者姓名。你会？
+  - `q20.a`：结构检查通过 — 重赏先知，恳求他留下更多线索
+  - `q20.b`：结构检查通过 — 将先知当作骗子驱逐，不予理会
+  - `q20.c`：结构检查通过 — 开始暗中审查身边每一个可能的人
+  - `q20.d`：结构检查通过 — 公开这个预言，观察身边人的反应
+  - `q20.e`：结构检查通过 — 加强自身卫队，并改变日常行程规律
+- **q21** 题干：你的家族珍藏着一把传奇宝剑，它象征着领导权。如今家族面临分裂危机，几位长辈对宝剑归属争执不下。你会？
+  - `q21.a`：结构检查通过 — 主张宝剑应由最能带领家族走出危机的人持有，而非最年长者
+  - `q21.b`：结构检查通过 — 坚持按最古老的传统，由嫡系长子继承
+  - `q21.c`：结构检查通过 — 建议将宝剑暂时封存，待危机过后再议
+  - `q21.d`：结构检查通过 — 提出通过一场公平的比武或竞赛来决定归属
+  - `q21.e`：结构检查通过 — 暗中调查，看谁在背后推动这场争执，并加以制衡
+- **q22** 题干：经过漫长斗争，你终于坐上了曾经梦寐以求的权力宝座。加冕典礼后的第一个夜晚，你独自在殿堂中，首先想到的是？
+  - `q22.a`：结构检查通过 — 那些在征途中倒下、未能看到今天的战友与亲人
+  - `q22.b`：结构检查通过 — 审视地图，思考哪些潜在的威胁需要优先解决
+  - `q22.c`：结构检查通过 — 规划明天要颁布的第一批法令，兑现对支持者的承诺
+  - `q22.d`：结构检查通过 — 感到一种深切的孤独，以及对未来的不确定
+  - `q22.e`：结构检查通过 — 回忆起自己最初为何而战，审视是否偏离了初衷
+  - `q22.f`：结构检查通过 — 计算宝库中的财富，评估能供养多少军队和宫廷
+
+### 逐结果
+- **result-ned-stark**（艾德·史塔克（奈德））：profile 键与范围检查通过。
+- **result-tywin-lannister**（泰温·兰尼斯特）：profile 键与范围检查通过。
+- **result-arya-stark**（艾莉亚·史塔克）：profile 键与范围检查通过。
+- **result-littlefinger**（培提尔·贝里席（小指头））：理想=0 不在 (0,1)；荣誉准则=0 不在 (0,1)
+- **result-daenerys-targaryen**（丹妮莉丝·坦格利安）：profile 缺「生存本能」；未知维「���存本能」
+- **result-jon-snow**（琼恩·雪诺）：profile 键与范围检查通过。
+- **result-tyrion-lannister**（提利昂·兰尼斯特）：profile 键与范围检查通过。
+- **result-jaime-lannister**（詹姆·兰尼斯特）：profile 键与范围检查通过。
+- **result-cersei-lannister**（瑟曦·兰尼斯特）：profile 键与范围检查通过。
+- **result-stannis-baratheon**（史坦尼斯·拜拉席恩）：profile 键与范围检查通过。
+
+## gatsby-character-match
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 6
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：水晶吊灯投下摇曳的光晕,爵士乐戛然而止,空气中弥漫着香槟和恐慌的味道。老先生苍白的脸庞映在银质托盘上,宾客们窃窃私语,目光如针。你会如何处理这尴尬局面？
+  - `q1.a`：结构检查通过 — 立即请来私人医生,同时示意侍者清理现场,维护派对的体面与秩序
+  - `q1.b`：结构检查通过 — 扶老人到休息室,派专人照看,自己则继续接待宾客,不因意外影响整体氛围
+  - `q1.c`：结构检查通过 — 不顾周围窃窃私语,跪下查看老人状况,高呼需要帮助,将个人名誉置之度外
+  - `q1.d`：结构检查通过 — 示意管家处理,自己若无其事地继续与人交谈,不愿因突发事件影响社交形象
+- **q2** 题干：霓虹灯在雨夜中闪烁,爵士乐从俱乐部门缝中渗出,混合着威士忌和香水的气息。朋友们在雨中招手,一个指向舞池里旋转的人群,另一个示意二楼的静谧角落。你会选择哪里？
+  - `q2.a`：结构检查通过 — 走向舞池,在喧闹中释放自己,成为众人目光的焦点,享受被包围的感觉
+  - `q2.b`：结构检查通过 — 独自留在门口,观察来往的各色人物,在喧嚣中寻找内心的宁静
+  - `q2.c`：结构检查通过 — 接受二楼酒吧的邀请,在小范围交谈中展现自己的机智与深度
+  - `q2.d`：结构检查通过 — 婉拒朋友,独自漫步在雨中的街道,享受这份不被打扰的自由时光
+- **q3** 题干：匿名信烫手如火,墨迹未干的丑闻像一把利剑,悬在你与上流社会之间。发表它将让你一夜成名,但会摧毁无辜者的生活；保守秘密则失去向上攀爬的绝佳机会。你会如何抉择？
+  - `q3.a`：结构检查通过 — 匿名将信转交给报社,不署名发表,既满足野心又保持道德距离
+  - `q3.b`：结构检查通过 — 直接发表文章,署上自己的名字,不在乎后果,坚信成功需要不择手段
+  - `q3.c`：结构检查通过 — 将信销毁,继续在现有阶层中生活,宁可安稳也不愿冒险
+  - `q3.d`：结构检查通过 — 以此信为筹码,与当事人私下交易,既获得好处又不留下把柄
+- **q4** 题干：信中提到的丑闻竟与深爱的表亲有关,她的眼神中闪烁着不安。公开真相会让她身败名裂,但隐瞒意味着你与这段关系一起沉入谎言的深渊。你会如何做？
+  - `q4.a`：结构检查通过 — 私下劝表亲主动公开真相,陪她一起面对,维护家族的体面与道德
+  - `q4.b`：结构检查通过 — 将信销毁,永远保守这个秘密,即使这意味着自己永远无法完全相信表亲
+  - `q4.c`：结构检查通过 — 以匿名方式泄露部分真相,既保护表亲又让事情不至于完全被掩盖
+  - `q4.d`：结构检查通过 — 公开真相,认为真相终将大白,不如早些面对,哪怕代价是失去亲人
+- **q5** 题干：第五大道的百货店里,水晶吊灯下,镜中的你身着价值不菲的晚礼服,丝绒贴着肌肤,珠光在灯光下流转。销售小姐期待地看着你,价格标签上的数字让手指微微发颤。你会如何决定？
+  - `q5.a`：结构检查通过 — 毫不犹豫地买下,这件礼服将是你进入上流社会的敲门砖,值得任何代价
+  - `q5.b`：结构检查通过 — 请小姐保留一周,等待下次发薪日,宁可错过也不愿负债
+  - `q5.c`：结构检查通过 — 买下但要求修改,让它更符合自己的风格而非盲从时尚,保持个性与品位的平衡
+  - `q5.d`：结构检查通过 — 只买配饰,用有限的预算提升整体形象,相信品味不在于价格标签
+- **q6** 题干：港口寒风凛冽,年轻女子的背影如剪影般孤独,她凝望着曼哈顿的灯火,轻声说:'有些人为了梦想可以付出一切,即使那梦想是假的。'她的眼中闪烁着泪光。
+  - `q6.a`：结构检查通过 — 走近她,承认自己也为了不切实际的梦想牺牲了很多,分享彼此的理想主义
+  - `q6.b`：结构检查通过 — 保持距离,欣赏她的浪漫但不参与,认为理想主义是美丽的但不可持续
+  - `q6.c`：结构检查通过 — 提醒她现实的重要性,建议她寻找更实际的生活方式,避免梦想破灭的痛苦
+  - `q6.d`：结构检查通过 — 转身离开,无法理解为虚无缥缈的梦想牺牲现实的举动,认为那是浪费生命
+- **q7** 题干：烛光摇曳的私人晚宴上,宾客醉醺醺地开始大声宣扬你家族的往事,细节令人尴尬,刀叉碰撞声戛然而止,所有人的目光如聚光灯般落在你身上。
+  - `q7.a`：结构检查通过 — 微笑着打断他,优雅地转移话题,维护家族的体面与自己的社交形象
+  - `q7.b`：结构检查通过 — 保持沉默,让宾客自行判断,相信时间会证明一切,无需辩解
+  - `q7.c`：结构检查通过 — 站起身,冷冷地要求对方停止谈论私人话题,表明自己的立场不容侵犯
+  - `q7.d`：结构检查通过 — 起身离席,让管家处理此事,不愿在公开场合与醉酒宾客争执
+- **q8** 题干：午后阳光洒在长岛的私人海滩上,海风带着咸味轻抚你的面颊,远处传来海浪拍打岸边的轻响。你的伴侣指着海平线提议建造一座梦幻般的夏日别墅,而你的朋友则递来一份充满诱惑的新兴企业计划书。你会如何回应？
+  - `q8.a`：结构检查通过 — 立即拿起画笔,勾勒出别墅的每一个细节,让幻想在纸上生根发芽。
+  - `q8.b`：结构检查通过 — 仔细研究企业计划书,计算投资回报率,同时保留海边漫步的习惯。
+  - `q8.c`：结构检查通过 — 建议将两者结合:投资企业,但用部分收益在海边建一座小屋作为避世之所。
+  - `q8.d`：结构检查通过 — 婉拒两方提议,认为不切实际的幻想和盲目的野心都不可取,不如专注于当下。
+- **q9** 题干：书房里,阳光透过百叶窗在旧物上投下斑驳光影,空气中弥漫着陈年纸张的微尘气息。你轻抚着那封未寄出的情书,字迹因年代久远而微微模糊,却依然能感受到当年那份炽热的向往和执着。
+  - `q9.a`：结构检查通过 — 将信纸珍藏,偶尔取出阅读,提醒自己曾有的理想与纯真。
+  - `q9.b`：结构检查通过 — 烧掉这封旧信,认为过去的自己过于天真,不愿让怀旧束缚当下的选择。
+  - `q9.c`：结构检查通过 — 重新书写这封信,加入成熟的思考,寄给那个曾让自己心动的对象。
+  - `q9.d`：结构检查通过 — 将信放入相框,挂在书房最显眼的位置,作为自己成长历程的见证。
+- **q10** 题干：慈善拍卖会厅内水晶吊灯闪烁着冷冽的光芒,空气中飘着香槟和雪茄的气息。你心仪的艺术品被一位衣着考究的竞拍者高价购得,而你确切知道他有内部渠道能以更低价格获得这件珍品。拍卖师正准备敲下成交锤。
+  - `q10.a`：结构检查通过 — 私下找到那位竞拍者,委婉提醒他的行为可能损害慈善声誉。
+  - `q10.b`：结构检查通过 — 向拍卖师举报这一不道德行为,认为规则必须被尊重。
+  - `q10.c`：结构检查通过 — 保持沉默,认为这与你无关,慈善拍卖本就是上流社会的游戏。
+  - `q10.d`：结构检查通过 — 在会后向组织者匿名信函反映情况,既不直接冲突,又履行了道德责任。
+- **q11** 题干：舞池中央,水晶吊灯的光芒在她身上流转,周围宾客投来艳羡的目光。她优雅地举着香槟杯,脸上的笑容完美无瑕,但当转身与同伴交谈时,她的眼角掠过一丝难以察觉的疲惫,低声说:'聚光灯下的生活,就像戴着面具呼吸。'
+  - `q11.a`：结构检查通过 — 立即上前邀请共舞,想要用真诚打破她的伪装。
+  - `q11.b`：结构检查通过 — 站在远处观察,理解这种面具下的挣扎,但不愿贸然介入。
+  - `q11.c`：结构检查通过 — 感到共鸣,但认为这是上流社会必须付出的代价,自己也不愿成为例外。
+  - `q11.d`：结构检查通过 — 认为这是矫情之举,既然享受了特权,就该接受随之而来的束缚。
+- **q12** 题干：一封烫金请柬静静地躺在桌上,邀请你与城中最有权势的家族共进晚餐。管家低声告诉你,这是你跻身社交顶层的绝佳机会,但同时暗示你必须放下某些坚持多年的原则,接受那些曾让你不齿的规则。
+  - `q12.a`：结构检查通过 — 欣然接受邀请,认为这是成长的必经之路,适时的妥协是为了更大的成就。
+  - `q12.b`：结构检查通过 — 要求对方尊重你的底线,既不愿放弃原则,也不愿放弃这个机会。
+  - `q12.c`：结构检查通过 — 婉拒邀请,认为与其改变自己去适应规则,不如等待被规则改变的机会。
+  - `q12.d`：结构检查通过 — 派代表出席,自己则保持距离,既不放弃原则,也不错过信息收集的机会。
+- **q13** 题干：雨夜,雨滴敲打窗户的声音在寂静中格外清晰。你收到两张邀请:一张是上流社会盛大的华尔兹舞会,水晶灯下衣香鬓影；另一张是地下酒吧的爵士乐演出,烟雾缭绕中充满了原始的生命力。
+  - `q13.a`：结构检查通过 — 选择舞会,精心打扮,享受成为众人焦点的感觉。
+  - `q13.b`：结构检查通过 — 前往地下酒吧,沉浸在即兴的旋律和自由的氛围中。
+  - `q13.c`：结构检查通过 — 先参加舞会,中途溜出前往酒吧,体验两种截然不同的世界。
+  - `q13.d`：结构检查通过 — 婉拒两方邀请,选择在家中阅读,享受独处的宁静时光。
+- **q14** 题干：镜前,你整理着考究的领结,窗外城市的霓虹灯光透过百叶窗在墙上投下斑驳光影。镜中的你眼神坚定,手指却在微微颤抖,不知是紧张还是兴奋。今晚的晚宴可能改变你的人生轨迹。
+  - `q14.a`：结构检查通过 — 深呼吸,提醒自己这是通往更高阶层的必经之路,振作精神。
+  - `q14.b`：结构检查通过 — 思考晚宴后的退路,即使失败也不会失去太多,保持冷静。
+  - `q14.c`：结构检查通过 — 感到不安,怀疑自己是否真的准备好面对这样的挑战和可能的改变。
+  - `q14.d`：结构检查通过 — 想象晚宴成功后的场景,让自己沉浸在美好的幻想中,驱散不安。
+- **q15** 题干：在私人聚会的喧闹声中,你偶然听到关于挚爱的秘密,爵士乐的旋律与香槟的香气交织。说话者期待地看着你,等待你的反应。
+  - `q15.a`：结构检查通过 — 立即告知挚爱,即使真相可能带来痛苦
+  - `q15.b`：结构检查通过 — 选择沉默,让过去保持它本来的样子
+  - `q15.c`：结构检查通过 — 巧妙地引导对方说出更多细节,再决定行动
+  - `q15.d`：结构检查通过 — 将这个秘密作为筹码,等待最有利的时机使用
+- **q16** 题干：在豪华酒店的套房里,一位神秘人物向你透露了通往财富的捷径,雪茄烟雾在昏暗的灯光下盘旋,窗外是纽约璀璨的夜景。
+  - `q16.a`：结构检查通过 — 毫不犹豫地接受机会,人脉本就是用来牺牲的
+  - `q16.b`：结构检查通过 — 婉拒提议,但要求对方为朋友提供其他补偿
+  - `q16.c`：结构检查通过 — 表面上接受,暗中寻找保全朋友的办法
+  - `q16.d`：结构检查通过 — 将机会告知朋友,让他自己决定是否参与
+- **q17** 题干：你看到一位老者独自坐在餐厅角落,面对满桌珍馐却只小口啜饮着清汤。他对侍者说:'所有的奢华,不过是精心编织的幻象。'
+  - `q17.a`：结构检查通过 — 走上前去,请教如何在浮华中保持内心的清醒
+  - `q17.b`：结构检查通过 — 静静观察,思考这种哲思背后的故事
+  - `q17.c`：结构检查通过 — 点一杯同样的清汤,加入这场孤独的对谈
+  - `q17.d`：结构检查通过 — 嘲笑这种故作高深的姿态,继续享受美食
+- **q18** 题干：晨曦中,你站在精心装饰的卧室里,阳光透过彩色玻璃窗洒在地毯上,形成斑驳的光影。你凝视着这一切,思考着生活的意义。
+  - `q18.a`：结构检查通过 — 欣赏这份美丽,但思考如何创造更有价值的生活
+  - `q18.b`：结构检查通过 — 沉醉于这完美的物质世界,相信这就是生活的全部意义
+  - `q18.c`：结构检查通过 — 反思这种奢华背后的空虚,寻找更深层的存在意义
+  - `q18.d`：结构检查通过 — 立即起身,开始新一天的社交活动,生活就该如此精彩
+- **q19** 题干：商业谈判中,对方提出违背你道德底线的交易方案,会议室的空气仿佛凝固了,窗外是纽约灰蒙蒙的天空,桌上的咖啡已冷。
+  - `q19.a`：结构检查通过 — 当场拒绝,即使这意味着失去这个千载难逢的机会
+  - `q19.b`：结构检查通过 — 假装考虑,暗中寻找既能达成目的又不违背底线的方��
+  - `q19.c`：结构检查通过 — 重新谈判,提出一个双方都能接受的替代方案
+  - `q19.d`：结构检查通过 — 勉强接受,但为自己寻找心理安慰,这只是商业游戏
+- **q20** 题干：秋日午后,你收到两封邀请:百老汇首演后的庆祝晚宴与郊外古老庄园的秘密读书会。窗外落叶飘舞,阳光透过百叶窗在地板上投下条纹。
+  - `q20.a`：结构检查通过 — 选择百老汇晚宴,在那里建立更多有价值的社交关系
+  - `q20.b`：结构检查通过 — 前往古老庄园,在书籍与思想的交流中寻找真正的自我
+  - `q20.c`：结构检查通过 — 先参加晚宴,中途悄然离开去庄园,体验两种生活
+  - `q20.d`：结构检查通过 — 婉拒两个邀请,选择独自漫步在秋日的公园中
+
+### 逐结果
+- **r1**（盖茨比）：profile 键与范围检查通过。
+- **r2**（汤姆）：profile 键与范围检查通过。
+- **r3**（黛西）：profile 键与范围检查通过。
+- **r4**（乔丹）：profile 键与范围检查通过。
+- **r5**（尼克）：profile 键与范围检查通过。
+- **r6**（默特尔）：profile 键与范围检查通过。
+
+## gem-personality
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 12
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：珠宝工坊内,一抹幽蓝光芒骤然熄灭,珍贵的蓝宝石碎裂声清脆刺耳,工坊主人脸色煞白,碎片散落一地。你会如何应对这场灾难？
+  - `q1.a`：结构检查通过 — 立即收集所有碎片,仔细分析断裂面,寻找可能的修复方案
+  - `q1.b`：结构检查通过 — 先稳定情绪,冷静评估损失,再决定是修复还是重新制作
+  - `q1.c`：结构检查通过 — 先安抚工坊主人情绪,一起沉浸在悲伤中,再考虑后续处理
+  - `q1.d`：结构检查通过 — 立刻尝试用胶水粘合碎片,希望能恢复宝石的原貌
+- **q2** 题干：宝石鉴定室里,五颗未经打磨的原石散落在黑色绒布上,各自散发着微弱而独特的能量场,你能感受到它们的脉动和温度。你会选择哪颗进行深入探索？
+  - `q2.a`：结构检查通过 — 选择那颗散发着强烈红光的原石,它的能量场最活跃,几乎能灼伤指尖
+  - `q2.b`：结构检查通过 — 选择那颗表面粗糙但内部似乎有深邃蓝光的石头,能量波动最为神秘
+  - `q2.c`：结构检查通过 — 选择那颗看似普通但触感温润的原石,它的能量场最为平和
+  - `q2.d`：结构检查通过 — 选择那颗带有彩虹光泽变幻的原石,它的能量场随光线角度不断变化
+- **q3** 题干：实验室灯光下,一颗罕见的宝石呈现出令人窒息的完美色彩,但在显微镜下,你能看到其内部有细微的裂纹,像一道即将划破夜空的闪电。你会如何选择？
+  - `q3.a`：结构检查通过 — 立即购买,它的色彩表现太完美了,内部的缺陷可以后期加固
+  - `q3.b`：结构检查通过 — 放弃这颗宝石,追求完美的同时不能忽视潜在的致命缺陷
+  - `q3.c`：结构检查通过 — 购买但要求专家加固处理,欣赏它的同时确保它的持久性
+  - `q3.d`：结构检查通过 — 将其视为独特之处,缺陷让宝石更有故事性,增加了稀有度
+- **q4** 题干：阳光透过窗棂,照在家族珠宝盒上,那枚祖母绿戒指的色泽比记忆中暗淡了许多,仿佛失去了往日的光泽,在绒布上投下沉静的阴影。你会如何处理？
+  - `q4.a`：结构检查通过 — 立即送去专业修复,让它恢复本来的光彩,不让瑕疵影响它的价值
+  - `q4.b`：结构检查通过 — 珍藏起来,认为这种变化是岁月的痕迹,增添了它的历史感
+  - `q4.c`：结构检查通过 — 先仔细观察变化,分析可能原因,再决定是否需要修复
+  - `q4.d`：结构检查通过 — 接受这种变化,认为宝石也有自己的生命周期,尊重它的自然状态
+- **q5** 题干：宝石切割师专注地观察着一块原石,手指轻轻拂过表面,低声说道:'这颗宝石的火彩太盛,反而掩盖了它的内在结构。'你会如何理解这句话？
+  - `q5.a`：结构检查通过 — 同意过度张扬的表现会掩盖内在的本质,真正有价值的东西不需要外在装饰
+  - `q5.b`：结构检查通过 — 认为火彩是宝石的灵魂所在,内在结构可以通过其他方式展现
+  - `q5.c`：结构检查通过 — 思考如何平衡表现与本质,让宝石既有外在吸引力又不失内在价值
+  - `q5.d`：结构检查通过 — 觉得这颗宝石不适合进一步加工,它的能量场已经过于强烈
+- **q6** 题干：矿洞深处,突然传来碎石滚落的声响,通道部分坍塌,黑暗中只有应急灯的微弱光芒,你和同伴被困在狭窄的空间里。你会如何决策？
+  - `q6.a`：结构检查通过 — 立即组织大家冷静分析地形,制定挖掘新路线的计划,不浪费任何能量
+  - `q6.b`：结构检查通过 — 先确保大家安全,保存体力,同时发出求救信号,等待专业救援
+  - `q6.c`：结构检查通过 — 情绪激动,主张不顾一切地挖掘逃生,认为只有行动才有希望
+  - `q6.d`：结构检查通过 — 陷入恐慌,无法做出任何决定,希望奇迹发生
+- **q7** 题干：宝石能量场测试实验室里,各种仪器闪烁着微光,不同的宝石被放置在能量感应器上,你可以选择与其中一颗进行深度连接。你会选择哪颗？
+  - `q7.a`：结构检查通过 — 选择钻石,它的能量场最为稳定且强烈,能感受到强大的力量感
+  - `q7.b`：结构检查通过 — 选择月光石,它的能量场柔和而内敛,仿佛能抚平内心的波澜
+  - `q7.c`：结构检查通过 — 选择紫水晶,它的能量场既有强烈的色彩表现又能保持一定的通透性
+  - `q7.d`：结构检查通过 — 选择海蓝宝,它的能量场清澈透明,能直接感受内在的流动
+- **q8** 题干：珠宝店柔和的灯光下,两颗宝石静静躺在丝绒垫上——闪耀夺目的帕拉伊巴碧玺与深邃沉稳的蓝宝石。你的手指悬在预算有限的选择上,你会如何抉择？
+  - `q8.a`：结构检查通过 — 立即选择罕见的帕拉伊巴碧玺,它的独特性能彰显我的非凡品味
+  - `q8.b`：结构检查通过 — 坚持选择蓝宝石,它的能量稳定性能在漫长岁月中持续守护
+  - `q8.c`：结构检查通过 — 犹豫不决,在两种宝石间反复比较,寻求完美的平衡点
+  - `q8.d`：结构检查通过 — 放弃购买,等待有足够预算时同时拥有两颗宝石
+- **q9** 题干：晨光透过窗户,你佩戴的蓝宝石项链在特定角度下突然折射出罕见的星彩,这种多变的色彩让原本沉稳的宝石显得神秘莫测。你如何处理这种意外之美？
+  - `q9.a`：结构检查通过 — 特意调整佩戴角度,让这偶然的星彩成为日常的独特标志
+  - `q9.b`：结构检查通过 — 欣赏但不刻意展示,保持宝石原有的低调质感
+  - `q9.c`：结构检查通过 — 记录下这一发现,只在特别场合展示这种罕见的色彩变化
+  - `q9.d`：结构检查通过 — 担心这种变化会影响宝石的稳定性,选择在光线固定的环境中佩戴
+- **q10** 题干：矿场中,老矿工布满皱纹的手托着刚开采的矿石,眼神专注而期待。他说'这石头看着普通,但内里有乾坤,得慢慢打磨才能见真章'。你如何看待他的话？
+  - `q10.a`：结构检查通过 — 认同他的观点,相信内在价值需要耐心和时间才能显现
+  - `q10.b`：结构检查通过 — 更注重外在表现,认为宝石的初始光芒就已足够展现魅力
+  - `q10.c`：结构检查通过 — 认为这种看法过于理想化,宝石的价值应综合内外因素评估
+  - `q10.d`：结构检查通过 — 怀疑所有未经打磨的矿石,只相信已加工完成的宝石
+- **q11** 题干：交易会熙攘的人群中,你敏锐地察觉到有人用合成宝石冒充天然品,展柜灯光下那过分完美的火彩显得异常刺眼。你会如何应对这种情况？
+  - `q11.a`：结构检查通过 — 立即上前揭露真相,维护行业的诚信和消费者的权益
+  - `q11.b`：结构检查通过 — 私下收集证据,冷静地向主办方反映情况,确保处理公正
+  - `q11.c`：结构检查通过 — 只关注自己感兴趣的展品,对他人交易保持中立观察
+  - `q11.d`：结构检查通过 — 向周围小声提醒可能受骗的买家,但不直接与摊主对峙
+- **q12** 题干：博物馆特展中,钻石的璀璨光芒在聚光灯下折射出七彩光谱,而珍珠的温润光泽在柔和灯光下呈现细腻的虹彩。你会被哪种展品吸引？
+  - `q12.a`：结构检查通过 — 被钻石的强烈光芒所吸引,它的直接冲击力让人无法忽视
+  - `q12.b`：结构检查通过 — 沉醉于珍珠的微妙光泽,它的内敛魅力需要耐心品味
+  - `q12.c`：结构检查通过 — 在两者间徘徊,欣赏钻石的张扬也珍视珍珠的含蓄
+  - `q12.d`：结构检查通过 — 更关注展品的历史背景而非视觉效果,对宝石本身兴趣一般
+- **q13** 题干：在宝石展台上,一颗纯净无瑕的水晶在灯光下展现出惊人的通透度,而另一颗色彩斑斓的宝石却内部含有微小的杂质。你会如何选择？
+  - `q13.a`：结构检查通过 — 选择完美通透的水晶,它的纯粹性和清晰度让人安心
+  - `q13.b`：结构检查通过 — 选择色彩丰富的宝石,它的独特性比完美无瑕更具魅力
+  - `q13.c`：结构检查通过 — 犹豫不决,在通透与色彩间难以取舍,寻求平衡
+  - `q13.d`：结构检查通过 — 放弃购买,等待兼具通透度和色彩表现的完美宝石
+- **q14** 题干：整理收藏室时,你珍贵的红宝石在特制灯光下散发出浓郁的血红色光芒。你考虑如何展示它,是单独突出它的独特,还是与其他宝石搭配？
+  - `q14.a`：结构检查通过 — 单独展示红宝石,让它的稀有光芒成为绝对焦点
+  - `q14.b`：结构检查通过 — 与其他宝石组合搭配,创造独特的能量互动效果
+  - `q14.c`：结构检查通过 — 根据不同场合灵活选择展示方式,时而单独时而搭配
+  - `q14.d`：结构检查通过 — 将红宝石收藏起来,只在特殊时刻才拿出来欣赏
+- **q15** 题干：宝石鉴定师轻抚着一颗紫水晶,指尖感受着它冰凉的表面和微微震动的能量场,轻声说道:'它的能量场虽然强大,但太过活跃,需要时间沉淀才能稳定。'你会如何回应这种观察？
+  - `q15.a`：结构检查通过 — 紫水晶的能量确实活跃,但正是这种活力让它充满魅力,不需要刻意压制
+  - `q15.b`：结构检查通过 — 我理解沉淀的重要性,但宝石的能量本就不该被束缚,应该让它自由流动
+  - `q15.c`：结构检查通过 — 每个宝石都有自己的节奏,紫水晶的活跃是它的本性,强行改变会破坏其结晶结构
+  - `q15.d`：结构检查通过 — 确实需要耐心等待它的能量稳定下来,就像等待一杯茶慢慢沉淀出香气
+- **q16** 题干：宝石能量场测试中,仪器突然发出刺耳的警报声,屏幕上红色能量波动剧烈闪烁,显示有强烈能量干扰,测试台周围的宝石都在微微震动。你会如何应对？
+  - `q16.a`：结构检查通过 — 立即关闭设备,保护仪器和宝石不受损伤,等待能量场完全平静后再测试
+  - `q16.b`：结构检查通过 — 迅速调整参数,尝试捕捉这股异常能量,也许能发现宝石的隐藏特性
+  - `q16.c`：结构检查通过 — 先观察能量的流动模式,判断干扰来源,再决定下一步行动,不急于干预
+  - `q16.d`：结构检查通过 — 暂时撤离现场,让能量场自然波动,等待干扰自行消散后再重新开始测试
+- **q17** 题干：在宝石工坊的体验课上,空气中弥漫着磨料的清香和金属摩擦的细微声响,阳光透过高窗洒在工作台上,照亮了各种切割工具和宝石样品。你会选择专注于哪种技艺？
+  - `q17.a`：结构检查通过 — 打磨透明水晶,专注于让光线最大程度穿透,展现其纯净的内在结构
+  - `q17.b`：结构检查通过 — 为红宝石设计切割方案,突出其鲜艳的红色和独特的火彩效果
+  - `q17.c`：结构检查通过 — 尝试同时平衡两种宝石的特性,创造能同时展现透明度和色彩变化的独特作品
+  - `q17.d`：结构检查通过 — 选择最简单直接的切割方式,让宝石保持其天然状态,最小化人工干预
+- **q18** 题干：私人宝石收藏室中,特展区的灯光柔和而珍贵,展示着稀有的帕拉伊巴碧玺和红宝石,而体验区则设置了互动装置,可以感受宝石的能量场如何影响周围的氛围。你会如何分配时间？
+  - `q18.a`：结构检查通过 — 优先参观特展区,近距离欣赏那些稀有宝石的独特光泽和色彩
+  - `q18.b`：结构检查通过 — 将大部分时间留给体验区,亲自感受宝石能量场如何流动和变化
+  - `q18.c`：结构检查通过 — 在两个区域平均分配时间,既欣赏稀有宝石的珍贵,也体验能量的互动
+  - `q18.d`：结构检查通过 — 选择体验区的互动装置,通过实践来理解宝石能量与物理特性的关系
+- **q19** 题干：晨光透过窗棂洒在首饰盒上,��母绿沉稳的绿色在光线下显得平静而内敛,而紫水晶则散发着变幻的紫色光芒,似乎随着光线角度不断变化。你会选择哪一款日常佩戴？
+  - `q19.a`：结构检查通过 — 选择祖母绿,它稳定的能量场能带来持久的平静,不需要频繁调整
+  - `q19.b`：结构检查通过 — 选择紫水晶,它丰富的色彩变化能为日常增添活力和惊喜
+  - `q19.c`：结构检查通过 — 根据当天的需求和心情交替佩戴,有时需要稳定,有时需要变化
+  - `q19.d`：结构检查通过 — 选择两种宝石的组合,既能保持能量的稳定,又能展现色彩的变化
+- **q20** 题干：宝石收藏家凝视着一枚月光石,昏暗的灯光下,月光石表面泛着微蓝的光晕,随着角度变化展现出细腻的色彩层次,仿佛捕捉到了月光流转的瞬间。这让你联想到什么？
+  - `q20.a`：结构检查通过 — 真正的强大不在于表面的光芒,而在于能在细微处展现丰富的层次
+  - `q20.b`：结构检查通过 — 能量虽然内敛,却能在特定环境下展现出最独特的光彩和变化
+  - `q20.c`：结构检查通过 — 宝石的光芒会随着环境变化而改变,就像我们的能量也会根据情境流动
+  - `q20.d`：结构检查通过 — 最珍贵的品质往往需要特定的条件才能完全展现,就像月光石在黑暗中才最动人
+
+### 逐结果
+- **r1**（钻石）：profile 键与范围检查通过。
+- **r2**（红宝石）：profile 键与范围检查通过。
+- **r3**（蓝宝石）：profile 键与范围检查通过。
+- **r4**（祖母绿）：profile 键与范围检查通过。
+- **r5**（水晶）：profile 键与范围检查通过。
+- **r6**（海蓝宝）：profile 键与范围检查通过。
+- **r7**（帝王托帕石）：profile 键与范围检查通过。
+- **r8**（紫水晶）：profile 键与范围检查通过。
+- **r9**（帕拉伊巴碧玺）：profile 键与范围检查通过。
+- **r10**（月光石）：profile 键与范围检查通过。
+- **r11**（珍珠）：profile 键与范围检查通过。
+- **r12**（欧泊）：profile 键与范围检查通过。
+
+## graduate-school-fit
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 20 · 结果数 5
+- **错误（1）**
+  - r6 is unreachable — dominated by r3 on all dimensions
+- **警告（1）**
+  - r6 is unreachable — dominated by r3 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜图书馆，你发现自己研究的关键文献有一处数据疑点，但已接近闭馆时间。
+  - `q1.a`：结构检查通过 — 立即记录疑点，明天一早再来核对
+  - `q1.b`：结构检查通过 — 通宵查阅相关资料，独立验证疑点
+  - `q1.c`：结构检查通过 — 拍下疑点页面，先完成当前论文框架
+  - `q1.d`：结构检查通过 — 在文献批注中记录疑问，寻求导师指导
+- **q2** 题干：实验室连续三天重复实验，结果与预期假设存在系统性偏差。
+  - `q2.a`：结构检查通过 — 逐一排查实验变量，寻找潜在干扰因素
+  - `q2.b`：结构检查通过 — 重新设计实验方案，采用不同方法论验证
+  - `q2.c`：结构检查通过 — 查阅最新文献，了解该领域类似问题的处理方式
+  - `q2.d`：结构检查通过 — 暂存当前数据，先完成其他部分实验
+- **q3** 题干：学术研讨会上，你的研究结论受到资深学者的质疑，现场气氛紧张。
+  - `q3.a`：结构检查通过 — 详细展示数据来源和分析过程，邀请同行评议
+  - `q3.b`：结构检查通过 — 承认局限性，提出后续改进方向
+  - `q3.c`：结构检查通过 — 寻找支持自己观点的交叉证据，坚定立场
+  - `q3.d`：结构检查通过 — 会后私下请教，深入了解质疑背后的专业考量
+- **q4** 题干：导师建议你转向一个热门但非你最初兴趣的研究领域。
+  - `q4.a`：结构检查通过 — 评估新领域的学术价值和自身适配度
+  - `q4.b`：结构检查通过 — 坚持原研究方向，寻找交叉点结合两者
+  - `q4.c`：结构检查通过 — 先完成导师建议的研究，同时保留原兴趣
+  - `q4.d`：结构检查通过 — 深入学习新领域，探索其中的突破性机会
+- **q5** 题干：研究小组需要决定下个季度的重点研究方向，意见分歧较大。
+  - `q5.a`：结构检查通过 — 分析各方向的可行性、资源需求和潜在贡献
+  - `q5.b`：结构检查通过 — 提出折中方案，整合各方观点的优势
+  - `q5.c`：结构检查通过 — 坚持自己的研究方向，提供详细论证
+  - `q5.d`：结构检查通过 — 建议先进行小规模预实验，验证各方向潜力
+- **q6** 题干：发现你的研究成果与某位权威学者的结论相悖，可能挑战现有理论框架。
+  - `q6.a`：结构检查通过 — 反复验证数据，确保结论的严谨性和可靠性
+  - `q6.b`：结构检查通过 — 深入探究理论差异，寻找可能的创新突破点
+  - `q6.c`：结构检查通过 — 寻求不同实验室的独立验证，确认结果可重复性
+  - `q6.d`：结构检查通过 — 谨慎发表，先在小型学术圈试探性讨论
+- **q7** 题干：研究项目进展缓慢，面临中期考核压力，同时又有新的有趣课题吸引注意力。
+  - `q7.a`：结构检查通过 — 制定详细计划，分阶段完成核心任务
+  - `q7.b`：结构检查通过 — 专注当前项目，完成后再探索新方向
+  - `q7.c`：结构检查通过 — 将新课题作为调剂，在完成当前项目关键部分后尝试
+  - `q7.d`：结构检查通过 — 评估新课题与原项目的关联性，寻找整合机会
+- **q8** 题干：导师在研讨会上对你的研究方法提出质疑，你会如何回应？
+  - `q8.a`：结构检查通过 — 立即查阅最新文献支持自己的方法
+  - `q8.b`：结构检查通过 — 尝试调整研究设计以回应质疑
+  - `q8.c`：结构检查通过 — 坚持原有方法，认为导师理解有偏差
+  - `q8.d`：结构检查通过 — 表示需要时间重新评估研究框架
+- **q9** 题干：实验室设备出现故障，实验数据无法收集，你会怎么做？
+  - `q9.a`：结构检查通过 — 尝试自行修复设备，查阅维修手册
+  - `q9.b`：结构检查通过 — 转向理论分析，先整理已有数据
+  - `q9.c`：结构检查通过 — 联系技术支持并等待解决
+  - `q9.d`：结构检查通过 — 重新设计实验方案，避免依赖该设备
+- **q10** 题干：面对大量前沿文献需要阅读，你的策略是？
+  - `q10.a`：结构检查通过 — 先浏览摘要，筛选关键文献深入阅读
+  - `q10.b`：结构检查通过 — 逐字逐句精读，确保完全理解
+  - `q10.c`：结构检查通过 — 重点阅读与自己研究方向最相关的部分
+  - `q10.d`：结构检查通过 — 制作思维导图，建立文献间的联系
+- **q11** 题干：研究进入瓶颈期，多次尝试仍无突破，你会？
+  - `q11.a`：结构检查通过 — 暂时放下问题，转向其他研究任务
+  - `q11.b`：结构检查通过 — 寻求同行意见，探讨新思路
+  - `q11.c`：结构检查通过 — 重新审视问题定义，挑战基本假设
+  - `q11.d`：结构检查通过 — 扩大研究范围，寻找更广泛的理论支持
+- **q12** 题干：在学术会议上展示研究成果，发现有人质疑你的结论，你会？
+  - `q12.a`：结构检查通过 — 准备好详细数据支持，当场回应质疑
+  - `q12.b`：结构检查通过 — 承认研究的局限性，提出改进方向
+  - `q12.c`：结构检查通过 — 坚持自己的观点，认为对方理解有误
+  - `q12.d`：结构检查通过 — 会后私下交流，深入了解对方观点
+- **q13** 题干：导师要求研究一个你完全不熟悉的领域，你会？
+  - `q13.a`：结构检查通过 — 系统学习基础理论，从教科书开始
+  - `q13.b`：结构检查通过 — 直接挑战任务难度，提出替代方案
+  - `q13.c`：结构检查通过 — 寻找该领域的专家请教学习路径
+  - `q13.d`：结构检查通过 — 尝试将原有研究方法应用于新领域
+- **q14** 题干：当你的研究结论与主流观点相悖时，你会？
+  - `q14.a`：结构检查通过 — 寻找更多证据支持自己的发现
+  - `q14.b`：结构检查通过 — 重新审视研究方法，确保无漏洞
+  - `q14.c`：结构检查通过 — 坚持自己的发现，认为主流观点有误
+  - `q14.d`：结构检查通过 — 探索如何将两种观点整合，提出新理论
+- **q15** 题干：在图书馆熬夜整理文献时，你发现一篇关键论文的数据分析方法存在明显漏洞，但作者却是该领域的权威人物。
+  - `q15.a`：结构检查通过 — 立即指出问题，撰写反驳论文
+  - `q15.b`：结构检查通过 — 私下联系作者，委婉指出疑点
+  - `q15.c`：结构检查通过 — 忽略漏洞，继续基于论文推进研究
+  - `q15.d`：结构检查通过 — 深入分析漏洞，寻找替代方法
+- **q16** 题干：在学术研讨会上，你的研究观点受到资深教授的强烈质疑，现场气氛变得紧张。
+  - `q16.a`：结构检查通过 — 当场引用最新研究数据反驳
+  - `q16.b`：结构检查通过 — 承认局限性，提出改进方向
+  - `q16.c`：结构检查通过 — 邀请会后单独深入讨论
+  - `q16.d`：结构检查通过 — 保持冷静，分析质疑的合理性
+- **q17** 题干：你的实验连续三次失败，数据与预期结果完全不符，而导师的截止日期即将到来。
+  - `q17.a`：结构检查通过 — 彻底检查实验设计，找出问题根源
+  - `q17.b`：结构检查通过 — 调整研究方向，选择更可行的课题
+  - `q17.c`：结构检查通过 — 尝试记录失败过程，分析意外发现
+  - `q17.d`：结构检查通过 — 寻求实验室同事的帮助和建议
+- **q18** 题干：在阅读一篇跨学科文献时，你发现一个与本领域看似无关的理论可能解决你当前研究的瓶颈问题。
+  - `q18.a`：结构检查通过 — 立即深入研究该理论的应用可能性
+  - `q18.b`：结构检查通过 — 评估理论与本领域的关联性和实用性
+  - `q18.c`：结构检查通过 — 在学术会议上提出跨学科合作的想法
+  - `q18.d`：结构检查通过 — 暂时搁置，先完成当前研究计划
+- **q19** 题干：你的研究方法获得突破，但需要大量计算资源和长时间数据分析，而实验室资源有限。
+  - `q19.a`：结构检查通过 — 申请额外资源，坚持完成研究
+  - `q19.b`：结构检查通过 — 简化方法，确保在有限资源下完成
+  - `q19.c`：结构检查通过 — 寻找合作机构，共享资源完成研究
+  - `q19.d`：结构检查通过 — 分阶段进行，先验证核心假设
+- **q20** 题干：在学术评审中，你的论文被要求补充大量实验数据，这会将发表时间推迟半年。
+  - `q20.a`：结构检查通过 — 立即开始补充实验，确保论文质量
+  - `q20.b`：结构检查通过 — 发表现有成果，后续补充数据作为后续研究
+  - `q20.c`：结构检查通过 — 与评审委员会沟通，解释现有数据的充分性
+  - `q20.d`：结构检查通过 — 重新设计实验，用更高效方法获取数据
+
+### 逐结果
+- **r1**（思想探索者）：profile 键与范围检查通过。
+- **r2**（问题解决者）：profile 键与范围检查通过。
+- **r3**（知识编织者）：profile 键与范围检查通过。
+- **r5**（跨界创新者）：profile 键与范围检查通过。
+- **r6**（学术游牧者）：profile 键与范围检查通过。
+
+## greek-mythology-deity
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：奥林匹斯山神殿剧烈摇晃,大理石柱发出刺耳的呻吟,宙斯雷霆般的怒吼回荡,而你发现颤抖的柱子下,是被冤枉的河神阿克洛奥斯在悲鸣。
+  - `q1.a`：结构检查通过 — 立即向宙斯请命,查明真相,恢复秩序
+  - `q1.b`：结构检查通过 — 趁乱接近河神,安抚他的愤怒
+  - `q1.c`：结构检查通过 — 静观其变,等待众神自行解决
+  - `q1.d`：结构检查通过 — 私下调查河神冤屈的证据
+- **q2** 题干：赫尔墨斯在金光闪烁的宴会上向你展示两件礼物:银镜映照出万物的本质,竖琴奏响令人心醉神迷的旋律。
+  - `q2.a`：结构检查通过 — 选择银镜,洞察一切真相
+  - `q2.b`：结构检查通过 — 选择竖琴,感受情感的激荡
+  - `q2.c`：结构检查通过 — 先看银镜,再听竖琴,兼顾二者
+  - `q2.d`：结构检查通过 — 婉拒礼物,专注于自己的内心
+- **q3** 题干：你发现挚友与敌人暗中交易,宙斯的雷霆在远处闪烁,友谊的纽带与正义的天平在你心中摇摆不定。
+  - `q3.a`：结构检查通过 — 立即向宙斯揭发真相,即使失去友谊
+  - `q3.b`：结构检查通过 — 私下与挚友对质,给他改过机会
+  - `q3.c`：结构检查通过 — 保持沉默,维护表面和平
+  - `q3.d`：结构检查通过 — 收集证据,在关键时刻揭露真相
+- **q4** 题干：众神聚集在议事厅,对你的背叛者朋友议论纷纷,宙斯的目光如利剑般扫视着你,期待你的表态。
+  - `q4.a`：结构检查通过 — 公开谴责,要求严惩不贷
+  - `q4.b`：结构检查通过 — 私下调解,寻求和解与宽恕
+  - `q4.c`：结构检查通过 — 请求宙斯裁决,服从他的决定
+  - `q4.d`：结构检查通过 — 保持中立,不发表意见
+- **q5** 题干：奥林匹斯山的日常任务中,你需要安排一项重要的祭典仪式,赫菲斯托斯和雅典娜的目光都聚焦在你的选择上。
+  - `q5.a`：结构检查通过 — 指定经验丰富的赫菲斯托斯按传统方式执行
+  - `q5.b`：结构检查通过 — 委派年轻的阿瑞斯尝试创新方法
+  - `q5.c`：结构检查通过 — 让众神共同商议决定最佳方案
+  - `q5.d`：结构检查通过 — 根据任务性质灵活选择执行者
+- **q6** 题干：你目睹得墨忒耳为保护凡人农夫,不惜违背宙斯旨意,她的眼中闪烁着坚定的光芒,而你内心涌动着复杂的情绪。
+  - `q6.a`：结构检查通过 — 敬佩她的勇气,但担心众神震怒
+  - `q6.b`：结构检查通过 — 被她的同情心深深打动
+  - `q6.c`：结构检查通过 — 思考她的行为可能带来的后果
+  - `q6.d`：结构检查通过 — 担心她会因此受到惩罚
+- **q7** 题干：雅典娜的智慧殿堂中,光线透过高窗洒在古老的石板上,战争地图描绘着千军万马,而壁画上描绘着人间爱与美的故事。
+  - `q7.a`：结构检查通过 — 专注研究战略战术的战争地图
+  - `q7.b`：结构检查通过 — 沉浸在描绘人间情感的壁画中
+  - `q7.c`：结构检查通过 — 同时关注地图与壁画,寻找联系
+  - `q7.d`：结构检查通过 — 思考雅典娜为何将二者同置一室
+- **q8** 题干：奥林匹斯神殿的金色厅堂中,赫拉眼中闪烁着寒光,手指轻敲王座扶手,她低声向你提议加入调查宙斯不忠的计划,承诺分享权力,但可能撕裂神界和谐。你会如何回应？
+  - `q8.a`：结构检查通过 — 欣然接受,秩序必须维护,权力共享能带来更稳固的统治
+  - `q8.b`：结构检查通过 — 婉拒提议,家庭和谐高于权力游戏,宁愿保持现状
+  - `q8.c`：结构检查通过 — 提出折中方案,先收集证据,再决定是否公开
+  - `q8.d`：结构检查通过 — 保持中立,认为众神的私事不应由凡人插手
+- **q9** 题干：凡间战场上空,乌云密布,战鼓雷鸣,阿瑞斯的红盔与雅典娜的银甲在阳光下闪耀,两位神祇的对峙一触即发。作为调停者,你会采取何种行动？
+  - `q9.a`：结构检查通过 — 直接介入,强制双方停战,以奥林匹斯最高命令执行和平
+  - `q9.b`：结构检查通过 — 寻找双方共同利益点,提出双赢解决方案,化解冲突
+  - `q9.c`：结构检查通过 — 让冲突自然发展,相信优胜劣汰是宇宙法则,避免干预
+  - `q9.d`：结构检查通过 — 安排一场决斗,以公平方式让双方解决分歧
+- **q10** 题干：众神聚会的盛宴上,美酒香气弥漫,一位面容模糊的陌生人向你靠近,低声展示一件发光的神器,请求你保守关于它的秘密。你会如何回应？
+  - `q10.a`：结构检查通过 — 立即承诺保守秘密,认为承诺必须无条件遵守
+  - `q10.b`：结构检查通过 — 拒绝保守秘密,认为真相应当公开,即使违背承诺
+  - `q10.c`：结构检查通过 — 先了解神秘物品的来历,再决定是否保守秘密
+  - `q10.d`：结构检查通过 — 向宙斯报告此事,让权威决定是否保守秘密
+- **q11** 题干：爱神花园中,玫瑰花瓣随风飘落,阿佛洛狄忒泪眼婆娑地为凡人英雄与阿瑞斯争执,声音中充满炽热的情感。你对这种为爱而战的冲动作何感想？
+  - `q11.a`：结构检查通过 — 深为感动,情感是宇宙最强大的力量,值得为之奋不顾身
+  - `q11.b`：结构检查通过 — 理解但不认同,情感应当被理性引导,而非主导行为
+  - `q11.c`：结构检查通过 — 认为这是弱者的表现,真正的力量来自于内心的坚定
+  - `q11.d`：结构检查通过 — 欣赏这种纯粹的情感,但也看到其带来的破坏性后果
+- **q12** 题干：德尔斐神庙的烟雾缭绕,祭司的声音在回荡,你被告知两种命运:成为智慧的谋略家,或成为勇猛的战士。你会选择哪种道路？
+  - `q12.a`：结构检查通过 — 选择成为智慧的谋略家,相信理性分析能解决一切问题
+  - `q12.b`：结构检查通过 — 选择成为勇猛的战士,相信行动和勇气能改变命运
+  - `q12.c`：结构检查通过 — 先学习智慧,再磨练武力,平衡两者才能成就非凡
+  - `q12.d`：结构检查通过 — 遵从内心感受,选择最适合自己的道路
+- **q13** 题干：月光下的海边,你发现能获得永生之力的秘密,但祭司低声警告,代价是必须放弃与深爱之人的情感连接。你会如何选择？
+  - `q13.a`：结构检查通过 — 毫不犹豫选择永生,情感终将消逝,永恒的生命才是真正的礼物
+  - `q13.b`：结构检查通过 — 放弃永生,选择保留与爱人的情感连接,短暂的幸福胜过永恒的孤独
+  - `q13.c`：结构检查通过 — 寻求其他途径获得永生,不愿在情感与力量间做选择
+  - `q13.d`：结构检查通过 — 接受永生,但暗中保留与爱人的联系,违抗神的规定
+- **q14** 题干：奥林匹斯议事厅中,凡间传来瘟疫蔓延的哀嚎声,宙斯皱眉坚持不干涉自然规律,而你认为必须采取行动。你会怎么做？
+  - `q14.a`：结构检查通过 — 直接违抗宙斯的命令,独自下凡拯救凡人,维护生命高于一切
+  - `q14.b`：结构检查通过 — 说服众神共同行动,以集体力量改变自然规律
+  - `q14.c`：结构检查通过 — 寻找不直接干预自然规律的方式,如传授医药知识
+  - `q14.d`：结构检查通过 — 尊重宙斯的权威,相信自然有其平衡,不干预
+- **q15** 题干：在奥林匹斯山大理石殿堂中,阳光透过高窗洒在议事桌前,年轻的赫耳墨斯提出改变神界通信系统的想法,众神神色各异。你会如何回应？
+  - `q15.a`：结构检查通过 — 支持创新,但要求先在小范围测试,确保不违背传统秩序
+  - `q15.b`：结构检查通过 — 坚决反对,认为变革会动摇神界根基,破坏既定的权力结构
+  - `q15.c`：结构检查通过 — 保持中立,既不反对也不支持,让众神自行决定方向
+  - `q15.d`：结构检查通过 — 鼓励大胆尝试,认为新鲜想法能让神界焕发新的活力
+- **q16** 题干：在宙斯的花园里,你目睹赫拉对宙斯的不忠怒不可遏,却又在夜深人静时对着宙斯的雕像落泪。这种矛盾让你联想到什么？
+  - `q16.a`：结构检查通过 — 情感的多面性,爱与恨可以同时存在于同一颗心中
+  - `q16.b`：结构检查通过 — 赫拉的自相矛盾,既想要忠诚又渴望自由,这是无法调和的
+  - `q16.c`：结构检查通过 — 权力关系中不可避免的痛苦,强者的情感同样复杂难解
+  - `q16.d`：结构检查通过 — 人性的脆弱,即使是最强大的神祇也无法完全掌控自己的情感
+- **q17** 题干：在奥林匹斯山的宴会厅,美酒香气与琴声交织,众神各得其乐。你会选择加入哪场活动？
+  - `q17.a`：结构检查通过 — 加入阿波罗的辩论,探讨宇宙的起源与本质,享受思想的碰撞
+  - `q17.b`：结构检查通过 — 欣赏阿佛洛狄忒的舞蹈,感受情感与美的流动
+  - `q17.c`：结构检查通过 — 与赫斯提亚一起照料圣火,在静谧中思考生命的意义
+  - `q17.d`：结构检查通过 — 参加赫菲斯托斯的工艺展示,欣赏实用与美学的结合
+- **q18** 题干：当宙斯在神殿上高声宣布支持既定秩序,波塞冬则向你承诺更多的自由与权力,大厅中的气氛紧张得几乎能听见众神的呼吸声。你会站在哪一边？
+  - `q18.a`：结构检查通过 — 坚定站在宙斯一边,认为秩序是神界稳定的基石
+  - `q18.b`：结构检查通过 — 选择波塞冬,相信自由能让神界更加多元繁荣
+  - `q18.c`：结构检查通过 — 提议双方共同治理,在权威与自由之间寻找平衡
+  - `q18.d`：结构检查通过 — 保持中立,不参与权力斗争,专注于自己的职责
+- **q19** 题干：在冥河畔,你被赋予一项艰难任务:维持神界的和平稳定,但可能压抑众神的真实情感；或者鼓励情感表达,但可能导致混乱。你会如何选择？
+  - `q19.a`：结构检查通过 — 选择和平稳定,认为秩序高于一切,情感可以适当控制
+  - `q19.b`：结构检查通过 — 支持情感表达,相信真实感受才是神界的活力源泉
+  - `q19.c`：结构检查通过 — 寻求折中方案,允许情感表达但不破坏基本秩序
+  - `q19.d`：结构检查通过 — 交由众神自行决定,每个神祇都有权选择自己的道路
+- **q20** 题干：在奥林匹斯山的花园中,你发现一朵散发着奇异光芒的鲜花,它的存在可能会影响神界秩序,花瓣的颤动仿佛在向你诉说着什么。你会如何处理？
+  - `q20.a`：结构检查通过 — 立即上报宙斯,让权威决定如何处理这可能扰乱秩序的发现
+  - `q20.b`：结构检查通过 — 暗中研究它的特性,了解它的本质后再决定行动
+  - `q20.c`：结构检查通过 — 将其移植到无人知晓的地方,既不破坏秩序也不浪费这一奇迹
+  - `q20.d`：结构检查通过 — 让它自然生长,相信神界有能力适应任何变化
+
+### 逐结果
+- **r1**（宙斯）：profile 键与范围检查通过。
+- **r2**（阿瑞斯）：profile 键与范围检查通过。
+- **r3**（赫拉）：profile 键与范围检查通过。
+- **r4**（雅典娜）：profile 键与范围检查通过。
+- **r5**（阿佛洛狄忒）：profile 键与范围检查通过。
+- **r6**（阿波罗）：profile 键与范围检查通过。
+- **r7**（赫斯提亚）：profile 键与范围检查通过。
+- **r8**（厄里斯）：profile 键与范围检查通过。
+
+## he-li-hua-ting-character-match
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜宫中,烛火摇曳,你手持密报,墨迹未干。窗外虫鸣阵阵,政敌的谣言如毒蛇般在朝堂中蔓延。明日的朝议将决定你的命运,此刻你会如何应对？
+  - `q1.a`：结构检查通过 — 连夜收集证据,在朝会上公开反击,即使可能引发动荡也在所不惜
+  - `q1.b`：结构检查通过 — 私下联络朝中重臣,寻求支持,以更稳妥的方式化解危机
+  - `q1.c`：结构检查通过 — 静观其变,等待局势明朗,不贸然行动以免授人以柄
+  - `q1.d`：结构检查通过 — 向皇帝请罪,主动承担责任,表明愿为大局牺牲个人利益
+- **q2** 题干：午后阳光透过御花园的琉璃窗洒落,花香阵阵,蝶飞蜂舞。你可以选择前往静心亭,独享一卷古籍；也可以前往百花亭,与几位同僚品茗闲谈。
+  - `q2.a`：结构检查通过 — 径直走向静心亭,独处思考更能理清思绪,不受外界干扰
+  - `q2.b`：结构检查通过 — 在御花园中漫步,享受片刻宁静,偶遇熟人再作决定
+  - `q2.c`：结构检查通过 — 主动前往百花亭,与同僚闲谈,维系关系拓展人脉
+  - `q2.d`：结构检查通过 — 先在静心亭小坐片刻,再去百花亭参加聚会,两者兼顾
+- **q3** 题干：御书房内,龙涎香袅袅升起。皇帝目光如炬,询问你对一项触动权贵利益的改革政策的看法。你知道这关乎民生,但也可能招致不满。
+  - `q3.a`：结构检查通过 — 直言支持改革,为民请命,即使得罪权贵也在所不惜
+  - `q3.b`：结构检查通过 — 委婉表达支持,但建议循序渐进减少阻力
+  - `q3.c`：结构检查通过 — 保持沉默,让皇帝自行决策,避免卷入其中
+  - `q3.d`：结构检查通过 — 反对改革,认为稳定比变革更重要,以免引发朝局动荡
+- **q4** 题干：续前题。若你选择支持改革,皇帝承诺重用你,但你知道这将与家族中的长辈产生分歧；若选择反对,可保全家族关系,却可能错失改革良机。
+  - `q4.a`：结构检查通过 — 坚持支持改革,认为个人理想比家族期待更重要
+  - `q4.b`：结构检查通过 — 暗中支持改革,同时安抚家族,寻求平衡之道
+  - `q4.c`：结构检查通过 — 屈服于家族压力,放弃改革理想,保全家族关系
+  - `q4.d`：结构检查通过 — 建议皇帝暂缓改革,待时机成熟再行推进,既不违家族也不负理想
+- **q5** 题干：家族晚宴上,烛火通明,佳肴满桌。长辈们已为你选定一门政治联姻,你的婚事关乎家族利益,但你的心中另有所爱。
+  - `q5.a`：结构检查通过 — 婉拒家族安排,坚持自己的选择,哪怕代价是家族失势
+  - `q5.b`：结构检查通过 — 私下与心上人断绝关系,遵从家族安排,保全家族利益
+  - `q5.c`：结构检查通过 — 表面遵从家族安排,暗中与心上人保持联系,期待家族观念改变
+  - `q5.d`：结构检查通过 — 提出折中方案,寻找既不违背家族利益又能部分满足个人意愿的解决方式
+- **q6** 题干：朝堂之上,鸦雀无声。一位重臣因坚持原则触怒皇帝,被当众斥责,他却挺直脊梁,不卑不亢,眼中闪烁着坚定的光芒。
+  - `q6.a`：结构检查通过 — 敬佩其勇气,但认为在皇权面前应有所妥协,以保全实力
+  - `q6.b`：结构检查通过 — 为其辩护,表明自己同样支持原则,愿一同承担后果
+  - `q6.c`：结构检查通过 — 保持沉默,既不附和也不反对,避免卷入其中
+  - `q6.d`：结构检查通过 — 私下劝诫重臣收敛锋芒,认为坚持原则也要讲究方式方法
+- **q7** 题干：边境急报,军情如火。敌军突袭,形势危急。你需要立即决策:是按原计划撤军保全实力,还是冒险反击以稳固边疆民心。
+  - `q7.a`：结构检查通过 — 果断下令反击,认为边疆稳定比个人安危更重要
+  - `q7.b`：结构检查通过 — 按原计划撤军,保存实力以图长远,暂时的失利不影响大局
+  - `q7.c`：结构检查通过 — 派小股部队试探虚实,再根据情报决定是战是退
+  - `q7.d`：结构检查通过 — 请示皇帝决策,将责任推给上峰,避免个人承担风险
+- **q8** 题干：月色如水,你独自站在御花园的回廊下,晚风轻拂,远处传来隐约的宫乐声。此刻你会如何度过这静谧的时光？
+  - `q8.a`：结构检查通过 — 回到书房,挑灯夜读前朝兵法,研究治国安邦之策
+  - `q8.b`：结构检查通过 — 邀请几位同僚对弈品茗,在谈笑间交流朝政见解
+  - `q8.c`：结构检查通过 — 取出古琴,在月下弹奏一曲,抒发胸中郁结
+  - `q8.d`：结构检查通过 — 漫步宫中,思考近日朝堂上的种种人事纠葛
+- **q9** 题干：一封皱巴巴的密信被悄然放在你的案几上,墨迹未干,字迹潦草。送信人低声说老友因得罪权臣已被软禁,求你设法营救。
+  - `q9.a`：结构检查通过 — 立即安排亲信秘密行动,不计代价也要救出老友
+  - `q9.b`：结构检查通过 — 婉拒求助,回信劝老友认罪求和,保全性命
+  - `q9.c`：结构检查通过 — 暗中收集证据,准备在适当时机为老友辩白
+  - `q9.d`：结构检查通过 — 匿名向皇帝递奏折,揭露真相但不牵连自身
+- **q10** 题干：朝堂之上,你目睹一位老臣在讨论边防军需时,巧妙地既不触怒皇帝,又保全了同僚颜面,最终达成自己主张。
+  - `q10.a`：结构检查通过 — 佩服其圆滑手段,认为在朝中生存就该如此
+  - `q10.b`：结构检查通过 — 私下提醒这位大臣,做人不该如此圆滑世故
+  - `q10.c`：结构检查通过 — 思考其策略的合理性,但内心更欣赏直言敢谏者
+  - `q10.d`：结构检查通过 — 反思这种处事方式是否真正有利于国家长远利益
+- **q11** 题干：御书房内,皇帝面色铁青地盯着你,手中把玩着一块玉佩,语气沉重地询问关于某位宠臣的罪证。
+  - `q11.a`：结构检查通过 — 据实禀报,不畏权贵,直言其罪状
+  - `q11.b`：结构检查通过 — 含糊其辞,暗示皇帝自行决断
+  - `q11.c`：结构检查通过 — 转移话题,建议皇帝关注更紧迫的国事
+  - `q11.d`：结构检查通过 — 委婉表达忧虑,暗示处置需三思
+- **q12** 题干：朝议上,大臣们激烈辩论一项政策,你发现若支持它,家族将获得巨大利益；若反对,虽保全大局,家族却可能蒙受损失。
+  - `q12.a`：结构检查通过 — 力陈政策弊端,宁可家族受损也要坚持原则
+  - `q12.b`：结构检查通过 — 保持沉默,静观其变,不表明立场
+  - `q12.c`：结构检查通过 — 权衡利弊后选择支持,但设法为家族谋求其他补偿
+  - `q12.d`：结构检查通过 — 提出折中方案,既不损害家族利益,也兼顾国家大局
+- **q13** 题干：宫中偶遇一位多年未见的老友,他神秘地邀请你参加一场私人聚会,说那里可以听到一些朝中秘闻,但要求必须对聚会内容保密。
+  - `q13.a`：结构检查通过 — 欣然赴约,认为这是了解朝局的好机会
+  - `q13.b`：结构检查通过 — 婉言谢绝,表示不愿参与此类私下聚会
+  - `q13.c`：结构检查通过 — 答应前往,但只作旁观者,不参与讨论
+  - `q13.d`：结构检查通过 — 派心腹前往打探消息,自己则留在家中
+- **q14** 题干：你注意到一位官员在处理公务时,常不拘小节,为达目的打破常规,但他的决策往往使国家获益匪浅。
+  - `q14.a`：结构检查通过 — 私下规劝,认为即使结果好也不该破坏规则
+  - `q14.b`：结构检查通过 — 效仿其做法,认为结果比过程更重要
+  - `q14.c`：结构检查通过 — 保持距离,既不批评也不学习其做法
+  - `q14.d`：结构检查通过 — 思考规则与结果之间的平衡,寻求更好的处理方式
+- **q15** 题干：烛火摇曳的密室里,你展开那封字迹颤抖的密信,墨香中夹杂着血腥气。太子危在旦夕,揭发者将掀起朝堂惊涛,你将如何应对？
+  - `q15.a`：结构检查通过 — 立即公开密信,召集朝臣共商对策,宁可朝堂动荡也要保太子周全
+  - `q15.b`：结构检查通过 — 私下收集证据,寻机向皇帝呈报,避免正面冲突但又不失公正
+  - `q15.c`：结构检查通过 — 按兵不动,静观其变,相信朝堂自有制衡,贸然行动可能适得其反
+  - `q15.d`：结构检查通过 — 密信销毁,装作不知,保全自身的同时寄望太子能化险为夷
+- **q16** 题干：春日午后,阳光透过窗棂洒在书案上,墨香与纸香交织。市集喧嚣隐约可闻,你将如何度过这难得的休沐时光？
+  - `q16.a`：结构检查通过 — 独坐书房,沉浸在政务文献中,享受无人打扰的静谧时光
+  - `q16.b`：结构检查通过 — 前往市集,体验民间疾苦,收集民情民意作为施政参考
+  - `q16.c`：结构检查通过 — 邀三五知己,在雅集上吟诗作对,交流政见与人生感悟
+  - `q16.d`：结构检查通过 — 携家眷出游,在山水间放松身心,暂时忘却朝堂纷争
+- **q17** 题干：御书房内,龙涎香缭绕,皇帝目光炯炯地看着你,言辞间透着期许与试探。一项能增强国力却伤民的政策摆在面前,你将如何抉择？
+  - `q17.a`：结构检查通过 — 婉拒参与,直言政策弊端,宁可得罪权贵也不违背良心
+  - `q17.b`：结构检查通过 — 接受任务,但在执行中尽可能减轻百姓负担,寻找平衡点
+  - `q17.c`：结构检查通过 — 虽心有不安,但为前途计,决定全力执行皇帝旨意
+  - `q17.d`：结构检查通过 — 表面应承,暗中寻找替代方案,既不违抗又能保全百姓
+- **q18** 题干：家族祠堂内,香火缭绕,长辈殷切目光中带着不容置疑的威严。一桩关乎家族命运的联姻摆在面前,而你心中另有所爱。
+  - `q18.a`：结构检查通过 — 服从家族安排,牺牲个人情感,为家族利益承担责任
+  - `q18.b`：结构检查通过 — 婉言推辞,但私下与心上人保持往来,寻求两全之策
+  - `q18.c`：结构检查通过 — 坚决拒绝,宁可背负不孝之名也要忠于内心
+  - `q18.d`：结构检查通过 — 与家族协商,提出其他能巩固家族地位的方案
+- **q19** 题干：朝堂之上,气氛凝重如铅,同僚们在派系争斗中剑拔弩张。一位同僚却默然不语,只专注处理自己的公务,仿佛置身事外。
+  - `q19.a`：结构检查通过 — 敬佩其明哲保身,认为朝堂纷争不过是权力游戏,不值得卷入
+  - `q19.b`：结构检查通过 — 私下提醒他,在国家危难之际应当挺身而出,不应只顾自保
+  - `q19.c`：结构检查通过 — 视为懦弱无能,认为在关键时刻应当有所作为而非逃避
+  - `q19.d`：结构检查通过 — 理解但不赞同,认为应当在不违背原则的前提下适度参与
+- **q20** 题干：密室烛光摇曳,盟友压低声音提出一个大胆计划,若成功将扭转政局,但失败则满门抄斩。你将如何回应？
+  - `q20.a`：结构检查通过 — 毫不犹豫地支持,宁可粉身碎骨也要坚持正义,不惧任何后果
+  - `q20.b`：结构检查通过 — 提出改良方案,降低风险后再决定是否参与,不盲目冒险
+  - `q20.c`：结构检查通过 — 婉拒参与,认为应当另寻稳妥之策,不应以性命相赌
+  - `q20.d`：结构检查通过 — 表面答应,实则暗中寻找其他出路,既不违抗又能保全自身
+
+### 逐结果
+- **r1**（萧定权）：profile 键与范围检查通过。
+- **r2**（陆文普）：profile 键与范围检查通过。
+- **r3**（陈萍）：profile 键与范围检查通过。
+- **r4**（太子妃）：profile 键与范围检查通过。
+- **r5**（齐王）：profile 键与范围检查通过。
+- **r6**（陈少秋）：profile 键与范围检查通过。
+- **r7**（李明）：profile 键与范围检查通过。
+- **r8**（崔明）：profile 键与范围检查通过。
+
+## investment-master-style
+- **计分**：`two-phase-archetype` · 维度数 9 · 题数 22 · 结果数 9
+- **警告（1）**
+  - （说明）scoring.type=`two-phase-archetype` 非三种标准计分族，已跳过 validateQuestions / validateResults(profile) / validateDimensionProfiles / validateScoreMap，以免误报。
+
+### 逐题 · 逐选项
+- **q1** 题干：在分析一家公司时，你最先关注的是什么？
+  - `q1.a`：scores 键：巴菲特 — 它的护城河是否足够宽，能否在未来十年持续赚钱。
+  - `q1.b`：scores 键：彼得林奇 — 它的商业模式是否简单易懂，我能在生活中直接感受到。
+  - `q1.c`：scores 键：邓普顿 — 它是否被市场极度悲观地定价，出现了罕见的买入机会。
+  - `q1.d`：scores 键：芒格 — 它的管理层是否诚实、理性，并且资本配置能力出色。
+- **q2** 题干：面对一个潜在的投资机会，你的第一反应通常是？
+  - `q2.a`：scores 键：塔勒布 — 先想清楚最坏的情况是什么，我能否承受。
+  - `q2.b`：scores 键：达利欧 — 把它放到我的决策原则和流程里，看是否符合标准。
+  - `q2.c`：scores 键：索罗斯 — 判断市场的主流预期是什么，以及它可能如何被证伪。
+  - `q2.d`：scores 键：伊坎 — 评估管理层是否足够有动力和能力去提升股东价值。
+- **q3** 题干：当市场出现剧烈波动，你的持仓大幅下跌时，你会？
+  - `q3.a`：scores 键：巴菲特,邓普顿 — 检查公司基本面是否变化，如果没变，反而考虑加仓。
+  - `q3.b`：scores 键：芒格,达利欧 — 审视自己的判断逻辑是否有根本缺陷，是否需要修正。
+  - `q3.c`：scores 键：塔勒布,索罗斯 — 评估这是否是市场过度反应的信号，准备反向操作。
+  - `q3.d`：scores 键：西蒙斯,达利欧 — 如果波动在我的系统预期内，就忽略噪音，继续执行策略。
+- **q4** 题干：你如何获取投资灵感？
+  - `q4.a`：scores 键：巴菲特,芒格 — 大量阅读公司年报、行业历史和商业传记。
+  - `q4.b`：scores 键：彼得林奇 — 观察日常生活，比如家人喜欢什么商品，商场什么品牌热销。
+  - `q4.c`：scores 键：邓普顿 — 在全球范围内，寻找那些被恐惧和误解笼罩的市场或资产。
+  - `q4.d`：scores 键：塔勒布,达利欧 — 分析极端事件和崩溃案例，理解系统的脆弱点在哪里。
+- **q5** 题干：对于投资组合的构建，你更认同哪种说法？
+  - `q5.a`：scores 键：巴菲特,芒格 — 集中投资于少数几个深刻理解的机会，下重注。
+  - `q5.b`：scores 键：彼得林奇 — 适度分散，持有大量股票，但每只都基于充分研究。
+  - `q5.c`：scores 键：塔勒布,达利欧 — 构建极度分散且互不相关的资产组合，以抵御任何冲击。
+  - `q5.d`：scores 键：西蒙斯 — 依赖量化模型进行高频、大量的交易，靠概率取胜。
+- **q6** 题干：你如何看待市场预测？
+  - `q6.a`：scores 键：巴菲特 — 市场短期是投票机，长期是称重机，预测短期没有意义。
+  - `q6.b`：scores 键：塔勒布,达利欧 — 重要的不是预测未来，而是为所有可能的未来做好准备。
+  - `q6.c`：scores 键：索罗斯 — 预测本身就是影响市场的重要因素，需要关注预期的变化。
+  - `q6.d`：scores 键：西蒙斯 — 用历史数据和统计模型可以捕捉短期的价格规律和模式。
+- **q7** 题干：当发现一家好公司但价格不便宜时，你会？
+  - `q7.a`：scores 键：巴菲特 — 耐心等待，市场总会提供以合理价格买入伟大公司的机会。
+  - `q7.b`：scores 键：彼得林奇 — 深入研究，如果成长性足够高，支付溢价也可能是合理的。
+  - `q7.c`：scores 键：邓普顿 — 转向其他市场，寻找同样优质但更便宜的替代品。
+  - `q7.d`：scores 键：芒格 — 放弃。严格遵守"好价格"的纪律比追逐好公司更重要。
+- **q8** 题干：你处理投资信息的方式更接近？
+  - `q8.a`：scores 键：达利欧 — 建立多元化的信息渠道，但用一套原则框架进行过滤和解读。
+  - `q8.b`：scores 键：���罗斯 — 关注市场情绪和叙事的变化，这往往比事实本身更重要。
+  - `q8.c`：scores 键：西蒙斯 — 直接从海量市场数据中，用算法挖掘人眼难以发现的模式。
+  - `q8.d`：scores 键：伊坎,彼得林奇 — 深入一线，与管理层、客户、供应商交流，获取一手认知。
+- **q9** 题干：你如何定义一次"成功的投资"？
+  - `q9.a`：scores 键：巴菲特 — 以低估的价格买入一家优秀企业，并长期持有，分享其成长。
+  - `q9.b`：scores 键：邓普顿 — 在市场最恐慌的时刻买入，在最乐观的时刻卖出，完成一次漂亮的逆向交易。
+  - `q9.c`：scores 键：伊坎 — 通���积极行动（如推动改革、更换管理层）显著提升公司价值。
+  - `q9.d`：scores 键：塔勒布 — 在风险有限的前提下，获取不对称的巨额回报（损失小，潜在收益大）。
+- **q10** 题干：对于自己不熟悉的领域或复杂模型，你的态度是？
+  - `q10.a`：scores 键：巴菲特,芒格 — 划入"能力圈"之外，坚决不碰。
+  - `q10.b`：scores 键：芒格 — 尝试用已有的思维模型去理解和拆解它。
+  - `q10.c`：scores 键：伊坎,彼得林奇 — 如果潜在回报巨大，会投入资源深入研究，直到弄懂。
+  - `q10.d`：scores 键：西蒙斯,达利欧 — 承认其复杂性，转而设计一个不依赖于完全理解它的稳健策略。
+- **q11** 题干：在投资决策会议上，你更可能扮演什么角色？
+  - `q11.a`：scores 键：塔勒布,芒格 — 冷静的质疑者，不断追问"哪里可能出错"。
+  - `q11.b`：scores 键：达利欧 — 原则的捍卫者，确保每一项决策都符合既定的流程和标准。
+  - `q11.c`：scores 键：彼得林奇 — 机会的发现者，热衷于分享从各种角落找到的"十倍股"线索。
+  - `q11.d`：scores 键：伊坎,索罗斯 — 局面的搅动者，提出激进的方案来打破僵局或创造价值。
+- **q12** 题干：你如何应对市场的"非理性繁荣"？
+  - `q12.a`：scores 键：巴菲特 — 逐步减持估值过高的资产，持有更多现金，等待机会。
+  - `q12.b`：scores 键：索罗斯 — 深入研究这种繁荣背后的叙事和逻辑，判断其可持续性。
+  - `q12.c`：scores 键：塔勒布,达利欧 — 检查自己的投资组合，确保没有过度暴露于这种繁荣风险。
+  - `q12.d`：scores 键：索罗斯,西蒙斯 — 可能顺势参与，但会设置严格的止损和退出机制。
+- **q13** 题干：你更相信财富来源于？
+  - `q13.a`：scores 键：巴菲特 — 企业持续创造的自由现金流和复利效应。
+  - `q13.b`：scores 键：邓普顿 — 在极端情绪导致的价格错配中，进行逆向交易。
+  - `q13.c`：scores 键：索罗斯 — 利用市场参与者的认知偏差和反射性循环。
+  - `q13.d`：scores 键：西蒙斯 — 通过大量、高频、微小的胜率优势累积。
+- **q14** 题干：当你的投资观点与市场主流严重背离时，你会？
+  - `q14.a`：scores 键：巴菲特,邓普顿 — 感到兴奋，这通常意味着巨大的机会，并加倍验证自己的研究。
+  - `q14.b`：scores 键：芒格,达利欧 — 压力巨大，但会强迫自己审视所有反对观点，确保没有盲点。
+  - `q14.c`：scores 键：索罗斯 — 分析市场主流观点形成的过程和脆弱性，寻找狙击的时机。
+  - `q14.d`：scores 键：伊坎 — 如果背离源于公司治理问题，会考虑采取行动改变局面。
+- **q15** 题干：你如何管理投资中的"黑天鹅"风险？
+  - `q15.a`：scores 键：塔勒布 — 不预测，只预防。通过尾部风险对冲或构建反脆弱组合。
+  - `q15.b`：scores 键：达利欧 — 在压力测试中模拟极端场景，确保组合能扛过历史最差情况。
+  - `q15.c`：scores 键：巴菲特,芒格 — 投资于那些即便遭遇黑天鹅也能存活并恢复的韧性企业。
+  - `q15.d`：scores 键：索罗斯,邓普顿 — 将黑天鹅视为一种特殊的市场失衡，可能带来巨大交易机会。
+- **q16** 题干：对于技术进步（如AI）对投资的影响，你认为？
+  - `q16.a`：scores 键：巴菲特,芒格 — 技术进步会改变社会，但评估企业价值的基本原理不变。
+  - `q16.b`：scores 键：西蒙斯,达利欧 — 它是强大的工具，能极大提升数据分析和模式识别的效率。
+  - `q16.c`：scores 键：索罗斯 — 它会创造新的叙事和泡沫，也会摧毁旧的，带来巨大波动和机会。
+  - `q16.d`：scores 键：塔勒布 — 它可能带来难以预料的系统性风险，需要更加审慎。
+- **q17** 题干：你更愿意将资金委托给哪种气质的基金经理？
+  - `q17.a`：scores 键：巴菲特,芒格 — 像企业分析师一样思考，低调、专注、有极强耐性的长期主义者。
+  - `q17.b`：scores 键：彼得林奇 — 像侦探一样勤奋，充��好奇心，能从生活中发现无数投资线索。
+  - `q17.c`：scores 键：西蒙斯,达利欧 — 像工程师一样严谨，用系统和算法管理风险，追求稳健回报。
+  - `q17.d`：scores 键：索罗斯 — 像战略家一样敏锐，对市场情绪和转折点有近乎本能的直觉。
+- **q18** 题干：在评估一次失败的投资后，你最重要的收获通常是？
+  - `q18.a`：scores 键：巴菲特,芒格 — 对"能力圈"边界和"安全边际"重要性的认识更深刻了。
+  - `q18.b`：scores 键：芒格 — 发现了自己思维模型中的一个缺陷，需要修补或新增一个模型。
+  - `q18.c`：scores 键：塔勒布,达利欧 — 理解了某种新的市场脆弱性或之前未重视的风险传导路径。
+  - `q18.d`：scores 键：索罗斯,西蒙斯 — 验证了"看错时止损要快"这一纪律的绝对必要性。
+- **q19** 题干：你认为在投资中，"运气"和"能力"哪个占比更大？
+  - `q19.a`：scores 键：巴菲特,芒格 — 长期来看，能力决定一切，运气的影响会被熨平。
+  - `q19.b`：scores 键：塔勒布 — 极端结果（巨大成功或失败）中运气的成分往往被低估。
+  - `q19.c`：scores 键：西蒙斯,达利欧 — 重要的是建立一个不依赖好运也能持续盈利的系统和流程。
+  - `q19.d`：scores 键：彼得林奇,索罗斯 — 能力体现在识别和把握运气带来的机会，以及规避坏运气。
+- **q20** 题干：你希望自己的投资生涯最终留下什么印记？
+  - `q20.a`：scores 键：巴菲特 — 建立了一个历久弥坚、受人尊敬的伟大企业���合（投资组合）。
+  - `q20.b`：scores 键：彼得林奇 — 证明了普通人通过勤奋和常识，也能在投资上获得非凡成功。
+  - `q20.c`：scores 键：芒格,达利欧 — 开创了一套被广泛验证和使用的投资哲学与思维方法。
+  - `q20.d`：scores 键：索罗斯,邓普顿 — 在数次重大市场危机中，凭借独到洞察取得了传奇般的回报。
+  - `q20.e`：scores 键：西蒙斯 — 展示了数学和科技在理解及驾驭市场复杂性上的巨大威力。
+- **q21** 题干：当一家你持有的公司管理层做出你认为不明智的决策时，你会？
+  - `q21.a`：scores 键：巴菲特,芒格 — 重新评估管理层的品质和代理成本，考虑是否继续持有。
+  - `q21.b`：scores 键：彼得林奇 — 尝试与管理层沟通，了解其背后的逻辑，有时会发现是自己错了。
+  - `q21.c`：scores 键：伊坎 — 如果确信其损害价值，会联合其他股东施压，甚至发起代理权争夺。
+  - `q21.d`：scores 键：塔勒布,达利欧 — 将其视为公司治理风险的一部分，在估值和仓位中予以体现。
+- **q22** 题干：在以下哪种市场环境中，你感觉最自在、最能发挥优势？
+  - `q22.a`：scores 键：巴菲特,邓普顿 — 市场长期低迷，优秀公司也被普遍抛售，估值极具吸引力。
+  - `q22.b`：scores 键：巴菲特,芒格 — 市场平静，有充足时间进行深度研究和价值发现。
+  - `q22.c`：scores 键：塔勒布,索罗斯 — 市场剧烈波动，共识不断被打破，趋势和反趋势机会交织。
+  - `q22.d`：scores 键：西蒙斯 — 市场提供海量、高质量的数据流，便于模型捕捉短期定价偏差。
+  - `q22.e`：scores 键：伊坎 — 公司治理成为焦点，股东积极主义能显著创造价值的时期。
+
+### 逐结果
+- **archetype-buffett**（沃伦·巴菲特）：profile 键：伊坎, 塔勒布, 巴菲特, 彼得林奇, 索罗斯, 芒格, 西蒙斯, 达利欧, 邓普顿（未做 (0,1) 轴校验）
+- **archetype-lynch**（彼得·林奇）：profile 键：伊坎, 塔勒布, 巴菲特, 彼得林奇, 索罗斯, 芒格, 西蒙斯, 达利欧, 邓普顿（未做 (0,1) 轴校验）
+- **archetype-templeton**（约翰·邓普顿）：profile 键：伊坎, 塔勒布, 巴菲特, 彼得林奇, 索罗斯, 芒格, 西蒙斯, 达利欧, 邓普顿（未做 (0,1) 轴校验）
+- **archetype-munger**（查理·芒格）：profile 键：伊坎, 塔勒布, 巴菲特, 彼得林奇, 索罗斯, 芒格, 西蒙斯, 达利欧, 邓普顿（未做 (0,1) 轴校验）
+- **archetype-taleb**（纳西姆·塔勒布）：profile 键：塔勒布, 巴菲特, 彼得林奇, 索罗斯, 芒格, 西蒙斯, 达利欧, 邓普顿, ��坎（未做 (0,1) 轴校验）
+- **archetype-dalio**（瑞·达利欧）：profile 键：伊坎, 塔勒布, 巴菲特, 彼得林奇, 索罗斯, 芒格, 西蒙斯, 达利欧, 邓普顿（未做 (0,1) 轴校验）
+- **archetype-soros**（乔治·索罗斯）：profile 键：伊坎, 塔勒布, 巴菲特, 彼得林奇, 索罗斯, 芒格, 西蒙斯, 达利欧, 邓普顿（未做 (0,1) 轴校验）
+- **archetype-icahn**（卡尔·伊坎）：profile 键：伊坎, 塔勒布, 巴菲特, 彼得林奇, 索罗斯, 芒格, 西蒙斯, 达利欧, 邓普顿（未做 (0,1) 轴校验）
+- **archetype-simons**（吉姆·西蒙斯）：profile 键：伊坎, 塔勒布, 巴菲特, 彼得林奇, 索罗斯, 芒格, 西蒙斯, 达利欧, 邓普顿（未做 (0,1) 轴校验）
+
+## jin-female-archetypes
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：华山之巅,寒风呼啸,云雾缭绕。武林盟主选拔大会上,你正与宿敌对决,他突然使出失传已久的邪派武功,黑气森森,台下哗然。盟主之位近在咫尺,你该如何应对?
+  - `q1.a`：结构检查通过 — 立即以克制邪功的独门心法化解,哪怕冒着内力反噬的风险
+  - `q1.b`：结构检查通过 — 先避其锋芒,寻找对方破绽,再图反击
+  - `q1.c`：结构检查通过 — 大声指出对方使用邪功违背武林规矩,号召众人共同制裁
+  - `q1.d`：结构检查通过 — 以彼之道还施彼身,同样使出邪功,一决胜负
+- **q2** 题干：月圆之夜,客栈内烛光摇曳,酒香四溢。你独自小酌,窗外传来一阵琴声,清冷悠扬,似有故事。琴声渐近,一位白衣女子出现在窗外,对你微微一笑。
+  - `q2.a`：结构检查通过 — 起身相迎,礼貌询问琴声来源,保持适当距离
+  - `q2.b`：结构检查通过 — 放下酒杯,邀她共饮,分享此刻的心情与思绪
+  - `q2.c`：结构检查通过 — 警惕地审视对方,询问深夜造访有何目的
+  - `q2.d`：结构检查通过 — 继续饮酒,不回应她的目光,任由琴声在夜色中飘散
+- **q3** 题干：父亲身中剧毒,面色苍白,气息微弱。唯一的解药在敌对门派手中,对方派人传话:要么放弃江湖恩怨,远走他乡；要么以你师门传承的武功秘籍交换解药。
+  - `q3.a`：结构检查通过 — 毫不犹豫交出秘籍,救父为先,恩怨可日后化解
+  - `q3.b`：结构检查通过 — 假意答应,暗中准备其他解毒之法,同时打探对方虚实
+  - `q3.c`：结构检查通过 — 拒绝交换,宁可自己冒死采药也不妥协
+  - `q3.d`：结构检查通过 — 提出折中方案:只交出部分秘籍,换取解药
+- **q4** 题干：你救了一名重伤的江湖人士,他醒来后对你一见钟情,眼中闪烁着炽热的光芒,誓言非你不娶。但你知道他家族与你家有血海深仇,若接受他,两家将永无和解之日。
+  - `q4.a`：结构检查通过 — 婉言拒绝,感谢他的心意但明确立场,不拖泥带水
+  - `q4.b`：结构检查通过 — 隐瞒两家恩怨,尝试交往,看能否化解家族仇恨
+  - `q4.c`：结构检查通过 — 接受感情,相信爱情能超越世俗恩怨
+  - `q4.d`：结构检查通过 — 提出先化解两家恩怨再考虑感情,给自己和对方留有余地
+- **q5** 题干：客栈内酒气弥漫,吵闹声不断。邻桌几位大汉高谈阔论,贬低你的师门和武功,言语轻佻,不时投来轻蔑的目光,引得周围人窃窃私语。
+  - `q5.a`：结构检查通过 — 淡然处之,继续自己的事,不与他们一般见识
+  - `q5.b`：结构检查通过 — 起身离开,换个清净之处,避免无谓冲突
+  - `q5.c`：结构检查通过 — 平静地指出他们的言行有失君子风度,维护师门尊严
+  - `q5.d`：结构检查通过 — 挑战他们切磋武功,用实力证明自己
+- **q6** 题干：悬崖峭壁,狂风呼啸。你目睹一名女子为救被困悬崖的爱人,不顾自身安危,徒手攀爬湿滑的岩壁,衣衫被岩石划破,双手鲜血淋漓,最终成功救下爱人。
+  - `q6.a`：结构检查通过 — 敬佩她的勇气与毅力,但认为过于冒险,不值得以命相搏
+  - `q6.b`：结构检查通过 — 被她的执着感动,认为真爱无价,值得付出一切
+  - `q6.c`：结构检查通过 — 思考她为何如此执着,是否还有其他解决办法
+  - `q6.d`：结构检查通过 — 被她的坚韧不拔震撼,决心向她学习面对困境的态度
+- **q7** 题干：江湖游历途中,你在一间破旧客栈歇脚。墙上贴着一张新出的武林盟主通缉令,画像与你极为相似,上面写着杀害名门正派弟子,悬赏十万两白银缉拿归案。
+  - `q7.a`：结构检查通过 — 立刻澄清误会,找出真凶证明自己的清白
+  - `q7.b`：结构检查通过 — 暗中调查谁在陷害你,伺机反击
+  - `q7.c`：结构检查通过 — 暂时隐姓埋名,避避风头,等事情平息再露面
+  - `q7.d`：结构检查通过 — 直接找武林盟主对质,相信真相终会大白
+- **q8** 题干：江南烟雨朦胧,两封烫金请柬静静躺在红木桌上,一封散发着墨香,一封透着檀木气息。比武招亲的热闹与秘境试炼的神秘,此刻在你心中。
+  - `q8.a`：结构检查通过 — 先冷静分析两场活动的利弊得失,再做出最有利于个人成长的选择
+  - `q8.b`：结构检查通过 — 内心一阵悸动,直觉告诉我秘境试炼更有挑战性,立刻收拾行囊准备出发
+  - `q8.c`：结构检查通过 — 仔细阅读两封邀请函的每一个字,权衡社交价值与武学收益,再做决定
+  - `q8.d`：结构检查通过 — 内心犹豫不决,在窗边来回踱步,任由雨滴打湿衣衫也无法做出抉择
+- **q9** 题干：集市喧嚣嘈杂,算命先生布满皱纹的手紧紧抓住你的袖口,浑浊的眼中闪烁着奇异的光芒,断言你天赋异禀,但言语间却暗示你背叛师门。
+  - `q9.a`：结构检查通过 — 婉拒先生的好意,不忘感谢指点,但坚持对师门的忠诚与责任
+  - `q9.b`：结构检查通过 — 内心渴望成为一代宗师,但想起师门养育之恩,陷入两难境地
+  - `q9.c`：结构检查通过 — 果断答应先生的条件,个人成就高于一切,过往情谊不过是束缚
+  - `q9.d`：结构检查通过 — 先假意答应,暗中观察先生的真实意图再做决定,不急于做决定
+- **q10** 题干：荒山月色惨淡,刀光剑影在林间闪烁,敌人如潮水般涌来,你已身受数伤,呼吸急促,内力渐耗,退路被完全封死。
+  - `q10.a`：结构检查通过 — 咬紧牙关,誓不后退,哪怕拼尽最后一丝内力也要战斗到底
+  - `q10.b`：结构检查通过 — 冷静分析敌我形势,寻找最薄弱的突破口,准备伺机突围
+  - `q10.c`：结构检查通过 — 心生退意,决定放弃抵抗,保全实力以待他日再战
+  - `q10.d`：结构检查通过 — 利用地形优势,与敌人周旋,寻找可以借助的外力或转机
+- **q11** 题干：茶馆内窃窃私语,那女子端坐如松,面对家人安排的婚事,她眉宇间毫无波澜,仿佛这重大决定与她无关,任凭周围人指指点点。
+  - `q11.a`：结构检查通过 — 认为她过于软弱,缺乏主见,应该勇敢表达自己的真实想法
+  - `q11.b`：结构检查通过 — 欣赏她的独立自主,不因外界眼光而动摇自己的内心
+  - `q11.c`：结构检查通过 — 觉得她或许有难言之隐,表面平静下藏着不为人知的挣扎
+  - `q11.d`：结构检查通过 — 认为她应该主动与家人沟通,寻求双方都能接受的解决方案
+- **q12** 题干：寒光闪烁的神兵静静躺在红木盒中,你伸手触摸瞬间感到一股强大力量涌入体内,但同时脑中响起低语,诱惑你释放内心深处的魔性。
+  - `q12.a`：结构检查通过 — 立刻将神兵封存,宁可放弃强大力量也不愿迷失自我
+  - `q12.b`：结构检查通过 — 好奇地尝试使用,但严格控制自己,每次使用后都冷静反思内心变化
+  - `q12.c`：结构检查通过 — 被神兵的力量所吸引,不顾一切后果,完全沉浸其中感受快感
+  - `q12.d`：结构检查通过 — 先研究克制魔性的方法,再做决定,不贸然尝试也不完全放弃
+- **q13** 题干：茶馆内茶香四溢,邻桌几位武林豪饮高谈,言语间对那桩冤案受害者极尽嘲讽,认为他罪有应得,而你隐约知道真相并非如此。
+  - `q13.a`：结构检查通过 — 立即起身为受害者辩护,不顾个人安危也要揭露真相
+  - `q13.b`：结构检查通过 — 内心认同集体判断,受害者或许确实有错,众人不会看错
+  - `q13.c`：结构检查通过 — 保持沉默,不参与讨论,但暗中收集证据准备为受害者伸冤
+  - `q13.d`：结构检查通过 — 委婉地提出不同观点,引导大家理性思考,避免冲突升级
+- **q14** 题干：雨夜客栈,灯火摇曳,神秘男子浑身是血却眼神坚定,他自称朝廷密探,手中握有一份关系到江湖安危的密信,恳请你伸出援手。
+  - `q14.a`：结构检查通过 — 不顾风险,立刻答应帮忙,江湖大义高于个人安危
+  - `q14.b`：结构检查通过 — 先询问更多细节,判断事情真伪再做决定,不轻信陌生人
+  - `q14.c`：结构检查通过 — 内心犹豫,既想帮助又怕卷入是非,最终选择婉拒
+  - `q14.d`：结构检查通过 — 答应帮忙但提出条件,要求事成后获得相应的回报与保障
+- **q15** 题干：血月当空,师父倒在血泊中,将一本残破秘籍交到你手中,断气前只说了一句'活下去'。整个门派只剩你一人,你环顾满地尸体,握紧了秘籍。
+  - `q15.a`：结构检查通过 — 立即带着秘籍远走他乡,隐姓埋名,待功力有成再回来复仇
+  - `q15.b`：结构检查通过 — 先埋葬同门,然后找一处隐蔽山洞,按照秘籍上的心法闭关修炼
+  - `q15.c`：结构检查通过 — 立刻去寻仇家拼命,哪怕同归于尽也要为师父和同门报仇
+  - `q15.d`：结构检查通过 — 将秘籍藏于安全之处,先离开此地,思考清楚复仇计划再行动
+- **q16** 题干：比武场上,一位白衣女子面对黑衣大汉的猛攻,鲜血染红了她的衣襟,但她眼神如炬,每一次受伤后反而更加坚定,最终以一招险胜。
+  - `q16.a`：结构检查通过 — 佩服她的勇气,但认为她太过固执,适时认输才是明智之举
+  - `q16.b`：结构检查通过 — 为她感到揪心,想要冲上台去制止这场对决,担心她会伤重不治
+  - `q16.c`：结构检查通过 — 冷静分析她的招式破绽,思考自己若面对这样的对手该如何应对
+  - `q16.d`：结构检查通过 — 感叹武学精神,但认为胜负已分,应该尊重裁判的判决
+- **q17** 题干：你收到一封密信,得知心爱之人被仇家所困,救他需要你前往断崖,接受七日断肠散的折磨,武功尽废,但可保他安然无恙。
+  - `q17.a`：结构检查通过 — 毫不犹豫前往断崖,宁愿自己承受一切,也要保他周全
+  - `q17.b`：结构检查通过 — 先去寻找其他解救之法,若实在无策才考虑牺牲自己
+  - `q17.c`：结构检查通过 — 前往断崖,但暗中安排后路,希望能找到两全其美的方法
+  - `q17.d`：结构检查通过 — 拒绝牺牲自己,相信他有能力脱困,不愿因自己拖累他
+- **q18** 题干：客栈内,你品尝着茶水,突然感到一丝异样。你不动声色,暗中观察,发现对面桌上的'故友'正对你露出诡异的笑容,手中握着一支毒针。
+  - `q18.a`：结构检查通过 — 假装不知,不动声色地离开,日后找机会质问他为何背弃友谊
+  - `q18.b`：结构检查通过 — 当众揭穿他的阴谋,质问他为何背叛,给对方面子但表明立场
+  - `q18.c`：结构检查通过 — 以礼相待,但暗中提防,等待时机再与他对决
+  - `q18.d`：结构检查通过 — 直接与他对质,无论结果如何都要讨个说法,哪怕翻脸也在所不惜
+- **q19** 题干：一封泛黄的信笺随风飘至你面前,上面写着'若得此书,可问鼎武林',落款处是一个你从未见过的印章。信中提到了一个无人知晓的山谷位置。
+  - `q19.a`：结构检查通过 — 立即启程,不管前方是福是祸,总要亲自去一探究竟
+  - `q19.b`：结构检查通过 — 先打听信中提及的山谷是否真实存在,再决定是否前往
+  - `q19.c`：结构检查通过 — 将信件交给师门长辈,请他们判断是否值得冒险
+  - `q19.d`：结构检查通过 — 怀疑这是陷阱,选择无视信件,继续修炼自己的武功
+- **q20** 题干：武林盟主亲自找你,告诉你父亲是被他所害,但他愿意传授你绝世武功,条件是你必须放弃复仇的念头,甚至要你认他为义父。
+  - `q20.a`：结构检查通过 — 表面接受他的条件,暗中积蓄力量,等待时机为父报仇
+  - `q20.b`：结构检查通过 — 断然拒绝,宁可不要武功,也要查明真相为父报仇
+  - `q20.c`：结构检查通过 — 接受他的条件,认为父亲的命换来的武功是对自己最好的交代
+  - `q20.d`：结构检查通过 — 提出折中方案:先学武功,待实力足够后再谈复仇之事
+
+### 逐结果
+- **r1**（黄蓉）：profile 键与范围检查通过。
+- **r2**（赵敏）：profile 键与范围检查通过。
+- **r3**（小龙女）：profile 键与范围检查通过。
+- **r4**（郭芙）：profile 键与范围检查通过。
+- **r5**（郭襄）：profile 键与范围检查通过。
+- **r6**（瑛姑）：profile 键与范围检查通过。
+- **r7**（穆念慈）：profile 键与范围检查通过。
+- **r8**（仪琳）：profile 键与范围检查通过。
+
+## jujutsu-kaisen-character-match
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 22 · 结果数 9
+- **错误（1）**
+  - r7 is unreachable — dominated by r2 on all dimensions
+- **警告（1）**
+  - r7 is unreachable — dominated by r2 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：你被分配到执行一项极具危险的任务，需要独自深入诅咒灵巢穴。在准备室里，你如何着手准备这场生死之战？
+  - `q1.a`：结构检查通过 — 反复咒术练习，确保每一招式都完美无缺，直到肌肉记忆形成
+  - `q1.b`：结构检查通过 — 研究巢穴地图和以往战斗记录，找出最有效的进攻路线和弱点
+  - `q1.c`：结构检查通过 — 静坐冥想，调整呼吸，与自己的咒力产生共鸣，感受自然能量的流动
+  - `q1.d`：结构检查通过 — 检查并升级所有装备，确保咒具处于最佳状态，做好万全准备
+- **q2** 题干：在医疗点，你看到一位同伴因执行任务而重伤，生命垂危。面对这种情况，你的第一反应是什么？
+  - `q2.a`：结构检查通过 — 立即上前查看伤势，不顾自身风险，直接使用最强咒术稳定同伴情况
+  - `q2.b`：结构检查通过 — 迅速组织周围人分工合作，有人取药，有人准备咒具，自己则负责指挥全局
+  - `q2.c`：结构检查通过 — 保持冷静分析，评估所有可能性，找出最有效的治疗方案，即使需要冒险
+  - `q2.d`：结构检查通过 — 内心感到痛苦，但知道必须保持专业，专注于当下能做的每一件事
+- **q3** 题干：高层交给你一项几乎不可能完成的任务——消灭一位实力远超你的特级诅咒。你会如何应对？
+  - `q3.a`：结构检查通过 — 接受挑战，深入研究对手的所有弱点，制定出出其不意的战术
+  - `q3.b`：结构检查通过 — 寻求帮助，联合其他咒术师组成团队，共同面对这个强大敌人
+  - `q3.c`：结构检查通过 — 思考是否有其他方式达成目标，不一定非要硬拼，可能有更聪明的解决方法
+  - `q3.d`：结构检查通过 — 不顾一切，全力以赴，即使牺牲自己也要完成任务，这是咒术师的使命
+- **q4** 题干：在神社高层领命时，你被告知需要使用一种有争议的咒术来保护更多人，但可能会伤害无辜者。你会如何抉择？
+  - `q4.a`：结构检查通过 — 毫不犹豫选择使用，相信这是保护更多人的必要手段
+  - `q4.b`：结构检查通过 — 提出寻找替代方案，不伤害无辜者的同时达成目标
+  - `q4.c`：结构检查通过 — 质疑命令的合理性，要求解释这种咒术的具体影响和必要性
+  - `q4.d`：结构检查通过 — 内心挣扎，但最终会服从命令，相信高层有更全面的考量
+- **q5** 题干：你发现一位同僚在任务中使用了被禁止的咒术，导致严重后果。当你被问及此事时，你会怎么做？
+  - `q5.a`：结构检查通过 — 如实报告，认为真相比个人关系更重要，这是对原则的坚守
+  - `q5.b`：结构检查通过 — 试图理解同僚的动机，在报告的同时为他/她争取减轻处罚的机会
+  - `q5.c`：结构检查通过 — 保持沉默，认为同僚有难处，选择保护而非揭发
+  - `q5.d`：结构检查通过 — 提出改进建议，防止类似事件再次发生，而不是单纯追究责任
+- **q6** 题干：在执行任务时，你的咒力突然大幅减弱，无法使用惯常的战斗方式。面对突如其来的危机，你会如何应对？
+  - `q6.a`：结构检查通过 — 迅速寻找环境中的可利用资源，将一切转化为武器
+  - `q6.b`：结构检查通过 — 放弃战斗，寻找安全撤退路线，保存实力以图后机
+  - `q6.c`：结构检查通过 — 尝试与周围的咒灵或自然现象建立联系，借用其他力量
+  - `q6.d`：结构检查通过 — 不顾一切继续战斗，相信意志可以克服身体极限
+- **q7** 题干：当你目睹普通人在诅咒袭击中受到严重伤害时，你的内心感受和行为是什么？
+  - `q7.a`：结构检查通过 — 感到强烈的愤怒和责任感，发誓要保护无辜者，即使付出代价
+  - `q7.b`：结构检查通过 — 迅速行动，优先救治伤者，同时思考如何防止类似事件再次发生
+  - `q7.c`：结构检查通过 — 内心感到痛苦，但将情绪转化为动力，更加坚定自己的咒术师之路
+  - `q7.d`：结构检查通过 — 思考人类社会与咒术世界的矛盾，认为需要更根本的改变
+- **q8** 题干：当你被命令执行一项可能导致你精神受到严重创伤的任务时，你会如何处理？
+  - `q8.a`：结构检查通过 — 接受任务，但提前做好心理准备，寻找方法减轻可能的创伤
+  - `q8.b`：结构检查通过 — 质疑任务的必要性，提出其他可能不会造成精神创伤的替代方案
+  - `q8.c`：结构检查通过 — 寻求有经验的前辈指导，了解如何应对类似情况的心理挑战
+  - `q8.d`：结构检查通过 — 将任务视为成长的必经之路，愿意承受必要的代价来变得更强
+- **q9** 题干：任务前夜，你独自在神社准备符咒和结界。面对即将到来的危险任务，你会优先考虑什么？
+  - `q9.a`：结构检查通过 — 反复检查咒文，确保每一个符号都完美无误
+  - `q9.b`：结构检查通过 — 冥想感受环境，预判敌人的行动模式
+  - `q9.c`：结构检查通过 — 回顾过去的战斗经验，寻找可以借鉴的策略
+  - `q9.d`：结构检查通过 — 思考同伴的安全，确保团队协作的完美配合
+- **q10** 题干：在医疗点处理同伴的伤口时，你发现伤势比想象中严重。伤者痛苦呻吟，你会如何应对？
+  - `q10.a`：结构检查通过 — 立即使用最强的治疗咒术，不惜消耗自己的咒力
+  - `q10.b`：结构检查通过 — 先稳定伤者情绪，再用温和但高效的方式处理伤口
+  - `q10.c`：结构检查通过 — 冷静分析伤势，制定最优治疗方案，每一步都精准执行
+  - `q10.d`：结构检查通过 — 快速请求增援，同时尽力维持当前状态，不贸然行动
+- **q11** 题干：高层命令你执行一项违背你个人道德准则的任务，你会如何抉择？
+  - `q11.a`：结构检查通过 — 接受命令，但会暗中寻找不伤害无辜的执行方式
+  - `q11.b`：结构检查通过 — 直接质疑命令，提出自己的道德顾虑和替代方案
+  - `q11.c`：结构检查通过 — 表面服从，暗中寻找改变命令的机会或寻求他人支持
+  - `q11.d`：结构检查通过 — 毫不犹豫地执行命令，认为权威高于个人道德判断
+- **q12** 题干：在任务中遭遇前所未见的强大咒灵，常规咒术完全无效。你的第一反应是？
+  - `q12.a`：结构检查通过 — 冷静观察咒灵的特性，寻找其弱点或特殊规律
+  - `q12.b`：结构检查通过 — 不顾一切地提升咒力，尝试用更强大的力量压制敌人
+  - `q12.c`：结构检查通过 — 立即寻找撤退或支援的机会，保全自己和团队
+  - `q12.d`：结构检查通过 — 思考如何将这种特殊能力转化为自己的优势或研究样本
+- **q13** 题干：在任务中，你必须牺牲一个无辜者来拯救更多人的生命。你会如何行动？
+  - `q13.a`：结构检查通过 — 寻找两全其美的方案，不惜冒险尝试非常规方法
+  - `q13.b`：结构检查通过 — 接受残酷的现实，执行必要的牺牲，但会尽力减轻痛苦
+  - `q13.c`：结构检查通过 — 拒绝执行这种命令，即使面对高层压力也不妥协
+  - `q13.d`：结构检查通过 — 迅速评估牺牲的价值与必要性，做出最理性的决定
+- **q14** 题干：在任务准备室，你发现自己的咒力突然大幅波动，时强时弱。你会如何应对？
+  - `q14.a`：结构检查通过 — 立即进行特殊冥想，尝试稳定和控制咒力流动
+  - `q14.b`：结构检查通过 — 检查是否有敌人或咒术干扰，同时寻找原因
+  - `q14.c`：结构检查通过 — 利用这种不稳定状态，尝试开发新的咒术应用方式
+  - `q14.d`：结构检查通过 — 担忧这种状态会影响任务，寻求同伴的帮助和建议
+- **q15** 题干：在执行任务时，发现队友的咒术与你的产生冲突，导致两人都受到反噬伤害。你会怎么做？
+  - `q15.a`：结构检查通过 — 立即调整自己的咒术，寻找与队友的协同方式
+  - `q15.b`：结构检查通过 — 先确保队友安全，再分析冲突原因寻找解决方案
+  - `q15.c`：结构检查通过 — 责备队友没有提前沟通协调，要求今后严格配合
+  - `q15.d`：结构检查通过 — 反思自己的咒术是否过于激进，考虑调整战斗风格
+- **q16** 题干：在高层领命时，你发现任务的目标与官方说法不符，实际可能涉及更黑暗的真相。你会如何处理？
+  - `q16.a`：结构检查通过 — 直接质疑高层，要求解释真实目的和道德边界
+  - `q16.b`：结构检查通过 — 表面接受任务，暗中调查真相，必要时寻求外部帮助
+  - `q16.c`：结构检查通过 — 评估真相与任务的关系，决定是否按计划执行
+  - `q16.d`：结构检查通过 — 利用自己的力量，尝试在完成任务的同时改变不利局面
+- **q17** 题干：在任务准备室，面对一枚可能造成伤亡的特级咒物，你会如何处理？
+  - `q17.a`：结构检查通过 — 立即启动封印程序，不惜代价确保周围安全
+  - `q17.b`：结构检查通过 — 仔细研究咒物特性，寻找安全利用的方法
+  - `q17.c`：结构检查通过 — 直接召唤最强咒力摧毁威胁，考虑后果 later
+  - `q17.d`：结构检查通过 — 向高层申请支援，等待专业团队处理
+- **q18** 题干：当你在执行任务时发现无辜者被诅咒物所伤，你会？
+  - `q18.a`：结构检查通过 — 立即停下任务全力救治，哪怕目标逃走
+  - `q18.b`：结构检查通过 — 先完成当前任务，确保没有更大威胁
+  - `q18.c`：结构检查通过 — 快速处理伤口后继续任务，同时请求医疗支援
+  - `q18.d`：结构检查通过 — 记录伤者情况，交给专业医疗咒术师处理
+- **q19** 题干：面对一个强到几乎不可能战胜的咒灵，你会？
+  - `q19.a`：结构检查通过 — 寻找其弱点，制定针对性战术
+  - `q19.b`：结构检查通过 — 不惜一切代价将其消灭，哪怕付出巨大代价
+  - `q19.c`：结构检查通过 — 评估风险，必要时战略性撤退
+  - `q19.d`：结构检查通过 — 尝试与其沟通，了解其动机
+- **q20** 题干：在神社高层会议上，你被要求执行可能违背个人原则的任务，你会？
+  - `q20.a`：结构检查通过 — 直接拒绝，即使这意味着职业风险
+  - `q20.b`：结构检查通过 — 提出替代方案，寻找折中方法
+  - `q20.c`：结构检查通过 — 服从命令，但暗中寻找减轻伤害的方法
+  - `q20.d`：结构检查通过 — 质疑命令的合理性，要求解释必要性
+- **q21** 题干：当你发现同伴在任务中受伤，生命垂危，你会？
+  - `q21.a`：结构检查通过 — 立即放弃任务，全力救治同伴
+  - `q21.b`：结构检查通过 — 快速止血后继续完成任务，同时请求支援
+  - `q21.c`：结构检查通过 — 尝试用自己的咒力维持同伴生命，哪怕会大幅消耗自己
+  - `q21.d`：结构检查通过 — 请求紧急医疗支援，自己继续完成任务
+- **q22** 题干：当你被派去执行一项可能导致大量无辜者伤亡的任务时，你会？
+  - `q22.a`：结构检查通过 — 拒绝执行任务，即使这意味着违抗命令
+  - `q22.b`：结构检查通过 — 寻找可以最小化伤亡的方法
+  - `q22.c`：结构检查通过 — 完成任务后，尽最大努力救治伤者
+  - `q22.d`：结构检查通过 — 向上级反映可能的后果，请求重新评估任务
+
+### 逐结果
+- **r1**（虎杖悠仁）：profile 键与范围检查通过。
+- **r2**（伏黑惠）：profile 键与范围检查通过。
+- **r3**（钉崎野蔷薇）：profile 键与范围检查通过。
+- **r4**（五条悟）：profile 键与范围检查通过。
+- **r5**（夏油杰）：profile 键与范围检查通过。
+- **r6**（乙骨憂太）：profile 键与范围检查通过。
+- **r7**（七海建人）：profile 键与范围检查通过。
+- **r8**（狗卷棘）：profile 键与范围检查通过。
+- **r9**（真人）：profile 键与范围检查通过。
+
+## langyabang-character-match
+- **计分**：`bipolar-dimension` · 维度数 3 · 题数 18 · 结果数 8
+- **错误（16）**
+  - bipolar axis "道义↔权谋": missing highPole
+  - bipolar axis "情义↔算计": missing highPole
+  - bipolar axis "隐忍↔刚烈": missing highPole
+  - r1 is unreachable — dominated by r2 on all dimensions
+  - r1 is unreachable — dominated by r8 on all dimensions
+  - r3 is unreachable — dominated by r2 on all dimensions
+  - r3 is unreachable — dominated by r4 on all dimensions
+  - r3 is unreachable — dominated by r5 on all dimensions
+  - r6 is unreachable — dominated by r2 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+  - r6 is unreachable — dominated by r5 on all dimensions
+  - r6 is unreachable — dominated by r8 on all dimensions
+  - r7 is unreachable — dominated by r2 on all dimensions
+  - r7 is unreachable — dominated by r3 on all dimensions
+  - r7 is unreachable — dominated by r4 on all dimensions
+  - r7 is unreachable — dominated by r5 on all dimensions
+- **警告（44）**
+  - r2 ↔ r8: profiles too similar (max diff 0.14)
+  - q7.a: bipolar option mixes positive and negative scores
+  - q7.b: bipolar option mixes positive and negative scores
+  - q7.c: bipolar option mixes positive and negative scores
+  - q8.a: bipolar option mixes positive and negative scores
+  - q8.b: bipolar option mixes positive and negative scores
+  - q8.c: bipolar option mixes positive and negative scores
+  - q9.b: bipolar option mixes positive and negative scores
+  - q9.c: bipolar option mixes positive and negative scores
+  - q9.d: bipolar option mixes positive and negative scores
+  - q10.c: bipolar option mixes positive and negative scores
+  - q10.d: bipolar option mixes positive and negative scores
+  - q11.a: bipolar option mixes positive and negative scores
+  - q11.b: bipolar option mixes positive and negative scores
+  - q11.c: bipolar option mixes positive and negative scores
+  - q12.a: bipolar option mixes positive and negative scores
+  - q12.b: bipolar option mixes positive and negative scores
+  - q12.c: bipolar option mixes positive and negative scores
+  - q13.c: bipolar option mixes positive and negative scores
+  - q13.d: bipolar option mixes positive and negative scores
+  - q14.b: bipolar option mixes positive and negative scores
+  - q14.c: bipolar option mixes positive and negative scores
+  - q15.a: bipolar option mixes positive and negative scores
+  - q15.b: bipolar option mixes positive and negative scores
+  - q15.d: bipolar option mixes positive and negative scores
+  - q16.d: bipolar option mixes positive and negative scores
+  - q17.b: bipolar option mixes positive and negative scores
+  - q17.c: bipolar option mixes positive and negative scores
+  - q17.d: bipolar option mixes positive and negative scores
+  - q18.c: bipolar option mixes positive and negative scores
+  - r2 ↔ r8: profiles too similar (max diff 0.14), users may cluster
+  - r1 is unreachable — dominated by r2 on all dimensions
+  - r1 is unreachable — dominated by r8 on all dimensions
+  - r3 is unreachable — dominated by r2 on all dimensions
+  - r3 is unreachable — dominated by r4 on all dimensions
+  - r3 is unreachable — dominated by r5 on all dimensions
+  - r6 is unreachable — dominated by r2 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+  - r6 is unreachable — dominated by r5 on all dimensions
+  - r6 is unreachable — dominated by r8 on all dimensions
+  - r7 is unreachable — dominated by r2 on all dimensions
+  - r7 is unreachable — dominated by r3 on all dimensions
+  - r7 is unreachable — dominated by r4 on all dimensions
+  - r7 is unreachable — dominated by r5 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：朝堂之上，皇帝欲以无辜之人平息一场即将爆发的叛乱，询问你的意见。
+  - `q1.a`：结构检查通过 — 直言进谏，宁死不屈，愿以一己之力换取真相大白
+  - `q1.b`：结构检查通过 — 默然应允，暗中寻找证据，待时机成熟再行反击
+  - `q1.c`：结构检查通过 — 以理据争，但保留余地，力求保全无辜又不激怒皇帝
+  - `q1.d`：结构检查通过 — 表面附和，实则暗布棋子，借刀杀人达成自己的目的
+- **q2** 题干：与多年未见的老友重逢，他正陷于权斗漩涡中，向你求助。
+  - `q2.a`：结构检查通过 — 不顾一切，挺身而出，哪怕倾家荡产也要助他脱困
+  - `q2.b`：结构检查通过 — 权衡利弊，以最小的代价换取最大的利益，同时保全自己
+  - `q2.c`：结构检查通过 — 暗中相助，不求回报，但保持距离不卷入漩涡中心
+  - `q2.d`：结构检查通过 — 假意应承，实则利用他的困境达成自己的政治目的
+- **q3** 题干：深夜密室，你发现了一份足以颠覆朝局的证据，但牵连众多无辜。
+  - `q3.a`：结构检查通过 — 立即呈报，哪怕引发朝堂震动，也要让真相大白于天下
+  - `q3.b`：结构检查通过 — 销毁证据，保全各方颜面，避免无谓的流血牺牲
+  - `q3.c`：结构检查通过 — 暗中调查，确认真相后，选择性地只公开部分证据
+  - `q3.d`：结构检查通过 — 保留证据，作为筹码，在关键时刻换取个人利益最大化
+- **q4** 题干：得知昔日恩人遭人陷害，而你掌握着能为他翻案的关键线索。
+  - `q4.a`：结构检查通过 — 不顾个人安危，直接挺身而出，公开揭露真相
+  - `q4.b`：结构检查通过 — 权衡利弊后选择明哲保身，避免卷入是非漩涡
+  - `q4.c`：结构检查通过 — 暗中相助，匿名提供线索，不求回报但求恩人平安
+  - `q4.d`：结构检查通过 — 借机与陷害者结盟，利用恩人的困境换取个人利益
+- **q5** 题干：月下独酌，得知自己的家族被卷入一场政治阴谋中。
+  - `q5.a`：结构检查通过 — 立即反击，哪怕玉石俱焚也要让阴谋者付出代价
+  - `q5.b`：结构检查通过 — 韬光养晦，暗中收集证据，等待最佳反击时机
+  - `q5.c`：结构检查通过 — 寻求盟友，联合各方力量，共同对抗阴谋者
+  - `q5.d`：结构检查通过 — 与阴谋者妥协，牺牲部分家族利益换取保全
+- **q6** 题干：战场上敌我悬殊，将军下令撤退，但你的部下皆愿死战到底。
+  - `q6.a`：结构检查通过 — 违抗军令，率领部下死战到底，宁可战死也不退
+  - `q6.b`：结构检查通过 — 服从军令，带领部安全撤退，保存实力以图将来
+  - `q6.c`：结构检查通过 — 留下断后，让主力部队撤退，自己率精殿后阻击
+  - `q6.d`：结构检查通过 — 假意撤退，实则设伏，利用敌人轻敌之心反击
+- **q7** 题干：朝堂之上，太子私下向你许诺高官厚禄，条件是你需要在今日的议政会上支持他的提案，而你知道此提案对朝政不利，皇帝已流露出反对之意。
+  - `q7.a`：双极混号 — 婉拒太子，直言此举不合朝纲，愿以实绩晋升
+  - `q7.b`：双极混号 — 假意应承，实则暗中向皇帝禀实情，助其明察秋毫
+  - `q7.c`：双极混号 — 表面中立，既不明确支持也不反对，静观其变
+  - `q7.d`：结构检查通过 — 直接拒绝太子，坦言宁可不做官也不违背良心
+- **q8** 题干：你发现与自己情同手足的兄弟暗中与敌国勾结，意图出卖朝廷机密换取个人荣华富贵，而他确有恩于你。
+  - `q8.a`：双极混号 — 私下劝诫，给予改过机会，若执迷不悟则上报朝廷
+  - `q8.b`：双极混号 — 立即上报朝廷，按律处置，国家大义不容私情
+  - `q8.c`：双极混号 — 暗中监视，收集证据，等待最佳时机一举揭发
+  - `q8.d`：结构检查通过 — 设法规劝不成，便设法暗中破坏其计划，保全大局
+- **q9** 题干：你被派往边关镇守，当地豪强横行，百姓苦不堪言，但豪强势力盘根错节，与朝中权贵有千丝万缕的联系。
+  - `q9.a`：结构检查通过 — 明察暗访，收集证据，一举铲除豪强及其后台
+  - `q9.b`：双极混号 — 表面与豪强周旋，暗中培养地方势力，待时机成熟再行动
+  - `q9.c`：双极混号 — 上奏朝廷请求增兵，以雷霆手段整顿地方秩序
+  - `q9.d`：双极混号 — 先安抚百姓，再设法分化豪强内部，逐步瓦解其势力
+- **q10** 题干：皇帝密令你暗中调查太子是否谋反，但你发现太子虽有异心却未实际行动，且太子曾对你有救命之恩。
+  - `q10.a`：结构检查通过 — 如实禀报，但隐去救命之恩，以事实为重
+  - `q10.b`：结构检查通过 — 暗中提醒太子收敛，同时向皇帝保证太子忠诚
+  - `q10.c`：双极混号 — 设法让太子主动向皇帝交出兵权，以表忠心
+  - `q10.d`：双极混号 — 以证据不足为由，向皇帝请命暂缓调查
+- **q11** 题干：你奉命护送一批粮食赈灾，途中遭遇山贼拦截，对方首领是你昔日同窗好友，如今占山为王。
+  - `q11.a`：双极混号 — 单骑会友，晓以大义，劝其让路放行赈灾粮
+  - `q11.b`：双极混号 — 设伏兵于后，先派使者谈判拖延时间，再突袭剿匪
+  - `q11.c`：双极混号 — 分出一部分粮食赠与山贼，请其护送其余粮食安全通过
+  - `q11.d`：结构检查通过 — 强攻硬闯，不惜代价确保粮食安全送达
+- **q12** 题干：你被陷害入狱，查明是朝中重臣所为，此人位高权重，直接证据难寻，且你身陷囹圄无法自证清白。
+  - `q12.a`：双极混号 — 暗中联络旧部，设计让对手露出马脚，再一举扳倒
+  - `q12.b`：双极混号 — 在狱中写下奏章，直言不讳地揭露阴谋，哪怕因此获罪
+  - `q12.c`：双极混号 — 假意认罪，设法接近对手，寻找其破绽伺机反击
+  - `q12.d`：结构检查通过 — 暗中收集证据，设法送出狱外，请友人代为申冤
+- **q13** 题干：朝堂之上，皇帝疑心你结党营私，暗中试探你的忠诚。此时你收到密信，告知你的政敌正收集你的'罪证'。
+  - `q13.a`：结构检查通过 — 主动向皇帝请罪，交出所有证据，表明心迹
+  - `q13.b`：结构检查通过 — 先暗中销毁所有可能对自己不利的证据，再设法反制政敌
+  - `q13.c`：双极混号 — 向皇帝坦白部分真相，但保留对自己有利的部分
+  - `q13.d`：双极混号 — 假装不知情，等待政敌先动手，再伺机反击
+- **q14** 题干：你得知一位旧友被诬陷入狱，证据确凿，但你知道他是被冤枉的。此时皇帝正公开寻求对此事的'公正处理'。
+  - `q14.a`：结构检查通过 — 不顾自身安危，当庭为旧友辩护，寻找翻案证据
+  - `q14.b`：双极混号 — 暗中收集真相，但暂不行动，等待更有利的时机
+  - `q14.c`：双极混号 — 向皇帝进言，指出此案疑点，但不直接为旧友辩护
+  - `q14.d`：结构检查通过 — 与旧友划清界限，避免牵连自己，暗中派人送些银两
+- **q15** 题干：你奉命调查一桩军需贪污案，发现证据直指位高权重的将军，但他曾是你恩师。
+  - `q15.a`：双极混号 — 将调查结果如实上报，公正执法不徇私情
+  - `q15.b`：双极混号 — 私下提醒恩师，给他机会自行了结此事
+  - `q15.c`：结构检查通过 — 找出恩师背后的真正黑手，只举报从犯
+  - `q15.d`：双极混号 — 销毁所有指向恩师的证据，重新调查其他嫌疑人
+- **q16** 题干：敌国使者前来谈判，表面和善，实则暗藏玄机。你负责接待并判断其真实意图。
+  - `q16.a`：结构检查通过 — 以礼相待，但暗中安排高手监视一举一动
+  - `q16.b`：结构检查通过 — 设下重重考验，故意泄露假信息观察反应
+  - `q16.c`：结构检查通过 — 坦诚相见，以诚换诚，相信双方都有和平诚意
+  - `q16.d`：双极混号 — 表面热情接待，暗中准备应对各种可能
+- **q17** 题干：你被派往边疆镇守，发现当地官员与商贾勾结，克扣军饷，但证据不足。
+  - `q17.a`：结构检查通过 — 不顾官职悬殊，直接上奏弹劾，要求彻查
+  - `q17.b`：双极混号 — 先假意合作，收集足够证据再一举扳倒
+  - `q17.c`：双极混号 — 私下警告相关官员，勒令退还克扣款项
+  - `q17.d`：双极混号 — 上报朝廷边疆不稳，请求增兵调查
+- **q18** 题干：你发现皇帝正在推行一项看似惠民实则劳民伤财的工程，百姓怨声载道。
+  - `q18.a`：结构检查通过 — 不顾个人安危，当廷直谏，为民请命
+  - `q18.b`：结构检查通过 — 暗中组织朝臣联名上书，集体劝谏
+  - `q18.c`：双极混号 — 先私下劝说皇帝信任的近臣，间接影响决策
+  - `q18.d`：结构检查通过 — 假病告假，不参与此事，保全自身
+
+### 逐结果
+- **r1**（梅长苏）：profile 键与范围检查通过。
+- **r2**（萧景琰）：profile 键与范围检查通过。
+- **r3**（誉王萧景桓）：profile 键与范围检查通过。
+- **r4**（霓凰郡主）：profile 键与范围检查通过。
+- **r5**（夏冬）：profile 键与范围检查通过。
+- **r6**（言豫津）：profile 键与范围检查通过。
+- **r7**（梁帝）：profile 键与范围检查通过。
+- **r8**（蒙挚）：profile 键与范围检查通过。
+
+## life-philosophy-archetype
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：城中暴乱,街角一位老者被暴徒围困,周围群众四散奔逃,而你恰好路过。空气中弥漫着焦糊味,远处传来玻璃破碎的脆响,老者眼中满是恐惧。
+  - `q1.a`：结构检查通过 — 迅速评估形势,寻找最有效的解救方法,而非被恐慌情绪左右
+  - `q1.b`：结构检查通过 — 不顾个人安危冲入人群,用直觉判断最佳时机实施救援
+  - `q1.c`：结构检查通过 — 立即拨打报警电话,同时组织周围幸存者形成人墙保护老者
+  - `q1.d`：结构检查通过 — 利用现场混乱制造声东击西的机会,分散暴徒注意力
+- **q2** 题干：静坐窗前,雨声淅沥,面前摆放着两本书:一本是关于世界规律的自然科学著作,另一本是探索内心情感的诗集。雨水在窗玻璃上蜿蜒成河,室内灯光柔和。
+  - `q2.a`：结构检查通过 — 选择自然科学著作,系统理解客观世界的运作原理
+  - `q2.b`：结构检查通过 — 选择诗集,沉浸在情感共鸣的体验中感受生命的深度
+  - `q2.c`：结构检查通过 — 先读自然科学,再用诗意的视角解读发现的规律
+  - `q2.d`：结构检查通过 — 同时阅读两本书,寻找理性与感性的交汇点
+- **q3** 题干：家族企业面临抉择:保守经营维持现状但利润微薄,或冒险转型可能带来巨大成功也可能导致破产。会议室里空气凝重,长辈们眉头紧锁,年轻一代争论不休。
+  - `q3.a`：结构检查通过 — 分析市场数据,计算风险收益比,选择概率最优的方案
+  - `q3.b`：结构检查通过 — 坚守祖辈创立的传统,相信稳定的价值胜过不确定的变革
+  - `q3.c`：结构检查通过 — 评估两种选择对家族成员的影响,确保大多数人利益不受损
+  - `q3.d`：结构检查通过 — 尝试小规模试点,根据反馈逐步调整策略,避免孤注一掷
+- **q4** 题干：周末傍晚,独自一人在家,面对空荡荡的书架和一本从未读过但经典的名著。夕阳透过窗户洒在书页上,四周安静得能听见时钟的滴答声。
+  - `q4.a`：结构检查通过 — 按照书籍目录系统阅读,建立完整的知识框架
+  - `q4.b`：结构检查通过 — 随心所欲翻阅,感受文字带来的即时情感冲击
+  - `q4.c`：结构检查通过 — 将书作为装饰,满足自己'读过经典'的心理需求
+  - `q4.d`：结构检查通过 — 从中间开始阅读,按照兴趣跳跃式探索,打破传统阅读顺序
+- **q5** 题干：看到一位艺术家倾尽所有积蓄创作一件无人理解的作品,生活困顿却坚持自我表达。工作室里布满草图和半成品,艺术家眼中闪烁着狂热的光芒。
+  - `q5.a`：结构检查通过 — 分析作品的市场价值,劝导艺术家考虑现实因素
+  - `q5.b`：结构检查通过 — 被艺术家的执着打动,认为情感表达本身就是最高价值
+  - `q5.c`：结构检查通过 — 建议艺术家平衡创作与生计,寻找艺术与商业的结合点
+  - `q5.d`：结构检查通过 — 欣赏艺术家的勇气,但也担心这种生活方式的可持续性
+- **q6** 题干：村中遭遇旱灾,粮食短缺,长老们提议按人口平均分配有限的粮食,有人提议优先照顾老弱。祠堂里气氛凝重,村民们面黄肌瘦,眼神中充满焦虑。
+  - `q6.a`：结构检查通过 — 支持平均分配,确保每个家庭获得公平的份额
+  - `q6.b`：结构检查通过 — 主张按劳分配,认为贡献大的人应获得更多粮食
+  - `q6.c`：结构检查通过 — 建议根据家庭人口和特殊需求灵活调整分配方案
+  - `q6.d`：结构检查通过 — 提议让村民自行协商解决,相信集体智慧能找到最佳方案
+- **q7** 题干：受邀参加两种聚会:一个是大型社区集体活动,强调共同参与和和谐；另一个是小型私人聚会,允许个性表达。邀请函整齐地摆在桌上,让你陷入思考。
+  - `q7.a`：结构检查通过 — 选择社区活动,享受集体归属感和协作创造的快乐
+  - `q7.b`：结构检查通过 — 选择私人聚会,珍视自由表达和真实交流的机会
+  - `q7.c`：结构检查通过 — 先参加社区活动,中途离席去私人聚会,兼顾两种体验
+  - `q7.d`：结构检查通过 — 邀请两方朋友共同参与,创造集体与个性并存的新形式
+- **q8** 题干：晨光中,你意外获得一笔丰厚的奖金,指尖划过银行卡冰冷的表面。这笔钱足够改善你的生活品质,也能捐给偏远地区改善医疗。你会如何决定？
+  - `q8.a`：结构检查通过 — 立即用于提升自己的生活品质,犒劳长期以来的辛勤付出
+  - `q8.b`：结构检查通过 — 全部捐赠给贫困地区,医疗救助能惠及更多需要帮助的人
+  - `q8.c`：结构检查通过 — 留下一部分改善生活,其余捐出,在个人满足与社会贡献间寻求平衡
+  - `q8.d`：结构检查通过 — 先存起来,观察一段时间再做决定,确保这笔钱能发挥最大价值
+- **q9** 题干：团队会议室里,投影仪嗡嗡作响,你发现了一种能提高项目效率的工作方法,但它与团队既定流程相悖。团队成员们神情专注,讨论着下一步计划。
+  - `q9.a`：结构检查通过 — 立即提出新方法,证明其高效性,即使可能打乱团队节奏
+  - `q9.b`：结构检查通过 — 私下与团队领导沟通,建议在保持团队和谐的前提下进行小规模试验
+  - `q9.c`：结构检查通过 — 尊重团队既定流程,避免因个人想法影响集体协作的稳定性
+  - `q9.d`：结构检查通过 — 暂时保留想法,观察一段时间后,在适当时机再提出改进建议
+- **q10** 题干：暮色中的书房,导师的话语回响在耳边,他所传授的处世哲学让你豁然开朗,但实践中发现它与现行社会规则存在冲突。窗外的城市灯火通明。
+  - `q10.a`：结构检查通过 — 坚定遵循导师的哲学,即使与社会规范冲突也不改变自己的立场
+  - `q10.b`：结构检查通过 — 在私人生活中实践导师哲学,但在公共场合遵守社会规则
+  - `q10.c`：结构检查通过 — 调整导师哲学以适应社会规范,在遵循规则的前提下寻求精神自由
+  - `q10.d`：结构检查通过 — 重新评估导师哲学与社会规则的合理性,选择最符合自身价值观的方式
+- **q11** 题干：站在人生的十字路口,远处是平坦安稳的康庄大道,近处是蜿蜒崎岖但充满未知的山间小径。微风拂过,树叶沙沙作响。
+  - `q11.a`：结构检查通过 — 选择稳定可预测的道路,在熟悉的领域深耕细作,积累确定性
+  - `q11.b`：结构检查通过 — 踏上充满可能性的未知之路,在变化中寻找自我突破的机会
+  - `q11.c`：结构检查通过 — 在稳定中预留变化的空间,保持开放心态但不过度冒险
+  - `q11.d`：结构检查通过 — 先走一段稳定道路,积累足够资源后再转向更具挑战性的方向
+- **q12** 题干：咖啡馆里,你目睹一位公益人士为了筹款救助儿童,不惜伪造数据,却成功吸引了大量关注和资金。他眼神坚定,语气诚恳。
+  - `q12.a`：结构检查通过 — 谴责其违背道德的行为,认为手段的正当性比结果更重要
+  - `q12.b`：结构检查通过 — 理解其初衷但质疑方法,认为即使目标崇高也不能突破道德底线
+  - `q12.c`：结构检查通过 — 肯定其成果,认为只要最终结果正义,过程中的非常规手段可以接受
+  - `q12.d`：结构检查通过 — 保持中立,认为道德与功利之间的选择取决于具体情境
+- **q13** 题干：实验室里,有限的科研经费摆在面前,一边是能惠及多数人的实用技术改良,一边是少数人受益但可能改变人类认知的前沿探索。烧杯中的液体泛着微光。
+  - `q13.a`：结构检查通过 — 优先发展实用技术,确保资源能最大程度改善多数人的生活
+  - `q13.b`：结构检查通过 — 投入前沿科学研究,即使短期受益有限,也要追求可能的突破性发现
+  - `q13.c`：结构检查通过 — 平衡分配资源,一部分解决当下问题,一部分探索未来可能性
+  - `q13.d`：结构检查通过 — 根据项目的实际进展和反馈动态调整资源分配方向
+- **q14** 题干：书桌前,面对堆积的日常琐事,阳光透过百叶窗在文件上投下斑驳的影子。你可以选择遵循既定的高效流程,也可以根据当下感受随机处理。
+  - `q14.a`：结构检查通过 — 严格遵循既定流程,确保每项任务都按照最优标准完成
+  - `q14.b`：结构检查通过 — 根据当下感受和创意随机处理,享受过程中的自由和新鲜感
+  - `q14.c`：结构检查通过 — 在重要事务上遵循流程,在琐事上保持灵活性,兼顾效率与创意
+  - `q14.d`：结构检查通过 — 先观察一段时间,找出最适合当前情况的处理方式,不拘泥于固定模式
+- **q15** 题干：咖啡馆里,你的朋友因拒绝参与行业潜规则而失去合作机会,眼中闪烁着坚定的光芒,却显得格格不入。你会如何反应？
+  - `q15.a`：结构检查通过 — 支持朋友坚守原则,认为社会应当包容不同的声音
+  - `q15.b`：结构检查通过 — 劝朋友适当妥协,认为在现实中完全坚持自我是不切实际的
+  - `q15.c`：结构检查通过 — 理解朋友的选择,但保持距离,认为这是个人价值与社会现实的权衡
+  - `q15.d`：结构检查通过 — 尊重朋友的决定,同时寻找其他可能帮助他融入社会的方式
+- **q16** 题干：漫步在美术馆,你被一幅打破传统构图、大胆运用非典型色彩的作品吸引,展厅里光影交错,空气中弥漫着松节油的气息。
+  - `q16.a`：结构检查通过 — 被这种颠覆传统的创作所震撼,认为艺术应当突破既有框架
+  - `q16.b`：结构检查通过 — 欣赏作品的独特性,但也理解传统美学所承载的历史价值
+  - `q16.c`：结构检查通过 — 认为艺术创新应当建立在对传统的深刻理解之上,而非简单否定
+  - `q16.d`：结构检查通过 — 更倾向于欣赏那些遵循经典技法、体现集体审美共识的作品
+- **q17** 题干：收到一所顶尖学府的录取通知,但需要离开家乡、独自前往陌生的城市,行李箱在地板上投下长长的影子。
+  - `q17.a`：结构检查通过 — 立即接受挑战,认为个人成长需要突破舒适区,拥抱未知
+  - `q17.b`：结构检查通过 — 权衡利弊后决定前往,但会保持与家乡的紧密联系,寻求平衡
+  - `q17.c`：结构检查通过 — 推迟决定,先在当前环境中积累更多经验和资源,再做选择
+  - `q17.d`：结构检查通过 — 放弃机会,认为稳定的人际关系和环境比个人成就更重要
+- **q18** 题干：会议室里,面对同样的项目困境,有人冷静分析数据,有人则表达对团队感受的担忧,咖啡的香气在空气中弥漫。
+  - `q18.a`：结构检查通过 — 认同数据分析者的方法,认为客观事实是解决问题的最佳依据
+  - `q18.b`：结构检查通过 — 认为情感和直觉同样重要,决策应兼顾数据和人的感受
+  - `q18.c`：结构检查通过 — 倾向于先理解团队的情绪状态,再寻找理性可行的解决方案
+  - `q18.d`：结构检查通过 — 相信直觉和经验的价值,数据无法捕捉问题的本质和复杂性
+- **q19** 题干：家庭聚会上,父母希望你回乡发展,而你内心向往在大城市追求艺术梦想,餐桌上气氛微妙,碗筷碰撞声格外清晰。
+  - `q19.a`：结构检查通过 — 坚持自己的选择,认为个人追求不应被家庭期望所束缚
+  - `q19.b`：结构检查通过 — 寻求折中方案,如先在大城市积累经验,再考虑与家庭的平衡
+  - `q19.c`：结构检查通过 — 推迟决定,先尝试在两地之间寻找能兼顾个人与家庭的方式
+  - `q19.d`：结构检查通过 — 选择满足家庭期望,认为亲情和责任是人生中最重要的价值
+- **q20** 题干：职业道路出现两个选择:稳定但发展缓慢的工作,充满挑战但前景不明的新机会,窗外的雨滴敲打着玻璃。
+  - `q20.a`：结构检查通过 — 选择新机会,认为人生需要冒险和变化,稳定可能意味着停滞
+  - `q20.b`：结构检查通过 — 先在当前岗位上积累资源,寻找能兼顾稳定与发展的中间道路
+  - `q20.c`：结构检查通过 — 倾向于稳定,认为可预测的未来比不确定的冒险更值得追求
+  - `q20.d`：结构检查通过 — 选择新机会,但会做好充分准备,将风险控制在可承受范��内
+
+### 逐结果
+- **r1**（斯多葛主义）：profile 键与范围检查通过。
+- **r2**（功利主义）：profile 键与范围检查通过。
+- **r3**（浪漫主义）：profile 键与范围检查通过。
+- **r4**（存在主义）：profile 键与范围检查通过。
+- **r5**（儒家思想）：profile 键与范围检查通过。
+- **r6**（社群主义）：profile 键与范围检查通过。
+- **r7**（利己主义）：profile 键与范围检查通过。
+- **r8**（道家思想）：profile 键与范围检查通过。
+
+## literary-soul-resonance
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜书房,油灯摇曳,你正在创作一部揭露社会不公的小说。突然一封匿名威胁信被塞进门缝,窗外雨声急促,墨迹在纸上晕开。面对威胁,你将如何反应？
+  - `q1.a`：结构检查通过 — 立即修改作品,删除敏感内容,确保自身安全
+  - `q1.b`：结构检查通过 — 将威胁信作为素材,更深入地探索权力与真相的角力
+  - `q1.c`：结构检查通过 — 暂时搁笔,待风波平息后再继续创作,但绝不放弃初衷
+  - `q1.d`：结构检查通过 — 匿名发表作品,通过出版社渠道传播,让作品自行发声
+- **q2** 题干：巴黎小咖啡馆里,咖啡香气与羊皮纸的气味交织。出版商轻声提议修改你的诗集,增加商业元素换取丰厚报酬,但会削弱作品的艺术完整性。你会如何回应？
+  - `q2.a`：结构检查通过 — 接受修改,认为艺术需要市场认可才能广泛传播
+  - `q2.b`：结构检查通过 — 婉拒提议,坚持纯粹的艺术表达,即使收入减少也在所不惜
+  - `q2.c`：结构检查通过 — 部分修改,保留核心情感但调整某些表达方式以更易理解
+  - `q2.d`：结构检查通过 — 重新构思作品,寻找艺术与商业的平衡点,不妥协也不固守
+- **q3** 题干：罗马斗兽场废墟上,秋风穿过古老石柱,发出低沉的回响。阳光斜照在断裂的墙壁上,你手握笔记本,思考如何将这一历史场景融入作品。你会选择怎样的叙事方式？
+  - `q3.a`：结构检查通过 — 以现代人的视角回望历史,通过个人感受连接古今
+  - `q3.b`：结构检查通过 — 构建多线叙事,让不同时代的人物在此场景交错对话
+  - `q3.c`：结构检查通过 — 简洁直白地描述场景,让历史本身的力量震撼读者
+  - `q3.d`：结构检查通过 — 用象征手法将废墟比作文明的伤痕,探索人类循环的命运
+- **q4** 题干：圣彼得堡文学沙龙中,水晶吊灯投下冷光,评论家尖锐批评你的新作过于关注个人情感而忽视社会现实。面对质疑,你会如何回应？
+  - `q4.a`：结构检查通过 — 承认批评有理,开始构思更宏大的社会议题作品
+  - `q4.b`：结构检查通过 — 坚持个人情感的价值,认为微观叙事同样能揭示社会本质
+  - `q4.c`：结构检查通过 — 重新审视作品,在保持个人风格的同时增加社会思考的维度
+  - `q4.d`：结构检查通过 — 避开正面回应,转而探讨文学评价的主观性和多样性
+- **q5** 题干：京都老茶馆里,抹茶的苦涩与樱花的淡香交织。邻桌老者独自品茶,神情专注,仿佛与世隔绝。这一景象触发了你对生命意义的哪些思考？
+  - `q5.a`：结构检查通过 — 生命在于专注当下,在简单事物中寻找永恒
+  - `q5.b`：结构检查通过 — 生命的意义在于与世界建立连接,而非孤芳自赏
+  - `q5.c`：结构检查通过 — 每个人都在寻找自己的生命之道,没有标准答案
+  - `q5.d`：结构检查通过 — 生命的意义在于传承,老者象征着智慧的延续
+- **q6** 题干：你在创作战争小说时,收到前线战友来信,描述战场惨状。墨水在信纸上晕开,窗外传来远处隐隐的雷声。你面临继续原计划创作还是立即改变叙事方向的选择。
+  - `q6.a`：结构检查通过 — 继续原计划,认为艺术需要距离才能客观呈现战争真相
+  - `q6.b`：结构检查通过 — 立即调整叙事,将真实经历融入作品,让读者感受战争的残酷
+  - `q6.c`：结构检查通过 — 重新构思作品框架,平衡艺术真实与历史真实
+  - `q6.d`：结构检查通过 — 搁置创作,先去前线收集更多素材,等归来再动笔
+- **q7** 题干：威尼斯运河边,水面波光粼粼。一位作家对着水面凝视良久,在笔记本上写下几个字后又迅速划掉,表情时而痛苦时而狂喜。你如何看待他的创作状态？
+  - `q7.a`：结构检查通过 — 他在寻找最精准的情感表达,艺术创作需要这种极致的专注
+  - `q7.b`：结构检查通过 — 他在内心挣扎,艺术创作往往伴随着痛苦与狂喜的交织
+  - `q7.c`：结构检查通过 — 他在过度追求完美,真正的好创作应该自然流畅而非刻意雕琢
+  - `q7.d`：结构检查通过 — 他在探索自我与世界的边界,创作是寻找心灵出口的方式
+- **q8** 题干：在开罗的集市,阳光透过彩色玻璃窗洒在泛黄的手稿上,空气中弥漫着香料的芬芳和岁月的味道。你抚摸着这些古老的文字,思考着如何将东方的神秘元素融入你的创作。
+  - `q8.a`：结构检查通过 — 选择最具象征性的元素,编织成一条贯穿全文的隐喻线索,让读者在阅读中逐渐发现其中的深意。
+  - `q8.b`：结构检查通过 — 以简洁直白的语言描述这些异域风情,让它们成为故事背景的点缀,不影响主线情节的推进。
+  - `q8.c`：结构检查通过 — 将东方元素作为探索人性共通点的窗口,通过不同文化背景下的相似情感,揭示人类本质的相通之处。
+  - `q8.d`：结构检查通过 — 只选取那些能引发强烈情感共鸣的细节,用浓墨重彩的笔触描绘,让读者仿佛置身于那个充满感官冲击的世界。
+- **q9** 题干：在伦敦的公寓里,昏黄的灯光下,你翻开泛黄的日记本,那些年轻时的字迹既熟悉又陌生。窗外的雨声滴答,与回忆中的心跳交织在一起。
+  - `q9.a`：结构检查通过 — 将这些曾经的思考作为故事的核心,探索理想与现实的永恒矛盾,展现人生选择的复杂后果。
+  - `q9.b`：结构检查通过 — 以日记为线索,串联起不同时期的人生片段,展现一个完整而连贯的思想演变过程。
+  - `q9.c`：结构检查通过 — 只保留日记中最强烈的情感片段,用直白而有力的语言重现那些刻骨铭心的爱与痛。
+  - `q9.d`：结构检查通过 — 将日记中的思考与当下的社会现象并置,通过对比展现个人命运与时代洪流的交织。
+- **q10** 题干：你的小说即将付印,校样中那段关于宗教的描写如同一把锋利的刀,直刺社会的敏感神经。出版商面色凝重地建议修改,你知道这会削弱作品的思想锋芒。
+  - `q10.a`：结构检查通过 — 坚持原作不动摇,认为思想的完整性高于一切,宁可冒着争议也不向世俗妥协。
+  - `q10.b`：结构检查通过 — 重新审视那段描写,寻找既能保持思想深度又能避免直接冲突的表达方式,用隐喻传递真理。
+  - `q10.c`：结构检查通过 — 妥协修改,但将这种妥协本身作为对知识分子处境的反思,记录下艺术与权力博弈的复杂过程。
+  - `q10.d`：结构检查通过 — 删除这段描写,转而通过人物对话和情节发展间接表达相同的思想,让读者在故事中自行领悟。
+- **q11** 题干：在纽约先锋艺术展的喧嚣中,一位导演热情地向你提议将你的小说改编成电影。他的眼睛闪烁着商业成功的光芒,但提出的简化方案会让你精心构建的艺术世界支离破碎。
+  - `q11.a`：结构检查通过 — 拒绝改编,坚信作品的艺术完整性不容妥协,宁愿保持原貌也不愿看到它被简化变形。
+  - `q11.b`：结构检查通过 — 接受改编但保留核心叙事结构,通过视觉和听觉的创新表达来弥补情节简化的遗憾。
+  - `q11.c`：结构检查通过 — 借机探讨艺术商业化的悖论,通过小说中人物对改编的态度,反思创作与市场的永恒矛盾。
+  - `q11.d`：结构检查通过 — 将改编过程本身写入续作,记录一位作家面对作品被大众化解读时的复杂心理和内心挣扎。
+- **q12** 题干：苏黎世湖畔的长椅上,一位老人每天准时出现,凝视着湖水。他的眼神平静如水,却又藏着深深的忧伤,笔记本上却很少留下文字,只有零散的符号和涂鸦。
+  - `q12.a`：结构检查通过 — 以老人为原型,创作一个关于沉默与表达的故事,探讨语言在触及人类深层情感时的局限性。
+  - `q12.b`：结构检查通过 — 通过细致观察老人的微表情和动作,捕捉那些未说出口的情感,用细腻的笔触还原一个复杂的精神世界。
+  - `q12.c`：结构检查通过 — 将老人视为现代社会中疏离个体的象征,通过他的故事反思人与人之间的沟通障碍和情感隔阂。
+  - `q12.d`：结构检查通过 — 采用非线性叙事,将老人的过去与现在交织,通过碎片化的记忆展现一个完整而复杂的人生轨迹。
+- **q13** 题干：布拉格旧书店的角落里,一本被遗忘的日记静静躺在积灰的书架上。翻开它,作者对人性的黑暗探索让你心悸,那些直白而残酷的文字如同锋利的刀,剖开灵魂的真相。
+  - `q13.a`：结构检查通过 — 以日记中的黑暗美学为灵感,创作一部直面人性阴暗面的作品,用不加修饰的笔触揭示灵魂深处的真相。
+  - `q13.b`：结构检查通过 — 将这种黑暗元素作为故事的背景,通过隐喻和象征传递,留给读者解读的空间。
+  - `q13.c`：结构检查通过 — 借由日记中的黑暗探索,反思现代社会中人性的异化,探讨在物质繁荣下精神困境的根源。
+  - `q13.d`：结构检查通过 — 以日记作者的经历为线索,构建一个关于救赎与沉沦的故事,展现人性中光明与黑暗的永恒斗争。
+- **q14** 题干：你的作品被翻译成多种语言,但某国译者擅自修改了你结尾的哲学思考,将其改为更加乐观的结局。出版商劝你接受这一修改以换取更广泛的读者,而你面临思想妥协的抉择。
+  - `q14.a`：结构检查通过 — 坚决维护原作的哲学立场,认为思想的完整性不容妥协,宁可失去部分读者也不愿向世俗低头。
+  - `q14.b`：结构检查通过 — 接受修改,但通过前言或后记记录下这种文化差异带来的思想碰撞,探讨不同文化背景下对生命意义的理解。
+  - `q14.c`：结构检查通过 — 将这种翻译冲突本身作为创作素材,通过小说中 characters 对作品被不同文化解读的反应,反思思想传播的复杂性。
+  - `q14.d`：结构检查通过 — 重新审视自己的哲学立场,寻找能在不同文化背景下都引起共鸣的表达方式,让思想跨越文化和语言的障碍。
+- **q15** 题干：在伊斯坦布尔的香料市场,阳光透过彩色玻璃在香料上投下斑斓光影,空气中弥漫着甜腻与辛辣交织的气息。老商人布满皱纹的手递来一撮神秘香料,你尝到的复杂滋味让你若有所思。
+  - `q15.a`：结构检查通过 — 这味道就像人生,矛盾却真实,应该如实记录这种复杂性
+  - `q15.b`：结构检查通过 — 香料背后的故事更吸引我,每个味道都承载着一段历史
+  - `q15.c`：结构检查通过 — 试着调配出独特的配方,创造一种属于自己的味道
+  - `q15.d`：结构检查通过 — 这香料让我想起故乡的味道,记录下这份乡愁才是最重要的
+- **q16** 题干：柏林文学节现场,聚光灯下的你握着奖杯提名,评委席上一位权威人士皱眉质疑你的作品缺乏社会担当,台下窃窃私语,你的思绪在掌声与批评间徘徊。
+  - `q16.a`：结构检查通过 — 坚持个人表达,真正的社会责任是忠实于自己的内心
+  - `q16.b`：结构检查通过 — 重新审视作品,加入对更广阔社会议题的思考
+  - `q16.c`：结构检查通过 — 尝试用更激烈的情感表达打动评委,展现内心的挣扎
+  - `q16.d`：结构检查通过 — 调整叙事结构,采用更复杂的象征手法来平衡个人与社会
+- **q17** 题干：京都竹林小径,阳光透过竹叶在宣纸上投下摇曳的光斑,作家专注的神情如入定,毛笔在纸上时而顿挫有力,时而流畅飘逸,每一笔都蕴含着某种难以言说的韵律。
+  - `q17.a`：结构检查通过 — 这种简洁有力的笔触直指人心,不需要过多修饰
+  - `q17.b`：结构检查通过 — 作家笔下的情感如此浓烈,仿佛能感受到他内心的波澜
+  - `q17.c`：结构检查通过 — 这种创作方式展现了生命的矛盾与和谐
+  - `q17.d`：结构检查通过 — 这种创作反映了对生命意义的思考
+- **q18** 题干：墨西哥城市场,色彩斑斓的民间艺术摊位前,你被一幅描绘古老神话的壁画吸引,摊主用浓重的西班牙语讲述着传说,空气中弥漫着辣椒和香料的气息。
+  - `q18.a`：结构检查通过 — 这种原始的生命力应该直接表达,不加修饰地传递情感
+  - `q18.b`：结构检查通过 — 将这些元素融入更复杂的叙事结构,创造多层次的故事
+  - `q18.c`：结构检查通过 — 思考这些神话背后的哲学意义,探索存在的本质
+  - `q18.d`：结构检查通过 — 通过这些元素表达对社会责任的思考
+- **q19** 题干：巴黎公寓阳台,塞纳河上的游船在夕阳下缓缓驶过,你手中的笔记本已经记录下数十个日常片段,从咖啡店顾客的对话到河边情侣的剪影,一切皆成为创作的素材。
+  - `q19.a`：结构检查通过 — 这些日常片段揭示了社会的真相,记录下来是我的责任
+  - `q19.b`：结构检查通过 — 这些观察让我对生命有了更深的理解
+  - `q19.c`：结构检查通过 — 用简洁的语言捕捉这些瞬间的情感
+  - `q19.d`：结构检查通过 — 将这些碎片编织成一张复杂的生活图景
+- **q20** 题干：深夜的书房,最后一部小说的手稿散落桌面,你发现作品虽然精巧却无法回答关于生命意义的困惑,窗外城市的灯火与内心的迷茫交织,你面临抉择。
+  - `q20.a`：结构检查通过 — 重新审视整个人生哲学,寻找真正有意义的答案
+  - `q20.b`：结构检查通过 — 坚持原计划完成作品,艺术不必回答所有问题
+  - `q20.c`：结构检查通过 — 通过复杂的叙事结构展现这种困惑本身
+  - `q20.d`：结构检查通过 — 表达对生命意义的多重思考,不追求统一答案
+
+### 逐结果
+- **r1**（鲁迅）：profile 键与范围检查通过。
+- **r2**（托尔斯泰）：profile 键与范围检查通过。
+- **r3**（海明威）：profile 键与范围检查通过。
+- **r4**（加缪）：profile 键与范围检查通过。
+- **r5**（马尔克斯）：profile 键与范围检查通过。
+- **r6**（张爱玲）：profile 键与范围检查通过。
+- **r7**（博尔赫斯）：profile 键与范围检查通过。
+- **r8**（三毛）：profile 键与范围检查通过。
+
+## little-prince-character-match
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **警告（1）**
+  - dimension "占有欲" has only 8 scoring opportunities (expected ~23) — severely underrepresented
+
+### 逐题 · 逐选项
+- **q1** 题干：玫瑰园中,一朵珍贵的玫瑰突然枯萎,花瓣蜷曲,香气消散。园丁焦急地抹去额头的汗水,向你求助——你知道唯一的解药在遥远的B612星球上。你会怎么做？
+  - `q1.a`：结构检查通过 — 立刻启程前往B612星球,即使路途遥远也不愿看到玫瑰凋零
+  - `q1.b`：结构检查通过 — 寻找其他可能的挽救方法,不愿冒险离开熟悉的环境
+  - `q1.c`：结构检查通过 — 告诉园丁生命有生有死,接受玫瑰的自然凋零
+  - `q1.d`：结构检查通过 — 向狐狸请教,或许它知道不离开星球也能挽救玫瑰的方法
+- **q2** 题干：星空下,你发现一颗新的小行星。一边是闪耀着金色光芒的奇异花园,花香四溢；另一边是静静流淌的蓝色星河,星辰如钻石般闪烁。你会走向哪里？
+  - `q2.a`：结构检查通过 — 毫不犹豫地走向金色花园,被那些从未见过的奇特植物所吸引
+  - `q2.b`：结构检查通过 — 先在远处观察,确保没有危险后再决定是否靠近
+  - `q2.c`：结构检查通过 — 走向蓝色星河,想要探索那神秘的流动光芒背后的秘密
+  - `q2.d`：结构检查通过 — 留在原地,欣赏两处美景而不贸然踏入任何一方
+- **q3** 题干：狐狸邀请你建立联系,需要你付出时间和耐心；商人则立刻给你一颗珍贵的星星,条件是你必须放弃所有其他可能的关系。你会选择？
+  - `q3.a`：结构检查通过 — 选择狐狸,相信真正的联系需要时间和真心浇灌
+  - `q3.b`：结构检查通过 — 选择商人,获得星星的同时保留与其他人的自由交往
+  - `q3.c`：结构检查通过 — 拒绝狐狸,不愿为建立联系付出太多时间和精力
+  - `q3.d`：结构检查通过 — 拒绝商人,不愿为了物质利益而牺牲关系的可能性
+- **q4** 题干：在同一颗小行星上,商人愿意用全部财富换取你的一朵玫瑰,而飞行员请求你帮助他修好飞船,这样你们都能继续探索宇宙。你会？
+  - `q4.a`：结构检查通过 — 将玫瑰交给商人,用它的财富帮助飞行员修好飞船
+  - `q4.b`：结构检查通过 — 保留玫瑰,拒绝商人的交易,因为玫瑰对你有特殊意义
+  - `q4.c`：结构检查通过 — 帮助飞行员修好飞船,继续探索宇宙的未知
+  - `q4.d`：结构检查通过 — 告诉他们玫瑰和飞船都有价值,但需要更多时间决定
+- **q5** 题干：沙漠中行走,你发现了一口干涸的井,井底似乎有什么东西在闪烁微光。井口狭小,需要冒险才能看清里面的秘密。你会？
+  - `q5.a`：结构检查通过 — 毫不犹豫地趴在井口,探身向内查看那闪烁的光芒
+  - `q5.b`：结构检查通过 — 用绳子系住自己,确保安全后再下井查看
+  - `q5.c`：结构检查通过 — 离开井边,认为光芒可能是陷阱,不值得冒险
+  - `q5.d`：结构检查通过 — 在井边等待,直到有其他人来一起探索这口神秘的井
+- **q6** 题干：夕阳西下,你看到一只狐狸独自坐在小山坡上,凝视着远方。它的身影在暮色中显得孤独而专注。你会？
+  - `q6.a`：结构检查通过 — 悄悄走近,不打扰它,只是静静陪伴在它身边
+  - `q6.b`：结构检查通过 — 询问它是否需要帮助,愿意倾听它的心事
+  - `q6.c`：结构检查通过 — 尊重它的独处,相信每个人都有自己的空间
+  - `q6.d`：结构检查通过 — 认为狐狸应该回到自己的领地,而不是在陌生的地方发呆
+- **q7** 题干：国王的星球上,一场突如其来的沙暴威胁着王冠,国王坚持要按照古老的仪式在沙暴中加冕。你会？
+  - `q7.a`：结构检查通过 — 帮助国王完成仪式,相信传统和责任比安全更重要
+  - `q7.b`：结构检查通过 — 劝说国王推迟加冕,安全第一,仪式可以在风停后举行
+  - `q7.c`：结构检查通过 — 寻找一个既能保护国王又能让仪式继续进行的折中方案
+  - `q7.d`：结构检查通过 — 离开星球,认为国王的决定太过固执,不值得冒险
+- **q8** 题干：玫瑰园中,晨露在花瓣上闪烁着微光,空气中弥漫着甜香。面对这片繁花似锦,你会如何选择？
+  - `q8.a`：结构检查通过 — 只专注于培育一朵玫瑰,悉心照料,直至它绽放出独一无二的光彩
+  - `q8.b`：结构检查通过 — 漫步花园,欣赏每一朵花的美丽,但不与任何一朵建立特别联系
+  - `q8.c`：结构检查通过 — 尝试收集最稀有的品种,将它们标记并记录,打造属于自己的珍品收藏
+  - `q8.d`：结构检查通过 — 观察花园的整体生态,思考如何让所有玫瑰和谐共荣
+- **q9** 题干：点灯人的星球上,夕阳的金辉洒落,他机械地点亮一盏灯,又迅速点亮另一盏,额头上渗出汗珠。面对这个荒谬的规则,你会如何反应？
+  - `q9.a`：结构检查通过 — 帮助他改造机器,让一盏灯能同时完成日出和日落的仪式
+  - `q9.b`：结构检查通过 — 欣赏他坚持的仪式感,认为这本身就是生活的一部分,不必改变
+  - `q9.c`：结构检查通过 — 建议他简化流程,只在一盏灯上标记日出日落,节省精力做更有意义的事
+  - `q9.d`：结构检查通过 — 静静观察,思考这个规则背后的意义,但不插手他的生活方式
+- **q10** 题干：商人指着天上的星星,神情自信地说:'我收集的星星越多,我就越富有。星星永远不会成为朋友,但它们总是属于我。'你听到这番话,心中作何感想？
+  - `q10.a`：结构检查通过 — 认为他太可悲,无法理解星星真正的美丽在于它们的自由和光芒
+  - `q10.b`：结构检查通过 — 思考他的逻辑,虽然不认同但承认这种方式确实能带来物质财富
+  - `q10.c`：结构检查通过 — 好奇他如何计算星星的价值,想了解更多关于这种'收集'的细节
+  - `q10.d`：结构检查通过 — 怜悯他被物质束缚的生活,渴望告诉他真正的财富在于人际关系
+- **q11** 题干：沙漠中,烈日炙烤着沙丘,你的水壶已见底。前方,一位神秘身影在沙丘间若隐若现,似乎在指引方向,而身后,地平线上有救援队的微弱信号。
+  - `q11.a`：结构检查通过 — 毫不犹豫地跟随神秘指引者,相信未知中的可能性大于已知的等待
+  - `q11.b`：结构检查通过 — 向指引者方向走一段,同时保持与救援队的联系,权衡两者机会
+  - `q11.c`：结构检查通过 — 留在原地,相信救援队是更稳妥的选择,冒险可能带来更大风险
+  - `q11.d`：结构检查通过 — 先尝试与神秘指引者交流,了解他的目的再做决定,不贸然行动
+- **q12** 题干：面前有两朵玫瑰:一朵娇艳但脆弱,需要你时刻关注,稍不留神就会凋零；另一片野玫瑰,生命力旺盛,能自我生长,绽放出自由的花朵。
+  - `q12.a`：结构检查通过 — 选择照顾那朵脆弱的玫瑰,愿意投入全部精力守护它的生命
+  - `q12.b`：结构检查通过 — 种植野玫瑰,欣赏它们自由生长的样子,偶尔关注而非时刻照料
+  - `q12.c`：结构检查通过 — 先尝试培养脆弱玫瑰,若它无法适应,再转向更坚韧的野玫瑰
+  - `q12.d`：结构检查通过 — 同时培育两种,根据它们的特性调整照料方式,不偏废任何一方
+- **q13** 题干：星空下,你发现一颗新的小行星,上面有无数个形状各异的湖泊,每个湖泊都映照着不同的星空,闪烁着神秘的光芒。
+  - `q13.a`：结构检查通过 — 立刻开始探索每一个湖泊,记录下它们独特的星空图案,不放过任何细节
+  - `q13.b`：结构检查通过 — 选择一个最特别的湖泊,深入观察它的星空变化,感受其中的奥秘
+  - `q13.c`：结构检查通过 — 思考这些湖泊的形成原理,试图找到它们之间的规律和联系
+  - `q13.d`：结构检查通过 — 静静地欣赏这片奇景,感受宇宙的壮美,而不急于探索或分析
+- **q14** 题干：沙漠中,一只狐狸向你走来,眼神温柔:'如果你驯养了我,我们就会彼此需要。'但同时,远方传来更广阔世界的呼唤声。
+  - `q14.a`：结构检查通过 — 放下探索的渴望,学习驯养的艺术,建立这段独特的连接
+  - `q14.b`：结构检查通过 — 与狐狸交谈,但保持自由,既不驯养也不离开,建立平等的关系
+  - `q14.c`：结构检查通过 — 感谢狐狸的提议,但选择独自探索更广阔的世界,不建立任何束缚
+  - `q14.d`：结构检查通过 — 先与狐狸建立联系,同时保持探索的自由,不让自己被任何一方完全束缚
+- **q15** 题干：国王坐在简陋的宝座上,阳光映照在他威严的紫色长袍上,他郑重地宣称自己统治着整个宇宙,因为他的命令必须被执行。当你目睹这一幕,你会如何理解他的行为？
+  - `q15.a`：结构检查通过 — 权力是一种心理需求,即使在没有实际权力的情况下,人们也需要被尊重和服从的感觉
+  - `q15.b`：结构检查通过 — 国王的统治更多是象征性的,真正重要的是他在自己生活中创造的秩序和意义
+  - `q15.c`：结构检查通过 — 这是一种自我安慰的幻想,当一个人无法在现实中获得满足时,就会在想象中寻求补偿
+  - `q15.d`：结构检查通过 — 每个人都需要自己的'王国',哪怕它只是存在于想象中,这给予人面对世界的勇气
+- **q16** 题干：玫瑰园中,商人正将玫瑰标价出售,每一朵都散发着诱人的芬芳。你拥有足够的星星,却只能拯救其中一朵。你的选择会是什么？
+  - `q16.a`：结构检查通过 — 选择最特别的那一朵,因为它独一无二,就像你生命中的某些人无可替代
+  - `q16.b`：结构检查通过 — 选择最需要被拯救的那一朵,无论它外表如何,因为内在的价值比外表更重要
+  - `q16.c`：结构检查通过 — 不选择任何一朵,因为玫瑰不应该被买卖,它们应该自由生长在自己的花园里
+  - `q16.d`：结构检查通过 — 选择能卖出最高价的那一朵,这样可以用星星做更多有意义的事情
+- **q17** 题干：飞行员站在星空下,邀请你一起探索新的星球,那里有未知的风景和可能。然而,这意味着你可能永远无法回到自己的星球,守护那些熟悉的风景和回忆。
+  - `q17.a`：结构检查通过 — 毫不犹豫地接受邀请,因为未知的世界比已知的一切都更有吸引力
+  - `q17.b`：结构检查通过 — 先回到自己的星球,做好告别和准备,然后再踏上旅程
+  - `q17.c`：结构检查通过 — 拒绝邀请,因为有些情感和回忆是值得永远守护的,不能被新的冒险所取代
+  - `q17.d`：结构检查通过 — 建议飞行员先探索几个星球,再决定是否值得永久离开自己的家园
+- **q18** 题干：沙漠中,你发现一座古老的废弃天文台,阳光透过破损的屋顶洒落,一架布满灰尘的望远镜静静矗立在中央,仿佛在等待着被擦拭和重新发现。
+  - `q18.a`：结构检查通过 — 立刻动手擦拭望远镜,迫不及待地用它仰望星空,感受宇宙的浩瀚与神秘
+  - `q18.b`：结构检查通过 — 先仔细检查望远镜的结构和状况,确保它能安全使用后再进行探索
+  - `q18.c`：结构检查通过 — 思考如何将这个发现与其他人分享,让它成为连接更多人的桥梁
+  - `q18.d`：结构检查通过 — 只是静静地看着望远镜,想象曾经使用它的人,感受时间的流逝
+- **q19** 题干：酒鬼坐在昏暗的酒馆角落,声音沙哑地重复着:'我喝酒是为了忘记羞愧,而羞愧是因为我喝酒。这就是我喝酒的理由。'他的眼神迷离而疲惫。
+  - `q19.a`：结构检查通过 — 指出这种循环逻辑的无意义,帮助他认识到自己行为的真正原因
+  - `q19.b`：结构检查通过 — 静静地听他说完,理解这是他面对内心矛盾的一种方式,不急于评判
+  - `q19.c`：结构检查通过 — 思考如何帮助他打破这个循环,找到生活中更有意义的事情
+  - `q19.d`：结构检查通过 — 认为每个人都有自己的方式面对痛苦,他的行为虽然奇怪但有其内在逻辑
+- **q20** 题干：在璀璨星空下,你可以选择建造一座只属于自己的天文台,独自观测星空的秘密；或者加入一个共享知识的星际旅行者联盟,与志同道合的人一起探索宇宙。
+  - `q20.a`：结构检查通过 — 选择建造属于自己的天文台,因为星空的奥秘应该独自品味,这样才更有意义
+  - `q20.b`：结构检查通过 — 加入星际旅��者联盟,因为宇宙的奥秘足够大,需要许多人一起探索才能理解
+  - `q20.c`：结构检查通过 — 先建立自己的天文台,积累足够的知识和经验后再加入联盟
+  - `q20.d`：结构检查通过 — 在两者之间找到平衡,有时独自探索,有时与人分享,因为不同方式带来不同收获
+
+### 逐结果
+- **r1**（小王子）：profile 键与范围检查通过。
+- **r2**（狐狸）：profile 键与范围检查通过。
+- **r3**（玫瑰）：profile 键与范围检查通过。
+- **r4**（商人）：profile 键与范围检查通过。
+- **r5**（点灯人）：profile 键与范围检查通过。
+- **r6**（飞行员）：profile 键与范围检查通过。
+- **r7**（国王）：profile 键与范围检查通过。
+- **r8**（酒鬼）：profile 键与范围检查通过。
+
+## love-level-test
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 20 · 结果数 5
+- **错误（7）**
+  - r1 is unreachable — dominated by r2 on all dimensions
+  - r1 is unreachable — dominated by r3 on all dimensions
+  - r1 is unreachable — dominated by r5 on all dimensions
+  - r1 is unreachable — dominated by r6 on all dimensions
+  - r2 is unreachable — dominated by r5 on all dimensions
+  - r3 is unreachable — dominated by r5 on all dimensions
+  - r3 is unreachable — dominated by r6 on all dimensions
+- **警告（7）**
+  - r1 is unreachable — dominated by r2 on all dimensions
+  - r1 is unreachable — dominated by r3 on all dimensions
+  - r1 is unreachable — dominated by r5 on all dimensions
+  - r1 is unreachable — dominated by r6 on all dimensions
+  - r2 is unreachable — dominated by r5 on all dimensions
+  - r3 is unreachable — dominated by r5 on all dimensions
+  - r3 is unreachable — dominated by r6 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：初次约会时，你注意到对方对你的过去经历表现出强烈的好奇，你会如何回应？
+  - `q1.a`：结构检查通过 — 分享几个有趣的往事片段，保持轻松愉快的氛围
+  - `q1.b`：结构检查通过 — 礼貌地转向对方，询问更多关于TA的问题
+  - `q1.c`：结构检查通过 — 只分享无关紧要的细节，保留个人隐私
+  - `q1.d`：结构检查通过 — 直接但友善地表达对过早讨论个人生活的不适
+- **q2** 题干：当约会对象突然提到前任并比较你们两人的差异时，你通常会有什么反应？
+  - `q2.a`：结构检查通过 — 平静地指出比较的不公平，并引导对话回到当下
+  - `q2.b`：结构检查通过 — 感到受伤但仍保持礼貌，结束后需要时间消化情绪
+  - `q2.c`：结构检查通过 — 直接表达不满，让对方知道这种谈话让你不舒服
+  - `q2.d`：结构检查通过 — 好奇地了解更多细节，试图理解前任在对方心中的位置
+- **q3** 题干：在深夜长谈中，对方分享了一段非常脆弱的个人经历，你会如何回应？
+  - `q3.a`：结构检查通过 — 放下手机，专注倾听，在适当的时候给予拥抱或轻拍
+  - `q3.b`：结构检查通过 — 分享自己类似的经历，建立情感共鸣
+  - `q3.c`：结构检查通过 — 安静地陪伴，不确定自己是否该说些什么
+  - `q3.d`：结构检查通过 — 尝试提供解决方案，帮助对方解决面临的问题
+- **q4** 题干：当你们因为小事争吵后，你通常会采取什么方式处理冲突？
+  - `q4.a`：结构检查通过 — 给彼此一些冷静的时间，然后主动寻求和解
+  - `q4.b`：结构检查通过 — 反思自己的问题，先道歉再沟通
+  - `q4.c`：结构检查通过 — 坚持自己的立场，希望对方能理解你的观点
+  - `q4.d`：结构检查通过 — 深入思考这次争吵反映了什么更深层次的问题
+- **q5** 题干：在对方生日时，你准备惊喜礼物的考虑因素是什么？
+  - `q5.a`：结构检查通过 — 选择能代表你们共同回忆或共同兴趣的礼物
+  - `q5.b`：结构检查通过 — 提前观察对方近期提到想要什么，确保礼物实用
+  - `q5.c`：结构检查通过 — 精心策划一个惊喜活动，注重体验而非物质
+  - `q5.d`：结构检查通过 — 选择能反映对方个人成长的礼物，展示你了解TA的变化
+- **q6** 题干：在共同旅行中，当你们对行程安排有不同意见时，你会怎么做？
+  - `q6.a`：结构检查通过 — 尝试找到一个折中的方案，让双方都能满意
+  - `q6.b`：结构检查通过 — 主动让步，把决定权交给对方，满足TA的偏好
+  - `q6.c`：结构检查通过 — 提前做足功课，自信地提出自己的建议
+  - `q6.d`：结构检查通过 — 分析双方偏好的差异，思考背后的原因
+- **q7** 题干：当你们的关系进入稳定期，你如何处理最初的激情逐渐消退的情况？
+  - `q7.a`：结构检查通过 — 主动创造新的共同体验和活动，维持新鲜感
+  - `q7.b`：结构检查通过 — 接受关系的自然变化，重视更深层次的亲密和信任
+  - `q7.c`：结构检查通过 — 感到失落，有时会怀念恋爱初期的激动心情
+  - `q7.d`：结构检查通过 — 思考自己对爱情的理解，重新评估关系的重要性
+- **q8** 题干：你们在深夜长谈时，对方突然问起你过去一段刻骨铭心的感情经历，你会如何回应？
+  - `q8.a`：结构检查通过 — 详细讲述每段感情中的细节和自己的感受，让对方了解完整的情感历程
+  - `q8.b`：结构检查通过 — 只分享最核心的感受和收获，避免过多细节，保持适度距离
+  - `q8.c`：结构检查通过 — 轻描淡写地带过，将话题转向对当前关系的展望和期待
+  - `q8.d`：结构检查通过 — 直接表示不愿谈论过去，希望专注于当下的相处和了解
+- **q9** 题干：在共同旅行途中，因为行程安排你们产生了分歧，你会如何处理？
+  - `q9.a`：结构检查通过 — 坚持自己的计划，认为已经做过充分准备和安排，对方应该配合
+  - `q9.b`：结构检查通过 — 主动妥协，完全按照对方意愿调整行程，即使牺牲自己的期待
+  - `q9.c`：结构检查通过 — 提出折中方案，结合双方的喜好和需求，寻找共同满意的解决方案
+  - `q9.d`：结构检查通过 — 建议各自按喜好安排活动，之后再汇合，尊重彼此的独立空间
+- **q10** 题干：当你发现伴侣在社交软件上与其他异性频繁互动，你会怎么做？
+  - `q10.a`：结构检查通过 — 直接质问对方，表达自己的不安和不满，要求对方解释行为
+  - `q10.b`：结构检查通过 — 选择相信对方，认为这只是正常的社交互动，不必过度解读
+  - `q10.c`：结构检查通过 — 暗中观察对方的行为，收集更多证据后再决定如何处理
+  - `q10.d`：结构检查通过 — 冷静地与对方沟通，表达自己的感受和界限，寻求双方都能接受的相处方式
+- **q11** 题干：在咖啡馆初次约会时，对方突然问起你对婚姻的看法，你会如何回应？
+  - `q11.a`：结构检查通过 — 表达对婚姻的向往，详细描述自己理想中的婚姻生活和家庭规划
+  - `q11.b`：结构检查通过 — 坦言自己目前对婚姻持保留态度，更看重当下的相处质量
+  - `q11.c`：结构检查通过 — 反问对方对婚姻的看法，想先了解对方的想法再分享自己的立场
+  - `q11.d`：结构检查通过 — 表示这个问题需要更多了解和思考，暂时不愿给出明确回答
+- **q12** 题干：争吵后的冷静期，对方发来消息说"我们需要谈谈"，你的第一反应是？
+  - `q12.a`：结构检查通过 — 立即回复"好的，什么时候方便?"，急于解决问题修复关系
+  - `q12.b`：结构检查通过 — 先给自己一些时间整理思绪，再回复"我们需要先冷静一下"
+  - `q12.c`：结构检查通过 — 回复"我想听听你的想法，也想表达我的感受"，准备进行平等对话
+  - `q12.d`：结构检查通过 — 思考对方为什么选择现在提出，分析背后的动机和目的
+- **q13** 题干：在你精心准备的生日惊喜后，对方反应平淡，你会如何应对？
+  - `q13.a`：结构检查通过 — 直接表达失望，指责对方不懂珍惜自己的心意
+  - `q13.b`：结构检查通过 — 自我反思是否考虑不周，未来调整表达爱的方式
+  - `q13.c`：结构检查通过 — 询问对方喜欢的庆祝方式，希望下次能更好地满足期待
+  - `q13.d`：结构检查通过 — 保持风度，不在意对方的反应，继续按照自己的方式表达爱
+- **q14** 题干：当你意识到自己对伴侣的依赖越来越深，感到不安时，你会怎么做？
+  - `q14.a`：结构检查通过 — 主动减少联系，给自己更多独处和独立思考的空间
+  - `q14.b`：结构检查通过 — 与伴侣坦诚沟通自己的感受，寻求更健康的相处模式
+  - `q14.c`：结构检查通过 — 接受这种依赖感，认为这是深爱的表现，顺其自然
+  - `q14.d`：结构检查通过 — 通过培养个人兴趣爱好，建立更丰富的生活重心
+- **q15** 题干：深夜约会结束，对方提议送你回家，你更倾向于
+  - `q15.a`：结构检查通过 — 接受邀请，享受这段独处的延伸时光
+  - `q15.b`：结构检查通过 — 礼貌拒绝，感谢心意但坚持自己打车回家
+  - `q15.c`：结构检查通过 — 欣然同行，路上分享更多生活点滴
+  - `q15.d`：结构检查通过 — 提出折中方案，比如喝杯咖啡再分别
+- **q16** 题干：对方突然取消了精心准备的生日晚餐，你会
+  - `q16.a`：结构检查通过 — 表达失望，并直接询问具体原因
+  - `q16.b`：结构检查通过 — 理解并提议改期，同时分享自己期待的心情
+  - `q16.c`：结构检查通过 — 独自享受晚餐，把这次留给自己
+  - `q16.d`：结构检查通过 — 掩饰失落，说没关系但明显情绪低落
+- **q17** 题干：旅行途中，你们因行程安排产生分歧，你会
+  - `q17.a`：结构检查通过 — 坚持己见，认为计划已定不应随意更改
+  - `q17.b`：结构检查通过 — 妥协退让，让双方都能接受的部分方案
+  - `q17.c`：结构检查通过 — 分析利弊，提出一个全新的替代方案
+  - `q17.d`：结构检查通过 — 暂时搁置，先做其他事情缓和气氛
+- **q18** 题干：发现对方手机里有暧昧信息，你会
+  - `q18.a`：结构检查通过 — 直接质问，要求解释清楚
+  - `q18.b`：结构检查通过 — 冷静观察，寻找更多线索再决定如何处理
+  - `q18.c`：结构检查通过 — 假装不知道，内心默默记下这笔账
+  - `q18.d`：结构检查通过 — 坦诚表达自己的不安和感受
+- **q19** 题干：对方送了你不喜欢的礼物，你会
+  - `q19.a`：结构检查通过 — 真诚表达感谢，同时委婉表达自己的偏好
+  - `q19.b`：结构检查通过 — 强装喜欢，怕对方失望
+  - `q19.c`：结构检查通过 — 直接指出不合心意，希望下次能更了解自己
+  - `q19.d`：结构检查通过 — 私下处理掉，避免让对方知道
+- **q20** 题干：恋爱纪念日，对方似乎忘记了，你会
+  - `q20.a`：结构检查通过 — 主动提起，分享自己的期待和感受
+  - `q20.b`：结构检查通过 — 暗自失落，默默观察对方是否记得
+  - `q20.c`：结构检查通过 — 直接指出对方不重视这段关系
+  - `q20.d`：结构检查通过 — 选择原谅，并暗示下次可以更用心
+
+### 逐结果
+- **r1**（青铜恋者）：profile 键与范围检查通过。
+- **r2**（炽热青铜）：profile 键与范围检查通过。
+- **r3**（银色平衡者）：profile 键与范围检查通过。
+- **r5**（超越黄金）：profile 键与范围检查通过。
+- **r6**（铂金升华者）：profile 键与范围检查通过。
+
+## love-rank-test
+- **计分**：`level-band` · 维度数 4 · 题数 18 · 结果数 5
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：约会餐厅里，伴侣突然沉默放下刀叉，你注意到对方情绪明显低落，这时你会怎么做？
+  - `q1.a`：结构检查通过 — 直接询问'你看起来不开心，发生什么事了？'
+  - `q1.b`：结构检查通过 — 假装没注意到，继续自己的话题，等对方愿意再说
+  - `q1.c`：结构检查通过 — 轻声问'需要空间还是想聊聊？'
+  - `q1.d`：结构检查通过 — 立即转移话题，讲个笑话试图让对方开心
+- **q2** 题干：伴侣因为你和前任保持联系而生气，你如何看待这个问题？
+  - `q2.a`：结构检查通过 — 认为这是伴侣的不安全感，坚持自己的交友自由
+  - `q2.b`：结构检查通过 — 理解伴侣的不安，愿意调整自己的行为让对方安心
+  - `q2.c`：结构检查通过 — 详细解释自己与前任只是普通朋友，没有任何暧昧
+  - `q2.d`：结构检查通过 — 感到困惑，不明白为什么过去的联系会成为问题
+- **q3** 题干：在冷战中的客厅里，伴侣明显想和解但还在犹豫，你会怎么做？
+  - `q3.a`：结构检查通过 — 等待对方先开口，认为应该为之前的争吵负责
+  - `q3.b`：结构检查通过 — 主动说'我们都需要冷静一下，但我想和你好好谈谈'
+  - `q3.c`：结构检查通过 — 继续冷处理，认为对方应该先道歉
+  - `q3.d`：结构检查通过 — 给对方一个拥抱，说'我们不要这样了对吗？'
+- **q4** 题干：表白现场，对方回应'我需要时间考虑'，你的第一反应是什么？
+  - `q4.a`：结构检查通过 — 尊重对方节奏，说'没问题，我愿意等'
+  - `q4.b`：结构检查通过 — 追问'是不是我哪里做得不够好？'
+  - `q4.c`：结构检查通过 — 感到尴尬，立即转移话题掩饰尴尬
+  - `q4.d`：结构检查通过 — 直接说'我不喜欢这种不确定感'
+- **q5** 题干：日常相处中，伴侣提出周末想和朋友去旅行，但这与你计划的约会冲突，你会如何处理？
+  - `q5.a`：结构检查通过 — 修改自己的计划，支持伴侣和朋友相聚
+  - `q5.b`：结构检查通过 — 坚持自己的约会计划，认为情侣时间更重要
+  - `q5.c`：结构检查通过 — 提议调整旅行时间，或邀请朋友一起同行
+  - `q5.d`：结构检查通过 — 感到被忽视，认为伴侣应该优先考虑你
+- **q6** 题干：争吵后的卧室里，你意识到自己说了伤人的话，但对方还没有冷静下来，你会怎么做？
+  - `q6.a`：结构检查通过 — 给对方空间，等情绪平复后再道歉
+  - `q6.b`：结构检查通过 — 立即道歉，但解释自己当时的情绪状态
+  - `q6.c`：结构检查通过 — 认为对方也应该反思自己的问题，不必先低头
+  - `q6.d`：结构检查通过 — 写下道歉信，放在枕头上，让对方看到你的诚意
+- **q7** 题干：你们争吵时伴侣说了一句让你很受伤的话，但事后ta似乎忘了这件事，照常和你说话。你会怎么做？
+  - `q7.a`：结构检查通过 — 直接告诉ta那句话伤害了你，希望ta能意识到并道歉
+  - `q7.b`：结构检查通过 — 选择沉默，觉得提了也没用，但心里一直记着
+  - `q7.c`：结构检查通过 — 等ta再次主动时，委婉地提起你受伤的感受，看ta是否察觉
+  - `q7.d`：结构检查通过 — 认为争吵时说的话不算数，选择不计较，往前看
+- **q8** 题干：伴侣抱怨你最近总是加班，很少陪伴ta。你们因此发生争执。
+  - `q8.a`：结构检查通过 — 解释工作压力，同时询问对方的具体需求
+  - `q8.b`：结构检查通过 — 完全妥协，减少工作时间满足对方需求
+  - `q8.c`：结构检查通过 — 坚持工作的重要性，认为对方不够体谅
+  - `q8.d`：结构检查通过 — 提出折中方案，比如每周固定几天高质量陪伴
+- **q9** 题干：在朋友聚会上，伴侣开玩笑提到你的一件糗事，让你感到尴尬。
+  - `q9.a`：结构检查通过 — 当场微笑应对，事后私下表达感受
+  - `q9.b`：结构检查通过 — 立即反驳，指责对方不尊重自己
+  - `q9.c`：结构检查通过 — 假装不在意，但内心感到受伤
+  - `q9.d`：结构检查通过 — 幽默地自嘲，将尴尬转化为轻松氛围
+- **q10** 题干：伴侣希望查看你的手机，因为ta感到不安和不信任。
+  - `q10.a`：结构检查通过 — 理解ta的不安全感，愿意分享适当内容
+  - `q10.b`：结构检查通过 — 完全拒绝，认为这是侵犯个人隐私
+  - `q10.c`：结构检查通过 — 不情愿地让ta查看，但感到委屈和不被尊重
+  - `q10.d`：结构检查通过 — 主动提出其他方式建立信任，如增加透明度
+- **q11** 题干：伴侣向你分享一个重要决定，但与你之前的期待完全不同。
+  - `q11.a`：结构检查通过 — 先倾听完，表达理解后再分享自己的感受
+  - `q11.b`：结构检查通过 — 直接表达失望和反对，强调这对关系的影响
+  - `q11.c`：结构检查通过 — 表面支持，但暗中抵制并感到怨恨
+  - `q11.d`：结构检查通过 — 尝试理解对方立场，探讨可能的折中方案
+- **q12** 题干：冷战期间，伴侣发来一条简短的信息'我们需要谈谈'。
+  - `q12.a`：结构检查通过 — 立即回应'好的，我准备好了'，并约定具体时间
+  - `q12.b`：结构检查通过 — 回复'我现在不想谈'，继续保持距离
+  - `q12.c`：结构检查通过 — 反问'你想谈什么？我没什么好说的了'
+  - `q12.d`：结构检查通过 — 提出先各自冷静，然后再讨论
+- **q13** 题干：在争吵后的卧室里，伴侣蜷缩在床边不说话，你会怎么做？
+  - `q13.a`：结构检查通过 — 默默递上一杯热茶，坐在不远处静静陪伴
+  - `q13.b`：结构检查通过 — 直接走过去拥抱，说'我们好好谈谈'
+  - `q13.c`：结构检查通过 — 转身离开，给对方空间冷静
+  - `q13.d`：结构检查通过 — 坐在床边反复追问'你到底怎么了'
+- **q14** 题干：约会餐厅里，伴侣突然对服务员发脾气，你会如何反应？
+  - `q14.a`：结构检查通过 — 立即拉住伴侣，向服务员道歉并解释情况
+  - `q14.b`：结构检查通过 — 假装不认识伴侣，低头玩手机避免尴尬
+  - `q14.c`：结构检查通过 — 私下提醒伴侣控制情绪，等回家再深入讨论
+  - `q14.d`：结构检查通过 — 跟着一起批评服务，认为对方确实有问题
+- **q15** 题干：冷战中的客厅里，伴侣想和你分享一个搞笑视频，你会？
+  - `q15.a`：结构检查通过 — 勉强看一眼，敷衍说'嗯挺好'后继续沉默
+  - `q15.b`：结构检查通过 — 直接拒绝说'没心情看视频，我有事要说'
+  - `q15.c`：结构检查通过 — 放下手机，认真看完视频后主动开启话题
+  - `q15.d`：结构检查通过 — 起身离开房间，说'我想自己待一会儿'
+- **q16** 题干：表白现场，对方沉默不语没有立即回应，你会？
+  - `q16.a`：结构检查通过 — 紧张地追问'你到底怎么想，给我个答复'
+  - `q16.b`：结构检查通过 — 笑着说'没关系，你可以慢慢考虑'
+  - `q16.c`：结构检查通过 — 尴尬地低下头，说'当我没说过'
+  - `q16.d`：结构检查通过 — 转移话题说'我们先去吃饭吧'
+- **q17** 题干：日常相处时，伴侣经常翻看你的手机，你会如何处理？
+  - `q17.a`：结构检查通过 — 直接质问'你凭什么翻我手机，这是侵犯隐私'
+  - `q17.b`：结构检查通过 — 无所谓地让伴侣继续看，认为'没什么可藏的'
+  - `q17.c`：结构检查通过 — 私下沟通表达不舒服，但愿意讨论信任问题
+  - `q17.d`：结构检查通过 — 偷偷给手机设密码，不让对方发现
+- **q18** 题干：约会时伴侣提到想和你一起搬家同居，你会？
+  - `q18.a`：结构检查通过 — 立即答应说'好啊，我也这么想'
+  - `q18.b`：结构检查通过 — 坦诚表达需要更多时间考虑，并讨论各自期望
+  - `q18.c`：结构检查通过 — 委婉拒绝说'我觉得现在还为时过早'
+  - `q18.d`：结构检查通过 — 反问'你为什么这么着急，我们才交往三个月'
+
+### 逐结果
+- **r1**（恋爱新手）：profile 键与范围检查通过。
+- **r2**（感知者）：profile 键与范围检查通过。
+- **r3**（思考者）：profile 键与范围检查通过。
+- **r4**（平衡者）：profile 键与范围检查通过。
+- **r5**（共情大师）：profile 键与范围检查通过。
+
+## love-show-personality
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜谈心环节,你心仪的对象突然向你袒露童年阴影,声音颤抖,眼眶泛红,摄像机正对准你们两人,现场灯光柔和而静谧。你会如何回应？
+  - `q1.a`：结构检查通过 — 立即伸手轻拍对方肩膀,直视眼睛说'这一定很难熬,愿意听听你的故事吗？'
+  - `q1.b`：结构检查通过 — 递上一杯温水,轻声说'有时候分享出来会好受些,我在这里陪着你'
+  - `q1.c`：结构检查通过 — 保持适当距离,点头表示理解,说'每个人经历不同,但你现在能说出来已经很勇敢'
+  - `q1.d`：结构检查通过 — 沉默片刻后,转移话题说'其实我们都有不想提起的过去,重要的是现在'
+- **q2** 题干：约会任务卡要求两人共同完成一项手工活动,桌面上摆满了彩色材料和工具,对方正期待地看着你。你会如何安排这次合作？
+  - `q2.a`：结构检查通过 — 主动拿起工具说'我来做这个部分,你负责那个,我们一起完成会很棒'
+  - `q2.b`：结构检查通过 — 微笑着问'你想从哪个部分开始？我们可以一起商量怎么做'
+  - `q2.c`：结构检查通过 — 仔细阅读说明后说'按照步骤来会更容易,我帮你找需要的材料'
+  - `q2.d`：结构检查通过 — 等待对方先动手,观察后再决定自己能帮上什么忙
+- **q3** 题干：休息时间,你注意到另一位嘉宾正在偷偷擦拭眼泪,而摄像机暂时没有对准这个角落,周围嘉宾们的笑声和交谈声若隐若现。你会怎么做？
+  - `q3.a`：结构检查通过 — 悄悄走过去,轻声问'需要聊聊吗？或者只是想一个人待会儿？'
+  - `q3.b`：结构检查通过 — 装作没看见,但事后找机会私下关心对方的状况
+  - `q3.c`：结构检查通过 — 犹豫片刻后,还是选择不去打扰,让对方有足够空间处理情绪
+  - `q3.d`：结构检查通过 — 犹豫再三,最终只是点点头表示注意到了,但没有进一步行动
+- **q4** 题干：节目组安排秘密任务:可以选择向心仪对象表白获得加分,但可能打破当前关系平衡；或者选择保守维持现状,但可能错失机会。你会如何选择？
+  - `q4.a`：结构检查通过 — 毫不犹豫选择表白,认为机会难得,即使有风险也要表达真实感受
+  - `q4.b`：结构检查通过 — 委婉暗示自己的心意,观察对方反应后再决定是否进一步表白
+  - `q4.c`：结构检查通过 — 选择保守策略,认为关系应该自然发展,不想因为任务而刻意推进
+  - `q4.d`：结构检查通过 — 纠结后选择维持现状,担心表白会影响节目中的其他互动和观众评价
+- **q5** 题干：集体出游时,你可以选择坐在心仪对象旁边亲密交谈,或者加入其他嘉宾的热烈讨论中。车辆行驶在蜿蜒的山路上,窗外风景如画。你会如何选择座位？
+  - `q5.a`：结构检查通过 — 直接坐在心仪对象旁边,自然地开启话题,享受二人时光
+  - `q5.b`：结构检查通过 — 先和其他嘉宾寒暄几句,再自然地移动到心仪对象身边
+  - `q5.c`：结构检查通过 — 选择中间位置,既能和心仪对象交流,也能参与集体讨论
+  - `q5.d`：结构检查通过 — 暂时不主动靠近心仪对象,观察其他互动后再决定
+- **q6** 题干：情感挑战环节,主持人突然质问你在之前的约会中是否真心喜欢对方,现场气氛紧张,镜头聚焦你的反应,其他嘉宾屏息等待。你会如何回应？
+  - `q6.a`：结构检查通过 — 直视主持人眼睛,坚定地说'我始终以真诚的态度对待每一次约会,这是我的原则'
+  - `q6.b`：结构检查通过 — 稍作停顿后说'每个人的感受都是真实的,我尊重自己的同时也尊重对方的选择'
+  - `q6.c`：结构检查通过 — 反问主持人'你认为什么样的喜欢才算真心？我一直在用心体验这个过程'
+  - `q6.d`：结构检查通过 — 避开直接回答,转而谈论节目中的收获和成长
+- **q7** 题干：早餐时间,你发现心仪对象为你准备了特别的餐点,而其他嘉宾都在关注你们的互动,餐盘冒着热气,食物香气四溢。你会如何表达你的感受？
+  - `q7.a`：结构检查通过 — 直接上前拥抱对方,惊喜地说'这太贴心了！谢谢你记得我喜欢这个'
+  - `q7.b`：结构检查通过 — 微笑着表达感谢,并询问对方是否一起享用早餐,开启轻松对话
+  - `q7.c`：结构检查通过 — 礼貌道谢后认真品尝食物,并在适当时候分享自己的感受
+  - `q7.d`：结构检查通过 — 略显惊讶地表示感谢,但迅速将注意力转向其他嘉宾,避免过度关注
+- **q8** 题干：演播室灯光下,一位嘉宾坚定地表示:'恋爱中最重要的不是说了什么,而是做了什么。'你注意到台下的观众纷纷点头,而你的心仪对象正若有所思地看着你。
+  - `q8.a`：结构检查通过 — 立刻反驳:言语表达是情感交流的基础,行动固然重要,但坦诚说出感受才是关键。
+  - `q8.b`：结构检查通过 — 微微一笑,不置可否,认为情感表达方式因人而异,不必强求一致。
+  - `q8.c`：结构检查通过 — 点头表示赞同,并举出自己默默为对方做过的实事,证明行动胜于言语。
+  - `q8.d`：结构检查通过 — 保持沉默,内心认同这一观点,但认为在恋爱综艺中公开讨论私人情感界限并不合适。
+- **q9** 题干：化妆镜前,节目组通知你将进行双人任务,你可以选择与心仪对象组队,增加亲密感,但可能引起其他嘉宾不满；或者选择与其他嘉宾组队,保持社交平衡。
+  - `q9.a`：结构检查通过 — 毫不犹豫选择心仪对象,认为感情发展需要机会,其他人的感受不应成为阻碍。
+  - `q9.b`：结构检查通过 — 选择与心仪对象组队,但会主动与其他嘉宾沟通,平衡各方感受。
+  - `q9.c`：结构检查通过 — 选择与其他嘉宾组队,保持社交平衡,暗自计划找机会与心仪对象私下交流。
+  - `q9.d`：结构检查通过 — 选择与其他嘉宾组队,认为在公众场合应该考虑整体氛围,个人情感需要适当克制。
+- **q10** 题干：深夜宿舍,只有柔和的床头灯照亮房间,心仪对象向你吐露对另一位嘉宾的好感,而你们之间曾有暧昧互动,对方的眼神闪烁不定。
+  - `q10.a`：结构检查通过 — 强装镇定,表面祝福实则内心翻江倒海,难以掩饰失落情绪。
+  - `q10.b`：结构检查通过 — 平静听完,表示理解并尊重对方感受,转身离开房间给自己消化情绪的空间。
+  - `q10.c`：结构检查通过 — 直接表达自己的困惑和受伤,质问对方为何先暧昧又变卦,情绪激动。
+  - `q10.d`：结构检查通过 — 迅速调整心态,将注意力转移到其他事情上,避免在对方面前暴露脆弱一面。
+- **q11** 题干：自由活动时间,阳光透过落地窗洒在休息室,你可以选择邀请心仪对象单独约会,享受二人世界；或者参与全体嘉宾组织的集体游戏,维持良好氛围。
+  - `q11.a`：结构检查通过 — 果断邀请心仪对象单独约会,认为感情需要私密的交流空间,不在乎其他人的看法。
+  - `q11.b`：结构检查通过 — 邀请心仪对象参加集体活动,但计划结束后找机会单独相处。
+  - `q11.c`：结构检查通过 — 主动参与集体游戏,希望通过群体互动自然拉近与心仪对象的距离。
+  - `q11.d`：结构检查通过 — 选择留在原地休息,让关系自然发展,不刻意制造独处或群体互动的机会。
+- **q12** 题干：化妆间里,镜面反射出你惊讶的表情,心仪对象的手机屏幕亮起,显示来自前任的消息,对方的表情瞬间变得复杂,手不自觉地攥紧了手机。
+  - `q12.a`：结构检查通过 — 直接询问对方是否需要帮助,表示愿意倾听和处理这段关系带来的情绪。
+  - `q12.b`：结构检查通过 — 装作没看见,转移话题,认为这是对方的私事,不应过度干涉。
+  - `q12.c`：结构检查通过 — 委婉表达关心,但保持距离,观察对方如何处理这件事再决定自己的态度。
+  - `q12.d`：结构检查通过 — 内心感到不安,但表面保持平静,暗自评估这段关系对你们之间可能的影响。
+- **q13** 题干：访谈区灯光聚焦,一位嘉宾对着镜头说:'在恋爱综艺里保持真实很重要,但也要考虑镜头前的形象管理。'你注意到导播间里,工作人员正密切关注你的反应。
+  - `q13.a`：结构检查通过 — 立即表示赞同,认为真实与形象管理并不矛盾,关键是在真实基础上展现最好的一面。
+  - `q13.b`：结构检查通过 — 沉默片刻后表示,宁愿做真实的自己,也不为迎合镜头而伪装。
+  - `q13.c`：结构检查通过 — 点头附和,但内心认为在恋爱综艺中,真实往往会被剪辑和放大,适当保护自己是必要的。
+  - `q13.d`：结构检查通过 — 不发表意见,认为这是个人选择,没有标准答案,重要的是找到适合自己的方式。
+- **q14** 题干：淘汰前夕,节目组安排了最后的交流环节,你可以选择向心仪对象明确表达心意争取支持,但可能暴露弱点；或者保持神秘感,但可能错过加深关系的机会。
+  - `q14.a`：结构检查通过 — 毫不犹豫地表达真实感受,认为真诚是感情的基础,即使暴露弱点也值得。
+  - `q14.b`：结构检查通过 — 委婉表达好感,但保持一定的含蓄和距离,观察对方反应再决定下一步。
+  - `q14.c`：结构检查通过 — 选择保持神秘感,认为在淘汰前夕突然表白显得刻意,不如顺其自然发展。
+  - `q14.d`：结构检查通过 — 避开单独交流的机会,通过群体互动传递好感,避免直接暴露自己的情感倾向。
+- **q15** 题干：阳光明媚的湖边小径,你心仪对象突然被石块绊倒,发出一声轻呼,摄像机镜头迅速推进,周围嘉宾们投来关注的目光。这时你会怎么做?
+  - `q15.a`：结构检查通过 — 立刻冲上前扶起,轻声询问是否受伤,当众表达关心
+  - `q15.b`：结构检查通过 — 迅速走到身边,帮她拍掉身上的尘土,眼神中充满关切
+  - `q15.c`：结构检查通过 — 保持距离观察,等工作人员处理,避免在镜头前表现过于紧张
+  - `q15.d`：结构检查通过 — 等对方自己站起来,再走过去礼貌询问是否需要帮助
+- **q16** 题干：任务卡摆在两人面前:可以选择在静谧的星空下深入交流感受,也可以选择在热闹的游乐园一起挑战刺激项目。灯光下,你的目光会如何投向对方?
+  - `q16.a`：结构检查通过 — 直接提议:'让我们去玩那个最刺激的项目吧,我想看你开心的样子'
+  - `q16.b`：结构检查通过 — 犹豫片刻后说:'其实我更想和你安静地聊聊,但如果你想玩也可以'
+  - `q16.c`：结构检查通过 — 兴奋地指向刺激项目:'那个看起来很好玩,我们去试试吧!'
+  - `q16.d`：结构检查通过 — 平静地问:'你更喜欢哪种方式?我们可以一起决定'
+- **q17** 题干：休息区的沙发上,你看见心仪对象正笑着和另一位嘉宾靠得很近聊天,笑声清脆。这让你想起昨天你们之间关于'保持距离'的特殊约定。
+  - `q17.a`：结构检查通过 — 直接走过去,自然地加入对话,但眼神中带着明显的失落
+  - `q17.b`：结构检查通过 — 默默走开,找个角落独自休息,不愿当面表现出在意
+  - `q17.c`：结构检查通过 — 等到他们分开后,私下找对方提醒那个约定,表达自己的感受
+  - `q17.d`：结构检查通过 — 微笑着走过去,表现得毫不在意,但内心五味杂陈
+- **q18** 题干：录制间隙,一位嘉宾在私下谈话中说:'在恋爱综艺中,有时候过度保护自己的隐私反而会让人看起来不够真诚。'这句话让你陷入沉思。
+  - `q18.a`：结构检查通过 — 点头认同:'我觉得真实最重要,刻意隐藏反而会显得不自然'
+  - `q18.b`：结构检查通过 — 思考后回应:'但每个人节奏不同,有些人需要时间才能完全敞开心扉'
+  - `q18.c`：结构检查通过 — 保持沉默,不发表意见,继续做自己认为舒适的事
+  - `q18.d`：结构检查通过 — 反驳:'真诚不等于毫无保留,保护隐私也是自我尊重的表现'
+- **q19** 题干：真情流露环节,主持人说:'可以选择分享内心脆弱面获得深度连接,但可能暴露弱点；或者保持坚强形象,但可能错失真实连接的机会。'
+  - `q19.a`：结构检查通过 — 毫不犹豫地分享自己的真实感受和不安,哪怕会显得脆弱
+  - `q19.b`：结构检查通过 — 分享一些感受,但保留最私密的部分,保持适度开放
+  - `q19.c`：结构检查通过 — 选择保持坚强形象,不愿在镜头前展现脆弱面
+  - `q19.d`：结构检查通过 — 先观察他人分享的程度,再决定自己要展示多少内心世界
+- **q20** 题干：最终环节,舞台上灯光耀眼,心仪对象在镜头前直视你:'我想知道你对这段关系的真实想法和未来打算。'所有嘉宾的目光都聚焦于此。
+  - `q20.a`：结构检查通过 — 直接坦白表达自己的真实感受和未来期待,不掩饰也不回避
+  - `q20.b`：结构检查通过 — 认真思考后给出回答,强调需要更多时间来确认关系走向
+  - `q20.c`：结构检查通过 — 表达好感但避免明确表态,保持模糊的回应
+  - `q20.d`：结构检查通过 — 反问对方:'你的想法是什么?我想先听听你的感受'
+
+### 逐结果
+- **r1**（炽热恋人）：profile 键与范围检查通过。
+- **r2**（游戏高手）：profile 键与范围检查通过。
+- **r3**（敏感艺术家）：profile 键与范围检查通过。
+- **r4**（真心骑士）：profile 键与范围检查通过。
+- **r5**（边界守护者）：profile 键与范围检查通过。
+- **r6**（理性分析师）：profile 键与范围检查通过。
+- **r7**（冷静观察者）：profile 键与范围检查通过。
+- **r8**（融合追求者）：profile 键与范围检查通过。
+
+## lovecraftian-monster-domination
+- **计分**：`bipolar-dimension` · 维度数 3 · 题数 20 · 结果数 6
+- **错误（2）**
+  - r2 is unreachable — dominated by r4 on all dimensions
+  - r2 is unreachable — dominated by r6 on all dimensions
+- **警告（9）**
+  - q1.d: bipolar option mixes positive and negative scores
+  - q5.b: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option mixes positive and negative scores
+  - q6.c: bipolar option mixes positive and negative scores
+  - q9.c: bipolar option mixes positive and negative scores
+  - q10.c: bipolar option mixes positive and negative scores
+  - q12.c: bipolar option mixes positive and negative scores
+  - r2 is unreachable — dominated by r4 on all dimensions
+  - r2 is unreachable — dominated by r6 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：你在古旧图书馆的禁书区发现一本无法用已知语言描述的古籍，书页上的符号似乎在缓慢蠕动。当你的手指触碰到书页时，
+  - `q1.a`：结构检查通过 — 立刻将书合上，退后几步观察四周是否有异常现象
+  - `q1.b`：结构检查通过 — 试图用手机拍照记录这些符号，希望之后能找到解释
+  - `q1.c`：结构检查通过 — 轻声念出那些符号，感受它们在舌尖上的震动
+  - `q1.d`：双极混号 — 直接翻阅下一页，无视可能的危险
+- **q2** 题干：你收到一封来自失踪多年的祖父的信，信中提到了一个位于深海的秘密和家族血统的诅咒。当你读完信后，
+  - `q2.a`：结构检查通过 — 立即将信件焚烧，切断与这一切的联系
+  - `q2.b`：结构检查通过 — 开始研究家族历史，寻找可能的线索和证据
+  - `q2.c`：结构检查通过 — 将信件锁在抽屉里，假装从未收到过这封信
+  - `q2.d`：结构检查通过 — 整理行装，准备按照信中指引前往那个深海秘密
+- **q3** 题干：在梦境中，你发现自己站在一座由扭曲石块构成的古老城市中央，远处传来非人的低语。你注意到
+  - `q3.a`：结构检查通过 — 地面上的石板刻有熟悉的家族纹章，闪烁着微弱的光芒
+  - `q3.b`：结构检查通过 — 天空被不自然的紫色光晕笼罩，星星排列成陌生的图案
+  - `q3.c`：结构检查通过 — 城市中有一扇门，门后似乎是你寻找多年的答案
+  - `q3.d`：结构检查通过 — 你的影子开始独立行动，走向城市的另一端
+- **q4** 题干：你在考古现场发现了一座被遗忘的神庙，墙上描绘着人类与不可名状之物的交易场景。当你站在壁画前时，
+  - `q4.a`：结构检查通过 — 仔细记录每一个细节，试图理解这些壁画的象征意义
+  - `q4.b`：结构检查通过 — 感到一阵莫名的不安，迅速离开神庙
+  - `q4.c`：结构检查通过 — 触摸壁画，感受古人的手艺和意图
+  - `q4.d`：结构检查通过 — 尝试模仿壁画中的姿势，看看会发生什么
+- **q5** 题干：你收到一封来自神秘研究机构的邀请函，邀请你参与一项关于宇宙意识边缘的研究。当你阅读邀请函时，
+  - `q5.a`：结构检查通过 — 立即联系机构，接受邀请并开始准备
+  - `q5.b`：双极混号 — 调查机构的背景和过往研究，评估风险
+  - `q5.c`：结构检查通过 — 将邀请函撕碎，确保没有任何证据存在
+  - `q5.d`：双极混号 — 匿名前往机构，在远处观察而不参与
+- **q6** 题干：你在海边发现一个古老的漂流瓶，里面有一张写有未知符号的纸条和一张指向深海某处的地图。当你拿到纸条时，
+  - `q6.a`：结构检查通过 — 立即研究地图，标记所有可能的危险区域
+  - `q6.b`：结构检查通过 — 将纸条放回漂流瓶，重新封好投入大海
+  - `q6.c`：双极混号 — 尝试解读纸条上的符号，寻找线索
+  - `q6.d`：结构检查通过 — 按照地图指引准备装备，准备启程探索
+- **q7** 题干：你在祖父的旧书房中发现一个上锁的盒子，钥匙藏在一只古老的乌鸦雕像的眼睛里。当你拿到钥匙并打开盒子时，
+  - `q7.a`：结构检查通过 — 立即检查盒中的物品，寻找任何可能的危险
+  - `q7.b`：结构检查通过 — 迅速合上盒子，将钥匙放回原处，假装从未发现
+  - `q7.c`：结构检查通过 — 直接拿起盒中的物品，感受它的重量和质地
+  - `q7.d`：结构检查通过 — 仔细研究盒中的每一件物品，试图理解它们的含义
+- **q8** 题干：当你在一座古老图书馆的深处发现一本用未知文字写成的古籍，书页上描绘着不可名状的几何图形。
+  - `q8.a`：结构检查通过 — 立即逐页研读，试图理解其中的奥秘
+  - `q8.b`：结构检查通过 — 迅速合上书，远离这种亵渎知识的危险
+  - `q8.c`：结构检查通过 — 小心地标记书页位置，寻求专家帮助
+  - `q8.d`：结构检查通过 — 撕下几页带走，不顾可能的后果
+- **q9** 题干：在深海探索中，你的潜艇接收到来自深渊的神秘信号，它似乎在呼唤你继续下潜。
+  - `q9.a`：结构检查通过 — 毫不犹豫地命令继续下潜，追寻真相
+  - `q9.b`：结构检查通过 — 立即终止任务，返回海面
+  - `q9.c`：双极混号 — 降低深度，保持安全距离监听
+  - `q9.d`：结构检查通过 — 自毁潜艇，融入深渊
+- **q10** 题干：你梦见一座由扭曲石柱构成的城市，居民们的形态不断变化，他们的表情既非喜悦也非恐惧。
+  - `q10.a`：结构检查通过 — 主动融入梦境，尝试理解这种存在
+  - `q10.b`：结构检查通过 — 拼命挣扎醒来，拒绝这种荒诞
+  - `q10.c`：双极混号 — 作为旁观者记录梦境的细节
+  - `q10.d`：结构检查通过 — 在梦境中寻找出口，逃离这个怪异之地
+- **q11** 题干：在调查一宗失踪案时，你发现所有证据都指向一个不存在的地点，仿佛被某种力量抹去现实。
+  - `q11.a`：结构检查通过 — 坚信超自然现象，深入追踪异常能量
+  - `q11.b`：结构检查通过 — 放弃调查，认为只是集体幻觉
+  - `q11.c`：结构检查通过 — 收集所有异常现象，寻找科学解释
+  - `q11.d`：结构检查通过 — 假装接受官方说法，私下继续调查
+- **q12** 题干：当你凝视星空时，开始感知到宇宙中存在一种古老意识，它在观察并影响着地球上的生命。
+  - `q12.a`：结构检查通过 — 尝试与这种意识建立沟通，寻求智慧
+  - `q12.b`：结构检查通过 — 拒绝相信这种感知，认为是心理压力
+  - `q12.c`：双极混号 — 记录感知内容，不采取行动
+  - `q12.d`：结构检查通过 — 恐惧这种联系，试图切断感知
+- **q13** 题干：在阅读一本古老的航海日志时，你发现船只失踪前船员们描述看到了海中升起黑色的巨塔。
+  - `q13.a`：结构检查通过 — 立即组织探险队前往事发海域
+  - `q13.b`：结构检查通过 — 销毁日志，禁止任何人再提及此事
+  - `q13.c`：结构检查通过 — 深入研究相关历史记录寻找线索
+  - `q13.d`：结构检查通过 — 模仿日志内容，进行危险的仪式
+- **q14** 题干：在调查一个偏远村庄的神秘事件时，村民们告诉你森林中的低语声有时会回应他们的呼唤。
+  - `q14.a`：结构检查通过 — 独自在森林中呼唤，期待得到回应
+  - `q14.b`：结构检查通过 — 警告村民远离森林，声称为妖言惑众
+  - `q14.c`：结构检查通过 — 使用录音设备捕捉森林声音，科学分析
+  - `q14.d`：结构检查通过 — 暗中计划利用低语声达成个人目的
+- **q15** 题干：在古老的图书馆深处，你发现了一本用未知语言写成的古籍，书页边缘渗出暗色液体。当你触碰书页时，文字开始蠕动，形成通往另一个维度的入口。
+  - `q15.a`：结构检查通过 — 立刻合上书籍，用石蜡封存它，然后迅速离开这个房间
+  - `q15.b`：结构检查通过 — 小心记录下书页上的符号和图案，准备请语言学专家解读
+  - `q15.c`：结构检查通过 — 毫不犹豫地踏入文字形成的通道，渴望探索未知的奥秘
+  - `q15.d`：结构检查通过 — 在入口前停留片刻，感受其中的能量波动，再决定是否进入
+- **q16** 题干：在深海勘探任务中，你的潜水艇意外坠入一个巨大的水下洞穴。声纳显示洞穴深处有异常的生命信号，氧气仅够支撑三小时。
+  - `q16.a`：结构检查通过 — 立即上浮报告发现，放弃探索未知区域
+  - `q16.b`：结构检查通过 — 收集洞穴入口处的样本和数据，然后迅速撤离
+  - `q16.c`：结构检查通过 — 不顾警告，深入洞穴追踪信号，即使可能永远无法返回
+  - `q16.d`：结构检查通过 — 在洞穴边缘设置标记，请求增援后再进行探索
+- **q17** 题干：你在梦中反复出现同一个场景：一座黑石砌成的城市，天空被不可名状的阴影笼罩。每次梦境醒来，你都能在现实中梦到的地方发现微小的黑石碎片。
+  - `q17.a`：结构检查通过 — 尝试用药物抑制梦境，并清理所有黑石碎片
+  - `q17.b`：结构检查通过 — 记录梦境细节，收集黑石碎片，寻找科学解释
+  - `q17.c`：结构检查通过 — 主动追寻梦中场景，相信黑石是通向另一世界的钥匙
+  - `q17.d`：结构检查通过 — 在梦中的黑石城市边缘设置屏障，保护自己免受阴影影响
+- **q18** 题干：你收到一封来自失踪祖父的信件，信中描述了一个隐藏在北极冰层下的古老城市，并附有一张模糊的地图。祖父的探险队已在那里失踪多年。
+  - `q18.a`：结构检查通过 — 立即组织救援队，前往冰层下寻找可能的幸存者
+  - `q18.b`：结构检查通过 — 分析信件和地图，研究古代文献中的相关记载
+  - `q18.c`：结构检查通过 — 烧毁所有资料，永远不要再提起这件事
+  - `q18.d`：结构检查通过 — 在祖父的日记中寻找线索，但不亲自前往危险区域
+- **q19** 题干：在一次考古发掘中，你发现了一面能够映照出过去和未来的镜子。镜中显示的景象并非现实，而是某种平行时空的片段。
+  - `q19.a`：结构检查通过 — 立即封存镜子，警告其他人不要触碰
+  - `q19.b`：结构检查通过 — 在严格控制的条件下，研究镜子映照出的规律和原理
+  - `q19.c`：结构检查通过 — 长期凝视镜子，试图通过它改变现实中的某些事件
+  - `q19.d`：结构检查通过 — 记录镜子映照出的异常现象，但不深入研究其本质
+- **q20** 题干：你在一座废弃的灯塔中发现了一本航海日志，记录着船员们在遭遇巨大海怪后的集体疯狂。最后一页用血写着：'它一直在那里，等待我们明白真相'。
+  - `q20.a`：结构检查通过 — 将日志交给海洋研究机构，请求专业调查
+  - `q20.b`：结构检查通过 — 烧毁灯塔和日志，确保没有任何人再发现这个秘密
+  - `q20.c`：结构检查通过 — 在相同时间返回灯塔，等待海怪再次出现
+  - `q20.d`：结构检查通过 — 研究当地渔民和传说的记载，寻找更多相关线索
+
+### 逐结果
+- **r1**（奈亚拉托提普）：profile 键与范围检查通过。
+- **r2**（阿撒托斯）：profile 键与范围检查通过。
+- **r3**（哈斯塔）：profile 键与范围检查通过。
+- **r4**（克苏鲁）：profile 键与范围检查通过。
+- **r5**（犹格·索托斯）：profile 键与范围检查通过。
+- **r6**（莎布·尼古拉丝）：profile 键与范围检查通过。
+
+## martial-arts-sect
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：夜深人静,月光透过破庙残窗洒落,恶霸狞笑声回荡,被欺凌的母女蜷缩角落泪流满面,而恶霸头领正是你白天得罪过的江湖中人,你会如何行动？
+  - `q1.a`：结构检查通过 — 挺身而出,高声喝止恶霸,即使明知对方会报复
+  - `q1.b`：结构检查通过 — 暗中观察,寻找时机出其不意制伏恶霸
+  - `q1.c`：结构检查通过 — 迅速离开此地,避免卷入不必要的麻烦
+  - `q1.d`：结构检查通过 — 假装路过,言语劝阻但不直接动手
+- **q2** 题干：比武台上,阳光刺眼,对手招式看似凌厉实则暗藏破绽,台下名门正派弟子云集,你只需调整手法便可一击制胜,却可能招致非议。
+  - `q2.a`：结构检查通过 — 抓住破绽,一招制胜,胜负才是武道真谛
+  - `q2.b`：结构检查通过 — 点到为止,留有余地,避免伤及对手名声
+  - `q2.c`：结构检查通过 — 故意示弱,诱导对方露出更多破绽再反击
+  - `q2.d`：结构检查通过 — 按部就班,以自己的实力赢得比赛
+- **q3** 题干：山谷中,古木参天,你意外发现一本尘封已久的武学秘籍,但修炼此功需断绝七情六欲,远离江湖纷争,方能练至最高境界。
+  - `q3.a`：结构检查通过 — 立即修炼,武学至高无上,世俗情感不过是羁绊
+  - `q3.b`：结构检查通过 — 先修炼一段时间,待功成后再重返江湖
+  - `q3.c`：结构检查通过 — 放弃修炼,江湖情义比武学更重要
+  - `q3.d`：结构检查通过 — 将秘籍带回师门,让更多人共同参悟
+- **q4** 题干：师门密室内,烛火摇曳,掌门神情凝重,告知你需前往敌营卧底获取情报,成功可挽救整个门派,但一旦暴露,不仅自身难保,还会连累家人。
+  - `q4.a`：结构检查通过 — 毫不犹豫接受任务,师门大义高于个人生死
+  - `q4.b`：结构检查通过 — 提出更多保障条件,确保家人安全后再行动
+  - `q4.c`：结构检查通过 — 推荐他人前往,自己则负责后方支援
+  - `q4.d`：结构检查通过 — 婉拒任务,不愿冒险连累家人
+- **q5** 题干：山间小屋,溪水潺潺,你手持剑,静立竹林,微风拂过,剑影婆娑,你会如何度过这闲暇时光？
+  - `q5.a`：结构检查通过 — 专注于剑招变化,一招一式反复推敲
+  - `q5.b`：结构检查通过 — 与三五好友对饮,畅谈江湖见闻
+  - `q5.c`：结构检查通过 — 研读兵法策略,思考如何在江湖中立足
+  - `q5.d`：结构检查通过 — 静坐冥想,感悟武学与自然的和谐
+- **q6** 题干：茶馆内,人声鼎沸,茶香四溢,邻桌客人慌忙起身,不慎将茶水泼湿你衣袖,对方连连道歉,面色惶恐。
+  - `q6.a`：结构检查通过 — 微笑摆手,表示无妨,安慰对方不必紧张
+  - `q6.b`：结构检查通过 — 擦拭衣袖,但言语间略有责备,让对方赔偿损失
+  - `q6.c`：结构检查通过 — 借机与对方攀谈,了解其背景底细
+  - `q6.d`：结构检查通过 — 沉默不语,自行处理,不与对方过多交流
+- **q7** 题干：练武场上,晨曦微露,你手持新型兵器演练,威力惊人却与传统武学理念相悖,师父站在一旁眉头紧锁,神情复杂。
+  - `q7.a`：结构检查通过 — 坚持己见,认为创新才能推动武学发展
+  - `q7.b`：结构检查通过 — 请教师父意见,融合传统与新法
+  - `q7.c`：结构检查通过 — 私下研究,待成熟后再向师父展示
+  - `q7.d`：结构检查通过 — 遵循传统,放弃新兵器回归正轨
+- **q8** 题干：比武台上,阳光刺眼,一位白发老者身形如电,使出一招'流云飞袖',却突然收招长笑:'此招虽妙,却过于刻意,不如不学。'你如何看待这番话？
+  - `q8.a`：结构检查通过 — 武功当求自然流畅,刻意雕琢只会画蛇添足
+  - `q8.b`：结构检查通过 — 前辈所言极是,招式不过是工具,心境才是根本
+  - `q8.c`：结构检查通过 — 任何武功都有其独到之处,何必全盘否定
+  - `q8.d`：结构检查通过 — 前辈在提醒我们不要沉迷于表面功夫
+- **q9** 题干：茶馆角落里,你听到邻桌低语,原来有人为了争夺掌门之位,暗中给最有希望竞争者下毒,而那位竞争者对此毫不知情,仍在勤修武功。
+  - `q9.a`：结构检查通过 — 江湖本就如此,弱肉强食,适者生存
+  - `q9.b`：结构检查通过 — 这种手段卑鄙,但确实有效,值得学习
+  - `q9.c`：结构检查通过 — 应当暗中提醒那位竞争者,但不宜暴露自己
+  - `q9.d`：结构检查通过 — 这是门派内部事务,外人不宜插手
+- **q10** 题干：山路崎岖,你护送的证人突然被毒箭射中,鲜血染红衣襟。前路还有十里,停下来疗伤会延误时机,继续前行则可能危及证人性命。
+  - `q10.a`：结构检查通过 — 立刻停下为证人疗伤,人命重于任务
+  - `q10.b`：结构检查通过 — 简单包扎后继续前行,到达目的地再找名医
+  - `q10.c`：结构检查通过 — 留下部分银两,让证人自行求医,你继续执行任务
+  - `q10.d`：结构检查通过 — 背起证人,不顾一切向前奔跑,赌一把运气
+- **q11** 题干：月下竹林,你突然获得一种特殊能力,可以选择以下哪一种？
+  - `q11.a`：结构检查通过 — 御剑飞行,随心所欲,不受地形限制
+  - `q11.b`：结构检查通过 — 看穿人心,洞悉他人真实想法与意图
+  - `q11.c`：结构检查通过 — 百毒不侵,刀枪不入,无人能伤
+  - `q11.d`：结构检查通过 — 过目不忘,学任何武功都能一学就会
+- **q12** 题干：古洞中,你发现一部可以速成的武功秘籍,只需以自身内力根基为代价,练成后将无法修炼更高深的武学。
+  - `q12.a`：结构检查通过 — 放弃此捷径,继续按部就班修炼武学正道
+  - `q12.b`：结构检查通过 — 先练成速成武功,日后再想办法补救内力根基
+  - `q12.c`：结构检查通过 — 研习秘籍原理,找出不伤根基的方法
+  - `q12.d`：结构检查通过 — 速成武功虽强,但违背武道本质,不取
+- **q13** 题干：你被派调查一桩江湖悬案,线索指向一位德高望重的武林前辈,但证据不足,贸然行动可能引发武林动荡。
+  - `q13.a`：结构检查通过 — 暗中收集更多证据,确凿后再行动
+  - `q13.b`：结构检查通过 — 直接上报掌门,由门派高层决断
+  - `q13.c`：结构检查通过 — 私下拜访那位前辈,旁敲侧击探查真相
+  - `q13.d`：结构检查通过 — 此事关系重大,不宜轻举妄动
+- **q14** 题干：集市上,一把造型古朴的长剑泛着寒光,价格不菲,而你的行囊所剩银两不多。
+  - `q14.a`：结构检查通过 — 再攒些银两,待足够时再来购买此剑
+  - `q14.b`：结构检查通过 — 放弃此剑,继续寻找适合自己的兵器
+  - `q14.c`：结构检查通过 — 不惜变卖随身物品,也要得到这把剑
+  - `q14.d`：结构检查通过 — 买下此剑,即使短期内其他开销会拮据
+- **q15** 题干：夕阳西下,你站在山巅眺望云海,远处炊烟袅袅,耳边风声过耳,心绪随风飘荡。你最向往怎样的江湖生活？
+  - `q15.a`：结构检查通过 — 闲云野鹤,随性而动,不受门派束缚,只求心之所向
+  - `q15.b`：结构检查通过 — 匡扶正义,除暴安良,以侠义之心行走江湖
+  - `q15.c`：结构检查通过 — 潜心修行,追求武道至高,不问江湖纷争
+  - `q15.d`：结构检查通过 — 运筹帷幄,掌控局势,在权力游戏中游刃有余
+- **q16** 题干：师父将剑谱交到你手中,神情凝重,目光如炬,声音中带着不容置疑的威严。面对这承诺,你会如何抉择？
+  - `q16.a`：结构检查通过 — 立下誓言,恪守承诺,宁可失传也不违背师命
+  - `q16.b`：结构检查通过 — 选择部分传授,在遵循传统的同时进行改良创新
+  - `q16.c`：结构检查通过 — 婉拒剑法,不愿背负如此沉重的责任和限制
+  - `q16.d`：结构检查通过 — 私下研习,择贤而授,让绝学得以流传光大
+- **q17** 题干：你目睹一位剑客被逐出师门,但眼中闪烁着坚定光芒,背影决绝地走向远方。对此,你的内心作何感想？
+  - `q17.a`：结构检查通过 — 敬佩其勇气,认为真正的武道不应被门规所限
+  - `q17.b`：结构检查通过 — 惋惜其行为,认为违背师门是大不孝之举
+  - `q17.c`：结构检查通过 — 认为此人太过冲动,应当权衡利弊再做决定
+  - `q17.d`：结构检查通过 — 感同身受,理解其对武道的执着追求
+- **q18** 题干：幽暗山洞中,烛光摇曳,石壁上刻着武学心法,既有少林七十二绝技,也有日月神教吸星大法。你会如何对待？
+  - `q18.a`：结构检查通过 — 只研习正派功夫,对邪门武功不屑一顾
+  - `q18.b`：结构检查通过 — 取其精华去其糟粕,融会贯通为己所用
+  - `q18.c`：结构检查通过 — 全部记下,日后根据需要选择性学习
+  - `q18.d`：结构检查通过 — 不予理会,只相信师门所授武学
+- **q19** 题干：夜色深沉,你手持密信,掌门的眼神中透露出期待与担忧,远处传来马蹄声,杀气渐浓。你会如何行动？
+  - `q19.a`：结构检查通过 — 连夜启程,抄小路直奔盟友处,不惜一切代价完成任务
+  - `q19.b`：结构检查通过 — 先派人探路,确认安全后再出发,确保万无一失
+  - `q19.c`：结构检查通过 — 寻找可靠盟友护送,借力而行,减少风险
+  - `q19.d`：结构检查通过 — 推迟行程,等待时机,避免不必要的冲突
+- **q20** 题干：华山论剑之后,你站在武林群雄之中,心中浮现出几位前辈高人的身影,谁会成为你理想的师父？
+  - `q20.a`：结构检查通过 — 张三丰,太极宗师,德高望重,武学精深
+  - `q20.b`：结构检查通过 — 东方不败,独步天下,剑法通神,无视规矩
+  - `q20.c`：结构检查通过 — 风清扬,剑法超绝,不拘一格,逍遥自在
+  - `q20.d`：结构检查通过 — 郭靖,侠之大者,为国为民,德艺双馨
+
+### 逐结果
+- **r1**（少林寺）：profile 键与范围检查通过。
+- **r2**（日月神教）：profile 键与范围检查通过。
+- **r3**（逍遥派）：profile 键与范围检查通过。
+- **r4**（武当派）：profile 键与范围检查通过。
+- **r5**（丐帮）：profile 键与范围检查通过。
+- **r6**（唐门）：profile 键与范围检查通过。
+- **r7**（桃花岛）：profile 键与范围检查通过。
+- **r8**（明教）：profile 键与范围检查通过。
+
+## mbti-16personalities
+- **计分**：`mbti` · 维度数 0 · 题数 60 · 结果数 16
+- **警告（1）**
+  - （说明）scoring.type=`mbti` 非三种标准计分族，已跳过 validateQuestions / validateResults(profile) / validateDimensionProfiles / validateScoreMap，以免误报。
+
+### 逐题 · 逐选项
+- **q1** 题干：在聚会或社交场合里，我通常感觉充满能量，而不是被消耗。
+  - `q1.1`：量表 value=0（无 scores） — 完全不符合
+  - `q1.2`：量表 value=25（无 scores） — 不太符合
+  - `q1.3`：量表 value=50（无 scores） — 说不准
+  - `q1.4`：量表 value=75（无 scores） — 比较符合
+  - `q1.5`：量表 value=100（无 scores） — 完全符合
+- **q2** 题干：我更关注当下发生的实际情况，而不是未来的可能性。
+  - `q2.1`：量表 value=0（无 scores） — 完全不符合
+  - `q2.2`：量表 value=25（无 scores） — 不太符合
+  - `q2.3`：量表 value=50（无 scores） — 说不准
+  - `q2.4`：量表 value=75（无 scores） — 比较符合
+  - `q2.5`：量表 value=100（无 scores） — 完全符合
+- **q3** 题干：做决定的时候，我更依赖逻辑分析而不是个人感受。
+  - `q3.1`：量表 value=0（无 scores） — 完全不符合
+  - `q3.2`：量表 value=25（无 scores） — 不太符合
+  - `q3.3`：量表 value=50（无 scores） — 说不准
+  - `q3.4`：量表 value=75（无 scores） — 比较符合
+  - `q3.5`：量表 value=100（无 scores） — 完全符合
+- **q4** 题干：我喜欢有计划，提前知道接下来要做什么让我感到安心。
+  - `q4.1`：量表 value=0（无 scores） — 完全不符合
+  - `q4.2`：量表 value=25（无 scores） — 不太符合
+  - `q4.3`：量表 value=50（无 scores） — 说不准
+  - `q4.4`：量表 value=75（无 scores） — 比较符合
+  - `q4.5`：量表 value=100（无 scores） — 完全符合
+- **q5** 题干：我主动和陌生人搭话，这对我来说不是什么难事。
+  - `q5.1`：量表 value=0（无 scores） — 完全不符合
+  - `q5.2`：量表 value=25（无 scores） — 不太符合
+  - `q5.3`：量表 value=50（无 scores） — 说不准
+  - `q5.4`：量表 value=75（无 scores） — 比较符合
+  - `q5.5`：量表 value=100（无 scores） — 完全符合
+- **q6** 题干：我依赖过去的经验和已经验证过的方法来做决定。
+  - `q6.1`：量表 value=0（无 scores） — 完全不符合
+  - `q6.2`：量表 value=25（无 scores） — 不太符合
+  - `q6.3`：量表 value=50（无 scores） — 说不准
+  - `q6.4`：量表 value=75（无 scores） — 比较符合
+  - `q6.5`：量表 value=100（无 scores） — 完全符合
+- **q7** 题干：我能在情绪很强烈的情况下，仍然保持客观理性的判断。
+  - `q7.1`：量表 value=0（无 scores） — 完全不符合
+  - `q7.2`：量表 value=25（无 scores） — 不太符合
+  - `q7.3`：量表 value=50（无 scores） — 说不准
+  - `q7.4`：量表 value=75（无 scores） — 比较符合
+  - `q7.5`：量表 value=100（无 scores） — 完全符合
+- **q8** 题干：截止日期对我来说是真实的约束，我通常会提前完成任务。
+  - `q8.1`：量表 value=0（无 scores） — 完全不符合
+  - `q8.2`：量表 value=25（无 scores） — 不太符合
+  - `q8.3`：量表 value=50（无 scores） — 说不准
+  - `q8.4`：量表 value=75（无 scores） — 比较符合
+  - `q8.5`：量表 value=100（无 scores） — 完全符合
+- **q9** 题干：一天结束后，我更倾向于出去见朋友，而不是一个人待着。
+  - `q9.1`：量表 value=0（无 scores） — 完全不符合
+  - `q9.2`：量表 value=25（无 scores） — 不太符合
+  - `q9.3`：量表 value=50（无 scores） — 说不准
+  - `q9.4`：量表 value=75（无 scores） — 比较符合
+  - `q9.5`：量表 value=100（无 scores） — 完全符合
+- **q10** 题干：学习新事物时，我喜欢从具体细节开始，而不是先把握整体框架。
+  - `q10.1`：量表 value=0（无 scores） — 完全不符合
+  - `q10.2`：量表 value=25（无 scores） — 不太符合
+  - `q10.3`：量表 value=50（无 scores） — 说不准
+  - `q10.4`：量表 value=75（无 scores） — 比较符合
+  - `q10.5`：量表 value=100（无 scores） — 完全符合
+- **q11** 题干：我会直接指出别人论点中的逻辑错误，即使可能让对方感到不舒服。
+  - `q11.1`：量表 value=0（无 scores） — 完全不符合
+  - `q11.2`：量表 value=25（无 scores） — 不太符合
+  - `q11.3`：量表 value=50（无 scores） — 说不准
+  - `q11.4`：量表 value=75（无 scores） — 比较符合
+  - `q11.5`：量表 value=100（无 scores） — 完全符合
+- **q12** 题干：我喜欢把事情做完，让它从待办清单里消失，而不是拖着不决定。
+  - `q12.1`：量表 value=0（无 scores） — 完全不符合
+  - `q12.2`：量表 value=25（无 scores） — 不太符合
+  - `q12.3`：量表 value=50（无 scores） — 说不准
+  - `q12.4`：量表 value=75（无 scores） — 比较符合
+  - `q12.5`：量表 value=100（无 scores） — 完全符合
+- **q13** 题干：我在别人面前表达想法是自然而然的，不需要太多提前准备。
+  - `q13.1`：量表 value=0（无 scores） — 完全不符合
+  - `q13.2`：量表 value=25（无 scores） — 不太符合
+  - `q13.3`：量表 value=50（无 scores） — 说不准
+  - `q13.4`：量表 value=75（无 scores） — 比较符合
+  - `q13.5`：量表 value=100（无 scores） — 完全符合
+- **q14** 题干：我注意到别人通常忽略的实际细节——数字、日期、具体事实。
+  - `q14.1`：量表 value=0（无 scores） — 完全不符合
+  - `q14.2`：量表 value=25（无 scores） — 不太符合
+  - `q14.3`：量表 value=50（无 scores） — 说不准
+  - `q14.4`：量表 value=75（无 scores） — 比较符合
+  - `q14.5`：量表 value=100（无 scores） — 完全符合
+- **q15** 题干：公平和一致性对我来说比照顾到每个人的特殊情况更重要。
+  - `q15.1`：量表 value=0（无 scores） — 完全不符合
+  - `q15.2`：量表 value=25（无 scores） — 不太符合
+  - `q15.3`：量表 value=50（无 scores） — 说不准
+  - `q15.4`：量表 value=75（无 scores） — 比较符合
+  - `q15.5`：量表 value=100（无 scores） — 完全符合
+- **q16** 题干：在做决定之前，我会感到不自在——做了决定之后，我才能真正放松。
+  - `q16.1`：量表 value=0（无 scores） — 完全不符合
+  - `q16.2`：量表 value=25（无 scores） — 不太符合
+  - `q16.3`：量表 value=50（无 scores） — 说不准
+  - `q16.4`：量表 value=75（无 scores） — 比较符合
+  - `q16.5`：量表 value=100（无 scores） — 完全符合
+- **q17** 题干：大量社交活动不会让我感到疲惫，反而会让我有能量。
+  - `q17.1`：量表 value=0（无 scores） — 完全不符合
+  - `q17.2`：量表 value=25（无 scores） — 不太符合
+  - `q17.3`：量表 value=50（无 scores） — 说不准
+  - `q17.4`：量表 value=75（无 scores） — 比较符合
+  - `q17.5`：量表 value=100（无 scores） — 完全符合
+- **q18** 题干：我更擅长处理具体、实际的问题，而不是抽象的理论。
+  - `q18.1`：量表 value=0（无 scores） — 完全不符合
+  - `q18.2`：量表 value=25（无 scores） — 不太符合
+  - `q18.3`：量表 value=50（无 scores） — 说不准
+  - `q18.4`：量表 value=75（无 scores） — 比较符合
+  - `q18.5`：量表 value=100（无 scores） — 完全符合
+- **q19** 题干：批评一件事或分析一个问题时，我专注于逻辑和事实，而不是情感影响。
+  - `q19.1`：量表 value=0（无 scores） — 完全不符合
+  - `q19.2`：量表 value=25（无 scores） — 不太符合
+  - `q19.3`：量表 value=50（无 scores） — 说不准
+  - `q19.4`：量表 value=75（无 scores） — 比较符合
+  - `q19.5`：量表 value=100（无 scores） — 完全符合
+- **q20** 题干：我喜欢有组织、有结构的工作方式，而不是随机应变。
+  - `q20.1`：量表 value=0（无 scores） — 完全不符合
+  - `q20.2`：量表 value=25（无 scores） — 不太符合
+  - `q20.3`：量表 value=50（无 scores） — 说不准
+  - `q20.4`：量表 value=75（无 scores） — 比较符合
+  - `q20.5`：量表 value=100（无 scores） — 完全符合
+- **q21** 题干：我倾向于先把想法说出来，而不是先在脑子里完全整理好。
+  - `q21.1`：量表 value=0（无 scores） — 完全不符合
+  - `q21.2`：量表 value=25（无 scores） — 不太符合
+  - `q21.3`：量表 value=50（无 scores） — 说不准
+  - `q21.4`：量表 value=75（无 scores） — 比较符合
+  - `q21.5`：量表 value=100（无 scores） — 完全符合
+- **q22** 题干：「现在行得通的方案」比「理论上最优的方案」对我来说更重要。
+  - `q22.1`：量表 value=0（无 scores） — 完全不符合
+  - `q22.2`：量表 value=25（无 scores） — 不太符合
+  - `q22.3`：量表 value=50（无 scores） — 说不准
+  - `q22.4`：量表 value=75（无 scores） — 比较符合
+  - `q22.5`：量表 value=100（无 scores） — 完全符合
+- **q23** 题干：我认为对一个想法最大的尊重，是认真审视它的漏洞。
+  - `q23.1`：量表 value=0（无 scores） — 完全不符合
+  - `q23.2`：量表 value=25（无 scores） — 不太符合
+  - `q23.3`：量表 value=50（无 scores） — 说不准
+  - `q23.4`：量表 value=75（无 scores） — 比较符合
+  - `q23.5`：量表 value=100（无 scores） — 完全符合
+- **q24** 题干：我对杂乱或者无序的环境有真实的不适感，喜欢把东西放在固定的地方。
+  - `q24.1`：量表 value=0（无 scores） — 完全不符合
+  - `q24.2`：量表 value=25（无 scores） — 不太符合
+  - `q24.3`：量表 value=50（无 scores） — 说不准
+  - `q24.4`：量表 value=75（无 scores） — 比较符合
+  - `q24.5`：量表 value=100（无 scores） — 完全符合
+- **q25** 题干：我喜欢热闹的场合，那里的能量让我感到活跃。
+  - `q25.1`：量表 value=0（无 scores） — 完全不符合
+  - `q25.2`：量表 value=25（无 scores） — 不太符合
+  - `q25.3`：量表 value=50（无 scores） — 说不准
+  - `q25.4`：量表 value=75（无 scores） — 比较符合
+  - `q25.5`：量表 value=100（无 scores） — 完全符合
+- **q26** 题干：我相信实际操作比理论理解更能说明一件事的价值。
+  - `q26.1`：量表 value=0（无 scores） — 完全不符合
+  - `q26.2`：量表 value=25（无 scores） — 不太符合
+  - `q26.3`：量表 value=50（无 scores） — 说不准
+  - `q26.4`：量表 value=75（无 scores） — 比较符合
+  - `q26.5`：量表 value=100（无 scores） — 完全符合
+- **q27** 题干：我更容易被清晰的逻辑论证说服，而不是情感的呼吁。
+  - `q27.1`：量表 value=0（无 scores） — 完全不符合
+  - `q27.2`：量表 value=25（无 scores） — 不太符合
+  - `q27.3`：量表 value=50（无 scores） — 说不准
+  - `q27.4`：量表 value=75（无 scores） — 比较符合
+  - `q27.5`：量表 value=100（无 scores） — 完全符合
+- **q28** 题干：我倾向于按计划行事，突然改变计划会让我感到烦躁。
+  - `q28.1`：量表 value=0（无 scores） — 完全不符合
+  - `q28.2`：量表 value=25（无 scores） — 不太符合
+  - `q28.3`：量表 value=50（无 scores） — 说不准
+  - `q28.4`：量表 value=75（无 scores） — 比较符合
+  - `q28.5`：量表 value=100（无 scores） — 完全符合
+- **q29** 题干：讨论时我喜欢积极发言，把自己的想法说出来，而不是只在心里想。
+  - `q29.1`：量表 value=0（无 scores） — 完全不符合
+  - `q29.2`：量表 value=25（无 scores） — 不太符合
+  - `q29.3`：量表 value=50（无 scores） — 说不准
+  - `q29.4`：量表 value=75（无 scores） — 比较符合
+  - `q29.5`：量表 value=100（无 scores） — 完全符合
+- **q30** 题干：我更喜欢思考可能性和未来，而不是只处理眼前的现实。
+  - `q30.1`：量表 value=0（无 scores） — 完全不符合
+  - `q30.2`：量表 value=25（无 scores） — 不太符合
+  - `q30.3`：量表 value=50（无 scores） — 说不准
+  - `q30.4`：量表 value=75（无 scores） — 比较符合
+  - `q30.5`：量表 value=100（无 scores） — 完全符合
+- **q31** 题干：做决定时，我会认真考虑这对相关的人会有什么感受。
+  - `q31.1`：量表 value=0（无 scores） — 完全不符合
+  - `q31.2`：量表 value=25（无 scores） — 不太符合
+  - `q31.3`：量表 value=50（无 scores） — 说不准
+  - `q31.4`：量表 value=75（无 scores） — 比较符合
+  - `q31.5`：量表 value=100（无 scores） — 完全符合
+- **q32** 题干：我在截止日期前才最有效率，提前太多完成反而感觉有点奇怪。
+  - `q32.1`：量表 value=0（无 scores） — 完全不符合
+  - `q32.2`：量表 value=25（无 scores） — 不太符合
+  - `q32.3`：量表 value=50（无 scores） — 说不准
+  - `q32.4`：量表 value=75（无 scores） — 比较符合
+  - `q32.5`：量表 value=100（无 scores） — 完全符合
+- **q33** 题干：大型聚会结束后，我需要独处一段时间才能恢复状态。
+  - `q33.1`：量表 value=0（无 scores） — 完全不符合
+  - `q33.2`：量表 value=25（无 scores） — 不太符合
+  - `q33.3`：量表 value=50（无 scores） — 说不准
+  - `q33.4`：量表 value=75（无 scores） — 比较符合
+  - `q33.5`：量表 value=100（无 scores） — 完全符合
+- **q34** 题干：我能快速在不同概念之间找到联系，即使它们表面上毫无关系。
+  - `q34.1`：量表 value=0（无 scores） — 完全不符合
+  - `q34.2`：量表 value=25（无 scores） — 不太符合
+  - `q34.3`：量表 value=50（无 scores） — 说不准
+  - `q34.4`：量表 value=75（无 scores） — 比较符合
+  - `q34.5`：量表 value=100（无 scores） — 完全符合
+- **q35** 题干：我很难做出会让我在乎的人感到痛苦的决定，即使逻辑上那是正确的。
+  - `q35.1`：量表 value=0（无 scores） — 完全不符合
+  - `q35.2`：量表 value=25（无 scores） — 不太符合
+  - `q35.3`：量表 value=50（无 scores） — 说不准
+  - `q35.4`：量表 value=75（无 scores） — 比较符合
+  - `q35.5`：量表 value=100（无 scores） — 完全符合
+- **q36** 题干：我喜欢保留选项，不想过早做出承诺或锁定某个方向。
+  - `q36.1`：量表 value=0（无 scores） — 完全不符合
+  - `q36.2`：量表 value=25（无 scores） — 不太符合
+  - `q36.3`：量表 value=50（无 scores） — 说不准
+  - `q36.4`：量表 value=75（无 scores） — 比较符合
+  - `q36.5`：量表 value=100（无 scores） — 完全符合
+- **q37** 题干：表达一个想法之前，我通常需要先在脑子里把它整理清楚。
+  - `q37.1`：量表 value=0（无 scores） — 完全不符合
+  - `q37.2`：量表 value=25（无 scores） — 不太符合
+  - `q37.3`：量表 value=50（无 scores） — 说不准
+  - `q37.4`：量表 value=75（无 scores） — 比较符合
+  - `q37.5`：量表 value=100（无 scores） — 完全符合
+- **q38** 题干：我喜欢先把握一件事的整体方向，再关注具体细节。
+  - `q38.1`：量表 value=0（无 scores） — 完全不符合
+  - `q38.2`：量表 value=25（无 scores） — 不太符合
+  - `q38.3`：量表 value=50（无 scores） — 说不准
+  - `q38.4`：量表 value=75（无 scores） — 比较符合
+  - `q38.5`：量表 value=100（无 scores） — 完全符合
+- **q39** 题干：我对别人的情绪变化很敏感，能感受到别人没有说出来的情绪。
+  - `q39.1`：量表 value=0（无 scores） — 完全不符合
+  - `q39.2`：量表 value=25（无 scores） — 不太符合
+  - `q39.3`：量表 value=50（无 scores） — 说不准
+  - `q39.4`：量表 value=75（无 scores） — 比较符合
+  - `q39.5`：量表 value=100（无 scores） — 完全符合
+- **q40** 题干：我能在混乱或不确定的环境中工作，甚至觉得这有点刺激。
+  - `q40.1`：量表 value=0（无 scores） — 完全不符合
+  - `q40.2`：量表 value=25（无 scores） — 不太符合
+  - `q40.3`：量表 value=50（无 scores） — 说不准
+  - `q40.4`：量表 value=75（无 scores） — 比较符合
+  - `q40.5`：量表 value=100（无 scores） — 完全符合
+- **q41** 题干：我更喜欢一对一的深度对话，而不是大群体里的闲聊。
+  - `q41.1`：量表 value=0（无 scores） — 完全不符合
+  - `q41.2`：量表 value=25（无 scores） — 不太符合
+  - `q41.3`：量表 value=50（无 scores） — 说不准
+  - `q41.4`：量表 value=75（无 scores） — 比较符合
+  - `q41.5`：量表 value=100（无 scores） — 完全符合
+- **q42** 题干：我经常有直觉性的判断，事后证明是对的，但过程很难解释清楚。
+  - `q42.1`：量表 value=0（无 scores） — 完全不符合
+  - `q42.2`：量表 value=25（无 scores） — 不太符合
+  - `q42.3`：量表 value=50（无 scores） — 说不准
+  - `q42.4`：量表 value=75（无 scores） — 比较符合
+  - `q42.5`：量表 value=100（无 scores） — 完全符合
+- **q43** 题干：我认为一个决定是否正确，人们的感受和价值观是重要的评判标准。
+  - `q43.1`：量表 value=0（无 scores） — 完全不符合
+  - `q43.2`：量表 value=25（无 scores） — 不太符合
+  - `q43.3`：量表 value=50（无 scores） — 说不准
+  - `q43.4`：量表 value=75（无 scores） — 比较符合
+  - `q43.5`：量表 value=100（无 scores） — 完全符合
+- **q44** 题干：我更喜欢随机应变，而不是提前做详细的计划。
+  - `q44.1`：量表 value=0（无 scores） — 完全不符合
+  - `q44.2`：量表 value=25（无 scores） — 不太符合
+  - `q44.3`：量表 value=50（无 scores） — 说不准
+  - `q44.4`：量表 value=75（无 scores） — 比较符合
+  - `q44.5`：量表 value=100（无 scores） — 完全符合
+- **q45** 题干：长时间的社交活动会让我感到真实的疲惫，不管那次活动有多好玩。
+  - `q45.1`：量表 value=0（无 scores） — 完全不符合
+  - `q45.2`：量表 value=25（无 scores） — 不太符合
+  - `q45.3`：量表 value=50（无 scores） — 说不准
+  - `q45.4`：量表 value=75（无 scores） — 比较符合
+  - `q45.5`：量表 value=100（无 scores） — 完全符合
+- **q46** 题干：我更容易被新奇的想法和理论吸引，而不是已经被验证过的方法。
+  - `q46.1`：量表 value=0（无 scores） — 完全不符合
+  - `q46.2`：量表 value=25（无 scores） — 不太符合
+  - `q46.3`：量表 value=50（无 scores） — 说不准
+  - `q46.4`：量表 value=75（无 scores） — 比较符合
+  - `q46.5`：量表 value=100（无 scores） — 完全符合
+- **q47** 题干：在冲突中，我首先关注双方的感受，然后才是谁对谁错。
+  - `q47.1`：量表 value=0（无 scores） — 完全不符合
+  - `q47.2`：量表 value=25（无 scores） — 不太符合
+  - `q47.3`：量表 value=50（无 scores） — 说不准
+  - `q47.4`：量表 value=75（无 scores） — 比较符合
+  - `q47.5`：量表 value=100（无 scores） — 完全符合
+- **q48** 题干：开始一件新事情时，我喜欢先探索，而不是先做好规划再动手。
+  - `q48.1`：量表 value=0（无 scores） — 完全不符合
+  - `q48.2`：量表 value=25（无 scores） — 不太符合
+  - `q48.3`：量表 value=50（无 scores） — 说不准
+  - `q48.4`：量表 value=75（无 scores） — 比较符合
+  - `q48.5`：量表 value=100（无 scores） — 完全符合
+- **q49** 题干：我有很多内心活动，但不一定都会说出来。
+  - `q49.1`：量表 value=0（无 scores） — 完全不符合
+  - `q49.2`：量表 value=25（无 scores） — 不太符合
+  - `q49.3`：量表 value=50（无 scores） — 说不准
+  - `q49.4`：量表 value=75（无 scores） — 比较符合
+  - `q49.5`：量表 value=100（无 scores） — 完全符合
+- **q50** 题干：我的脑子经常在不同想法之间跳跃，想得多，有时也会想偏。
+  - `q50.1`：量表 value=0（无 scores） — 完全不符合
+  - `q50.2`：量表 value=25（无 scores） — 不太符合
+  - `q50.3`：量表 value=50（无 scores） — 说不准
+  - `q50.4`：量表 value=75（无 scores） — 比较符合
+  - `q50.5`：量表 value=100（无 scores） — 完全符合
+- **q51** 题干：让别人感到被理解和被支持，对我来说是非常重要的事情。
+  - `q51.1`：量表 value=0（无 scores） — 完全不符合
+  - `q51.2`：量表 value=25（无 scores） — 不太符合
+  - `q51.3`：量表 value=50（无 scores） — 说不准
+  - `q51.4`：量表 value=75（无 scores） — 比较符合
+  - `q51.5`：量表 value=100（无 scores） — 完全符合
+- **q52** 题干：我的工作方式是弹性的，固定的规则和时间表让我感觉像是束缚。
+  - `q52.1`：量表 value=0（无 scores） — 完全不符合
+  - `q52.2`：量表 value=25（无 scores） — 不太符合
+  - `q52.3`：量表 value=50（无 scores） — 说不准
+  - `q52.4`：量表 value=75（无 scores） — 比较符合
+  - `q52.5`：量表 value=100（无 scores） — 完全符合
+- **q53** 题干：我需要大量独处时间来恢复精力，这是真实的需求，不只是偏好。
+  - `q53.1`：量表 value=0（无 scores） — 完全不符合
+  - `q53.2`：量表 value=25（无 scores） — 不太符合
+  - `q53.3`：量表 value=50（无 scores） — 说不准
+  - `q53.4`：量表 value=75（无 scores） — 比较符合
+  - `q53.5`：量表 value=100（无 scores） — 完全符合
+- **q54** 题干：我对「这件事可能意味着什么」比「这件事具体是什么」更感兴趣。
+  - `q54.1`：量表 value=0（无 scores） — 完全不符合
+  - `q54.2`：量表 value=25（无 scores） — 不太符合
+  - `q54.3`：量表 value=50（无 scores） — 说不准
+  - `q54.4`：量表 value=75（无 scores） — 比较符合
+  - `q54.5`：量表 value=100（无 scores） — 完全符合
+- **q55** 题干：我的决定通常受到我的价值观和情感影响，而不只是理性分析。
+  - `q55.1`：量表 value=0（无 scores） — 完全不符合
+  - `q55.2`：量表 value=25（无 scores） — 不太符合
+  - `q55.3`：量表 value=50（无 scores） — 说不准
+  - `q55.4`：量表 value=75（无 scores） — 比较符合
+  - `q55.5`：量表 value=100（无 scores） — 完全符合
+- **q56** 题干：我会同时开始很多事情，做到差不多了再决定下一步怎么走。
+  - `q56.1`：量表 value=0（无 scores） — 完全不符合
+  - `q56.2`：量表 value=25（无 scores） — 不太符合
+  - `q56.3`：量表 value=50（无 scores） — 说不准
+  - `q56.4`：量表 value=75（无 scores） — 比较符合
+  - `q56.5`：量表 value=100（无 scores） — 完全符合
+- **q57** 题干：我通常更像一个倾听者，而不是话多的那一方。
+  - `q57.1`：量表 value=0（无 scores） — 完全不符合
+  - `q57.2`：量表 value=25（无 scores） — 不太符合
+  - `q57.3`：量表 value=50（无 scores） — 说不准
+  - `q57.4`：量表 value=75（无 scores） — 比较符合
+  - `q57.5`：量表 value=100（无 scores） — 完全符合
+- **q58** 题干：我喜欢探索一个问题的深层含义，而不只是找到可行的解决方案。
+  - `q58.1`：量表 value=0（无 scores） — 完全不符合
+  - `q58.2`：量表 value=25（无 scores） — 不太符合
+  - `q58.3`：量表 value=50（无 scores） — 说不准
+  - `q58.4`：量表 value=75（无 scores） — 比较符合
+  - `q58.5`：量表 value=100（无 scores） — 完全符合
+- **q59** 题干：工作场合中，维护和谐的人际关系对我是真实的优先事项，而不只是附带考量。
+  - `q59.1`：量表 value=0（无 scores） — 完全不符合
+  - `q59.2`：量表 value=25（无 scores） — 不太符合
+  - `q59.3`：量表 value=50（无 scores） — 说不准
+  - `q59.4`：量表 value=75（无 scores） — 比较符合
+  - `q59.5`：量表 value=100（无 scores） — 完全符合
+- **q60** 题干：规定好的流程让我感到受限，我更喜欢找到自己的方式来完成一件事。
+  - `q60.1`：量表 value=0（无 scores） — 完全不符合
+  - `q60.2`：量表 value=25（无 scores） — 不太符合
+  - `q60.3`：量表 value=50（无 scores） — 说不准
+  - `q60.4`：量表 value=75（无 scores） — 比较符合
+  - `q60.5`：量表 value=100（无 scores） — 完全符合
+
+### 逐结果
+- **intj**（建筑师）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **intp**（逻辑学家）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **entj**（指挥官）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **entp**（辩论家）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **infj**（提倡者）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **infp**（调停者）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **enfj**（主人公）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **enfp**（竞选者）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **istj**（物流师）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **isfj**（守卫者）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **estj**（总经理）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **esfj**（执政官）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **istp**（鉴赏家）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **isfp**（探险家）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **estp**（企业家）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+- **esfp**（表演者）：profile 键：E, J, S, T（未做 (0,1) 轴校验）
+
+## media-niche-test
+- **计分**：`weighted-dimension` · 维度数 2 · 题数 16 · 结果数 9
+- **错误（30）**
+  - r1 ↔ r4: profiles too similar (max diff 0.05)
+  - r1 ↔ r12: profiles too similar (max diff 0.10)
+  - r3 ↔ r5: profiles too similar (max diff 0.05)
+  - r3 ↔ r9: profiles too similar (max diff 0.10)
+  - r3 ↔ r10: profiles too similar (max diff 0.05)
+  - r3 ↔ r11: profiles too similar (max diff 0.05)
+  - r4 ↔ r12: profiles too similar (max diff 0.05)
+  - r5 ↔ r9: profiles too similar (max diff 0.10)
+  - r5 ↔ r10: profiles too similar (max diff 0.05)
+  - r5 ↔ r11: profiles too similar (max diff 0.05)
+  - r9 ↔ r10: profiles too similar (max diff 0.05)
+  - r9 ↔ r11: profiles too similar (max diff 0.05)
+  - r10 ↔ r11: profiles too similar (max diff 0.00)
+  - r4 is unreachable — dominated by r1 on all dimensions
+  - r5 is unreachable — dominated by r3 on all dimensions
+  - r5 is unreachable — dominated by r9 on all dimensions
+  - r5 is unreachable — dominated by r10 on all dimensions
+  - r5 is unreachable — dominated by r11 on all dimensions
+  - r7 is unreachable — dominated by r1 on all dimensions
+  - r7 is unreachable — dominated by r3 on all dimensions
+  - r7 is unreachable — dominated by r4 on all dimensions
+  - r7 is unreachable — dominated by r5 on all dimensions
+  - r7 is unreachable — dominated by r9 on all dimensions
+  - r7 is unreachable — dominated by r10 on all dimensions
+  - r7 is unreachable — dominated by r11 on all dimensions
+  - r7 is unreachable — dominated by r12 on all dimensions
+  - r10 is unreachable — dominated by r9 on all dimensions
+  - r11 is unreachable — dominated by r9 on all dimensions
+  - r12 is unreachable — dominated by r1 on all dimensions
+  - r12 is unreachable — dominated by r4 on all dimensions
+- **警告（30）**
+  - r1 ↔ r4: profiles too similar (max diff 0.05), users may cluster
+  - r1 ↔ r12: profiles too similar (max diff 0.10), users may cluster
+  - r3 ↔ r5: profiles too similar (max diff 0.05), users may cluster
+  - r3 ↔ r9: profiles too similar (max diff 0.10), users may cluster
+  - r3 ↔ r10: profiles too similar (max diff 0.05), users may cluster
+  - r3 ↔ r11: profiles too similar (max diff 0.05), users may cluster
+  - r4 ↔ r12: profiles too similar (max diff 0.05), users may cluster
+  - r5 ↔ r9: profiles too similar (max diff 0.10), users may cluster
+  - r5 ↔ r10: profiles too similar (max diff 0.05), users may cluster
+  - r5 ↔ r11: profiles too similar (max diff 0.05), users may cluster
+  - r9 ↔ r10: profiles too similar (max diff 0.05), users may cluster
+  - r9 ↔ r11: profiles too similar (max diff 0.05), users may cluster
+  - r10 ↔ r11: profiles too similar (max diff 0.00), users may cluster
+  - r4 is unreachable — dominated by r1 on all dimensions
+  - r5 is unreachable — dominated by r3 on all dimensions
+  - r5 is unreachable — dominated by r9 on all dimensions
+  - r5 is unreachable — dominated by r10 on all dimensions
+  - r5 is unreachable — dominated by r11 on all dimensions
+  - r7 is unreachable — dominated by r1 on all dimensions
+  - r7 is unreachable — dominated by r3 on all dimensions
+  - r7 is unreachable — dominated by r4 on all dimensions
+  - r7 is unreachable — dominated by r5 on all dimensions
+  - r7 is unreachable — dominated by r9 on all dimensions
+  - r7 is unreachable — dominated by r10 on all dimensions
+  - r7 is unreachable — dominated by r11 on all dimensions
+  - r7 is unreachable — dominated by r12 on all dimensions
+  - r10 is unreachable — dominated by r9 on all dimensions
+  - r11 is unreachable — dominated by r9 on all dimensions
+  - r12 is unreachable — dominated by r1 on all dimensions
+  - r12 is unreachable — dominated by r4 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜编辑视频时，你发现素材库有一段特别精彩的片段，但与当前主题不太匹配，你会如何处理？
+  - `q1.a`：结构检查通过 — 立即剪辑插入，相信精彩内容总能吸引观众
+  - `q1.b`：结构检查通过 — 保存备用，先完成当前主题的视频再考虑
+  - `q1.c`：结构检查通过 — 重新构思主题，围绕这个精彩片段打造新内容
+  - `q1.d`：结构检查通过 — 分享到粉丝群，让大家投票决定是否使用
+- **q2** 题干：你发布了一条精心制作的视频，但评论区的反馈寥寥无几，你会如何应对？
+  - `q2.a`：结构检查通过 — 分析数据，调整内容策略和发布时间
+  - `q2.b`：结构检查通过 — 主动在评论区引导讨论，提出互动话题
+  - `q2.c`：结构检查通过 — 坚持原有风格，相信好内容会被慢慢发现
+  - `q2.d`：结构检查通过 — 尝试与粉丝一对一互动，建立深度连接
+- **q3** 题干：拍摄现场突然遇到技术故障，设备无法使用，你会如何处理？
+  - `q3.a`：结构检查通过 — 立即寻找替代方案，用手机继续拍摄
+  - `q3.b`：结构检查通过 — 取消拍摄，等设备修好再重新安排
+  - `q3.c`：结构检查通过 — 直播故障现场，与粉丝一起解决问题
+  - `q3.d`：结构检查通过 — 改变拍摄计划，转场到不需要设备的场景
+- **q4** 题干：在策划新系列内容时，你更倾向于哪种创作方式？
+  - `q4.a`：结构检查通过 — 深入研究话题，提供独特见解和专业分析
+  - `q4.b`：结构检查通过 — 关注热点话题，快速响应观众需求
+  - `q4.c`：结构检查通过 — 与粉丝共创内容，收集他们的建议和想法
+  - `q4.d`：结构检查通过 — 坚持自己独特的创作风格，不受外界干扰
+- **q5** 题干：当你发现一个与自己风格完全不同的热门话题时，你会如何处理？
+  - `q5.a`：结构检查通过 — 尝试融入自己的风格，找到独特切入点
+  - `q5.b`：结构检查通过 — 完全按照热门话题的方式创作，扩大受众范围
+  - `q5.c`：结构检查通过 — 在评论区分享对这个话题的专业见解
+  - `q5.d`：结构检查通过 — 坚持原有风格，不盲目跟风
+- **q6** 题干：面对粉丝提出的创意建议，你通常会如何回应？
+  - `q6.a`：结构检查通过 — 认真考虑，如果有价值就融入创作
+  - `q6.b`：结构检查通过 — 邀请粉丝参与创作过程，共同完成内容
+  - `q6.c`：结构检查通过 — 礼貌感谢但保持独立创作方向
+  - `q6.d`：结构检查通过 — 定期举办粉丝创意征集活动
+- **q7** 题干：当你收到一条批评你最新视频的评论，称你的内容'缺乏深度'时，你会
+  - `q7.a`：结构检查通过 — 立即回复解释你的创作意图，并邀请对方提出具体建议
+  - `q7.b`：结构检查通过 — 默默删除评论，继续按自己的风格创作，不受外界评价影响
+  - `q7.c`：结构检查通过 — 分析这条评论，思考是否需要在下次内容中加入更多深度元素
+  - `q7.d`：结构检查通过 — 制作一期回应视频，详细讨论'深度'的定义和不同理解
+- **q8** 题干：在拍摄一个城市夜景的延时摄影时，你发现完美的拍摄角度被一群游客占据，你会
+  - `q8.a`：结构检查通过 — 耐心等待游客离开，相信好作品值得等待
+  - `q8.b`：结构检查通过 — 主动上前与游客交流，请求他们配合拍摄几分钟
+  - `q8.c`：结构检查通过 — 迅速寻找附近另一个同样有特色的拍摄角度
+  - `q8.d`：结构检查通过 — 改变拍摄计划，将游客也纳入画面，捕捉城市夜景与人文的融合
+- **q9** 题干：当你剪辑一个关键视频片段时，发现素材中的声音效果不够理想，你会
+  - `q9.a`：结构检查通过 — 花时间寻找或制作更完美的音效，确保作品质量
+  - `q9.b`：结构检查通过 — 用旁白解说替代不完美的音效，增加与观众的互动感
+  - `q9.c`：结构检查通过 — 保留原有音效，但在评论区发起投票，让观众决定是否需要重新配音
+  - `q9.d`：结构检查通过 — 尝试用创意剪辑技巧弱化音效问题，让视觉内容成为焦点
+- **q10** 题干：你的视频发布后，数据表现一般，但收到的评论互动特别热烈，你会
+  - `q10.a`：结构检查通过 — 分析评论内容，了解观众真正感兴趣的点，调整后续内容方向
+  - `q10.b`：结构检查通过 — 保持现有内容风格，相信高质量内容最终会获得应有的流量
+  - `q10.c`：结构检查通过 — 制作一期特别内容，专门回应和感谢评论区的互动
+  - `q10.d`：结构检查通过 — 尝试调整发布时间和标题，测试是否能提高视频的播放数据
+- **q11** 题干：当你的创意陷入瓶颈，需要新的灵感来源时，你会
+  - `q11.a`：结构检查通过 — 深入目标受众的生活场景，观察他们的真实需求和痛点
+  - `q11.b`：结构检查通过 — 寻找与自己领域完全不同的创作者作品，跨界寻找灵感
+  - `q11.c`：结构检查通过 — 直接在粉丝群发起话题讨论，收集大家感兴趣的内容方向
+  - `q11.d`：结构检查通过 — 暂时放下创作，去做一些与创作无关的事情，让思维自然放松
+- **q12** 题干：当你需要为一个复杂主题制作一个易于理解的解释视频时，你会
+  - `q12.a`：结构检查通过 — 将复杂概念分解成多个简单步骤，循序渐进地解释
+  - `q12.b`：结构检查通过 — 制作一个互动式视频，让观众通过选择来探索主题的不同方面
+  - `q12.c`：结构检查通过 — 使用大量视觉类比和比喻，让观众直观理解抽象概念
+  - `q12.d`：结构检查通过 — 邀请一位领域专家进行访谈，通过专业对话传递知识
+- **q13** 题干：深夜编辑室里，你面对堆积如山的素材和不断更新的热点，会选择哪种方式开始创作？
+  - `q13.a`：结构检查通过 — 整理所有素材，建立清晰的逻辑框架，再开始创作
+  - `q13.b`：结构检查通过 — 挑选最吸引人的部分，先创作能立即引发共鸣的片段
+  - `q13.c`：结构检查通过 — 按时间线梳理素材，保持事件发展的自然流畅性
+  - `q13.d`：结构检查通过 — 从独特角度切入，挖掘素材中被忽略的细节和联系
+- **q14** 题干：当你的一条视频获得了意想不到的病毒式传播，评论区涌现大量讨论，你会如何回应？
+  - `q14.a`：结构检查通过 — 认真回复每一条有价值的评论，建立深度互动关系
+  - `q14.b`：结构检查通过 — 分析评论数据，找出最受欢迎的内容方向，制定后续策略
+  - `q14.c`：结构检查通过 — 创作一条感谢视频，回应主要评论和问题，保持创作连续性
+  - `q14.d`：结构检查通过 — 保持低调，专注于下一个作品，不因热度改变创作节奏
+- **q15** 题干：在内容创作遇到瓶颈时，你更倾向于通过什么方式寻找突破？
+  - `q15.a`：结构检查通过 — 深入研究受众反馈，调整内容方向和表达方式
+  - `q15.b`：结构检查通过 — 尝试全新的创作形式和平台，拓展内容边界
+  - `q15.c`：结构检查通过 — 与同领域创作者交流，碰撞创意火花
+  - `q15.d`：结构检查通过 — 暂时休息，通过生活体验积累新的创作素材
+- **q16** 题干：面对批评性评论时，你的创作风格会如何调整？
+  - `q16.a`：结构检查通过 — 选择性回应，澄清误解并展示专业视角
+  - `q16.b`：结构检查通过 — 分析批评中的合理成分，调整内容质量
+  - `q16.c`：结构检查通过 — 保持原有风格，用更多优质内容证明自己
+  - `q16.d`：结构检查通过 — 转向支持者群体，强化与核心受众的互动
+
+### 逐结果
+- **r1**（泛娱乐类）：profile 键与范围检查通过。
+- **r3**（美妆护肤类）：profile 键与范围检查通过。
+- **r4**（美食类）：profile 键与范围检查通过。
+- **r5**（游戏类）：profile 键与范围检查通过。
+- **r7**（教育知识类）：profile 键与范围检查通过。
+- **r9**（情感心理类）：profile 键与范围检查通过。
+- **r10**（运动健身类）：profile 键与范围检查通过。
+- **r11**（母婴宠物类）：profile 键与范围检查通过。
+- **r12**（旅游出行类）：profile 键与范围检查通过。
+
+## ming-dynasty-persona
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 10
+- **警告（12）**
+  - r2: missing "strengths"
+  - r2: missing "weaknesses"
+  - r2: only 0 strengths (want 3)
+  - r2: only 0 weaknesses (want 3)
+  - r3: missing "strengths"
+  - r3: missing "weaknesses"
+  - r3: only 0 strengths (want 3)
+  - r3: only 0 weaknesses (want 3)
+  - r10: missing "strengths"
+  - r10: missing "weaknesses"
+  - r10: only 0 strengths (want 3)
+  - r10: only 0 weaknesses (want 3)
+
+### 逐题 · 逐选项
+- **q1** 题干：烛火摇曳的县衙内,你手握密报,窗外传来百姓的窃窃私语。兵力不足,军饷未至,饥荒蔓延。面对李自成余党即将起义的密报,你当如何应对？
+  - `q1.a`：结构检查通过 — 立即组织乡勇,联合城中商贾共同守城,同时派人秘密联络附近州府请求援军。
+  - `q1.b`：结构检查通过 — 召集城中乡绅,开仓放粮以平息民怨,同时暗中派人与起义军首领谈判,寻求和解之道。
+  - `q1.c`：结构检查通过 — 严密封锁消息,连夜派人将密报送往省城,同时加强城防,静待朝廷援军。
+  - `q1.d`：结构检查通过 — 公开招募壮丁,以朝廷名义安抚百姓,同时暗中收集起义党羽名单,伺机一网打尽。
+- **q2** 题干：边关烽火连天,粮草仅剩三日之量。你手握密信,援军已在路上,却需七日方能抵达。望着城外清军旗帜招展,你将如何抉择？
+  - `q2.a`：结构检查通过 — 分出一部分精锐,趁夜色突围求援,同时固守城池,与清军周旋消耗其兵力。
+  - `q2.b`：结构检查通过 — 派出使者与清军谈判,许诺献城保全军民性命,换取城中百姓安全撤离。
+  - `q2.c`：结构检查通过 — 下令城中百姓共同守城,将仅存粮草分给守军,誓与城池共存亡,等待援军。
+  - `q2.d`：结构检查通过 — 派一小队人马佯装突围吸引清军注意,主力则趁夜色转移至附近山堡,保存实力再图后路。
+- **q3** 题干：江南书院书声朗朗,同窗好友因直言批评朝政被东厂带走。家族托人传话,只要你暗中助力其子科举,他们将全力营救同窗。你将如何回应？
+  - `q3.a`：结构检查通过 — 婉拒同窗家族的请求,转而联络朝中正直官员,通过正常渠道营救同窗,不计个人得失。
+  - `q3.b`：结构检查通过 — 答应同窗家族的条件,暗中帮助其子科举,同时秘密收集东厂不法证据,伺机反击。
+  - `q3.c`：结构检查通过 — 表面答应同窗家族,实则向主考官揭发其舞弊意图,既保全了自身,又避免了助长不正之风。
+  - `q3.d`：结构检查通过 — 向书院山长求助,请他出面与东厂交涉,同时告诫同窗家族不要试图通过不正当手段解决问题。
+- **q4** 题干：市集熙攘,你意外得到一份东林党人与朝廷要员的密信,揭露朝廷对农民军的残酷镇压。若公之于众,或引发更大民变；若销毁,则可能错失变革良机。你将如何处置？
+  - `q4.a`：结构检查通过 — 将密信匿名交给东林党人,让他们决定是否公开,自己则置身事外,避免卷入政治漩涡。
+  - `q4.b`：结构检查通过 — 立即将密信公开,撰写檄文揭露朝廷暴行,号召百姓共同参与变革,打破现有秩序。
+  - `q4.c`：结构检查通过 — 私下联络地方官员和士绅,共同向朝廷施压,要求改革吏治,减轻百姓负担,避免激进变革。
+  - `q4.d`：结构检查通过 — 将密信转交信得过的官员,建议他在朝堂上以此为由提议改革,既不引发动荡,又能推动变革。
+- **q5** 题干：闲暇时光,你是更愿意在江南水乡的茶楼里聆听说书人讲述历史典故,还是前往市集了解最新物价与商情？
+  - `q5.a`：结构检查通过 — 茶楼听书,与文人雅士探讨古今兴衰,从历史中汲取治国安邦的智慧。
+  - `q5.b`：结构检查通过 — 市集探价,与商贾交流行情,了解各地物产与税收政策,寻找商机。
+  - `q5.c`：结构检查通过 — 茶楼听书,但更关注其中反映的社会问题,思考如何改良现状。
+  - `q5.d`：结构检查通过 — 市集探价,同时暗中收集民间疾苦,为日后变革积累素材。
+- **q6** 题干：官员家宴上,烛光摇曳,佳肴满桌。席间有人提及朝廷腐败,主人暗中观察你的反应,其他客人或低头不语,或附和声讨。你将如何应对？
+  - `q6.a`：结构检查通过 — 借典故暗讽朝政,既表达不满又不直接批评,让主人明白自己的立场又不至于得罪。
+  - `q6.b`：结构检查通过 — 转移话题,赞赏主人家的诗词书画,避开敏感话题,保全自身。
+  - `q6.c`：结构检查通过 — 直言不讳,痛斥朝廷腐败,呼吁改革,不顾主人脸色和在场宾客的反应。
+  - `q6.d`：结构检查通过 — 附和几声,然后提出具体解决方案,显示自己不仅批评问题,更能提供实际建议。
+- **q7** 题干：江南丝绸庄内,账房先生匆匆来报,朝廷即将征收重税充军饷,已有商贾因抗税被捕。你望着满库的丝绸,如何应对这突如其来的危机？
+  - `q7.a`：结构检查通过 — 立即将部分丝绸低价出售,换取现钱缴纳税款,同时缩减经营规模,等待风头过去。
+  - `q7.b`：结构检查通过 — 联络其他丝绸商贾,共同上书朝廷,陈述重税对民生的影响,请求减免或延期。
+  - `q7.c`：结构检查通过 — 暗中将部分丝绸转移至乡下藏匿,只缴纳部分税款,同时贿赂税官,减轻负担。
+  - `q7.d`：结构检查通过 — 公开抗税,以商贾身份组织同乡联名上书,拒绝缴纳不合理的重税,宁可坐牢也不妥协。
+- **q8** 题干：战火纷飞中,一位白发老学者在摇曳的烛光下颤抖着手整理古籍,窗外炮火声不断,他却不为所动,只为保全一批珍贵的典籍。你会如何应对此情此景？
+  - `q8.a`：结构检查通过 — 协助老人整理典籍,与他一起坚守文化传承
+  - `q8.b`：结构检查通过 — 劝说老人先逃命,典籍可再寻,生命只有一次
+  - `q8.c`：结构检查通过 — 暗中安排人手保护典籍,协助老人转移至安全处
+  - `q8.d`：结构检查通过 — 典籍虽珍贵,乱世当以活命为先,劝其明哲保身
+- **q9** 题干：月下小酌,你面临一个难得的机缘:是与忧国忧民的东林党人共饮,探讨朝政得失；还是与见多识广的海上商人对饮,聆听海外奇闻？
+  - `q9.a`：结构检查通过 — 选择与东林党人共饮,交流治国安邦之道
+  - `q9.b`：结构检查通过 — 选择与海上商人对饮,探寻新思想与新商机
+  - `q9.c`：结构检查通过 — 先与东林党人谈时政,再与商人探商机,两者不误
+  - `q9.d`：结构检查通过 — 婉拒邀请,独处反思,乱世当先自保而非结交
+- **q10** 题干：寒冬腊月,家中仆人慌张报告粮仓发现几只老鼠,已啃食不少存粮。窗外寒风呼啸,家中老幼正等着这点粮食过冬。
+  - `q10.a`：结构检查通过 — 立即派人捕杀老鼠,加固粮仓,确保不再有损失
+  - `q10.b`：结构检查通过 — 严惩失职仆人,并派人四处筹粮,弥补损失
+  - `q10.c`：结构检查通过 — 将剩余粮食分给最需要的家人,其余任老鼠啃食
+  - `q10.d`：结构检查通过 — 命仆人将老鼠赶走,粮仓照旧,不愿因小失大
+- **q11** 题干：紫禁城密室内,你作为皇帝近臣,发现有人暗中勾结外臣,证据确凿,但牵连甚广,包括几位朝廷重臣。烛光摇曳,你手握密信,冷汗直流。
+  - `q11.a`：结构检查通过 — 立即将证据呈报皇上,宁可得罪权贵也要肃清朝纲
+  - `q11.b`：结构检查通过 — 暗中收集更多证据,设计一网打尽,不留后患
+  - `q11.c`：结构检查通过 — 与涉案重臣私下交谈,警告其收手,息事宁人
+  - `q11.d`：结构检查通过 — 装作不知情,明哲保身,免得引火烧身
+- **q12** 题干：边关战场,军需账目显示发放给士兵的军粮被大量克扣。举报上级可能会人头落地,但保持沉默则是对数百名士兵的背叛。寒风如刀,战马嘶鸣。
+  - `q12.a`：结构检查通过 — 匿名举报,让上级无法追查,同时保护士兵利益
+  - `q12.b`：结构检查通过 — 私下收集证据,直接面见皇帝,揭露贪腐真相
+  - `q12.c`：结构检查通过 — 暗中补偿被克扣的军粮,向士兵保证此事会解决
+  - `q12.d`：结构检查通过 — 装作不知情,专注本职,避免卷入权力斗争
+- **q13** 题干：饥荒肆虐,你目睹一位商人不顾官府禁令,偷偷将粮食运往饥荒地区。官差已盯上他,一旦被查获,不仅货物充公,还可能面临牢狱之灾。
+  - `q13.a`：结构检查通过 — 协助商人寻找安全路线,确保粮食送达饥民手中
+  - `q13.b`：结构检查通过 — 劝商人放弃这种冒险行为,另寻安全救济方式
+  - `q13.c`：结构检查通过 — 暗中联络地方官员,以捐赠名义帮助商人完成善举
+  - `q13.d`：结构检查通过 — 敬佩商人义举,但选择明哲保身,不参与其中
+- **q14** 题干：乱世中,你面临选择:是潜心研习古代兵法,寻求战场制胜之道；还是专注学习农耕技术,提高粮食产量,缓解民生困苦？
+  - `q14.a`：结构检查通过 — 深入研究兵法,寻求速胜之道,早日结束战乱
+  - `q14.b`：结构检查通过 — 专注农耕技术,提高粮食产量,从根本解决民生
+  - `q14.c`：结构检查通过 — 兵法农耕并重,既求速胜也求久安,两手抓两手硬
+  - `q14.d`：结构检查通过 — 乱世当以自保为先,研习医术更实用可靠
+- **q15** 题干：烛火摇曳中,你手握两份请柬:一份来自丝绸商贾的珍馐盛宴,香气扑鼻；一份来自乡野士绅的清茶雅集,茶香淡雅。时间相撞,你该如何选择？
+  - `q15.a`：结构检查通过 — 赴富商之宴,结交权贵,拓展人脉以利仕途
+  - `q15.b`：结构检查通过 — 往乡绅之聚,体察民情,了解地方实况以利治理
+  - `q15.c`：结构检查通过 — 托病不出,潜心公务,不受世俗应酬所扰
+  - `q15.d`：结构检查通过 — 两处皆派人代为致意,自己闭门研读治国策论
+- **q16** 题干：铁蹄踏碎书院宁静,东厂锦衣卫如狼似虎闯入,搜查禁书。你怀揣一部批驳朝政的手稿,藏于袖中,冷汗浸湿衣襟。此时你当如何？
+  - `q16.a`：结构检查通过 — 挺身而出,直言手稿乃学术探讨,非犯上作乱
+  - `q16.b`：结构检查通过 — 趁乱将手稿投入火盆,假作被毁以求自保
+  - `q16.c`：结构检查通过 — 暗中转移手稿至隐秘处,佯作不知情以避灾祸
+  - `q16.d`：结构检查通过 — 主动献上手稿,但辩称乃年少轻狂之作,现已悔悟
+- **q17** 题干：军营篝火映照下,起义军将领激烈争论。有人主张攻占富庶县城夺取粮草,反对者则担忧屠城伤天和气。剑拔弩张,你将如何决断？
+  - `q17.a`：结构检查通过 — 力主攻城,认为兵马未动粮草先行,胜者为王
+  - `q17.b`：结构检查通过 — 反对屠城,宁可饿死也不伤及无辜,以德服人
+  - `q17.c`：结构检查通过 — 提议分兵两路,一路佯攻吸引敌军,另一路寻找无人之地
+  - `q17.d`：结构检查通过 — 建议招安投诚,换取朝廷赦免,保全军民性命
+- **q18** 题干：朝堂之上,一位官员当面拒绝万两贿赂,宁可被贬谪也不与贪官同流合污。他拂袖而去时,面无惧色,气节凛然。你目睹此景,心中作何感想？
+  - `q18.a`：结构检查通过 — 敬佩其风骨,但认为这是不知变通的愚忠
+  - `q18.b`：结构检查通过 — 叹其迂腐,如此刚直不阿只会招致杀身之祸
+  - `q18.c`：结构检查通过 — 暗自效仿,决心坚守道义,宁可清贫也不失节
+  - `q18.d`：结构检查通过 — 暗中联络,希望与之结盟,共同对抗贪腐势力
+- **q19** 题干：若有机会改变大明现状,你是选择参与科举制度改革,打破门第之见；还是改良农具,提高农业产量,解百姓于饥饿？
+  - `q19.a`：结构检查通过 — 改革科举,选拔真才实学之士,打破官场垄断
+  - `q19.b`：结构检查通过 — 改良农具,先解决温饱再谈其他,民以食为天
+  - `q19.c`：结构检查通过 — 两者并举,一边选拔人才,一边增产粮食,双管齐下
+  - `q19.d`：结构检查通过 — 都不参与,乱世之中保全自身最为重要
+- **q20** 题干：书院窗前,你发现同窗好友抄袭你的文章,已因此获得举荐。若揭发,好友前程尽毁；若沉默,则是对学术不端的纵容。你将如何？
+  - `q20.a`：结构检查通过 — 私下劝其主动认错,或可保全其声誉
+  - `q20.b`：结构检查通过 — 立即揭发,维护学术清誉,不容半点虚假
+  - `q20.c`：结构检查通过 — 佯作不知,暗中提升自己实力,下次再胜之
+  - `q20.d`：结构检查通过 — 向师长委婉暗示,让师者自行处理,避免直接冲突
+
+### 逐结果
+- **r1**（锦衣卫指挥使）：profile 键与范围检查通过。
+- **r2**（东厂厂公）：profile 键与范围检查通过。
+- **r3**（商人）：profile 键与范围检查通过。
+- **r4**（农民军）：profile 键与范围检查通过。
+- **r5**（东林党人）：profile 键与范围检查通过。
+- **r6**（清官）：profile 键与范围检查通过。
+- **r7**（农民军领袖）：profile 键与范围检查通过。
+- **r8**（东林激进派）：profile 键与范围检查通过。
+- **r9**（技术官员）：profile 键与范围检查通过。
+- **r10**（隐士学者）：profile 键与范围检查通过。
+
+## ming-dynasty-role-play
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **警告（10）**
+  - result-reformer: profile "守成" = 0 (should be in (0,1))
+  - result-reformer: profile "隐逸" = 0 (should be in (0,1))
+  - result-straight-literal: profile "权谋" = 0 (should be in (0,1))
+  - result-schemer: profile "隐逸" = 0 (should be in (0,1))
+  - result-schemer: profile "风骨" = 0 (should be in (0,1))
+  - result-hermit-scholar: profile "务实" = 0 (should be in (0,1))
+  - result-hermit-scholar: profile "权谋" = 0 (should be in (0,1))
+  - result-traditional-guardian: profile "革新" = 0 (should be in (0,1))
+  - result-qi-jiguang: profile "隐逸" = 0 (should be in (0,1))
+  - result-yuan-chonghuan: profile "隐逸" = 0 (should be in (0,1))
+
+### 逐题 · 逐选项
+- **q1** 题干：你被任命为漕运小吏，发现船队夹带私盐已成惯例，上司默许。你会：
+  - `q1.a`：结构检查通过 — 立即密报按察司，请求彻查。
+  - `q1.b`：结构检查通过 — 佯装不知，但详细记录船次与人员。
+  - `q1.c`：结构检查通过 — 按规矩收一份常例钱，维持现状。
+  - `q1.d`：结构检查通过 — 申请调往内陆驿站，远离河岸是非。
+- **q2** 题干：你经营的茶馆里，说书人正讲着《水浒》。锦衣卫小旗入座，示意你过去。你会：
+  - `q2.a`：结构检查通过 — 照常奉茶，对说书内容不作评论。
+  - `q2.b`：结构检查通过 — 主动上前，低声询问是否需要更换书目。
+  - `q2.c`：结构检查通过 — 让说书人停下，改讲《三国演义》忠义段。
+  - `q2.d`：结构检查通过 — 照常说书，若他问起，便答"市井闲谈，无关时政"。
+- **q3** 题干：你作为县令，收到两份请柬：本地最大乡绅的寿宴，与县学寒门士子组织的文会，时间冲突。你会：
+  - `q3.a`：结构检查通过 — 赴乡绅寿宴，这是了解地方实情的机会。
+  - `q3.b`：结构检查通过 — 赴士子文会，鼓励后进才是为官本分。
+  - `q3.c`：结构检查通过 — 两边各去片刻，礼数周全即可。
+  - `q3.d`：结构检查通过 — 称病都不去，在衙内批阅积压案卷。
+- **q4** 题干：你继承了一座老宅，修缮时在墙内发现前朝遗臣的绝笔诗稿，内容敏感。你会：
+  - `q4.a`：结构检查通过 — 原样封回墙内，当作从未见过。
+  - `q4.b`：结构检查通过 — 小心誊抄一份留存，将原稿秘密焚毁。
+  - `q4.c`：结构检查通过 — 将诗稿交给信任的学者，探讨其中史实。
+  - `q4.d`：结构检查通过 — 立即上报县学教谕，由官府定夺。
+- **q5** 题干：你是一名匠户，被征调参与皇陵修建。监工苛刻，同乡不堪重负病倒。你会：
+  - `q5.a`：结构检查通过 — 串联几名匠人，一起向更高层官员工头陈情。
+  - `q5.b`：结构检查通过 — 私下帮同乡分担活计，并设法弄些草药。
+  - `q5.c`：结构检查通过 — 研究工序，提出一个能省时省力的改进方案。
+  - `q5.d`：结构检查通过 — 埋头做好自己分内事，不多言不多事。
+- **q6** 题干：你所在的卫所，百户长虚报兵额吃空饷，并分润部分给知情者。你是总旗，他会找你谈话。你会：
+  - `q6.a`：结构检查通过 — 严词拒绝，并准备材料向指挥使揭发。
+  - `q6.b`：结构检查通过 — 表面接受，暗中记录证据，等待合适时机。
+  - `q6.c`：结构检查通过 — 接受，并用这笔钱改善手下军户伙食。
+  - `q6.d`：结构检查通过 — 以家中老母病重为由，申请调离或退役。
+- **q7** 题干：你��一位致仕返乡的官员，地方官常来请教，并送来各种"土仪"。你会：
+  - `q7.a`：结构检查通过 — 闭门谢客，专心整理自己的文集。
+  - `q7.b`：结构检查通过 — 酌情接待，礼物一概不收，只谈风月。
+  - `q7.c`：结构检查通过 — 接待并收下薄礼，借此了解地方动向，必要时点拨一二。
+  - `q7.d`：结构检查通过 — 利用旧日关系，为乡里争取修桥铺路的拨款。
+- **q8** 题干：你是一名书商，得到一套海外传入的《几何原本》刻本，内容精深但晦涩。你会：
+  - `q8.a`：结构检查通过 — 高价售与收藏家，利润可观。
+  - `q8.b`：结构检查通过 — 寻找通晓西学的士人合作，尝试注解刊印。
+  - `q8.c`：结构检查通过 — 束之高阁，等风头过去再看是否出手。
+  - `q8.d`：结构检查通过 — 拆解其中实用部分，编入算学入门书中。
+- **q9** 题干：你作为言官，得知某位阁老的门生有贪墨嫌疑，但证据链尚不完整，且阁老对你有提携之恩。你会：
+  - `q9.a`：结构检查通过 — 继续深挖，证据确凿后立即上疏弹劾。
+  - `q9.b`：结构检查通过 — 将初步线索透露给与阁老不和的另一位言官。
+  - `q9.c`：结构检查通过 — 私下求见阁老，陈明利害，劝其约束门生。
+  - `q9.d`：结构检查通过 — 暂压此事，转而调查另一桩证据更确凿的案子。
+- **q10** 题干：倭寇袭扰沿海，你所在的村庄决定组织乡勇自保。大家推举你负责。你会：
+  - `q10.a`：结构检查通过 — 制定严格操练与巡逻章程，按军法约束。
+  - `q10.b`：结构检查通过 — 重点联络附近村庄与大族，结成联防。
+  - `q10.c`：结构检查通过 — 变卖部分家产，购置更好的兵器与哨船。
+  - `q10.d`：结构检查通过 — 主张以防御为主，深挖壕沟，避免正面冲突。
+  - `q10.e`：结构检查通过 — 提议部分老弱妇孺先行内迁，减少负担。
+- **q11** 题干：你是��位画师，受某权贵之邀为其作肖像。他暗示你"修饰"一下他眼角的疤痕与阴鸷神色。你会：
+  - `q11.a`：结构检查通过 — 如实描绘，认为神韵重于皮相。
+  - `q11.b`：结构检查通过 — 巧妙利用光影与角度，淡化疤痕，突出威仪。
+  - `q11.c`：结构检查通过 — 将其画成正在赏花的文人雅士，转移焦点。
+  - `q11.d`：结构检查通过 — 借口灵感未至，拖延交画，直至他失去兴趣。
+- **q12** 题干：你管理的官仓发现陈米霉变，但距秋粮入库尚有月余。上报必遭责罚。你会：
+  - `q12.a`：结构检查通过 — 立即上报，并自请处分，同时申请紧急调拨。
+  - `q12.b`：结构检查通过 — 设法从民间市集分批购入新米填补，不动声色。
+  - `q12.c`：结构检查通过 — 将霉变米与少量好米混合，尽快发放给赈济对象。
+  - `q12.d`：结构检查通过 — 将责任推给前任或仓吏，自己只负失察之责。
+- **q13** 题干：你隐居山林，著书立说。地方官三顾茅庐，请你出山主持修撰县志。你会：
+  - `q13.a`：结构检查通过 — 欣然应允，认为这是将所学付诸实践的机会。
+  - `q13.b`：结构检查通过 — 提出条件：秉笔直书，不受干涉。
+  - `q13.c`：结构检查通过 — 婉拒，但答应可提供资料与咨询。
+  - `q13.d`：结构检查通过 — 坚决不出，认为官修志书难免粉饰。
+- **q14** 题干：你发现市面流通的铜钱私铸严重，成色不足。你是钱庄掌柜，收兑时如何���置？
+  - `q14.a`：结构检查通过 — 严格检验，劣钱一律拒收或大幅折价。
+  - `q14.b`：结构检查通过 — 照常收兑，但将劣钱单独存放，用于特定支付。
+  - `q14.c`：结构检查通过 — 联合几家大钱庄，制定统一的成色标准与兑率。
+  - `q14.d`：结构检查通过 — 向官府匿名举报私铸线索，希望朝廷整顿。
+- **q15** 题干：你随船队下西洋归来，带回异域作物种子与海图。兵部与司农寺都感兴趣。你会优先接洽谁？
+  - `q15.a`：结构检查通过 — 司农寺，推广新作物可活民无数。
+  - `q15.b`：结构检查通过 — 兵部，海图关乎海防与未来航行。
+  - `q15.c`：结构检查通过 — 寻找商人合作，先小范围试种并复制海图售卖。
+  - `q15.d`：结构检查通过 — 将大部分献给朝廷，自己留少许种子在庭院试种把玩。
+- **q16** 题干：党争激烈，你的座师属于即将失势的一派。多位同门商量联名上疏为座师辩护。你会：
+  - `q16.a`：结构检查通过 — 率先署名，并负责起草疏文。
+  - `q16.b`：结构检查通过 — 建议暂缓，应先联络中立派官员寻求支持。
+  - `q16.c`：结构检查通过 — 私下接济座师家人，但公开场合保持沉默。
+  - `q16.d`：结构检查通过 — 不参与联名，但若被问及，会客观评价座师政绩。
+- **q17** 题干：你是一名医术精湛的游方郎中，路过疫病流行的村庄。当地乡绅出重金请你留下救治。你会：
+  - `q17.a`：结构检查通过 — 留下，并立刻着手隔离病患、配制汤药。
+  - `q17.b`：结构检查通过 — 先观察疫情，制定防治章程，再组织村民执行。
+  - `q17.c`：结构检查通过 — 收取部分定金购买药材，救治有效后再收全款。
+  - `q17.d`：结构检查通过 — 留下药方与防疫建议，收取诊金后尽快离开。
+- **q18** 题干：你负责监造一批送往京城的贡瓷，其中一件极品在出窑时已有细微裂痕，难以察觉。你会：
+  - `q18.a`：结构检查通过 — 当场砸碎，绝不让次品流出。
+  - `q18.b`：结构检查通过 — 设法用金线或特殊工艺修补，使其成为独特珍品。
+  - `q18.c`：结构检查通过 — 将其混入合格品中，希望查验时蒙混过关。
+  - `q18.d`：结构检查通过 — 主动向上官报告瑕疵，并建议降级处理或留作样品。
+- **q19** 题干：你偶然救下一位被追杀的锦衣卫小校。他伤愈后留下一个密封的铜盒，嘱托你"若我三月未归，便将其沉入后山深潭"。三月已过，你会：
+  - `q19.a`：结构检查通过 — 依言沉盒，绝不窥探。
+  - `q19.b`：结构检查通过 — 打开铜盒，判断内容后再决��如何处理。
+  - `q19.c`：结构检查通过 — 将铜盒原封不动交给当地知县。
+  - `q19.d`：结构检查通过 — 带着铜盒远走他乡，彻底消失。
+- **q20** 题干：你是一位精通水利的举人，未被授官。家乡河道淤塞，水患频发。县尊请你出谋划策，但明言库银不足。你会：
+  - `q20.a`：结构检查通过 — 提出一个耗费较少、分阶段实施的疏浚方案。
+  - `q20.b`：结构检查通过 — 建议以工代赈，动员乡民，官府只需提供部分粮食工具。
+  - `q20.c`：结构检查通过 — 绘制详细河图与方案，让县尊向上级或富户募捐。
+  - `q20.d`：结构检查通过 — 婉拒，认为无钱难以成事，徒惹麻烦。
+- **q21** 题干：你经营的酒楼是消息集散地。东厂番子来盘问某位常客的行踪，此人曾议论朝政。你会：
+  - `q21.a`：结构检查通过 — 推说记不清，客人太多难以留意。
+  - `q21.b`：结构检查通过 — 提供一些无关紧要的信息，应付过去。
+  - `q21.c`：结构检查通过 — 如实告知所见所闻，但不对其言论作评价。
+  - `q21.d`：结构检查通过 — 暗中派人通知那位常客近期不要再来。
+  - `q21.e`：结构检查通过 — 建议番子去查登记簿册（其实你从不登记）。
+- **q22** 题干：你是一位亲王（郡王）的伴读，亲王好武，想私自组建一支小型"家丁"队伍演练兵法。你会：
+  - `q22.a`：结构检查通过 — 坚决劝阻，指出宗藩��练兵马是大忌。
+  - `q22.b`：结构检查通过 — 建议以"护卫"或"田庄壮丁"名义，控制在法定人数内。
+  - `q22.c`：结构检查通过 — 提议改为研读兵书、推演沙盘，同样能学兵法。
+  - `q22.d`：结构检查通过 — 借口才疏学浅，请求调去管理王府藏书楼。
+  - `q22.e`：结构检查通过 — 协助亲王组建，但严格限定为强身健体的操演，不配发真兵器。
+  - `q22.f`：结构检查通过 — 秘密记录此事，作为未来必要时自保或进身的筹码。
+
+### 逐结果
+- **result-reformer**（张居正）：守成=0 不在 (0,1)；隐逸=0 不在 (0,1)
+- **result-straight-literal**（海瑞）：权谋=0 不在 (0,1)
+- **result-schemer**（徐阶）：隐逸=0 不在 (0,1)；风骨=0 不在 (0,1)
+- **result-pragmatic-official**（潘季驯）：profile 键与范围检查通过。
+- **result-hermit-scholar**（汤显祖）：务实=0 不在 (0,1)；权谋=0 不在 (0,1)
+- **result-traditional-guardian**（申时行）：革新=0 不在 (0,1)
+- **result-wang-yangming**（王阳明）：profile 键与范围检查通过。
+- **result-qi-jiguang**（戚继光）：隐逸=0 不在 (0,1)
+- **result-li-shizhen**（李时珍）：profile 键与范围检查通过。
+- **result-yuan-chonghuan**（袁崇焕）：隐逸=0 不在 (0,1)
+
+## miyazaki-character-archetype
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 10
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：古老的森林深处,你发现一只受伤的森林精灵,它的翅膀被不知名的魔法装置所困,而此时远处传来了追捕者的脚步声。精灵的眼神中充满了恐惧,翅膀上的装置闪烁着不祥的蓝光。你该如何行动？
+  - `q1.a`：结构检查通过 — 小心翼翼地拆除魔法装置,优先考虑不伤害精灵,相信自然自有其修复的力量
+  - `q1.b`：结构检查通过 — 迅速为精灵包扎伤口,同时寻找隐藏的树洞让它暂时躲避,等待追捕者离开
+  - `q1.c`：结构检查通过 — 尝试与精灵沟通,了解它被困的缘由,相信它知道如何应对追捕者
+  - `q1.d`：结构检查通过 — 利用森林中的自然元素设置干扰,如落石或动物叫声,吸引追捕者的注意力
+- **q2** 题干：在天空之城中央广场的集市上,你面前摊着两件物品:一件是由天然材料制作的、能与自然元素共鸣的护身符,另一件是精密的机械装置,据说能预测天气变化。阳光透过云层洒在物品上,周围商贩的叫卖声此起彼伏。你会选择哪一件？
+  - `q2.a`：结构检查通过 — 选择天然护身符,相信它能与天空之城的环境和谐共鸣,感受风与云的脉搏
+  - `q2.b`：结构检查通过 — 选择机械装置,认为它能帮助你更好地理解天空之城的天气规律,做出明智的决策
+  - `q2.c`：结构检查通过 — 购买两件物品,相信自然与技术可以互补,护身符带来心灵平静,机械装置提供实用信息
+  - `q2.d`：结构检查通过 — 离开集市,前往城中的天文台,在那里可以同时观察自然天空与人类记录的天气数据
+- **q3** 题干：移动城堡的引擎出现了故障,哈尔提出需要破坏城堡附近的一处古老石林来获取修复所需的魔法能量,但这会永久改变那片区域的自然风貌。哈尔的眼神中透露着决绝,石林在夕阳下投下长长的影子。你会如何回应？
+  - `q3.a`：结构检查通过 — 坚决反对破坏石林,认为寻找其他修复方式是唯一选择,即使这意味着城堡无法立即修复
+  - `q3.b`：结构检查通过 — 提出先研究石林的历史,看是否有办法在不破坏的情况下获取能量,同时寻找替代方案
+  - `q3.c`：结构检查通过 — 同意哈尔的方案,但坚持记录石林的一切信息,希望未来能找到恢复的方法
+  - `q3.d`：结构检查通过 — 建议城堡暂时降落在安全区域,给石林和自己更多时间思考,不急于做出决定
+- **q4** 题干：在风之谷的农田里,村民们正讨论如何应对持续干旱。有人建议采用古老但可持续的自然农耕方法,也有人提议引入魔法灌溉系统提高产量。干裂的土地上,作物已经奄奄一息,村民们的脸上写满忧虑。你会支持哪种方案？
+  - `q4.a`：结构检查通过 — 支持古老的自然农耕方法,相信与自然和谐共处才是长久之计,即使短期内产量较低
+  - `q4.b`：结构检查通过 — 提出折中方案,先使用魔法系统解决当前危机,同时逐步恢复传统农耕方法
+  - `q4.c`：结构检查通过 — 支持魔法灌溉系统,认为技术进步是解决问题的关键,相信它能帮助风之谷度过难关
+  - `q4.d`：结构检查通过 — 建议寻找第三条路,研究当地特殊的气候规律,制定更符合自然的种植计划
+- **q5** 题干：你看到一个小女孩在雨中坚持种下一颗种子,尽管所有人都告诉她这不可能在如此环境下生长。雨水打湿了她的头发和衣服,但她眼中闪烁着坚定的光芒。你会如何看待她的行为？
+  - `q5.a`：结构检查通过 — 被她的纯真所打动,相信奇迹可能发生,愿意在雨中陪伴她一起守护这颗种子
+  - `q5.b`：结构检查通过 — 欣赏她的坚持,但会为她准备一个更好的种植地点,帮助她实现梦想
+  - `q5.c`：结构检查通过 — 理解她的热情,但会温和地解释为什么这个环境不适合生长,引导她寻找更合适的时机
+  - `q5.d`：结构检查通过 — 记录下这个特别的时刻,相信即使种子不生长,这种纯真的尝试本身就有价值
+- **q6** 题干：天空之城正在缓慢下沉,城内的长老们决定启动终极装置,将城市连接到更强大的魔法核心上,但这个过程可能会唤醒沉睡的古老守护兽。长老们的脸上写满忧虑,城市的每一次轻微震动都让人心惊。你会怎么做？
+  - `q6.a`：结构检查通过 — 支持长老的决策,认为集体的安全高于个人的顾虑,愿意承担唤醒守护兽的风险
+  - `q6.b`：结构检查通过 — 提出寻找第三条路,研究城市下沉的根本原因,寻找不依赖终极装置的解决方案
+  - `q6.c`：结构检查通过 — 建议先唤醒守护兽进行沟通,了解它的意愿,再决定是否启动终极装置
+  - `q6.d`：结构检查通过 — 组织居民准备撤离计划,认为与其冒险唤醒未知的存在,不如寻找新的家园
+- **q7** 题干：在移动城堡的图书馆里,你发现两本书:一本是记录着古老自然魔法和植物秘密的古籍,另一本是关于如何利用魔法技术改造世界的现代理论著作。阳光透过彩色玻璃窗洒在书架上,空气中弥漫着陈旧纸张和魔法的气息。你会选择哪一本？
+  - `q7.a`：结构检查通过 — 选择古籍,相信自然魔法蕴含着古老的智慧,是与世界和谐相处的基础
+  - `q7.b`：结构检查通过 — 选择现代著作,认为技术进步是推动世界前进的力量,能够解决实际问题
+  - `q7.c`：结构检查通过 — 先阅读古籍,再研究现代著作,寻找自然与技术之间的平衡点
+  - `q7.d`：结构检查通过 — 两本书都借阅,相信完整的世界观需要理解传统与现代两种视角
+- **q8** 题干：风之谷的居民邀请你加入他们的集体决策系统,每个决定都需要所有人共识。帐篷里温暖的火光映照着众人期待的眼神,空气中弥漫着青草与泥土的清香。你会如何选择？
+  - `q8.a`：结构检查通过 — 欣然接受,即使需要多次妥协也愿意为社区和谐付出
+  - `q8.b`：结构检查通过 — 尝试提出创新方案,希望在保留个人想法的同时促成共识
+  - `q8.c`：结构检查通过 — 婉拒邀请,坚持按照自己的节奏和方式行事
+  - `q8.d`：结构检查通过 — 参与讨论但保持中立,不主动表达个人意见
+- **q9** 题干：在天空之城的工匠坊里,阳光透过彩色玻璃窗洒在木屑纷飞的工作台上。一位老工匠微笑着邀请你参与社区项目或独立创作。你会如何回应？
+  - `q9.a`：结构检查通过 — 加入集体项目,贡献自己的技能与他人协作完成艺术品
+  - `q9.b`：结构检查通过 — 先参与集体项目,但保留精力完成个人创意作品
+  - `q9.c`：结构检查通过 — 选择独立创作,不受集体规则限制尽情表达个人想法
+  - `q9.d`：结构检查通过 — 观察他人的创作过程,寻找灵感后再决定自己的方向
+- **q10** 题干：一位老人固执地拒绝使用任何现代魔法技术,他的小屋里堆满了手工制作的物品。油灯摇曳的光线下,你能看到他布满老茧的双手仍在精心雕琢。你会如何看待这位老人？
+  - `q10.a`：结构检查通过 — 敬佩他的坚持,认为传统手工艺蕴含着现代技术无法替代的价值
+  - `q10.b`：结构检查通过 — 理解他的选择,但认为适当运用现代技术可以更高效地创造美好
+  - `q10.c`：结构检查通过 — 尝试向他展示现代技术的优势,希望他能够接受新的方法
+  - `q10.d`：结构检查通过 — 尊重他的生活方式,但不认同他在所有情况下都拒绝技术的态度
+- **q11** 题干：森林突然被一股神秘力量冻结,冰晶在阳光下闪烁着诡异的光芒。只有你知道如何唤醒古老的自然之灵,但这个过程会让你暂时失去自己的记忆和身份。你会如何选择？
+  - `q11.a`：结构检查通过 — 毫不犹豫地选择唤醒自然之灵,即使失去自我也在所不惜
+  - `q11.b`：结构检查通过 — 寻找其他方法既能拯救森林又能保留记忆,不急于做出决定
+  - `q11.c`：结构检查通过 — 先尝试部分唤醒之灵,看看能否在保留部分记忆的情况下完成
+  - `q11.d`：结构检查通过 — 让森林保持冻结状态,寻找不需要牺牲自我的解决方案
+- **q12** 题干：在天空之城,你发现一个神秘的花园,各种奇异的植物散发着微光与香气。有些花朵能治愈伤痛,有些能带来短暂的快乐幻觉,只有你才能分辨出哪些是真正有益的。你会如何行动？
+  - `q12.a`：结构检查通过 — 只采摘那些能真正治愈的植物,谨慎对待每种植物的特性
+  - `q12.b`：结构检查通过 — 尝试收集所有植物,研究它们的特性以便更全面地利用
+  - `q12.c`：结构检查通过 — 优先使用能带来快乐的植物,认为短暂的精神愉悦同样有价值
+  - `q12.d`：结构检查通过 — 只观察植物而不采摘,相信自然有其自身的运行法则
+- **q13** 题干：移动城堡的主人提出与你分享强大的魔法知识,他的眼中闪烁着诱惑的光芒。但他要求你必须放弃寻找关于自己身世的真相,完全接受他为你设定的角色。你会如何回应？
+  - `q13.a`：结构检查通过 — 拒绝提议,坚持追寻自己的身世真相,即使无法获得魔法知识
+  - `q13.b`：结构检查通过 — 接受魔法知识但暗中继续寻找身世线索,不放弃自我探索
+  - `q13.c`：结构检查通过 — 欣然接受提议,认为掌握魔法知识比了解过去更为重要
+  - `q13.d`：结构检查通过 — 要求先了解部分身世真相,再决定是否接受魔法知识
+- **q14** 题干：风之谷的节日里,篝火映照着人们的笑脸,空气中飘荡着烤面包的香气。你可以选择参与传统的集体舞蹈,展现社区的凝聚力,或者独自创作一首能表达你内心感受的小曲。你会如何选择？
+  - `q14.a`：结构检查通过 — 加入集体舞蹈,感受与社区成员共舞的和谐与快乐
+  - `q14.b`：结构检查通过 — 先参与集体活动,然后在深夜独自创作小曲表达内心感受
+  - `q14.c`：结构检查通过 — 避开人群,在远离喧嚣的地方独自创作音乐,表达真实的自我
+  - `q14.d`：结构检查通过 — 观察舞蹈的节奏和韵律,将其融入自己的创作中
+- **q15** 题干：清晨的第一缕阳光洒在机械鸟金属羽翼上,你轻轻抚摸它冰凉的外壳,对着它耳语昨晚的梦。当同伴嘲笑你时,你依然坚持它听懂了一切,只是选择不回应。你会如何对待这只鸟？
+  - `q15.a`：结构检查通过 — 继续每天对它倾诉秘密,相信它有一天会回应
+  - `q15.b`：结构检查通过 — 在它身上挂上写着心愿的纸条,期待奇迹发生
+  - `q15.c`：结构检查通过 — 拆解研究它的构造,寻找可能的回应机制
+  - `q15.d`：结构检查通过 — 明白它只是机器,但依然享受与它独处的时光
+- **q16** 题干：古老森林中,千年古树逐渐枯萎,树皮上浮现出与天空之城相似的金属纹路。你握着证据站在两个社区的交界处,一边是自然的悲鸣,一边是人类的怒火。你会怎么做？
+  - `q16.a`：结构检查通过 — 立即公开证据,即使引发冲突也要保护森林
+  - `q16.b`：结构检查通过 — 秘密调查,寻找两全其美的解决方案
+  - `q16.c`：结构检查通过 — 召集两方代表,用证据促使和平对话
+  - `q16.d`：结构检查通过 — 暂时保密,先独自寻找修复森林的方法
+- **q17** 题干：移动城堡的塔楼,夜风拂过你的发梢,水晶在月光下闪烁着神秘的光芒。老法师轻声提醒你,现代魔法更精确,但古老的云观风测蕴含自然的智慧。你会如何选择？
+  - `q17.a`：结构检查通过 — 选择古老方法,相信自然的声音比人造工具更真实
+  - `q17.b`：结构检查通过 — 先用水晶观测,再用自然方法验证,两者结合
+  - `q17.c`：结构检查通过 — 坚持使用传统方法,认为现代魔法会扰乱自然平衡
+  - `q17.d`：结构检查通过 — 选择水晶,相信技术的进步能带来更准确的预见
+- **q18** 题干：天空之城的长老们站在璀璨的星辰之下,向你伸出戴着宝石戒指的手。加入他们意味着你的每一刻都将被记录,个人空间不复存在。你会如何回应？
+  - `q18.a`：结构检查通过 — 婉拒邀请,宁愿保持自由也不愿被束缚
+  - `q18.b`：结构检查通过 — 提出保留部分隐私的折中方案
+  - `q18.c`：结构检查通过 — 接受邀请,认为更大的责任需要个人自由让步
+  - `q18.d`：结构检查通过 — 暂缓决定,先了解更多再做选择
+- **q19** 题干：风之谷的集市上,小贩展示着闪烁着魔法光芒的飞行鞋,旁边是质地厚实的步行靴。飞行鞋能让你触摸天空,但每次使用都会汲取周围的自然魔法。你会选择什么？
+  - `q19.a`：结构检查通过 — 选择飞行鞋,即使短暂也要体验飞翔的自由
+  - `q19.b`：结构检查通过 — 选择步行靴,认为脚踏实地比短暂飞翔更重要
+  - `q19.c`：结构检查通过 — 购买飞行鞋但只在紧急情况下使用
+  - `q19.d`：结构检查通过 — 询问是否有不消耗��然魔法的飞行替代品
+- **q20** 题干：法师固执地蹲在雨后的草地上,用手指轻触露珠,对着风低声吟唱,尽管所有人都告诉他有更高效的魔法阵可以做到同样的效果。你会如何看待这位法师？
+  - `q20.a`：结构检查通过 — 敬佩他的坚持,认为传统方式蕴含着被遗忘的智慧
+  - `q20.b`：结构检查通过 — 尝试理解他的方式,或许效率低但有独特价值
+  - `q20.c`：结构检查通过 — 推荐他尝试新技术,但尊重他的选择
+  - `q20.d`：结构检查通过 — 认为他固执己见,浪费了可以更高效解决问题的机会
+
+### 逐结果
+- **r1**（娜乌西卡）：profile 键与范围检查通过。
+- **r2**（哈尔）：profile 键与范围检查通过。
+- **r3**（龙猫）：profile 键与范围检查通过。
+- **r4**（卡西法）：profile 键与范围检查通过。
+- **r5**（希达）：profile 键与范围检查通过。
+- **r6**（草薙素子）：profile 键与范围检查通过。
+- **r7**（波妞）：profile 键与范围检查通过。
+- **r8**（小月）：profile 键与范围检查通过。
+- **r9**（宗介）：profile 键与范围检查通过。
+- **r10**（小梅）：profile 键与范围检查通过。
+
+## mythical-creature-within
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 12
+- **警告（1）**
+  - q6.b: unknown dimension "���由" (valid: 守护, 智慧, 自由, 神秘, 力量, 治愈)
+
+### 逐题 · 逐选项
+- **q1** 题干：你误入一座古庙，发现一尊神像手中托着一枚布满裂纹的玉璧。此时，玉璧忽然发出微光，并传出细语："我快碎了，带我离开……"你会：
+  - `q1.a`：结构检查通过 — 立刻上前，小心地捧起玉璧，承诺带它去安全的地方。
+  - `q1.b`：结构检查通过 — 先仔细观察玉璧的裂纹走向和光芒规律，判断它是否真有灵智。
+  - `q1.c`：结构检查通过 — 后退一步，保持距离。古物有灵，擅自带走可能引来未知因果。
+  - `q1.d`：结构检查通过 — 不为所动。神像之物自有其位，破碎或许也是它的天命。
+- **q2** 题干：你得到一本无字天书，只有在月光下才会浮现文字。第一夜，你读到一则关于你未来三日将遭遇小厄运的预言。你会：
+  - `q2.a`：结构检查通过 — 立刻着手准备应对方案，并提醒身边可能受影响的人。
+  - `q2.b`：结构检查通过 — 兴致勃勃地研究预言的具体描述，验证天书的准确性和原理。
+  - `q2.c`：结构检查通过 — 合上书，不再看后续预言。知道了反而束手束脚，不如顺其自然。
+  - `q2.d`：结构检查通过 — 尝试用草药或简单的仪式"净化"或"缓和"这则预言的影响。
+- **q3** 题干：山间迷路，你遇见一位樵夫，他指给你两条路：一条平坦好走但绕远，一条是传闻有精怪出没的近道。你会：
+  - `q3.a`：结构检查通过 — 选绕远的路。安全第一，不想节外生枝。
+  - `q3.b`：结构检查通过 — 详细询问樵夫关于精怪的细节，评估风险后再做决定。
+  - `q3.c`：结构检查通过 — 选近道。精怪传闻反而增添了旅途的趣味。
+  - `q3.d`：结构检查通过 — 尝试与樵夫商量，看他是否愿意陪你走一段近道。
+- **q4** 题干：你拥有一面能照见他人情绪颜色的古镜。一位朋友近来周身笼罩着灰暗的雾气，但他自己并未察觉。你会：
+  - `q4.a`：结构检查通过 — 直接告诉他你的发现，并询问是否需要陪伴或帮助。
+  - `q4.b`：结构检查通过 — 不直接点破，而是巧妙地安排一些能提振情绪的活动邀他参与。
+  - `q4.c`：结构检查通过 — 继续观察雾气变化的规律，试图理解其成因，但不轻易介入。
+  - `q4.d`：结构检查通过 — 认为这是他必须自己经历的内心过程，镜子所见不应成为干涉的理由。
+- **q5** 题干：你发现祖传的香炉只有在燃烧特定草药时，烟雾会凝聚成模糊的祖先形象。家人对此感到不安，希望你停止。你会：
+  - `q5.a`：结构检查通过 — 尊重家人的感受，收好香炉不再使用，但私下记录下这一现象。
+  - `q5.b`：结构检查通过 — 向家人解释这可能是某种无害的物理或精神现象，尝试缓解他们的不安。
+  - `q5.c`：结构检查通过 — 继续在独自一人时研究，探索烟雾能否传递更清晰的信息或指引。
+  - `q5.d`：结构检查通过 — 认为这是与家族根源的连接，坚持保留这一仪式，但会选在无人打扰时进行。
+- **q6** 题干：在古老的集市上，一个商贩向你兜售"锁住美梦的瓶塞"和"放走噩梦的钥匙"。你只能选一件，你会选：
+  - `q6.a`：结构检查通过 — 锁住美梦的瓶塞。美好的记忆值得珍藏回味。
+  - `q6.b`：未知维「���由」 — 放走噩梦的钥匙。清除负担，才能轻装前行。
+  - `q6.c`：结构检查通过 — 仔细询问商贩两者的制作原理和具体效果，再判断哪个更有价值。
+  - `q6.d`：结构检查通过 — 两件都不选。梦就该来去自由，人为干预反而失了真意。
+- **q7** 题干：你照顾的一株灵植突然在非花期绽放，花朵散发出令人昏沉的气息。附近开始有小动物昏睡。你会：
+  - `q7.a`：结构检查通过 — 立刻将灵植移入室内或施加屏障，防止气息扩散影响外界。
+  - `q7.b`：结构检查通过 — 采集花朵样本，查阅典籍，研究这次异常开花的原因和气息成分。
+  - `q7.c`：结构检查通过 — 认为这是灵植自身的生命表达，只需静观其变，等待花期自然结束。
+  - `q7.d`：结构检查通过 — 尝试调配具有清醒效果的香氛或药草，中和这种昏沉气息。
+- **q8** 题干：你偶然学会一句咒语，能让枯萎的花重新挺立一刻钟，但之后会彻底化为尘埃。面对一朵对你意义重大的枯萎之花，你会：
+  - `q8.a`：结构检查通过 — 不使用咒语。宁愿它保持枯萎但完整的样子，作为纪念。
+  - `q8.b`：结构检查通过 — 使用咒语，并在这珍贵的一刻钟里，好好与它告别。
+  - `q8.c`：结构检查通过 — 研究这句咒语的原理，看能否改良，减少代价或延长效果。
+  - `q8.d`：结构检查通过 — 不使用。彻底消亡也是生命过程的一部分，不应人为逆转。
+- **q9** 题干：你继承了一座小小的、有自我意识的山神祠。它时而抱怨香火冷清，时而又说想静静看山。你会如何与它相处？
+  - `q9.a`：结构检查通过 — 定期打扫供奉，和它聊天，把它当作需要陪伴的家人。
+  - `q9.b`：结构检查通过 — 和它订立清晰的"契约"：你负责维护，它享有清净，互不勉强。
+  - `q9.c`：结构检查通过 — 大部分时间让它独处，只在它主动"说话"时回应，尊重它的情绪起伏。
+  - `q9.d`：结构检查通过 — 尝试理解它情绪波动与山中灵气、季节变化的关系，记录成册。
+- **q10** 题干：你有一支笔，写下的字迹只有特定心境的人才能看见。你会主要用它来：
+  - `q10.a`：结构检查通过 — 写下鼓励和安慰的话，留在可能被需要的人经过的地方。
+  - `q10.b`：结构检查通过 — 记录那些无法用普通文字描述的、微妙的情感和哲思。
+  - `q10.c`：结构检查通过 — 书写只给自己看的秘密日记，确保绝对的私密性。
+  - `q10.d`：结构检查通过 — 尝试书写具有特定指向性的"召唤"或"揭示"文句，测试其效果。
+- **q11** 题干：传说深潭下有蛟龙，每逢大旱，乡民便献祭以求雨。今年旱情又至，但你知道那蛟龙其实早已离开。此时乡老准备再次献祭，你会：
+  - `q11.a`：结构检查通过 — 站出来说明真相，阻止无谓的献祭，并和大家一起寻找实际抗旱办法。
+  - `q11.b`：结构检查通过 — 不直接点破，而是引导大家关注其他可能降雨的征兆或方法，转移焦点。
+  - `q11.c`：结构检查通过 — 保持沉默。信仰和仪式自有其安抚人心的力量，真相有时反而残酷。
+  - `q11.d`：结构检查通过 — 独自去寻找离开的蛟龙或其他能解决旱情的力量，用结果说话。
+- **q12** 题干：你误入一座千年古刹的藏经阁，发现一卷无字天书。当你触碰时，书页浮现出不断变化的符文，似乎在回应你的思绪。你会：
+  - `q12.a`：结构检查通过 — 静心凝神，尝试理解符文变化的规律，解读其传递的信息。
+  - `q12.b`：结构检查通过 — 合上书卷，将其放回原处，认为不属于自己的机缘不应强求。
+  - `q12.c`：结构检查通过 — 带着天书离开，相信它选择显现，便是与自己有缘，日后慢慢探究。
+  - `q12.d`：结构检查通过 — 尝试用自身灵力或意念注入书卷，看看能否稳定或控制符文的变化。
+- **q13** 题干：你途经一个被瘴气笼罩的村庄，村民因疫病而日渐衰弱。你恰好知道附近山谷中生长着一种罕见的解毒灵草，但山谷中有精怪守护。你会：
+  - `q13.a`：结构检查通过 — 立即动身前往山谷，设法引开或说服精怪，尽快采回灵草救人。
+  - `q13.b`：结构检查通过 — 先留在村中，用现有知识缓解村民症状，同时仔细研究瘴气与灵草的特性，制定周详计划。
+  - `q13.c`：结构检查通过 — 告知村民灵草的存在与危险，让他们自己决定是否组织人手去采，你则提供必要的指引。
+  - `q13.d`：结构检查通过 — 尝试与山谷的精怪沟通，了解瘴气的根源，或许能从根源上解决问题，而非仅仅采药。
+- **q14** 题干：你获得一件有灵性的法宝，但它似乎处于沉睡状态，需要以特定方式"唤醒"。你会选择哪种方式尝试？
+  - `q14.a`：结构检查通过 — 将它置于与自己气息相通的环境中，每日以自身灵力温和滋养，等待其自然苏醒。
+  - `q14.b`：结构检查通过 — 查阅古籍、请教方家，研究其材质、符文与来历，用符合其特性的仪式或咒文尝试激活。
+  - `q14.c`：结构检查通过 — 带着它去经历各种不同的环境与事件，在风雨、战斗或奇遇中，让它自行寻找苏醒的契机。
+  - `q14.d`：结构检查通过 — 向法宝注入强大的灵力或意志，进行"冲击"或"共鸣"，强行激发其内在的灵性。
+- **q15** 题干：你发现一位好友被心魔（或某种负面意念）缠绕，日渐消沉。他本人尚未完全察觉，但行为已显异常。你会：
+  - `q15.a`：结构检查通过 — 直接点破他的异常，并陪伴在他身边，帮他抵御或驱散心魔的影响。
+  - `q15.b`：结构检查通过 — 不直接提及心魔，而是创造机会与他探讨相关哲理、故事或经历，引导他自己领悟和克服。
+  - `q15.c`：结构检查通过 — 认为这是他必须独自经历的修行，过度干预反损其道心。只在他主动求助时提供有限帮助。
+  - `q15.d`：结构检查通过 — 尝试通过梦境连接、灵视或其他隐秘方式，探查心魔的根源与形态，再决定如何应对。
+- **q16** 题干：你受邀参加一场"瑶池仙会"，但请柬注明可携一"人间之物"展示，以增雅趣。你会选择携带什么？
+  - `q16.a`：结构检查通过 — 一株自己精心培育、蕴含生机的灵植盆栽。
+  - `q16.b`：结构检查通过 — 一卷自己注解、融合了古今见解的罕见棋谱或乐谱。
+  - `q16.c`：结构检查通过 — 一块未经雕琢、但形态奇特的顽石，或是一瓶取���无名山涧的清水。
+  - `q16.d`：结构检查通过 — 一件自己锻造或修复的，带有独特战痕或历史感的兵器饰物。
+- **q17** 题干：你在探索一处上古遗迹时，触发了机关，面前出现两条岔路。一条路传来令人心安的低语与微光，另一条则弥漫着未知的能量波动与寂静。你会选择：
+  - `q17.a`：结构检查通过 — 走向有低语微光的路，先确保自身安全与稳定，再图后续。
+  - `q17.b`：结构检查通过 — 仔细观察两条路的痕迹、能量残留和机关设置，推断哪条更可能通往核心区域或藏有重要信息。
+  - `q17.c`：结构检查通过 — 走向能量波动的寂静之路，未知往往意味着更大的发现与可能性。
+  - `q17.d`：结构检查通过 — 激发护身灵力或准备好应对手段，然后直接踏入能量波动之路，以力破巧。
+- **q18** 题干：你偶然救下了一只受伤的灵兽幼崽。它伤愈后，对你颇为亲近，但显然渴望回归山林族群。你会：
+  - `q18.a`：结构检查通过 — 为它仔细检查，确保完全康复、具备野外生存能力后，亲自护送它找到族群或安全放归。
+  - `q18.b`：结构检查通过 — 在照料它的过程中，记录其习性、沟通方式，尝试理解其族群文化，再引导它回归。
+  - `q18.c`：结构检查通过 — 打开门扉，任它自由选择去留。既不刻意挽留，也不催促离开，尊重它的天性。
+  - `q18.d`：结构检查通过 — 与它建立一种平等的伙伴或契约关系，若它选择离开便解除，但彼此留有感应的纽带。
+- **q19** 题干：你得到一次机会，可以向一位古老的存在（如山神、河伯、古树之灵）提问一个问题。你会问：
+  - `q19.a`：结构检查通过 — "如何能长久地守护这片土地与生灵的安宁？"
+  - `q19.b`：结构检查通过 — "万物生灭、因果循环的终极规律是什么？"
+  - `q19.c`：结构检查通过 — "何处是界限之外，规则未至之地？"
+  - `q19.d`：结构检查通过 — "如何获得改变命运、突破自身极限的真正力量？"
+- **q20** 题干：你发现一本记载着禁忌秘术的残卷，修习可能获得强大能力，但也伴随着不可预知的风险与代价。你会：
+  - `q20.a`：结构检查通过 — 将其严密封印或销毁，防止其力量失控或落入心术不正者手中。
+  - `q20.b`：结构检查通过 — 不修炼，但深入研究其原理、风险与历史案例，作为知识储备，理解其为何被列为禁忌。
+  - `q20.c`：结构检查通过 — 翻阅浏览，汲取其中对自己有启发的思路或片段，但不会完全按照其记载的方法修炼。
+  - `q20.d`：结构检查通过 — 在做好充分防护与心理准备后，尝试修习其中风险相对可控的部分，以验证和获取力量。
+- **q21** 题干：你所在的修行之地，因灵脉变动即将封闭百年。闭关前，你被允许在洞府中留下一样东西给百年后的有缘人。你会留下：
+  - `q21.a`：结构检查通过 — 一套完整的防御阵法和疗伤丹药，以及详细的此地危险区域标注。
+  - `q21.b`：结构检查通过 — 自己毕生修行的心得笔记，以及对各种功法、现象的观察与推理手札。
+  - `q21.c`：结构检查通过 — 一幅未��成的画、一曲未谱完的乐章，或一个开放性的问题，引发后来者的思考与创造。
+  - `q21.d`：结构检查通过 — 一件自己常用的、蕴含个人意志与灵力的法器，或是一道自己巅峰时期留下的试炼印记。
+- **q22** 题干：在漫长的旅途中，你感到心神有些疲惫和涣散。此时，你最可能通过哪种方式来恢复内心的清明与力量？
+  - `q22.a`：结构检查通过 — 寻一处安全僻静的山洞或树屋，布置好结界，安稳地睡上一觉，让身心自然修复。
+  - `q22.b`：结构检查通过 — 观察星空运转、草木枯荣，或研读一本蕴含哲理的典籍，在思考与领悟中获得平静。
+  - `q22.c`：结构检查通过 — 继续漫无目的地行走，或随风、随水漂流，让外界不断变化的风物洗去内心的尘埃。
+  - `q22.d`：结构检查通过 — 面对瀑布练剑、于雷雨中吐纳，或进行一场势均力敌的切磋，在极限中重新凝聚精神。
+
+### 逐结果
+- **result-zhulong**（烛龙）：profile 键与范围检查通过。
+- **result-qilin**（麒麟）：profile 键与范围检查通过。
+- **result-kunpeng**（鲲鹏）：profile 键与范围检查通过。
+- **result-kitsune**（九尾狐）：profile 键与范围检查通过。
+- **result-fenghuang**（凤凰）：profile 键与范围检查通过。
+- **result-yinglong**（应龙）：profile 键与范围检查通过。
+- **result-garuda**（迦楼罗）：profile 键与范围检查通过。
+- **result-sphinx**（斯芬克斯）：profile 键与范围检查通过。
+- **result-griffin**（狮鹫）：profile 键与范围检查通过。
+- **result-unicorn**（独角兽）：profile 键与范围检查通过。
+- **result-siren**（塞壬）：profile 键与范围检查通过。
+- **result-anubis**（阿努比斯）：profile 键与范围检查通过。
+
+## niche-sport-match
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 18 · 结果数 8
+- **警告（12）**
+  - r1: missing "strengths"
+  - r1: missing "weaknesses"
+  - r1: only 0 strengths (want 3)
+  - r1: only 0 weaknesses (want 3)
+  - r5: missing "strengths"
+  - r5: missing "weaknesses"
+  - r5: only 0 strengths (want 3)
+  - r5: only 0 weaknesses (want 3)
+  - r8: missing "strengths"
+  - r8: missing "weaknesses"
+  - r8: only 0 strengths (want 3)
+  - r8: only 0 weaknesses (want 3)
+
+### 逐题 · 逐选项
+- **q1** 题干：在城市边缘的攀岩馆，你面对一面高达15米的岩壁，岩点分布不规则且有些松动。你的第一反应是？
+  - `q1.a`：结构检查通过 — 迅速评估岩点稳固性，规划攀爬路线，寻找最安全的路径
+  - `q1.b`：结构检查通过 — 直接开始攀爬，相信自己的即时判断和身体本能
+  - `q1.c`：结构检查通过 — 观察其他有经验的攀岩者，模仿他们的技巧和选择
+  - `q1.d`：结构检查通过 — 选择难度较低的岩壁，先熟悉环境再逐步提升挑战
+- **q2** 题干：清晨的海边，你能看到远处海面有几处不错的浪点。你准备冲浪时，会选择哪种浪？
+  - `q2.a`：结构检查通过 — 高度适中、形状完美的长浪，可以尽情滑行展示技巧
+  - `q2.b`：结构检查通过 — 陡峭短促的巨浪，虽然难度高但能带来强烈肾上腺素
+  - `q2.c`：结构检查通过 — 小型温和的浪，适合练习基础动作和熟悉海况
+  - `q2.d`：结构检查通过 — 跟随其他冲浪者的选择，根据他们的经验判断浪的质量
+- **q3** 题干：在安静的射箭场，你准备进行射箭练习。你会如何选择目标？
+  - `q3.a`：结构检查通过 — 选择距离适中、靶心清晰的目标，专注于精准度
+  - `q3.b`：结构检查通过 — 选择远距离或移动目标，挑战自己的极限能力
+  - `q3.c`：结构检查通过 — 跟随教练或朋友的建议，根据他们的经验选择目标
+  - `q3.d`：结构检查通过 — 从近距离开始，逐步增加难度，感受身体适应过程
+- **q4** 题干：郊外的森林步道规划徒步路线时，你会优先考虑什么？
+  - `q4.a`：结构检查通过 — 选择有挑战性的陡峭路线，能提供高度变化和视野开阔
+  - `q4.b`：结构检查通过 — 选择风景优美的路线，能在徒步中欣赏自然美景并拍照
+  - `q4.c`：结构检查通过 — 选择标记清晰、有休息站的路线，确保安全性和舒适度
+  - `q4.d`：结构检查通过 — 选择少有人走的路线，探索未知区域，发现隐藏的自然奇观
+- **q5** 题干：在城市边缘的攀岩馆，你发现一段没有防护的裸露岩壁。你会如何应对？
+  - `q5.a`：结构检查通过 — 仔细观察岩壁结构，评估风险，必要时准备额外安全装备
+  - `q5.b`：结构检查通过 — 直接尝试，相信自己的技术和反应能力能够应对突发情况
+  - `q5.c`：结构检查通过 — 向有经验的攀岩者请教，获取建议后再决定是否尝试
+  - `q5.d`：结构检查通过 — 选择避开风险，寻找其他有足够安全措施的攀爬路线
+- **q6** 题干：在射箭场练习时，你连续几次脱靶。你会如何调整？
+  - `q6.a`：结构检查通过 — 放慢节奏，专注于呼吸和动作细节，逐步找回节奏
+  - `q6.b`：结构检查通过 — 尝试不同姿势和技巧，快速调整找到适合自己的方式
+  - `q6.c`：结构检查通过 — 观察其他射箭者的动作，学习他们的技巧和方法
+  - `q6.d`：结构检查通过 — 增加挑战难度，从更远距离或更小目标开始练习
+- **q7** 题干：你站在郊外森林步道的起点，面前是蜿蜒起伏的小径。你会
+  - `q7.a`：结构检查通过 — 选择未标记的岔路，探索未知区域
+  - `q7.b`：结构检查通过 — 沿着主路前进，但留意有趣的小径
+  - `q7.c`：结构检查通过 — 研究地图，规划最短路径直达终点
+  - `q7.d`：结构检查通过 — 随性漫步，享受每一刻的变化
+- **q8** 题干：在攀岩馆，你面对一段难度未知的岩壁。你会
+  - `q8.a`：结构检查通过 — 直接挑战最难的路线，享受突破极限的快感
+  - `q8.b`：结构检查通过 — 从简单路线开始，循序渐进地提升难度
+  - `q8.c`：结构检查通过 — 仔细观察别人的动作，学习最优路径
+  - `q8.d`：结构检查通过 — 专注于感受身体与岩壁的接触，享受攀爬过程
+- **q9** 题干：清晨的海滩，潮水刚退去，露出了礁石和浅滩。你会
+  - `q9.a`：结构检查通过 — 独自探索远处无人涉足的礁石区
+  - `q9.b`：结构检查通过 — 等待朋友一起，分享发现的乐趣
+  - `q9.c`：结构检查通过 — 专注研究潮汐规律，寻找最佳探索时间
+  - `q9.d`：结构检查通过 — 随意漫步，感受海风和阳光的变化
+- **q10** 题干：在城市边缘的射箭场，第一次尝试射箭时，你会
+  - `q10.a`：结构检查通过 — 直接挑战远距离目标，享受精准命中的成就感
+  - `q10.b`：结构检查通过 — 从近距离开始，逐步掌握技巧再增加难度
+  - `q10.c`：结构检查通过 — 专注调整姿势和呼吸，感受身体的微妙平衡
+  - `q10.d`：结构检查通过 — 享受拉弓的触感和瞄准的专注时刻
+- **q11** 题干：在郊外的森林里发现一条不知名的小径，你会
+  - `q11.a`：结构检查通过 — 毫不犹豫地进入，期待未知的惊喜
+  - `q11.b`：结构检查通过 — 先观察周围环境，确保安全再决定
+  - `q11.c`：结构检查通过 — 记录下位置，计划下次带装备深入探索
+  - `q11.d`：结构检查通过 — 享受当下的发现，不强求深入
+- **q12** 题干：在安静的射箭场，你准备进行射箭练习。你的主要关注点是
+  - `q12.a`：结构检查通过 — 不断挑战自己，尝试更远的目标和更难的姿势
+  - `q12.b`：结构检查通过 — 熟练掌握基础动作，追求稳定的表现
+  - `q12.c`：结构检查通过 — 感受弓弦的张力、箭矢的轨迹和身体的平衡
+  - `q12.d`：结构检查通过 — 在安静的环境中享受射箭的专注与宁静
+- **q13** 题干：在城市边缘的攀岩馆，面对一条没有安全保护的高难度路线，你会如何选择开始攀登的方式？
+  - `q13.a`：结构检查通过 — 直接向上尝试，凭借直觉寻找最佳手点和脚点
+  - `q13.b`：结构检查通过 — 先在地面观察别人攀爬，研究每个动作的细节和技巧
+  - `q13.c`：结构检查通过 — 邀请同伴一起挑战，相互鼓励并分享攀爬过程中的发现
+  - `q13.d`：结构检查通过 — 先从简单的路线开始，逐步积累经验和信心后再尝试难度路线
+- **q14** 题干：清晨的海滩上，海浪声轻柔拍打着岸边，你会选择什么样的方式迎接新的一天？
+  - `q14.a`：结构检查通过 — 赤脚跑入海水中，让冰凉的海水唤醒全身的感官
+  - `q14.b`：结构检查通过 — 在沙滩上寻找完美的冲浪点，等待一个完美的浪头
+  - `q14.c`：结构检查通过 — 加入一群陌生的冲浪者，分享技巧和海浪信息
+  - `q14.d`：结构检查通过 — 站在高处观察海浪的规律，计算最佳的入水时机和路线
+- **q15** 题干：在安静的射箭场，当所有目光都聚焦在你身上时，你会如何准备射击？
+  - `q15.a`：结构检查通过 — 闭眼深呼吸，完全沉浸在当下，忽略周围的一切干扰
+  - `q15.b`：结构检查通过 — 分析风速和光线，调整姿势直到找到完美的平衡点
+  - `q15.c`：结构检查通过 — 回想教练的指导，想象完美射中的画面，然后果断放箭
+  - `q15.d`：结构检查通过 — 观察其他射手的技巧，学习他们的呼吸节奏和动作
+- **q16** 题干：在郊外的森林步道上发现一条从未有人走过的小径，你会如何应对？
+  - `q16.a`：结构检查通过 — 立即决定探索，享受未知带来的刺激和挑战
+  - `q16.b`：结构检查通过 — 先检查地图和指南针，评估可能的困难和所需装备
+  - `q16.c`：结构检查通过 — 专注于脚下每一步，感受泥土的质感和周围的声音
+  - `q16.d`：结构检查通过 — 思考这次探索的意义，寻找与自己内心对话的机会
+- **q17** 题干：参加一场城市边缘的越野自行车赛，面对陡峭的下坡路段，你会如何应对？
+  - `q17.a`：结构检查通过 — 全力冲刺，享受速度带来的肾上腺素飙升
+  - `q17.b`：结构检查通过 — 精确计算每个转弯的角度，找到最安全高效的路线
+  - `q17.c`：结构检查通过 — 感受车身与地面的接触，调整姿势适应不同路况
+  - `q17.d`：结构检查通过 — 想象自己是一名专业车手，模仿他们的动作和节奏
+- **q18** 题干：在城市公园的攀岩墙上，面对一条需要全身协调的难点，你会如何尝试？
+  - `q18.a`：结构检查通过 — 多次尝试，每次调整一点姿势，直到找到完美的发力点
+  - `q18.b`：结构检查通过 — 观察高手如何攀爬，学习他们的技巧和节奏
+  - `q18.c`：结构检查通过 — 相信自己能够征服难点，即使失败也愿意多次尝试
+  - `q18.d`：结构检查通过 — 专注于呼吸和肌肉的协调，将攀爬视为一种流动的艺术
+
+### 逐结果
+- **r1**（攀岩）：profile 键与范围检查通过。
+- **r2**（冲浪）：profile 键与范围检查通过。
+- **r3**（击剑）：profile 键与范围检查通过。
+- **r4**（射箭）：profile 键与范围检查通过。
+- **r5**（桨板）：profile 键与范围检查通过。
+- **r6**（马术）：profile 键与范围检查通过。
+- **r7**（武术）：profile 键与范围检查通过。
+- **r8**（山地自行车）：profile 键与范围检查通过。
+
+## one-piece-character-match
+- **计分**：`bipolar-dimension` · 维度数 4 · 题数 22 · 结果数 9
+- **错误（8）**
+  - bipolar axis "对自由的理解方式": missing highPole
+  - bipolar axis "在集体中的角色认同": missing highPole
+  - bipolar axis "面对强者的反应": missing highPole
+  - bipolar axis "情感表达方式": missing highPole
+  - r5 is unreachable — dominated by r1 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+  - r7 is unreachable — dominated by r1 on all dimensions
+  - r7 is unreachable — dominated by r9 on all dimensions
+- **警告（32）**
+  - q1.c: bipolar option mixes positive and negative scores
+  - q1.d: bipolar option mixes positive and negative scores
+  - q2.c: bipolar option mixes positive and negative scores
+  - q3.a: bipolar option mixes positive and negative scores
+  - q3.c: bipolar option mixes positive and negative scores
+  - q3.d: bipolar option mixes positive and negative scores
+  - q4.a: bipolar option mixes positive and negative scores
+  - q5.c: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option mixes positive and negative scores
+  - q6.a: bipolar option mixes positive and negative scores
+  - q6.c: bipolar option mixes positive and negative scores
+  - q7.c: bipolar option mixes positive and negative scores
+  - q7.d: bipolar option mixes positive and negative scores
+  - q10.a: bipolar option mixes positive and negative scores
+  - q10.b: bipolar option mixes positive and negative scores
+  - q12.c: bipolar option mixes positive and negative scores
+  - q12.d: bipolar option mixes positive and negative scores
+  - q13.a: bipolar option mixes positive and negative scores
+  - q13.b: bipolar option mixes positive and negative scores
+  - q15.a: bipolar option mixes positive and negative scores
+  - q15.b: bipolar option mixes positive and negative scores
+  - q16.c: bipolar option mixes positive and negative scores
+  - q16.d: bipolar option mixes positive and negative scores
+  - q17.b: bipolar option mixes positive and negative scores
+  - q18.a: bipolar option mixes positive and negative scores
+  - q19.c: bipolar option mixes positive and negative scores
+  - q19.d: bipolar option mixes positive and negative scores
+  - q21.a: bipolar option mixes positive and negative scores
+  - r5 is unreachable — dominated by r1 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+  - r7 is unreachable — dominated by r1 on all dimensions
+  - r7 is unreachable — dominated by r9 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：你的船只在暴风雨中迷失了方向，偏离了预定的航线。这时你会
+  - `q1.a`：结构检查通过 — 坚持原定航线，相信导航工具和航海图不会出错
+  - `q1.b`：结构检查通过 — 随波逐流，让海洋带领我们前往未知但可能更有趣的地方
+  - `q1.c`：双极混号 — 立即召集船员开会，集体决定下一步行动
+  - `q1.d`：双极混号 — 凭直觉和经验选择一条从未有人走过的航路
+- **q2** 题干：在港口集市上，你发现了一本记载失落海域的古老航海日志，但价格远超预算。你会
+  - `q2.a`：结构检查通过 — 毫不犹豫地倾尽所有购买，坚信知识比金钱更重要
+  - `q2.b`：结构检查通过 — 放弃购买，认为不值得为了一本旧书冒险
+  - `q2.c`：双极混号 — 尝试与卖家协商，或者寻找船员共同集资购买
+  - `q2.d`：结构检查通过 — 先记住内容，然后找机会悄悄复制或偷取这本日志
+- **q3** 题干：遭遇一支传说中的海盗舰队，对方人数和装备远超你的船只。你会
+  - `q3.a`：双极混号 — 立即升起白旗投降，保存实力等待反击时机
+  - `q3.b`：结构检查通过 — 正面迎战，即使失败也要证明自己的勇气
+  - `q3.c`：双极混号 — 设计巧妙战术，利用地形和天气优势奇袭对方
+  - `q3.d`：双极混号 — 尝试与对方谈判，寻求结盟或和平共处
+- **q4** 题干：船员们因为是否继续航行寻找传说中的宝藏而发生分歧。你会
+  - `q4.a`：双极混号 — 坚持自己的决定，即使只有少数人支持也要继续前进
+  - `q4.b`：结构检查通过 — 尊重多数人的意见，愿意调整航向或暂时放弃计划
+  - `q4.c`：结构检查通过 — 提出折中方案，或提出新的冒险方向让所有人重新考虑
+  - `q4.d`：结构检查通过 — 选择离开团队，寻找志同道合的伙伴重新组建船队
+- **q5** 题干：在海上航行数月后，发现了一座无人岛，岛上可能有丰富的资源。你会
+  - `q5.a`：结构检查通过 — 立即登陆探索，不顾任何可能的危险
+  - `q5.b`：结构检查通过 — 先派遣小队侦查，确保安全后再决定是否登陆
+  - `q5.c`：双极混号 — 提议全体船员共同投票决定是否登陆
+  - `q5.d`：双极混号 — 记录岛屿位置，但决定不登陆，留给后人探索
+- **q6** 题干：当你从一场可怕的风暴中幸存，船员们情绪低落。你会
+  - `q6.a`：双极混号 — 独自承担起所有责任，不向任何人展示自己的脆弱
+  - `q6.b`：结构检查通过 — 组织船员们分享恐惧和感受，共同面对创伤
+  - `q6.c`：双极混号 — 用幽默和冒险故事转移大家的注意力，不让情绪蔓延
+  - `q6.d`：结构检查通过 — 建议立即改变航向，寻找更安全的海域
+- **q7** 题干：得知海军大将正在附近海域巡逻，你的船只有被发现的风险。你会
+  - `q7.a`：结构检查通过 — 主动寻找机会与海军正面交锋，证明自己的实力
+  - `q7.b`：结构检查通过 — 悄悄改变航向，避开海军的活动区域
+  - `q7.c`：双极混号 — 提议船员们分工合作，有人警戒有人继续航行
+  - `q7.d`：双极混号 — 装作普通商船，尝试与海军和平交流或贿赂
+- **q8** 题干：在船员们的休息夜，大家围坐在甲板分享各自的故事和梦想。你会
+  - `q8.a`：结构检查通过 — 讲述自己最冒险的经历，成为全场的焦点
+  - `q8.b`：结构检查通过 — 安静地聆听他人的故事，很少分享自己的感受
+  - `q8.c`：结构检查通过 — 引导大家思考共同的未来，制定下一步计划
+  - `q8.d`：结构检查通过 — 质疑分享的意义，认为行动比言语更重要
+- **q9** 题干：在暴风雨中船只受损，大副建议立即返航修理，而你发现前方有一座神秘小岛。
+  - `q9.a`：结构检查通过 — 坚持驶向未知岛屿，相信风暴后的惊喜值得冒险
+  - `q9.b`：结构检查通过 — 听从大副意见，安全第一，冒险不是当下的选择
+  - `q9.c`：结构检查通过 — 提议全体投票决定，尊重团队每个人的意见
+  - `q9.d`：结构检查通过 — 独自前往岛屿探索，让其他人继续航行
+- **q10** 题干：你在海岛上发现了一箱黄金，但船长曾立下规矩：不许私自打捞海底宝藏。
+  - `q10.a`：双极混号 — 悄悄收下黄金，认为规则不适用于意外发现的财富
+  - `q10.b`：双极混号 — 严格遵守船长规矩，即使无人发现也坚决不取
+  - `q10.c`：结构检查通过 — 将黄金分给船员，认为集体利益高于个人原则
+  - `q10.d`：结构检查通过 — 向船长坦白，让他决定如何处理这笔意外之财
+- **q11** 题干：海上遭遇海军旗舰，对方要求你们停船接受检查，船长下令准备战斗。
+  - `q11.a`：结构检查通过 — 主动请缨挑战海军旗舰，证明自己的实力
+  - `q11.b`：结构检查通过 — 劝船长避战为上，保存实力才是长久之计
+  - `q11.c`：结构检查通过 — 提议分散突围，各自为战以保全更多人
+  - `q11.d`：结构检查通过 — 提议谈判，尝试以和平方式解决冲突
+- **q12** 题干：船员中有人因思念家乡而情绪低落，影响了团队士气。
+  - `q12.a`：结构检查通过 — 组织一场热闹的晚会，用欢乐冲淡思乡之情
+  - `q12.b`：结构检查通过 — 私下劝说那人放下私念，以团队目标为重
+  - `q12.c`：双极混号 — 提议改变航线，短暂停靠家乡港口
+  - `q12.d`：双极混号 — 分享自己曾经的思乡经历，给予情感共鸣
+- **q13** 题干：在无人岛上的古老遗迹中，你发现了一张藏宝图，指向传说中的One Piece。
+  - `q13.a`：双极混号 — 独自保管地图，认为只有自己能驾驭这份力量
+  - `q13.b`：双极混号 — 将地图交给船长，相信集体智慧能解开谜题
+  - `q13.c`：结构检查通过 — 提议按照地图航行，但分享路线和发现
+  - `q13.d`：结构检查通过 — 质疑地图真实性，认为这只是另一个陷阱
+- **q14** 题干：一位新加入的船员展示出非凡的航海技术，超越了你的能力。
+  - `q14.a`：结构检查通过 — 主动向新人请教，学习提升自己的技能
+  - `q14.b`：结构检查通过 — 暗中挑战新人，证明自己才是船上真正的核心
+  - `q14.c`：结构检查通过 — 向船长推荐新人担任重要职位，团队需要人才
+  - `q14.d`：结构检查通过 — 与新人的能力保持距离，维持自己的独特地位
+- **q15** 题干：船员中有人犯了严重错误，可能导致整个团队陷入危险。
+  - `q15.a`：双极混号 — 严厉批评犯错者，责任必须有人承担
+  - `q15.b`：双极混号 — 独自承担错误，保护犯错者免受惩罚
+  - `q15.c`：结构检查通过 — 组织团队共同面对危机，每个人都是责任主体
+  - `q15.d`：结构检查通过 — 建议将犯错者暂时隔离，保全团队实力
+- **q16** 题干：航行中遇到传说中的海怪，船长下令撤退，但你看到了击败它的机会。
+  - `q16.a`：结构检查通过 — 不顾命令冲向海怪，相信勇气能创造奇迹
+  - `q16.b`：结构检查通过 — 支持船长决定，保存船员生命比证明勇气更重要
+  - `q16.c`：双极混号 — 提议制定周密计划，再决定是否冒险挑战
+  - `q16.d`：双极混号 — 请求独自前往试探，为团队探索危险海域
+- **q17** 题干：你的船只在暴风雨中遭遇海怪袭击，船长命令全员全力撤退，但你知道附近海域藏着传说中的宝藏。
+  - `q17.a`：结构检查通过 — 立即服从命令，安全永远是第一位的
+  - `q17.b`：双极混号 — 不顾危险坚持寻找宝藏，冒险才是航行的意义
+  - `q17.c`：结构检查通过 — 提出折中方案，先确保船只安全再考虑宝藏
+  - `q17.d`：结构检查通过 — 私下悄悄寻找宝藏，不愿与他人分享这个秘密
+- **q18** 题干：在荒岛补给时，你发现了一处古老的遗迹，入口处有警示牌写着'内有危险，请勿进入'。
+  - `q18.a`：双极混号 — 无视警示，立即探索遗迹内部，寻找隐藏的宝藏
+  - `q18.b`：结构检查通过 — 仔细研究警示牌，询问当地居民了解情况后再决定
+  - `q18.c`：结构检查通过 — 组织团队一起探索，相信团结力量能克服任何危险
+  - `q18.d`：结构检查通过 — 绕道而行，不想冒险，保持安全才是最重要的
+- **q19** 题干：航行途中遭遇海军旗舰拦截，对方舰长实力强大，船员们都感到恐惧。
+  - `q19.a`：结构检查通过 — 挺身而出，直接挑战海军舰长，证明自己的实力
+  - `q19.b`：结构检查通过 — 智取而非强攻，制定周密计划巧妙脱困
+  - `q19.c`：双极混号 — 提议立即投降，保全船员性命是最重要的
+  - `q19.d`：双极混号 — 独自留下断后，让其他人趁机逃跑
+- **q20** 题干：船员中有人因思乡情绪低落，影响了整个团队的士气。
+  - `q20.a`：结构检查通过 — 组织一场欢快的聚会，用热闹气氛驱散思乡情绪
+  - `q20.b`：结构检查通过 — 私下与思乡者深入交谈，了解他的真实想法
+  - `q20.c`：结构检查通过 — 认为这是软弱的表现，应该专注于航行目标
+  - `q20.d`：结构检查通过 — 提议在船上建立家乡记忆角，让每个人都能找到慰藉
+- **q21** 题干：你得到了一张通往拉夫德鲁的藏宝图，但需要与另一支海盗队伍合作才能解读完整信息。
+  - `q21.a`：双极混号 — 独自研究藏宝图，不愿与他人分享这个秘密
+  - `q21.b`：结构检查通过 — 提议与对方合作，但暗中计划在最后关头背叛他们
+  - `q21.c`：结构检查通过 — 信任对方，共同分享秘密，相信真正的宝藏在于友谊
+  - `q21.d`：结构检查通过 — 放弃这个机会，宁愿独自寻找其他宝藏也不愿与他人分享
+- **q22** 题干：航行途中发现一座神秘岛屿，岛上似乎有强大的力量，但同时也充满危险。
+  - `q22.a`：结构检查通过 — 不顾危险立即登陆，探索岛上的秘密力量
+  - `q22.b`：结构检查通过 — 先派出小队侦查，确保安全后再决定是否登岛
+  - `q22.c`：结构检查通过 — 组织全体船员共同登岛，相信团结的力量能克服一切
+  - `q22.d`：结构检查通过 — 绕道而行，不想冒险，平凡的海上生活已经足够
+
+### 逐结果
+- **r1**（路飞）：profile 键与范围检查通过。
+- **r2**（索隆）：profile 键与范围检查通过。
+- **r3**（山治）：profile 键与范围检查通过。
+- **r4**（娜美）：profile 键与范围检查通过。
+- **r5**（乌索普）：profile 键与范围检查通过。
+- **r6**（乔巴）：profile 键与范围检查通过。
+- **r7**（罗宾）：profile 键与范围检查通过。
+- **r8**（弗兰奇）：profile 键与范围检查通过。
+- **r9**（布鲁克）：profile 键与范围检查通过。
+
+## paladin-character-match
+- **计分**：`bipolar-dimension` · 维度数 4 · 题数 20 · 结果数 7
+- **错误（6）**
+  - bipolar axis "自由与承担": missing highPole
+  - bipolar axis "命运态度": missing highPole
+  - bipolar axis "情感表达": missing highPole
+  - bipolar axis "守护方式": missing highPole
+  - r5 is unreachable — dominated by r3 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+- **警告（7）**
+  - q9.d: bipolar option mixes positive and negative scores
+  - q10.d: bipolar option mixes positive and negative scores
+  - q11.a: bipolar option mixes positive and negative scores
+  - q12.d: bipolar option mixes positive and negative scores
+  - q13.d: bipolar option mixes positive and negative scores
+  - r5 is unreachable — dominated by r3 on all dimensions
+  - r6 is unreachable — dominated by r4 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：客栈风雨夜，你发现一名神秘女子被黑衣人围攻。她虽身手不凡，但寡不敌众。此时，你的剑已出鞘半寸。
+  - `q1.a`：结构检查通过 — 立即出手相助，哪怕对方身份不明
+  - `q1.b`：结构检查通过 — 按兵不动，静观其变，不卷入江湖恩怨
+  - `q1.c`：结构检查通过 — 暗中观察，寻找最佳时机出手相救
+  - `q1.d`：结构检查通过 — 高声喝止，让黑衣人知难而退
+- **q2** 题干：蜀山师门，你因一次失误导致同门受伤。掌门要你接受惩罚，但你知道自己另有隐情。
+  - `q2.a`：结构检查通过 — 坦然接受惩罚，不辩解自己的过错
+  - `q2.b`：结构检查通过 — 据理力争，说明事情真相，争取公正裁决
+  - `q2.c`：结构检查通过 — 沉默接受，暗中调查真相以还自己清白
+  - `q2.d`：结构检查通过 — 请求私下解释，不公开质疑师门决定
+- **q3** 题干：你发现一本记载着改变命运方法的古籍，但使用它可能带来不可预知的后果。
+  - `q3.a`：结构检查通过 — 立即研究并尝试，相信自己的能力可以掌控
+  - `q3.b`：结构检查通过 — 封存古籍，相信命运自有安排
+  - `q3.c`：结构检查通过 — 谨慎研究，只在万不得已时使用
+  - `q3.d`：结构检查通过 — 寻求高人指点，不擅自决定
+- **q4** 题干：多年挚友因误会与你决裂，临行前只留下一封信。你拆开信后发现其中另有隐情。
+  - `q4.a`：结构检查通过 — 立即追上朋友，当面澄清一切
+  - `q4.b`：结构检查通过 — 尊重朋友决定，相信时间会证明一切
+  - `q4.c`：结构检查通过 — 写一封长信，详细解释误会并表达思念
+  - `q4.d`：结构检查通过 — 通过第三方传递消息，不直接联系
+- **q5** 题干：你发现一位无辜的村民被当作妖孽要被处决，而你掌握着能证明他清白的证据。
+  - `q5.a`：结构检查通过 — 挺身而出，当众出示证据，哪怕得罪权贵
+  - `q5.b`：结构检查通过 — 保持沉默，避免卷入不必要的麻烦
+  - `q5.c`：结构检查通过 — 暗中收集更多证据，选择适当时机公布
+  - `q5.d`：结构检查通过 — 寻求江湖同道帮助，共同施压救人
+- **q6** 题干：你得知自己身负特殊使命，可能需要牺牲个人情感才能完成。
+  - `q6.a`：结构检查通过 — 毫不犹豫接受使命，情感可暂放一旁
+  - `q6.b`：结构检查通过 — 拒绝牺牲情感，寻找兼顾的方法
+  - `q6.c`：结构检查通过 — 先完成使命，再弥补情感遗憾
+  - `q6.d`：结构检查通过 — 寻求师父指点，平衡使命与情感
+- **q7** 题干：你发现一本能让你获得长生不老的神功秘籍，但修炼过程极为痛苦，且可能迷失自我。
+  - `q7.a`：结构检查通过 — 立即修炼，追求永恒力量
+  - `q7.b`：结构检查通过 — 放弃修炼，珍惜当下生命
+  - `q7.c`：结构检查通过 — 谨慎研究，寻找减轻痛苦的修炼方法
+  - `q7.d`：结构检查通过 — 寻求高人指点，确认是否值得修炼
+- **q8** 题干：在蜀山禁地，你意外发现了一本记载着改变命运秘法的古卷。此时守卫即将巡逻至此。
+  - `q8.a`：结构检查通过 — 立刻带走秘法，相信自己的能力足以掌控命运
+  - `q8.b`：结构检查通过 — 将古卷原封不动放回，认为天命不可违
+  - `q8.c`：结构检查通过 — 抄录关键部分后离开，计划在安全时研究
+  - `q8.d`：结构检查通过 — 向守卫举报，维护蜀山规矩与秩序
+- **q9** 题干：与你并肩作战的挚友被魔气所侵，逐渐失去本性，而你手握唯一能净化他的神器。
+  - `q9.a`：结构检查通过 — 毫不犹豫使用神器，友情重于一切
+  - `q9.b`：结构检查通过 — 认为这是他的劫数，决定尊重命运
+  - `q9.c`：结构检查通过 — 寻找其他方法，不愿贸然使用神器
+  - `q9.d`：双极混号 — 私下寻求蜀山长老的帮助
+- **q10** 题干：在客栈风雨夜，你听到隔壁房间传来打斗声和神秘女子呼救。
+  - `q10.a`：结构检查通过 — 破门而入，不论面对什么危险都要挺身而出
+  - `q10.b`：结构检查通过 — 默然离开，不想卷入是非，保全自己
+  - `q10.c`：结构检查通过 — 从窗外观察情况，确认安全后再行动
+  - `q10.d`：双极混号 — 暗中通知官府，让专业人士处理
+- **q11** 题干：你发现挚爱之人与你有着宿命中的对立关系，正邪不两立。
+  - `q11.a`：双极混号 — 选择站在正义一方，即使要牺牲爱情
+  - `q11.b`：结构检查通过 — 为爱放弃立场，随爱人远走高飞
+  - `q11.c`：结构检查通过 — 寻找第三条道路，试图改变宿命安排
+  - `q11.d`：结构检查通过 — 保持距离，既不背叛立场也不伤害爱人
+- **q12** 题干：蜀山师门面临抉择：是集中资源守护人间，还是倾力镇压魔界封印。
+  - `q12.a`：结构检查通过 — 优先守护百姓，认为黎民疾苦重于一切
+  - `q12.b`：结构检查通过 — 认为封印魔界是根本，人间疾苦可暂缓
+  - `q12.c`：结构检查通过 — 寻求两全之策，不偏不倚
+  - `q12.d`：双极混号 — 提出创新方法，同时解决两个问题
+- **q13** 题干：在记忆消散前的瞬间，你有机会选择保留一段最重要的记忆。
+  - `q13.a`：结构检查通过 — 选择与爱人的美好时光，情感重于一切
+  - `q13.b`：结构检查通过 — 选择掌握的力量与技艺，能力胜过情感
+  - `q13.c`：结构检查通过 — 选择与师门同修的岁月，传承比个人更重要
+  - `q13.d`：双极混号 — 选择自己悟道的瞬间，智慧比记忆更珍贵
+- **q14** 题干：江湖路上，你遇见一位重伤垂危的仇人，他手中握着能改变你家族命运的信物。
+  - `q14.a`：结构检查通过 — 不顾恩怨，立刻救治，生命高于一切
+  - `q14.b`：结构检查通过 — 夺走信物，任由他死去，血债血偿
+  - `q14.c`：结构检查通过 — 先救治，但要求交出信物作为交换
+  - `q14.d`：结构检查通过 — 交给官府处置，自己不插手恩怨
+- **q15** 题干：蜀山之巅，师父交给你一封关乎江湖安危的信件，嘱你务必送达盟友手中，途中却遭遇一群蒙面人拦截，声称你手中的信件若送达将引发一场血战。
+  - `q15.a`：结构检查通过 — 执拗前行，信件关乎苍生，岂能为个人安危而退缩
+  - `q15.b`：结构检查通过 — 权衡利弊，将信件藏起，先探明对方身份与真实意图
+  - `q15.c`：结构检查通过 — 挺身而出，质问对方阻拦缘由，愿一人承担所有后果
+  - `q15.d`：结构检查通过 — 折返回山，请师父定夺此事，自己不擅决断如此大事
+- **q16** 题干：你深爱之人身中剧毒，唯一解药远在千里之外的毒门圣地，传说那里守卫森严，寻常人难以接近。此时你得知，若能取回解药，必须付出一段珍贵记忆作为代价。
+  - `q16.a`：结构检查通过 — 不顾一切前往，宁可忘记与她的相识相知，也要救她性命
+  - `q16.b`：结构检查通过 — 寻找其他解药途径，不愿以失去重要记忆为代价
+  - `q16.c`：结构检查通过 — 亲自前往毒门，凭借一身武艺与智慧智取解药，不付任何代价
+  - `q16.d`：结构检查通过 — 请江湖高手相助，自己则留在爱人身边，日夜守护不离不弃
+- **q17** 题干：客栈风雨夜，你独坐窗前，忽见一位浑身湿透的女子踉跄闯入，她手持半块玉佩，自称是你的故人，却记不起往事。窗外黑影幢幢，似有追兵将至。
+  - `q17.a`：结构检查通过 — 收留她，为她生火取暖，虽不知她来历，但救人要紧
+  - `q17.b`：结构检查通过 — 婉言拒绝，她来历不明恐引祸端，建议她另寻安身之所
+  - `q17.c`：结构检查通过 — 追问她详情，查明真相再做决定，同时暗中观察窗外动静
+  - `q17.d`：结构检查通过 — 让她暂避，自己出门查看情况，若真有追兵便引开他们
+- **q18** 题干：蜀山试炼之期将至，你被指派与师门宿敌的弟子组队完成任务。师父告知，此行关乎两派未来百年的和平，但私下透露，对方可能在任务中对你不利。
+  - `q18.a`：结构检查通过 — 坦然面对，相信师父的判断，但愿以诚心化解彼此恩怨
+  - `q18.b`：结构检查通过 — 向师父请辞，不愿与仇人共事，宁可独自承担任务风险
+  - `q18.c`：结构检查通过 — 表面合作，暗中提防，寻找对方破绽，必要时先发制人
+  - `q18.d`：结构检查通过 — 坦诚沟通，表明自己的顾虑，希望双方能放下成见真诚合作
+- **q19** 题干：你偶然发现一段上古秘卷，记载着能改变江湖格局的力量，但修炼此法需承受常人难以想象的痛苦，且可能让你失去现有的情感与羁绊。
+  - `q19.a`：结构检查通过 — 毅然修炼，力量能保护更多无辜，个人得失不足为虑
+  - `q19.b`：结构检查通过 — 将秘卷封存，宁可平凡一生，也不愿失去珍视的情感与记忆
+  - `q19.c`：结构检查通过 — 研究秘卷但不修炼，寻找既得力量又不失自我的方法
+  - `q19.d`：结构检查通过 — 将秘卷交给值得信赖的前辈，听取他们的建议再做决定
+- **q20** 题干：你得知自己的身世之谜与一场多年前的血案有关，真相揭露将颠覆你对整个世界的认知，也可能让爱你的人陷入危险。
+  - `q20.a`：结构检查通过 — 彻查到底，无论真相多么残酷，都要面对并承担责任
+  - `q20.b`：结构检查通过 — 放弃追寻，宁愿活在虚假的平静中，也不愿牵连他人
+  - `q20.c`：结构检查通过 — 暗中调查，在保护爱人的同时探寻真相，必要时隐瞒部分事实
+  - `q20.d`：结构检查通过 — 寻求师门长辈的帮助，希望他们能指引你处理这复杂局面
+
+### 逐结果
+- **r1**（李逍遥）：profile 键与范围检查通过。
+- **r2**（赵灵儿）：profile 键与范围检查通过。
+- **r3**（林月如）：profile 键与范围检查通过。
+- **r4**（景天）：profile 键与范围检查通过。
+- **r5**（唐雪见）：profile 键与范围检查通过。
+- **r6**（龙葵）：profile 键与范围检查通过。
+- **r7**（云天河）：profile 键与范围检查通过。
+
+## pokemon-personality-match
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 20 · 结果数 10
+- **错误（5）**
+  - r2 is unreachable — dominated by r4 on all dimensions
+  - r3 is unreachable — dominated by r7 on all dimensions
+  - r5 is unreachable — dominated by r8 on all dimensions
+  - r10 is unreachable — dominated by r4 on all dimensions
+  - r10 is unreachable — dominated by r9 on all dimensions
+- **警告（5）**
+  - r2 is unreachable — dominated by r4 on all dimensions
+  - r3 is unreachable — dominated by r7 on all dimensions
+  - r5 is unreachable — dominated by r8 on all dimensions
+  - r10 is unreachable — dominated by r4 on all dimensions
+  - r10 is unreachable — dominated by r9 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：周末早晨，你醒来发现窗外阳光明媚，你会如何安排这一天？
+  - `q1.a`：结构检查通过 — 立即起身整理房间，安排好一天的计划，确保每个时段都有明确目标
+  - `q1.b`：结构检查通过 — 赖床一会儿，慢慢享用早餐，然后随心所欲地做些轻松的事情
+  - `q1.c`：结构检查通过 — 打电话约朋友一起出游，探索新的地方或参加有趣的活动
+  - `q1.d`：结构检查通过 — 独自阅读或沉浸在自己喜欢的爱好中，享受不被打扰的时光
+- **q2** 题干：当你面临一个需要团队合作完成的项目时，你通常会扮演什么角色？
+  - `q2.a`：结构检查通过 — 主动担任领导者，分配任务并确保项目按计划进行
+  - `q2.b`：结构检查通过 — 默默支持团队，提供创意想法但不抢风头
+  - `q2.c`：结构检查通过 — 专注于自己负责的部分，独立高效完成
+  - `q2.d`：结构检查通过 — 尝试了解每位团队成员的特点，协调合作让过程更愉快
+- **q3** 题干：在一个陌生的城市迷路了，你会怎么做？
+  - `q3.a`：结构检查通过 — 打开地图导航，仔细规划路线，找到最直接的方式到达目的地
+  - `q3.b`：结构检查通过 — 向路人询问，享受这个探索的机会，也许会发现意想不到的有趣地方
+  - `q3.c`：结构检查通过 — 感到有些焦虑，但会尽快找到解决办法，避免浪费时间
+  - `q3.d`：结构检查通过 — 把迷路当作一种冒险，放慢脚步观察周围，感受当地氛围
+- **q4** 题干：朋友邀请你参加一个大型聚会，但你知道那里会有很多人，你会？
+  - `q4.a`：结构检查通过 — 欣然接受，期待认识新朋友，享受热闹的氛围
+  - `q4.b`：结构检查通过 — 有些犹豫，但会尝试参加，并在需要时找安静角落休息
+  - `q4.c`：结构检查通过 — 礼貌拒绝，更喜欢小范围的活动或独处
+  - `q4.d`：结构检查通过 — 询问聚会的具体安排，如果符合兴趣就参加，否则找其他方式
+- **q5** 题干：当你面对一个挑战性的难题时，你的第一反应是？
+  - `q5.a`：结构检查通过 — 立即分析问题，寻找逻辑解决方案，确保高效解决
+  - `q5.b`：结构检查通过 — 寻求他人帮助，汇集不同观点找到最佳方案
+  - `q5.c`：结构检查通过 — 相信自己有能力解决，坚持不懈直到找到答案
+  - `q5.d`：结构检查通过 — 先放一放，换个环境或做些其他事情，灵感可能自然出现
+- **q6** 题干：当需要学习一项新技能时，你的学习方式更倾向于？
+  - `q6.a`：结构检查通过 — 系统性地学习理论知识，构建完整的知识框架
+  - `q6.b`：结构检查通过 — 直接动手实践，在实践中摸索和改进
+  - `q6.c`：结构检查通过 — 找一位经验丰富的导师，跟随指导一步步学习
+  - `q6.d`：结构检查通过 — 结合多种学习方式，阅读资料、观看视频和实际操作并行
+- **q7** 题干：在团队讨论中，当你的想法与大多数人不同时，你会？
+  - `q7.a`：结构检查通过 — 坚持表达自己的观点，用逻辑和证据说服他人
+  - `q7.b`：结构检查通过 — 倾听他人观点，必要时调整自己的想法寻求共识
+  - `q7.c`：结构检查通过 — 保持沉默，私下思考是否坚持自己的立场
+  - `q7.d`：结构检查通过 — 尝试提出折中方案，既保留自己观点的核心又考虑他人意见
+- **q8** 题干：周末清晨，你发现小区的流浪猫们似乎饿了，你会怎么做？
+  - `q8.a`：结构检查通过 — 准备食物和水，悄悄放在固定位置观察它们
+  - `q8.b`：结构检查通过 — 尝试接近它们，想和它们交朋友并建立信任
+  - `q8.c`：结构检查通过 — 制作简单的庇护所，确保它们有安全的地方休息
+  - `q8.d`：结构检查通过 — 联系附近的动物救助组织，寻求专业帮助
+- **q9** 题干：你收到一份神秘邀请函，邀请你去一个从未听说过的秘密花园，你会？
+  - `q9.a`：结构检查通过 — 立即收拾行囊，对未知充满期待和兴奋
+  - `q9.b`：结构检查通过 — 先做足功课，研究花园的历史和背景信息
+  - `q9.c`：结构检查通过 — 邀请几位好友一同前往，分享探索的乐趣
+  - `q9.d`：结构检查通过 — 有些犹豫，担心未知的危险和不确定性
+- **q10** 题干：你发现了一株奇特的植物，它似乎有某种特殊能力，你会？
+  - `q10.a`：结构检查通过 — 仔细观察它的生长环境和特性，记录下所有发现
+  - `q10.b`：结构检查通过 — 尝试与它沟通，了解它的感受和故事
+  - `q10.c`：结构检查通过 — 保护它不被外界打扰，守护它的秘密
+  - `q10.d`：结构检查通过 — 分享给朋友或社区，让大家共同欣赏它的神奇
+- **q11** 题干：在一个雨后的森林里，你发现了一条发光的小径，你会？
+  - `q11.a`：结构检查通过 — 毫不犹豫地沿着小径探索，期待未知的惊喜
+  - `q11.b`：结构检查通过 — 小心地跟随，保持警觉以防遇到危险
+  - `q11.c`：结构检查通过 — 停下来欣赏周围的景色，感受大自然的奇妙
+  - `q11.d`：结构检查通过 — 记录下这个发现，计划下次带上朋友一起来
+- **q12** 题干：你听说城市边缘有一片被遗忘的花海，很多人寻找但无功而返，你会？
+  - `q12.a`：结构检查通过 — 研究地图和线索，制定详细的寻找计划
+  - `q12.b`：结构检查通过 — 相信直觉，随意选择方向开始探索
+  - `q12.c`：结构检查通过 — 邀请志同道合的朋友一起组成寻找小队
+  - `q12.d`：结构检查通过 — 先收集更多关于花海的传说和信息再做决定
+- **q13** 题干：你发现了一只受伤的神奇生物，它似乎在寻求帮助，你会？
+  - `q13.a`：结构检查通过 — 立即尝试救助，用自己的方法帮助它恢复
+  - `q13.b`：结构检查通过 — 寻找专业人士的帮助，确保得到最好的照顾
+  - `q13.c`：结构检查通过 — 与它交流，了解它的需求和感受
+  - `q13.d`：结构检查通过 — 为它创建一个安全舒适的环境，让它慢慢恢复
+- **q14** 题干：在一个古老的图书馆里，你发现了一本没有封面的神秘古籍，你会？
+  - `q14.a`：结构检查通过 — 立即阅读，渴望揭开其中的秘密
+  - `q14.b`：结构检查通过 — 先检查古籍的来源和背景，评估安全性
+  - `q14.c`：结构检查通过 — 邀请懂行的朋友一起研究，分享发现的乐趣
+  - `q14.d`：结构检查通过 — 将古籍交给图书馆管理员，让专业人士处理
+- **q15** 题干：周末早晨，你发现小区公园里有一场宝可梦训练家的小型聚会，你会如何度过这个上午？
+  - `q15.a`：结构检查通过 — 主动上前加入讨论，分享自己收集的训练心得和技巧
+  - `q15.b`：结构检查通过 — 在远处安静观察，记录不同训练家与宝可梦的互动模式
+  - `q15.c`：结构检查通过 — 独自前往公园的另一边，训练自己的宝可梦，不受外界干扰
+  - `q15.d`：结构检查通过 — 绕道而行，找个安静的地方享受独处时光，阅读宝可梦图鉴
+- **q16** 题干：在野外探索时，突然遇到一只稀有但难以捕捉的宝可梦，你的第一反应是？
+  - `q16.a`：结构检查通过 — 分析它的行为模式，寻找最合适的时机和策略进行捕捉
+  - `q16.b`：结构检查通过 — 尝试用食物或道具建立信任关系，让它自愿跟随
+  - `q16.c`：结构检查通过 — 毫不犹豫地使用最强力的精灵球，相信自己能够成功
+  - `q16.d`：结构检查通过 — 选择远远观察，记录它的特性而不打扰它的生活
+- **q17** 题干：当你和宝可梦伙伴一起面对强大的对手时，你会采取哪种策略？
+  - `q17.a`：结构检查通过 — 让伙伴自由发挥，相信它本能地知道如何应对
+  - `q17.b`：结构检查通过 — 仔细分析对手弱点，制定精密的战术配合
+  - `q17.c`：结构检查通过 — 鼓励伙伴展现独特能力，发掘它的隐藏潜能
+  - `q17.d`：结构检查通过 — 寻找环境中的有利因素，利用地形或天气变化来扭转局势
+- **q18** 题干：在宝可梦对战大赛中，你发现自己处于明显劣势，会怎么做？
+  - `q18.a`：结构检查通过 — 保持冷静，寻找对手的破绽，随时准备反击
+  - `q18.b`：结构检查通过 — 冒险使用不常用的招式，出其不意地改变战局
+  - `q18.c`：结构检查通过 — 承认当前状况，专注于保存实力，为下一轮做准备
+  - `q18.d`：结构检查通过 — 尝试与对手建立友谊，提议赛后交流心得
+- **q19** 题干：当你发现一只受伤的野生宝可梦时，你会？
+  - `q19.a`：结构检查通过 — 立即上前提供帮助，使用自己的治疗道具或寻找附近的宝可梦中心
+  - `q19.b`：结构检查通过 — 保持安全距离，观察情况，必要时寻求专业训练家的帮助
+  - `q19.c`：结构检查通过 — 尝试安抚宝可情绪，用温和的方式接近并帮助它
+  - `q19.d`：结构检查通过 — 记录下位置和状况，通知当地的宝可梦保护协会
+- **q20** 题干：在宝可梦道馆挑战中，面对馆主精心布置的特殊场地，你会？
+  - `q20.a`：结构检查通过 — 迅速适应环境，将场地的特点转化为自己的战术优势
+  - `q20.b`：结构检查通过 — 坚持使用自己最熟悉的方法，相信基本功的重要性
+  - `q20.c`：结构检查通过 — 提前研究场地的特点和馆主的战术风格，做好充分准备
+  - `q20.d`：结构检查通过 — 享受挑战的乐趣，将这次对战视为与馆主交流学习的机会
+
+### 逐结果
+- **r1**（皮卡丘）：profile 键与范围检查通过。
+- **r2**（卡比兽）：profile 键与范围检查通过。
+- **r3**（胖丁）：profile 键与范围检查通过。
+- **r4**（伊布）：profile 键与范围检查通过。
+- **r5**（耿鬼）：profile 键与范围检查通过。
+- **r6**（喷火龙）：profile 键与范围检查通过。
+- **r7**（路卡利欧）：profile 键与范围检查通过。
+- **r8**（超梦）：profile 键与范围检查通过。
+- **r9**（风速狗）：profile 键与范围检查通过。
+- **r10**（妙蛙种子）：profile 键与范围检查通过。
+
+## post-apocalypse-role
+- **计分**：`weighted-dimension` · 维度数 3 · 题数 18 · 结果数 8
+- **错误（3）**
+  - r1 is unreachable — dominated by r5 on all dimensions
+  - r9 is unreachable — dominated by r2 on all dimensions
+  - r9 is unreachable — dominated by r3 on all dimensions
+- **警告（3）**
+  - r1 is unreachable — dominated by r5 on all dimensions
+  - r9 is unreachable — dominated by r2 on all dimensions
+  - r9 is unreachable — dominated by r3 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：你在废弃城市中发现了一个看似安全的避难所，但入口处有陷阱的痕迹。你会如何处理这个发现？
+  - `q1.a`：结构检查通过 — 立即标记陷阱位置，通知附近的幸存者，共同制定安全计划
+  - `q1.b`：结构检查通过 — 绕过陷阱，独自探索避难所，先确认内部安全后再决定是否分享
+  - `q1.c`：结构检查通过 — 利用陷阱作为防御工事，在周围设置更多机关，使避难所成为私人领地
+  - `q1.d`：结构检查通过 — 花费时间解除陷阱，完善避难所防御，为所有需要的人提供庇护
+- **q2** 题干：你在废弃药店发现了一批即将过期的药品，而附近有一群生病但对你抱有敌意的幸存者。你会怎么做？
+  - `q2.a`：结构检查通过 — 悄悄取走药品，避免与对方发生冲突，优先保证自己和同伴的安全
+  - `q2.b`：结构检查通过 — 公开药品位置，提出交换条件，用药品换取食物、信息或其他资源
+  - `q2.c`：结构检查通过 — 尝试与对方建立信任关系，分享部分药品并寻求长期合作的可能性
+  - `q2.d`：结构检查通过 — 研究药品性质，提取有效成分自制简易药物，扩大救助范围
+- **q3** 题干：你在荒野中发现了疑似前军事基地的地下入口，内部可能有珍贵资源但也可能有危险。你会如何行动？
+  - `q3.a`：结构检查通过 — 组织一支小型团队，分工协作进行探索，制定详细的应急预案
+  - `q3.b`：结构检查通过 — 先在入口处进行长期观察，记录出入模式，寻找最安全的进入时机
+  - `q3.c`：结构检查通过 — 立即独自进入，快速获取尽可能多的资源，然后迅速撤离
+  - `q3.d`：结构检查通过 — 研究建筑结构图，分析可能的安全隐患，设计最安全的进入路线
+- **q4** 题干：你发现了一处隐藏的地下水净化装置，但需要定期维护才能持续运作。附近有几股势力都对水源有需求。你会如何处理？
+  - `q4.a`：结构检查通过 — 独自维护装置，只为自己和最亲近的人提供水源，保持低调
+  - `q4.b`：结构检查通过 — 公开发现，邀请各方共同制定水源分配规则，建立轮流维护制度
+  - `q4.c`：结构检查通过 — 提升装置效率，扩大供水能力，以此作为建立新社区的基础
+  - `q4.d`：结构检查通过 — 控制装置并设定严格条件，只有服从你权威的群体才能获得水源
+- **q5** 题干：你发现了一处未被掠夺的图书馆，里面有大量书籍和技术资料，但存放地点容易被发现。你会如何处理这些知识资源？
+  - `q5.a`：结构检查通过 — 选择性复制关键信息，将书籍内容数字化，便于携带和传播
+  - `q5.b`：结构检查通过 — 建立秘密学习小组，教授幸存者实用技能，重建知识传承体系
+  - `q5.c`：结构检查通过 — 利用技术知识制造武器和工具，增强自身和群体的生存能力
+  - `q5.d`：结构检查通过 — 只保留对自己直接有用的知识，忽略其他内容，减轻携带负担
+- **q6** 题干：你在一个废弃实验室发现了疑似有效的病毒疫苗原型，但实验条件不完整，测试风险极高。你会如何处理这一发现？
+  - `q6.a`：结构检查通过 — 秘密进行小规模测试，先在动物身上验证安全性，再考虑人体应用
+  - `q6.b`：结构检查通过 — 立即公开发现，召集各方专家共同研究，分担风险并加速进程
+  - `q6.c`：结构检查通过 — 独自研究疫苗配方，完善实验方法，确保安全后再考虑分享
+  - `q6.d`：结构检查通过 — 销毁所有研究资料，担心被滥用造成更大灾难，选择保守秘密
+- **q7** 题干：你发现了一处被遗弃的地下避难所，里面有少量食物和水，但结构不稳定，随时可能坍塌。
+  - `q7.a`：结构检查通过 — 立即通知附近避难所的幸存者，分享这个发现
+  - `q7.b`：结构检查通过 — 独自清理加固，据为己有作为秘密储备
+  - `q7.c`：结构检查通过 — 标记位置但暂时不进入，继续寻找更安全的避难所
+  - `q7.d`：结构检查通过 — 冒险进入探索，寻找更多可用物资
+- **q8** 题干：在一次资源交换中，对方提出用少量药品换取你珍贵的武器，但你知道附近可能有更多武器。
+  - `q8.a`：结构检查通过 — 接受交易，药品对生存更重要
+  - `q8.b`：结构检查通过 — 拒绝交易，坚持寻找更多武器
+  - `q8.c`：结构检查通过 — 假装接受，暗中跟踪对方寻找武器藏匿处
+  - `q8.d`：结构检查通过 — 提议用其他物品交换，保留武器同时获取药品
+- **q9** 题干：你发现了一处废弃的实验室，可能有抗病毒血清，但入口被变异生物守卫着。
+  - `q9.a`：结构检查通过 — 组织团队制定计划，集体进入实验室
+  - `q9.b`：结构检查通过 — 寻找其他替代品，避免与变异生物冲突
+  - `q9.c`：结构检查通过 — 独自潜入，利用陷阱引开变异生物
+  - `q9.d`：结构检查通过 — 尝试与变异生物沟通，寻找和平共处之道
+- **q10** 题干：你所在的避难所食物短缺，领导提议派小队外出搜寻，但成功率未知。
+  - `q10.a`：结构检查通过 — 主动请缨带队，相信自己的判断和能力
+  - `q10.b`：结构检查通过 — 留在避难所照顾伤员，相信搜寻队会带回希望
+  - `q10.c`：结构检查通过 — 独自离开，寻找更安全的食物来源
+  - `q10.d`：结构检查通过 — 提出改进搜寻方案，提高团队效率
+- **q11** 题干：你发现一处被遗弃的通讯站，可能联系到其他幸存者群体，但需要修复设备。
+  - `q11.a`：结构检查通过 — 立即修复设备，扩大幸存者网络
+  - `q11.b`：结构检查通过 — 先收集设备零件，确保修复万无一失
+  - `q11.c`：结构检查通过 — 利用设备窃听其他群体，获取情报优势
+  - `q11.d`：结构检查通过 — 放弃修复，认为独自生存更安全
+- **q12** 题干：你找到了一个隐蔽的水源，但附近有敌对势力巡逻，随时可能发现。
+  - `q12.a`：结构检查通过 — 建立防御工事，保护水源不被掠夺
+  - `q12.b`：结构检查通过 — 尝试与敌对势力谈判，共享水源
+  - `q12.c`：结构检查通过 — 转移水源位置，避免被发现
+  - `q12.d`：结构检查通过 — 放弃水源，寻找更安全的水源
+- **q13** 题干：你在废弃城市中发现一栋看似完好的建筑，但入口处有不明声响。你会
+  - `q13.a`：结构检查通过 — 悄悄靠近，从窗户潜入查看情况
+  - `q13.b`：结构检查通过 — 在远处观察，寻找其他幸存者交流信息
+  - `q13.c`：结构检查通过 — 立即绕开，继续寻找更安全的避难所
+  - `q13.d`：结构检查通过 — 收集材料制作简易陷阱，先确保自身安全
+- **q14** 题干：你的小组食物即将耗尽，发现另一支队伍也面临同样困境。你会
+  - `q14.a`：结构检查通过 — 提议合并资源，共同狩猎和采集
+  - `q14.b`：结构检查通过 — 暗中跟踪他们的活动，寻找机会获取更多物资
+  - `q14.c`：结构检查通过 — 保持距离，各自寻找新的食物来源
+  - `q14.d`：结构检查通过 — 提议交换技能和知识，提高双方的生存能力
+- **q15** 题干：你发现一个被遗弃的实验室，里面有可能是医疗物资和武器。但结构不稳定且有辐射警告。你会
+  - `q15.a`：结构检查通过 — 穿戴防护装备，快速收集关键物资后立即撤离
+  - `q15.b`：结构检查通过 — 标记位置，等待队伍壮大后再进行探索
+  - `q15.c`：结构检查通过 — 寻找其他方法获取医疗物资，放弃高风险区域
+  - `q15.d`：结构检查通过 — 研究地图和警告标志，制定详细的进入计划
+- **q16** 题干：你在避难所中发现一个受伤的陌生人，但医疗物资有限。你会
+  - `q16.a`：结构检查通过 — 尽力救治，相信互助能增强集体生存能力
+  - `q16.b`：结构检查通过 — 要求对方提供价值相当的交换才给予帮助
+  - `q16.c`：结构检查通过 — 保存资源优先照顾家人/核心成员
+  - `q16.d`：结构检查通过 — 教对方基础急救知识，让自我救治成为可能
+- **q17** 题干：你掌握了一处隐蔽的水源，但附近有危险的变异生物。你会
+  - `q17.a`：结构检查通过 — 独自前往，确保水源不被他人发现和污染
+  - `q17.b`：结构检查通过 — 寻找盟友，组织小队共同守卫和利用水源
+  - `q17.c`：结构检查通过 — 研究生物习性，找到安全取水的时间和方法
+  - `q17.d`：结构检查通过 — 建造陷阱和防御工事，将风险降到最低
+- **q18** 题干：你发现一艘可能还能工作的交通工具，但燃料有限且长途危险。你会
+  - `q18.a`：结构检查通过 — 分享信息，带领更多人共同使用这有限资源
+  - `q18.b`：结构检查通过 — 独自使用，寻找传说中的安全区
+  - `q18.c`：结构检查通过 — 先修复和储备燃料，做好万全准备再出发
+  - `q18.d`：结构检查通过 — 换取其他急需的物资，放弃这个不确定的机会
+
+### 逐结果
+- **r1**（孤狼游侠）：profile 键与范围检查通过。
+- **r2**（掠夺者首领）：profile 键与范围检查通过。
+- **r3**（社区建设者）：profile 键与范围检查通过。
+- **r5**（变异适应者）：profile 键与范围检查通过。
+- **r6**（资源整合者）：profile 键与范围检查通过。
+- **r7**（生存专家）：profile 键与范围检查通过。
+- **r8**（末日探险家）：profile 键与范围检查通过。
+- **r9**（避难所居民）：profile 键与范围检查通过。
+
+## qing-nian-xiang-si
+- **结构**：无 `questions` 或非数组/为空 — 可能为定制页（如部分 catalog 中 questionCount=0 的条目）或数据异常。
+- **抽查字段**：`results` 缺失
+
+## rebirth-journey-to-the-west-monarch
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **错误（1）**
+  - result-wei-yan-shen-zhong is unreachable — dominated by result-jiuling on all dimensions
+- **警告（8）**
+  - result-wei-yan-shen-zhong: profile "隐逸避世" = 0 (should be in (0,1))
+  - result-xiao-yao-sui-xing: profile "威权秩序" = 0 (should be in (0,1))
+  - result-ye-xin-bo-bo: profile "逍遥自在" = 0 (should be in (0,1))
+  - result-ye-xin-bo-bo: profile "隐逸避世" = 0 (should be in (0,1))
+  - result-yin-yi-bi-shi: profile "威权秩序" = 0 (should be in (0,1))
+  - result-yin-yi-bi-shi: profile "野心扩张" = 0 (should be in (0,1))
+  - result-red-boy: profile "隐逸避世" = 0 (should be in (0,1))
+  - result-wei-yan-shen-zhong is unreachable — dominated by result-jiuling on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：洞府初立，你发现后山有一处灵泉，几位同僚对此各有打算。
+  - `q1.a`：结构检查通过 — 禀报大王，请大王定夺灵泉用途与值守规矩。
+  - `q1.b`：结构检查通过 — 邀三五好友，私下约定轮流享用，莫要声张。
+  - `q1.c`：结构检查通过 — 建议将灵泉划为禁地，设下阵法，作为洞府的战略储备。
+  - `q1.d`：结构检查通过 — 独自在泉边结庐，避开纷扰，静心修炼。
+- **q2** 题干：大王命你筹备一场宴席，招待几位山头的妖王，你最看重什么？
+  - `q2.a`：结构检查通过 — 座次、礼仪、流程皆按章程来，彰显我洞府的威仪与秩序。
+  - `q2.b`：结构检查通过 — 美酒管够，歌舞尽兴，大家喝得痛快、玩得开心最重要。
+  - `q2.c`：结构检查通过 — 借机摸清各妖王的喜好与实力，为日后结交或制衡铺垫。
+  - `q2.d`：结构检查通过 — 找个角落安静待着，完成分内事便寻机溜走。
+- **q3** 题干：巡山时撞见一小妖私藏了进贡给大王的灵果，你会如何处置？
+  - `q3.a`：结构检查通过 — 立即拿下，依洞府律条公开惩处，以儆效尤。
+  - `q3.b`：结构检查通过 — 若他情有可原（如为救同伴），便睁只眼闭只眼，放他一马。
+  - `q3.c`：结构检查通过 — 以此事为把柄，要挟他成为你的眼线，为你所用。
+  - `q3.d`：结构检查通过 — 假装没看见，转身离开，不想卷入是非。
+- **q4** 题干：听闻天庭仙酿流落凡间，引得各方争夺，你有何想法？
+  - `q4.a`：结构检查通过 — 组织精锐，拟定计划，务必将仙酿夺来，壮大洞府声威。
+  - `q4.b`：结构检查通过 — 若有缘得之，便与知己好友月下共酌，图个逍遥快活。
+  - `q4.c`：结构检查通过 — 分析局势，或可煽风点火，待各方两败俱伤后再谋渔利。
+  - `q4.d`：结构检查通过 — 仙家之物，因果太重，避而远之，免得惹祸上身。
+- **q5** 题干：与你交好的妖将因顶撞大王被罚去苦寒之地戍边，你会怎么做？
+  - `q5.a`：结构检查通过 — 虽有不忍，但大王法令已出，不可违逆，只能劝他认罚。
+  - `q5.b`：结构检查通过 — 私下备好酒食丹药为他送行，承诺会照应他在洞府的亲眷。
+  - `q5.c`：结构检查通过 — 分析他被罚的深层原因，设法在大王面前为他转圜，化解矛盾。
+  - `q5.d`：结构检查通过 — 暗自叹息，但明白此事牵连甚广，决定明哲保身，不再过问。
+- **q6** 题干：洞府附近来了一群散妖，占地为王，滋扰生灵，你的态度是？
+  - `q6.a`：结构检查通过 — 建议大王发兵剿灭或收编，维护我洞府辖境的安宁与秩序。
+  - `q6.b`：结构检查通过 — 只要不惹到我头上，他们爱怎么闹怎么闹，与我无关。
+  - `q6.c`：结构检查通过 — 尝试接触其头领，或利诱或威逼，将其发展为外围势力。
+  - `q6.d`：结构检查通过 — 觉得此地即将多事，开始考虑寻觅更僻静的修炼之所。
+- **q7** 题干：大王闭关，将洞府日常事务暂时交予几位头领共管，你最可能如何行事？
+  - `q7.a`：结构检查通过 — 制定轮值章程与议事规则，确保权力平稳过渡，洞府不乱。
+  - `q7.b`：结构检查通过 — 正好落个清闲，把分内事做完，便去寻友饮酒论道。
+  - `q7.c`：结构检查通过 — 借此机会拉拢中下层妖众，巩固和扩大自己的影响力。
+  - `q7.d`：结构检查通过 — 主动申请去镇守偏远哨所，避开权力中心的纷争。
+- **q8** 题干：你在一次探险中，偶然发现了一处上古修���的隐秘洞府，内有传承。
+  - `q8.a`：结构检查通过 — 上报大王，由洞府组织力量发掘，所得按功分配。
+  - `q8.b`：结构检查通过 — 呼朋引伴，一起探索，得了好处大家平分，图个热闹开心。
+  - `q8.c`：结构检查通过 — 独自研究，设法独占，将此作为自己未来安身立命的最大底牌。
+  - `q8.d`：结构检查通过 — 记下位置，但暂不深入。机缘未到，强求反易招祸。
+- **q9** 题干：与你理念不合的同僚被委以重任，掌管了你一直想负责的事务。
+  - `q9.a`：结构检查通过 — 虽有不甘，但服从大王安排，在其手下按规矩办事，不使绊子。
+  - `q9.b`：结构检查通过 — 乐得轻松，正好有时间琢磨自己的爱好，修炼几门新神通。
+  - `q9.c`：结构检查通过 — 表面恭贺，暗中观察他行事漏洞，伺机向大王提出更优方案。
+  - `q9.d`：结构检查通过 — 心生去意，觉得此处非久留之地，开始留意其他清净山头。
+- **q10** 题干：洞府与另一妖王势力结盟，需派一位"质子"过去，大王征询自愿者。
+  - `q10.a`：结构检查通过 — 若大王点名，义不容辞。此乃维系盟约、彰显诚信之重任。
+  - `q10.b`：结构检查通过 — 不主动，不拒绝。若选了我，就当去游历一番，结交新朋友。
+  - `q10.c`：结构检查通过 — 主动请缨，将此视为深入对方腹地、收集情报的绝佳机会。
+  - `q10.d`：结构检查通过 — 尽量降低存在感，希望千万别选上我。异乡为质，凶险莫测。
+- **q11** 题干：千年一度的"万妖大会"将开，广邀天下妖王，你的第一反应是？
+  - `q11.a`：结构检查通过 — 力劝大王参加，这是确立我洞府在妖界地位与秩序的良机。
+  - `q11.b`：结构检查通过 — 期待不已，定要同去，见识各路奇妖，痛饮天下美酒。
+  - `q11.c`：结构检查通过 — 分析大会背后的势力博弈，为我洞府谋划最有利的参与策略。
+  - `q11.d`：结构检查通过 — 妖王云集，必生事端。找个借口留守洞府，图个清静。
+- **q12** 题干：天庭派来使者，要求你洞府献上珍宝以示臣服，你会如何应对？
+  - `q12.a`：结构检查通过 — 严词拒绝，召集小妖演练阵法，准备迎战
+  - `q12.b`：结构检查通过 — 献上赝品敷衍了事，暗中转移真宝，避其锋芒
+  - `q12.c`：结构检查通过 — 索性带上珍宝远遁，寻一处更隐秘的山林清修
+  - `q12.d`：结构检查通过 — 与邻近几位妖王商议，共同进退，分摊贡品
+- **q13** 题干：你偶然得到一件能窥探未来的法宝，但每次使用都会损耗自身修为，你会用它来做什么？
+  - `q13.a`：结构检查通过 — 谨慎使用，只为洞府规避重大灾劫，确保基业稳固
+  - `q13.b`：结构检查通过 — 偶尔用来看看何处有灵果仙酿，或哪里的风景独好
+  - `q13.c`：结构检查通过 — 彻底封存，坚信命运不可测，修为才是根本
+  - `q13.d`：结构检查通过 — 为追随自己的几位心腹小妖，窥探他们各自的机缘
+- **q14** 题干：你治下的妖市日渐繁荣，但秩序开始混乱，偷盗斗殴频发，你会如何整顿？
+  - `q14.a`：结构检查通过 — 颁布严苛律法，设立执法妖卫，违者重罚以儆效尤
+  - `q14.b`：结构检查通过 — 召集各族头领，让他们自行订立规矩并互相监督
+  - `q14.c`：结构检查通过 — 太麻烦，索性关闭妖市，回归清净
+  - `q14.d`：结构检查通过 — 亲自在妖市游荡，遇到纠纷当场调解，以德服妖
+- **q15** 题干：一位曾与你结怨的妖王落难，被天兵围剿，派人向你求救，你会？
+  - `q15.a`：结构检查通过 — 果断出兵救援，此乃扩大地盘、收编势力的良机
+  - `q15.b`：结构检查通过 — 念及旧日同属妖族一脉，率精锐暗中接应，助其脱困
+  - `q15.c`：结构检查通过 — 紧闭洞门，加固阵法，绝不卷入是非
+  - `q15.d`：结构检查通过 — 趁其洞府空虚，派小妖去"接收"他留下的法宝典籍
+- **q16** 题干：你发现一处灵气充沛的天然洞府，但里面已有一位隐修的老妖，你会？
+  - `q16.a`：结构检查通过 — 直接挑战，胜者为王，洞府自然归强者所有
+  - `q16.b`：结构检查通过 — 在附近另开洞府，偶尔串门论道，互为邻里
+  - `q16.c`：结构检查通过 — 留下拜帖和礼物，表达结交之意，看对方反应再定行止
+  - `q16.d`：结构检查通过 — 悄然退去，另寻他处，不愿打扰他人清静
+- **q17** 题干：你麾下一位得力干将，因私怨重伤了另一位妖王的重要部下，对方兴师问罪，你会？
+  - `q17.a`：结构检查通过 — 严惩部下以正法度，并赔偿对方，维护两方秩序
+  - `q17.b`：结构检查通过 — 全力护住部下，不惜与对方开战，内部团结高于一切
+  - `q17.c`：结构检查通过 — 让部下暂时躲藏，自己出面斡旋，用利益交换平息事端
+  - `q17.d`：结构检查通过 — 觉得管理下属太过烦心，索性解散部众，独自云游
+- **q18** 题干：听闻唐僧肉能长生不老的消息传遍妖界，各路妖王蠢蠢欲动，你会？
+  - `q18.a`：结构检查通过 — 精心布局，联合几位妖王设下连环陷阱，志在必得
+  - `q18.b`：结构检查通过 — 立即点齐兵马，抢先出发拦截，以快制胜
+  - `q18.c`：结构检查通过 — 嗤之以鼻，认为风险远大于收益，不如安心修炼
+  - `q18.d`：结构检查通过 — 告诫手下莫要参与，紧闭山门，免得被殃及池鱼
+- **q19** 题干：你的修炼到了瓶颈，需要一种罕见灵物辅助突破，而这灵物掌握在一个性情孤僻、法力高深的老怪手中，你会？
+  - `q19.a`：结构检查通过 — 集结力量，准备强夺，修行路上容不得仁慈
+  - `q19.b`：结构检查通过 — 长期在其洞府外结庐而居，每日论道请教，以诚意打动
+  - `q19.c`：结构检查通过 — 研究老怪的喜好和弱点，设计交易或智取方案
+  - `q19.d`：结构检查通过 — 放弃此路，转而寻找其他突破方法，或顺其自然
+- **q20** 题干：你所在的妖山联盟推选盟主，你会如何争取？
+  - `q20.a`：结构检查通过 — 展示绝对武力与统御才能，要求众妖王臣服
+  - `q20.b`：结构检查通过 — 游说各方，许以利益，结成稳固的支持阵营
+  - `q20.c`：结构检查通过 — 公开表示无意盟主之位，只愿做个逍遥长老
+  - `q20.d`：结构检查通过 — 推举一位德高望重的老妖王，自己甘居副位辅佐
+- **q21** 题干：一场罕见的天灾席卷你的地盘，洞府受损，小妖伤亡，你会优先做什么？
+  - `q21.a`：结构检查通过 — 迅速建立临时指挥所，分配任务，救治伤员，恢复秩序
+  - `q21.b`：结构检查通过 — 亲自搜寻和救助被困的每一个部下，安抚妖心
+  - `q21.c`：结构检查通过 — 评估损失，制定重建计划，并趁机优化洞府布局防御
+  - `q21.d`：结构检查通过 — 带领幸存者暂时撤离，寻找新的、更安全的栖身之所
+- **q22** 题干：千年一度的"万妖大会"即将召开，这是结识各方、交换资源、彰显实力的盛会，你会？
+  - `q22.a`：结构检查通过 — 精心准备，带领精锐盛装出席，力求成为焦点
+  - `q22.b`：结构检查通过 — 独自前往，随意逛逛，遇到投缘的便喝酒聊天
+  - `q22.c`：结构检查通过 — 派得力手下携带特产前往交易，自己坐镇洞府遥控
+  - `q22.d`：结构检查通过 — 懒得凑热闹，继续自己的清修，两耳不闻窗外事
+
+### 逐结果
+- **result-wei-yan-shen-zhong**（青狮精）：隐逸避世=0 不在 (0,1)
+- **result-xiao-yao-sui-xing**（万圣龙王）：威权秩序=0 不在 (0,1)
+- **result-zhi-ji-bai-chu**（白骨精（白骨夫人））：profile 键与范围检查通过。
+- **result-zhong-qing-zhong-yi**（牛魔王）：profile 键与范围检查通过。
+- **result-ye-xin-bo-bo**（金翅大鹏雕）：逍遥自在=0 不在 (0,1)；隐逸避世=0 不在 (0,1)
+- **result-yin-yi-bi-shi**（镇元子）：威权秩序=0 不在 (0,1)；野心扩张=0 不在 (0,1)
+- **result-huangmei**（黄眉老佛）：profile 键与范围检查通过。
+- **result-jiuling**（九灵元圣）：profile 键与范围检查通过。
+- **result-iron-fan**（铁扇公主）：profile 键与范围检查通过。
+- **result-red-boy**（红孩儿）：隐逸避世=0 不在 (0,1)
+
+## red-chambers
+- **计分**：`red-chambers` · 维度数 0 · 题数 20 · 结果数 10
+- **警告（1）**
+  - （说明）scoring.type=`red-chambers` 非三种标准计分族，已跳过 validateQuestions / validateResults(profile) / validateDimensionProfiles / validateScoreMap，以免误报。
+
+### 逐题 · 逐选项
+- **Q2** 题干：看见宝钗一个人在扑蝶，你会：
+  - `Q2.a`：scores 键：shi_xiangyun — 悄悄绕到另一边，想从两翼把蝴蝶围住，和她一起扑。
+  - `Q2.b`：scores 键：lin_daiyu — 站在远处静静看，觉得这景象太美，不忍打扰。
+  - `Q2.c`：scores 键：jia_mu,xue_baochai — 走过去和她打招呼，问她扑着了没有，顺带聊几句。
+  - `Q2.d`：scores 键：jia_xichun,miao_yu — 心想"这么大人了还这样"，但又忍不住多看了几眼，才悄悄走开。
+- **Q1** 题干：看见黛玉独自葬花哭泣，你会怎么做？
+  - `Q1.a`：scores 键：lin_daiyu,shi_xiangyun — 默默走过去，帮她一起拾花瓣，什么也不问，什么也不说。
+  - `Q1.b`：scores 键：xue_baochai — 轻声问她："你怎么一个人在这里？谁欺负你了？"
+  - `Q1.c`：scores 键：jia_xichun,jia_yingchun — 假装没看见，悄悄走开，让她一个人待着。
+  - `Q1.d`：scores 键：jia_tanchun,wang_xifeng — 远远地站着看了一会儿，心想："为几片花瓣哭，也未免太痴了。"然后转身离开。
+- **Q4** 题干：你看见平儿一个人躲在假山后面哭，脸上还有掌印。你会：
+  - `Q4.a`：scores 键：lin_daiyu,shi_xiangyun — 走过去，轻声问她怎么了，拿自己的帕子给她擦泪。
+  - `Q4.b`：scores 键：jia_tanchun — 把她拉到一旁，给她出主意："这事儿你得找老太太做主，不能白受委屈。"
+  - `Q4.c`：scores 键：jia_mu,liu_laolao — 叹口气，给她递些银两或吃的，然后默默走开。
+  - `Q4.d`：scores 键：jia_yingchun — 假装没看见，快步走开，不想惹麻烦。
+- **Q3** 题干：你正巧路过怡红院，看见宝玉把扇子递给晴雯让她撕。你会：
+  - `Q3.a`：scores 键：shi_xiangyun — 拍手叫好，觉得这场面热闹又解气，恨不得自己也拿一把来撕。
+  - `Q3.b`：scores 键：xi_ren,xue_baochai — 觉得晴雯太任性，宝玉太纵容，摇摇头走开。
+  - `Q3.c`：scores 键：lin_daiyu,qing_wen — 觉得晴雯好大的脾气，但又有些羡慕她敢这样。
+  - `Q3.d`：scores 键：jia_xichun,jia_yingchun — 心想："一个愿打一个愿挨，与我无关。"然后走开。
+- **A3** 题干：月色如水，四野寂静。湘云轻声吟出"寒塘渡鹤影"，你听了，心里涌起的是：
+  - `A3.a`：scores 键：lin_daiyu,miao_yu — 一阵悲凉——这句诗像是说出了你心底某个说不清的东西，眼眶有些热。
+  - `A3.b`：scores 键：jia_tanchun,shi_xiangyun — 一股跃跃欲试——你也想对出一句，而且要比她这句更好。
+  - `A3.c`：scores 键：shi_xiangyun,xue_baochai — 一阵惆怅，但很快想：夜这么深，还有人陪着，也就不那么难熬了。
+  - `A3.d`：scores 键：liu_laolao,xue_baochai — 觉得这句太悲了，想换个调子，提议行令喝酒。
+- **D1** 题干：你受邀去栊翠庵喝茶，妙玉拿出珍藏的古董杯给你用。你会：
+  - `D1.a`：scores 键：miao_yu — 接过杯子，仔细端详，赞叹道："好精致的杯子，我竟没见过这样的。"
+  - `D1.b`：scores 键：xue_baochai — 笑着说："我这俗人，用这么贵重的东西，怕折了福。"但坦然接过来用了。
+  - `D1.c`：scores 键：shi_xiangyun — 皱了皱眉，觉得她太过讲究，说："我用普通的杯子就好。"
+  - `D1.d`：scores 键：wang_xifeng — 接过来，心想："这有什么稀罕，我们家也有。"
+- **H1** 题干：你喝多了，在芍药圃的花堆里睡着了。被众人找到时花瓣落了你一身，扇子不知去哪儿了。众人叫醒你，你的第一反应是：
+  - `H1.a`：scores 键：shi_xiangyun — 伸个懒腰，笑道："好睡！你们找我做什么？"若无其事地起身拍花瓣。
+  - `H1.b`：scores 键：xue_baochai — 赶紧坐起来低头整理衣裳，脸红了好一阵。
+  - `H1.c`：scores 键：lin_daiyu — 迷迷糊糊先问："我的扇子呢？"才意识到自己睡在外面。
+  - `H1.d`：scores 键：jia_yingchun — 感到懊恼，努力装若无其事，但脸上还是挂不住。
+- **B3** 题干：你发现好友在公开场合不小心说了"不正经"的书里的话，你会：
+  - `B3.a`：scores 键：xue_baochai — 私下把她叫到一边，笑着说："你跪下，我要审你。"然后劝她以后别看那些杂书，免得移了性情。
+  - `B3.b`：scores 键：shi_xiangyun — 当众替她打圆场，笑着说："她准是昨儿看戏看迷了，把戏词儿记混了。"
+  - `B3.c`：scores 键：xi_ren,xue_baochai — 事后悄悄提醒她："以后小心些，别让人听见了。"
+  - `B3.d`：scores 键：lin_daiyu — 觉得没什么大不了，不过几句戏词而已。
+- **G2** 题干：你的下人偷了你的贵重物品，被你发现了。你会：
+  - `G2.a`：scores 键：jia_yingchun — 怕惹麻烦，装作不知道，心想"宁可没有了，何必生事"。
+  - `G2.b`：scores 键：xi_ren,xue_baochai — 让丫鬟去要回来，但嘱咐她别闹大。
+  - `G2.c`：scores 键：jia_mu — 直接告诉长辈，让长辈做主。
+  - `G2.d`：scores 键：jia_tanchun — 当场把下人叫来，责问清楚，按规矩处置。
+- **B2** 题干：你不小心偷听到丫鬟的私密对话，眼看她们要发现你。你会：
+  - `B2.a`：scores 键：xue_baochai — 故意放重脚步，笑着喊："颦儿，我看你往哪里藏！"假装刚追着黛玉过来。
+  - `B2.b`：scores 键：jia_tanchun,wang_xifeng — 假装什么都没听见，若无其事地走过去，问她们在做什么。
+  - `B2.c`：scores 键：jia_xichun,jia_yingchun — 悄悄退开，假装从来没来过这里。
+  - `B2.d`：scores 键：jia_tanchun — 直接站出来，说："你们的话我都听见了，以后小心些。"
+- **C1** 题干：你刚接手管家，就遇到亲戚来闹，让你破例多给银子。你会：
+  - `C1.a`：scores 键：jia_tanchun — 按规矩办事，一文不多给，并且当众说清楚："这是祖宗手里的旧规矩，谁也不能改。"
+  - `C1.b`：scores 键：xue_baochai — 私下多给一些，但嘱咐她别声张。
+  - `C1.c`：scores 键：wang_xifeng — 嫌她烦，让丫鬟把她请出去。
+  - `C1.d`：scores 键：lin_daiyu — 哭着说："我何尝不想帮衬，可这家里上上下下多少双眼睛看着，我哪里敢！"
+- **F3** 题干：你的贴身丫鬟犯了错，被人查出来。你会：
+  - `F3.a`：scores 键：jia_xichun — 冷冷地说："我竟不知道。要打要杀，带出去办，别脏了我的地方。"
+  - `F3.b`：scores 键：shi_xiangyun — 替丫鬟求情，说她年纪小不懂事，饶她一回。
+  - `F3.c`：scores 键：wang_xifeng — 私下给丫鬟些银子，让她趁早离开，免得连累自己。
+  - `F3.d`：scores 键：jia_tanchun — 把事情查清楚，如果确实冤枉，就替她做主。
+- **C2** 题干：抄检的人查到你屋里，一个平时爱挑事的仆妇竟敢动手翻你身上。你会：
+  - `C2.a`：scores 键：jia_tanchun — 一巴掌扇过去，厉声骂道："你是什么东西，敢来拉扯我的衣裳！"
+  - `C2.b`：scores 键：wang_xifeng — 冷冷地说："放尊重些！我的衣裳也是你碰得的？"然后看向领头的管事。
+  - `C2.c`：scores 键：jia_xichun,jia_yingchun — 忍气吞声，让她翻完，事后悄悄向长辈告状。
+  - `C2.d`：scores 键：lin_daiyu — 当场哭起来，说："你们这样欺负我，我不如死了干净！"
+- **E1** 题干：有人出三千两银子，请你设法向官府打个招呼，强行拆散一桩婚约。来人压低声音说："这事若成，当事人怕是没有活路。"你会：
+  - `E1.a`：scores 键：wang_xifeng — 笑着收下，说："我从来不信什么报应，凭是什么事，我说要行就行。"
+  - `E1.b`：scores 键：wang_xifeng,xue_baochai — 收了银子，心里却犯嘀咕，打算拖着不办，等对方自己死心。
+  - `E1.c`：scores 键：jia_tanchun,xue_baochai — 摆摆手，说："这种事我做不来，你找别人去。"把银子推了回去。
+  - `E1.d`：scores 键：jia_mu,wang_xifeng — 没答应，但悄悄把这事透了出去，让别人头疼，自己卖个人情。
+- **G1** 题干：你嫁到了一个不好的人家，动辄打骂。回娘家哭了一场，娘家人心疼却帮不上忙。你心里想：
+  - `G1.a`：scores 键：jia_yingchun — "罢了，我命里就是这样。哭完了，还得回去过日子。"
+  - `G1.b`：scores 键：jia_tanchun — "不甘心。就算没人帮我，我也要让他知道我不是软柿子。"
+  - `G1.c`：scores 键：xue_baochai — "我得冷静下来，一件一件地想，总还有办法的。"
+  - `G1.d`：scores 键：jia_yingchun,lin_daiyu — "我也不知道。只是觉得很累，什么都不想做。"
+- **F1** 题干：贾府败落，昔日繁华散尽。你站在空荡荡的大观园里，心里涌起的念头是：
+  - `F1.a`：scores 键：jia_xichun — "红尘本来就是这样——兴也好，败也罢，从来都是一场空。不如找个清净地方，把剩下的日子过得干干净净。"
+  - `F1.b`：scores 键：jia_yingchun,liu_laolao — "只要人还在，就有办法。先活下来，别的事以后再说。"
+  - `F1.c`：scores 键：jia_tanchun — "我不靠任何人。哪怕做针线卖画，也要自己把自己养活。"
+  - `F1.d`：scores 键：wang_xifeng,xue_baochai — "不能就这么散了。还有什么人可以联系，还有什么办法可以想。"
+- **H3** 题干：你和朋友在雪地里烤鹿肉，有人笑话你"像个花子"。你会：
+  - `H3.a`：scores 键：shi_xiangyun — 大笑着说："你知道什么！'是真名士自风流'，你们假清高，最可厌！"
+  - `H3.b`：scores 键：xue_baochai — 不好意思地停下，觉得自己确实有点失态。
+  - `H3.c`：scores 键：shi_xiangyun — 招呼她们一起来吃："快来，香得很，不吃可惜了。"
+  - `H3.d`：scores 键：jia_yingchun — 觉得被说得难堪，端着肉走开，躲到一边吃。
+- **I1** 题干：家道中落，你手里还有一些积蓄。你会：
+  - `I1.a`：scores 键：jia_mu — 分给子孙和下人，让大家都有个着落。
+  - `I1.b`：scores 键：liu_laolao — 留着给自己养老，儿孙自有儿孙福。
+  - `I1.c`：scores 键：xue_baochai — 拿出一部分救急，剩下的藏起来。
+  - `I1.d`：scores 键：jia_mu,liu_laolao — 全部捐出去，落个好名声。
+- **A4** 题干：病重的你，听说宝玉要娶宝钗了。你挣扎着起来，让人端来火盆，把积年的诗稿、题诗的旧帕子，一样一样地往火里扔。这时候你心里想的是：
+  - `A4.a`：scores 键：lin_daiyu — "这一世的心血，都还给他罢。干干净净地走，不欠谁的。"
+  - `A4.b`：scores 键：jia_xichun — "早知今日，何必当初。罢了，罢了。"
+  - `A4.c`：scores 键：lin_daiyu,qin_keqing — "你们都骗我……都骗我……"
+  - `A4.d`：scores 键：jia_yingchun — 什么都不想，只想快点烧完，快点结束。
+- **I2** 题干：你从前受过别人的恩惠，如今恩人的孩子落难了。你会：
+  - `I2.a`：scores 键：liu_laolao — 倾家荡产也要把她救出来，报答当年的恩情。
+  - `I2.b`：scores 键：jia_mu — 量力而行，能帮多少帮多少。
+  - `I2.c`：scores 键：jia_xichun — 觉得这是别人家的事，管不了那么多。
+  - `I2.d`：scores 键：wang_xifeng — 帮她出个主意，但不出钱不出力。
+
+### 逐结果
+- **lin_daiyu**（林黛玉型）：缺 dimension_profile
+- **xue_baochai**（薛宝钗型）：缺 dimension_profile
+- **shi_xiangyun**（史湘云型）：缺 dimension_profile
+- **jia_tanchun**（贾探春型）：缺 dimension_profile
+- **wang_xifeng**（王熙凤型）：缺 dimension_profile
+- **miao_yu**（妙玉型）：缺 dimension_profile
+- **jia_xichun**（贾惜春型）：缺 dimension_profile
+- **jia_yingchun**（贾迎春型）：缺 dimension_profile
+- **jia_mu**（贾母型）：缺 dimension_profile
+- **liu_laolao**（刘姥姥型）：缺 dimension_profile
+
+## republican-era-business-mindset
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **警告（2）**
+  - result-liu-hongsheng ↔ result-sheng-xuanhuai: profiles too similar (max diff 0.15)
+  - result-liu-hongsheng ↔ result-sheng-xuanhuai: profiles too similar (max diff 0.15), users may cluster
+
+### 逐题 · 逐选项
+- **q1** 题干：你经营的纱厂面临洋货倾销，价格战惨烈。此时，一位中间人带来一笔大订单，但暗示需要一笔可观的"茶水费"才能促成。你会如何处理这笔交易？
+  - `q1.a`：结构检查通过 — 婉拒订单，宁可暂时亏损也要守住经营底线，专注提升自家产品质量。
+  - `q1.b`：结构检查通过 — 同意支付，但要求签订长期供货合同，并设法将成本分摊到后续交易中。
+  - `q1.c`：结构检查通过 — 表面上答应，暗中调查中间人背景和订单真伪，准备抓住把柄反制或另寻他路。
+  - `q1.d`：结构检查通过 — 直接绕过中间人，尝试接触订单的最终买家，展示技术优势争取直接合作。
+- **q2** 题干：你投资的航运公司，有一艘货轮在军阀混战区附近搁浅，货物有被劫掠风险。船长电报请示，是就近高价雇佣当地武装护送，还是冒险等待局势缓和？
+  - `q2.a`：结构检查通过 — 立即雇佣武装，不惜成本确保货物与船员安全，损失日后从保险和运营中弥补。
+  - `q2.b`：结构检查通过 — 评估货物价值与雇佣成本，若得不偿失，则指示船长弃货保船，人员撤离。
+  - `q2.c`：结构检查通过 — 暂不回复，动用所有人脉打听交战双方头目喜好，尝试用"买路钱"或人情疏通。
+  - `q2.d`：结构检查通过 — 命令船长固守，同时亲自赶往最近驻军地，游说长官派兵保护，强调此事关乎地方商贸信誉。
+- **q3** 题干：你发现市场上一种新型纺织机械效率极高，但价格昂贵且需外汇购买。你的老式工厂正有利润，此时你会如何决策？
+  - `q3.a`：结构检查通过 — 暂不更换，让老机器发挥余热，将利润用于扩建厂房或收购原料，扩大规模。
+  - `q3.b`：结构检查通过 — 立即设法筹措外汇，哪怕抵押部分资产也要引进，坚信技术领先才能赢得未来竞争。
+  - `q3.c`：结构检查通过 — 不直接购买，而是高薪聘请懂行的工程师回来研究，尝试仿制或改良适合国情的机器。
+  - `q3.d`：结构检查通过 — 联合几家同行共同出资引进一台，共享使用或轮流研究，分摊风险与成本。
+- **q4** 题干：你主办的商界晚宴上，一位背景深厚但风评不佳的政要不请自来，并当众向你提出一个明显有违商业道德的"合作建议"。你会如何应对？
+  - `q4.a`：结构检查通过 — 当场委婉但坚定地拒绝，表示公司有自己的原则，并巧妙转移话题，避免对方难堪。
+  - `q4.b`：结构检查通过 — 不置可否，举杯敬酒感谢其"关照"，事后通过可靠中间人传达婉拒之意并送上厚礼致歉。
+  - `q4.c`：结构检查通过 — 表面上热烈响应，详细询问细节以示"诚意"，实则收集信息，判断是否可作为把柄或交换筹码。
+  - `q4.d`：结构检查通过 — 直接以"还需与董事会商议"为由拖延，次日便以考察新厂为由离开本地，暂避风头。
+- **q5** 题干：你计划发行企业债券募集资金，此时市面有两种声音：一是建议夸大项目前景以快速募资；二是建议如实披露风险，哪怕募资慢些。你的募资说明书会侧重哪方面？
+  - `q5.a`：结构检查通过 — 侧重如实披露，包括潜在风险。相信长远信誉比短期资金更重要，吸引真正志同道合的投资人。
+  - `q5.b`：结构检查通过 — 侧重描绘稳健回报与资产抵押，用扎实的财务数据和实物担保说话，淡化行业风险。
+  - `q5.c`：结构检查通过 — 侧重渲染行业巨大潜力和本企业的独特优势，用激动人心的故事吸引眼球和热钱。
+  - `q5.d`：结构检查通过 — 准备两份不同侧重点的说明书，针对���行家、散户等不同对象，采用不同的话术策略。
+- **q6** 题干：你的化工厂研发出一款低成本化肥，能显著提高粮食产量。但投产需要巨大资金，且可能冲击现有依赖进口的利益集团。你会如何推进？
+  - `q6.a`：结构检查通过 — 全力推进，视之为利国利民的事业。寻求政府或爱国银行家的支持，哪怕个人股份被稀释。
+  - `q6.b`：结构检查通过 — 先小规模试产，在可控范围内验证市场和收集数据，用实际利润吸引后续投资，步步为营。
+  - `q6.c`：结构检查通过 — 高调宣布技术突破，吸引多方资本竞逐，利用资本博弈快速获得资源，迅速��领市场。
+  - `q6.d`：结构检查通过 — 主动接触现有利益集团中的开明派，提出技术入股或合作建厂，化敌为友，共享利益。
+- **q7** 题干：战事逼近，市面恐慌，地产价格暴跌。你手握一笔现金，一位老友急售其位于租界边缘的优质仓库套现离沪。此时你会？
+  - `q7.a`：结构检查通过 — 果断买下。坚信乱世中优质实物资产的价值，且价格已远低于其真实价值。
+  - `q7.b`：结构检查通过 — 不买。现金为王，局势不明朗时持有流动资产最安全，可随时应对变故或捕捉新机会。
+  - `q7.c`：结构检查通过 — 不直接买，但提出以极低利息借款给老友助其渡过难关，以此换取仓库的长期租赁权或优先购买权。
+  - `q7.d`：结构检查通过 — 买下，但立即联系有军方背景的合作伙伴，提议将仓库改为战略物资中转站，共担风险共享收益。
+- **q8** 题干：你主导的铁路支线项目，因途经乡绅祖坟地段遭遇强烈阻挠。乡绅联合当地民众，工程停滞。你会如何破局？
+  - `q8.a`：结构检查通过 — 亲自拜访乡绅，陈说铁路对地方经济发展的长远利益，并承诺设立基金资助本地教育和修缮宗祠。
+  - `q8.b`：结构检查通过 — 申请官方强制征地的批文，同时准备好高于市价的补偿金，依法依规推进，软硬兼施。
+  - `q8.c`：结构检查通过 — 暂停此段工程，先集中力量修建其他无争议路段，同时放出风声线路可能改道，让当地民众感受到失去机会的成本。
+  - `q8.d`：结构检查通过 — 联合支持修路的开明士绅和商会，在本地报纸上造势，将阻挠者描绘成阻碍进步的守旧势力，施加舆论压力。
+- **q9** 题干：你旗下的百货公司，竞争对手通过贿赂小报，散布你公司销售洋货冒充国货的谣言，导致客流锐减。你的第一反应是？
+  - `q9.a`：结构检查通过 — 立即在各大报纸刊登严正声明和律师函，并邀请记者和顾客参观货仓与供应链，用事实公开辟谣。
+  - `q9.b`：结构检查通过 — 不直接回应谣言，反而加大促销力度，推出"真国货特惠周"，用实实在在的优惠和商品说话。
+  - `q9.c`：结构检查通过 — 暗中调查对手的不正当竞争证据，同时收买或策反发布谣言的小报主编，准备反戈一击。
+  - `q9.d`：结构检查通过 — 借此机会高调转型，宣布成立"国货精品专柜"，联合多家本土知名厂商举办联合展销，化危机为商机。
+- **q10** 题干：你投资的新式银行开业在即，面临传统钱庄和外资银行的夹击。你会如何制定最初的业务策略来打开局面？
+  - `q10.a`：结构检查通过 — 主打"扶助民族工商业"理念，推出针对中小工厂的低息贷款，哪怕初期利润微薄。
+  - `q10.b`：结构检查通过 — 专注于钱庄不擅长、外资银行不屑做的小额储蓄和汇兑业务，依靠网点便利和亲切服务立足。
+  - `q10.c`：结构检查通过 — 引入最新的复利计息、票据贴现等金融产品，用更高的回报率和更灵活的服务吸引追逐利益的储户和商人。
+  - `q10.d`：结构检查通过 — 重点攻关几家大型土洋贸易商行，为其提供量身定制的进出口押汇和信用证服务，绑定核心客户。
+- **q11** 题干：你的矿业公司发现伴生稀有金属，价值远超主矿。但提炼技术被外国公司垄断，对方提出极其苛刻的合作条件。此时你会？
+  - `q11.a`：结构检查通过 — 拒绝合作，哪怕暂时封存该矿。高薪招募并派遣得力干将赴海外学习，立志自主研发提炼技术。
+  - `q11.b`：结构检查通过 — 接受合作，但谈判中极力争取更长的合作年限和更高的分成比例，先利用外资技术把资源变成利润。
+  - `q11.c`：结构检查通过 — 表面同意合作，但在合同执行中设置各种障碍，同时秘密接触其他外国公司或华侨工程师，寻找替代方案。
+  - `q11.d`：结构检查通过 — 将稀有矿藏信息作为筹码，引入第三方（如政府或有军工背景的资本）共同开发，制衡外国公司。
+- **q12** 题干：你经营的纱厂面临洋货倾销，价格战惨烈。此时，一位有官方背景的中间人暗示，可以帮你拿到一笔低息贷款，条件是必须采购他指定的高价原料。
+  - `q12.a`：结构检查通过 — 接受条件，先拿到资金渡过难关，原料问题再想办法周旋。
+  - `q12.b`：结构检查通过 — 婉言谢绝，宁可压缩规模、降低成本，也不愿受制于人。
+  - `q12.c`：结构检查通过 — 表面应承，暗地里加速研发新工艺，以求用技术优势抵消原料成本。
+  - `q12.d`：结构检查通过 — 以此为筹码，联合其他几家纱厂，共同向银行施压争取公平贷款。
+- **q13** 题干：你投资的航运公司，有一艘货轮在军阀混战区域被扣。对方开价赎金，并暗示可以"合作"开辟一条利润丰厚的灰色航线。
+  - `q13.a`：结构检查通过 — 支付赎金，但要明确划清界限，拒绝后续"合作"，宁可绕道航行。
+  - `q13.b`：结构检查通过 — 借机接触，评估风险与利润，如果可控，不妨建立一种"临时性"的疏通关系。
+  - `q13.c`：结构检查通过 — 拒绝支付，转而动用上层人脉向对方施压，展示实力，力求无偿放行。
+  - `q13.d`：结构检查通过 — 将此事公之于报端，渲染成"实业救国受阻"，借舆论压力迫使对方放行。
+- **q14** 题干：你发现厂里一位老师傅，掌握着一种能极大提升生产效率的独门手艺，但他坚决不肯外传，只愿亲手操作。
+  - `q14.a`：结构检查通过 — 重金礼聘，给予干股，将他个人利益与工厂深度绑定，换取他的倾囊相授。
+  - `q14.b`：结构检查通过 — 尊重他的选择，但组织技术团队在一旁观摩学习，尝试反向工程，进行标准化改造。
+  - `q14.c`：结构检查通过 — 将他树立为模范，给予极高荣誉和待遇，但不强求他传授，以此激励其他工人钻研技术。
+  - `q14.d`：结构检查通过 — 认为依赖个人手艺风险太大，不如直接引进国外更先进的成套设备，彻底更新生产线。
+- **q15** 题干：市场传闻政府即将推行币制改革，旧币可能大幅贬值。你手头有一大笔即将到期的应收账款和一笔可立即动用的现金。
+  - `q15.a`：结构检查通过 — 立即用现金囤积黄金、外汇或大宗商品等硬通货，规避货币风险。
+  - `q15.b`：结构检查通过 — 催促客户提前结清账款，哪怕给予小幅折扣，然后将所有资金尽快投入扩大再生产。
+  - `q15.c`：结构检查通过 — 按兵不动，但密切接触银行和消息灵通人士，力求在政策落地前一刻做出最优决策。
+  - `q15.d`：结构检查通过 — 将部分现金用于购买政府发行的"爱国公债"，既支持国策，也赌一把改革后的兑付信用。
+- **q16** 题干：你主导的化工项目需要一种关键催化剂，国内无法生产。德国公司报价极高且条件苛刻，日本商社则愿意提供技术合作，但要求共享部分专利。
+  - `q16.a`：结构检查通过 — 接受日本条件，先解决有无问题，在合作中努力学习，争取未来实现替代。
+  - `q16.b`：结构检查通过 — 咬牙接受德国报价，但合同必须严格限定供货，拒绝任何技术捆绑和后续控制。
+  - `q16.c`：结构检查通过 — 两边都不选，转而寻求留学归国的化学专家，投入资金支持本土研发。
+  - `q16.d`：结构检查通过 — 与日本商社进行更深入谈判，试图用中国市场未来的份额换取更宽松的专利条款。
+- **q17** 题干：你的百货公司开业在即，本地商会会长暗示，希望他的亲戚能承包所有货品的供应。此人要价偏高，但质量尚可。
+  - `q17.a`：结构检查通过 — 同意承包，但将开业庆典办得风风光光，请会长剪彩，把人情做足，换取长期关照。
+  - `q17.b`：结构检查通过 — 婉拒，坚持公开招标，但邀请会长作为评审顾问，并给予丰厚车马费以示尊重。
+  - `q17.c`：结构检查通过 — 部分同意，将非核心、利润低的货品交给其亲戚，核心商品则自己寻找优质源头。
+  - `q17.d`：结构检查通过 — 直接拒绝，并高薪从上海聘请专业买办���队，立志以"货品最优"打响第一炮。
+- **q18** 题干：战争阴云密布，你的工厂地处可能的前线。有人建议将设备拆运至大后方，但耗资巨大且途中损失风险极高；也有人建议就地坚守，赌局势不会恶化。
+  - `q18.a`：结构检查通过 — 立即启动搬迁，哪怕变卖部分资产筹措资金，也要保住工业根基。
+  - `q18.b`：结构检查通过 — 不搬迁，但将最核心的技术图纸、关键零件和工程师团队先行转移。
+  - `q18.c`：结构检查通过 — 加紧生产，将产品尽快变现为黄金或外汇，工厂本身则作为沉没成本看待。
+  - `q18.d`：结构检查通过 — 联合本地其他工厂主，共同游说当局，要求派兵保护工业区，并争取搬迁补偿。
+- **q19** 题干：你发现手下一位很得力的经理，私下收受了供应商的回扣，但此人业务能力极强，且此事尚未张扬。
+  - `q19.a`：结构检查通过 — 立即开除，并通报全厂，以儆效尤，哪怕短期业务受损。
+  - `q19.b`：结构检查通过 — 私下严厉训诫，责令其退还所得，并降职留用察看，以观后效。
+  - `q19.c`：结构检查通过 — 不动声色，借��掌握其把柄，在接下来更重要的项目中，让他去攻克更难缠的客户或官员。
+  - `q19.d`：结构检查通过 — 以此为契机，全面审查采购流程，建立更严格的审计和监督制度，从根子上杜绝。
+- **q20** 题干：你的纺织品牌初具名气，有外国资本提出高价收购，承诺保留你的管理权并注入资金扩大规模。
+  - `q20.a`：结构检查通过 — 拒绝收购。品牌如同子女，不能卖，宁愿自己慢慢发展。
+  - `q20.b`：结构检查通过 — 同意收购，但要求签下对赌协议，若几年内业绩达标，有权以约定价格回购部分股权。
+  - `q20.c`：结构检查通过 — 同意收购，但利用外资升级设备、拓展渠道，同时暗中筹备一个定位更高端的新品牌。
+  - `q20.d`：结构检查通过 — 不直接卖，而是提议成立合资公司，我方以品牌和渠道入股，共同经营。
+- **q21** 题干：行业展会，你的新产品与竞争对手撞车，对方背景深厚，已提前打通关节，让你的展位位置偏僻。
+  - `q21.a`：结构检查通过 — 在偏僻展位精心布置，举办小型技术讲座，吸引真正懂行的客商。
+  - `q21.b`：结构检查通过 — 不惜重金，在展会最显眼处租用大幅广告牌，并雇佣车队在周边巡游造势。
+  - `q21.c`：结构检查通过 — 通过关系，直接拜访几位关键的评审委员和采购巨头，进行私下专场演示。
+  - `q21.d`：结构检查通过 — 将计就计，以"受排挤的国货精品"为话题，联络报馆记者，做一波同情营销。
+- **q22** 题干：你主导修建的铁路支线即将贯通，最后一个路段穿过乡绅祖坟。对方家族势力庞大，坚决不让，工程停滞。
+  - `q22.a`：结构检查通过 — 修改线路绕行，哪怕增加成本和工期，避免与地方势力发生正面冲突。
+  - `q22.b`：结构检查通过 — 请出德高望重的中间人，许以重金补偿，并为对方家族在车站附近预留商业地块。
+  - `q22.c`：结构检查通过 — 上报政府，强调铁路的国防与经济价值，申请以"公共利益"为由强制征收。
+  - `q22.d`：结构检查通过 — 暗中支持铁路沿线的其他家族与之抗衡，利用地方矛盾，分化瓦解阻力。
+
+### 逐结果
+- **result-national-industry**（张謇）：profile 键与范围检查通过。
+- **result-calculated-steady**（周学熙）：profile 键与范围检查通过。
+- **result-adventure-pioneer**（虞洽卿）：profile 键与范围检查通过。
+- **result-social-connector**（荣德生）：profile 键与范围检查通过。
+- **result-tech-innovator**（范旭东）：profile 键与范围检查通过。
+- **result-capital-architect**（宋子文）：profile 键与范围检查通过。
+- **result-lu-zuofu**（卢作孚）：profile 键与范围检查通过。
+- **result-chen-jiageng**（陈嘉庚）：profile 键与范围检查通过。
+- **result-liu-hongsheng**（刘鸿生）：profile 键与范围检查通过。
+- **result-sheng-xuanhuai**（盛宣怀）：profile 键与范围检查通过。
+
+## republican-women-personality-test
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 7
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：北平街头,暮色渐沉,军警粗暴地拖拽着一名面容坚毅的学生,周围惊恐的人群如潮水般散去。你会如何应对这场突如其来的危机？
+  - `q1.a`：结构检查通过 — 挺身而出,大声呵斥军暴行,试图解救学生
+  - `q1.b`：结构检查通过 — 迅速记录现场情况,设法联系报社或进步团体
+  - `q1.c`：结构检查通过 — 悄然混入人群中,不做声也不离开,默默观察事态发展
+  - `q1.d`：结构检查通过 — 立即避开,避免卷入政治风波,保全自身安全
+- **q2** 题干：阳光透过百叶窗洒在茶桌上,精致的西式茶点散发着奶油香气,而另一边的文人雅集里,古琴声悠扬,墨香四溢。你会如何度过这个周末午后？
+  - `q2.a`：结构检查通过 — 赴西式茶会,与留洋归来的名流讨论新思想与变革
+  - `q2.b`：结构检查通过 — 参加文人雅集,吟诗作画,品茗论道,沉浸于传统文化
+  - `q2.c`：结构检查通过 — 婉拒所有邀请,独自研读新书,思考新旧思想的碰撞
+  - `q2.d`：结构检查通过 — 先去西式茶会,中途溜号再去文人雅集,两边都不错过
+- **q3** 题干：家族祠堂里,烛光摇曳,长辈们面容严肃地注视着你,族谱上的红线仿佛在无声地催促。这门婚姻关乎家族颜面,却可能葬送你的前程。你会如何抉择？
+  - `q3.a`：结构检查通过 — 婉拒婚事,宁愿背负家族谴责也要坚持个人志向
+  - `q3.b`：结构检查通过 — 提出折中方案,暂缓婚事,争取时间完成学业
+  - `q3.c`：结构检查通过 — 顺从家族安排,婚后寻找机会实现自我价值
+  - `q3.d`：结构检查通过 — 表面应允,暗地里准备私奔或逃婚,追求自由爱情
+- **q4** 题干：图书馆里尘埃在阳光中飞舞,你指尖触碰到那本被禁的书籍,封面上的文字仿佛在燃烧。管理员正在远处整理书籍,这是一个冒险的机会。
+  - `q4.a`：结构检查通过 — 毫不犹豫地取下禁书,迅速藏在裙摆下带出图书馆
+  - `q4.b`：结构检查通过 — 翻阅几页后悄悄放回原处,不冒险但记下书名日后寻找
+  - `q4.c`：结构检查通过 — 向管理员举报这本书,维护学堂秩序与传统价值观
+  - `q4.d`：结构检查通过 — 与志同道合的同学商量,策划集体借阅或传阅
+- **q5** 题干：女子学堂的课堂上,阳光透过窗棂照在讲台上,一位女同学突然站起,声如洪钟地质疑'女子无才便是德',先生面色铁青,同学们议论纷纷。
+  - `q5.a`：结构检查通过 — 立刻站出来支持同学,共同挑战这一陈腐观念
+  - `q5.b`：结构检查通过 — 虽内心赞同但保持沉默,课后私下表达支持
+  - `q5.c`：结构检查通过 — 试图劝阻同学冷静,以免激化矛盾影响全班
+  - `q5.d`：结构检查通过 — 不表态,专注记录课堂内容,避免卷入争议
+- **q6** 题干：家族宅邸内,烛光摇曳,长者们紧锁眉头,账本散落一地,家族产业岌岌可危。而你正在求学关键时期,学业未竟,家族却要求你即刻放弃学业回家主持大局。
+  - `q6.a`：结构检查通过 — 断然拒绝,坚持完成学业,相信知识才是家族振兴的根本
+  - `q6.b`：结构检查通过 — 请求延长求学时间,承诺学成归来振兴家业
+  - `q6.c`：结构检查通过 — 提出先休学一年回家处理危机,待局势稳定后再返校
+  - `q6.d`：结构检查通过 — 说服家族将产业部分变卖,换取你继续求学的资金
+- **q7** 题干：窗外的梧桐叶随风轻摆,书桌上散落着西方哲学著作与线装诗集。闲适时光里,你的思绪会飘向何方？
+  - `q7.a`：结构检查通过 — 沉浸在西方新思潮中,撰写文章呼吁个性解放与女权
+  - `q7.b`：结构检查通过 — 研读古典诗词,创作新体诗,探索传统与现代的融合
+  - `q7.c`：结构检查通过 — 与志同道合的朋友讨论社会变革,策划进步活动
+  - `q7.d`：结构检查通过 — 临摹古画,练习书法,在传统文化中寻找心灵寄托
+- **q8** 题干：昏暗的油灯下,几位革命同志压低声音向你传递密函,屋外时有巡警的脚步声。他们期待你的回应,加入这项可能面临牢狱之灾的秘密行动。
+  - `q8.a`：结构检查通过 — 立即答应,即使入狱也在所不惜,革命需要热血
+  - `q8.b`：结构检查通过 — 愿意参与,但需谨慎谋划,确保行动万无一失
+  - `q8.c`：结构检查通过 — 暂缓决定,先了解行动细节再做判断
+  - `q8.d`：结构检查通过 — 婉言谢绝,个人安危与家庭责任同样重要
+- **q9** 题干：舞池中央,你身着素雅旗袍,在悠扬的小提琴声中旋转。一位绅士轻声表达对你的倾慕,而你的目光却常常望向舞池另一端的故人。
+  - `q9.a`：结构检查通过 — 坦率告知已有心上人,感谢对方的欣赏
+  - `q9.b`：结构检查通过 — 委婉拒绝,但赞美对方的才华与风度
+  - `q9.c`：结构检查通过 — 保持礼貌距离,不明确回应也不得罪对方
+  - `q9.d`：结构检查通过 — 巧妙周旋,享受当下的被关注而不作承诺
+- **q10** 题干：一封烫手的密信摆在书桌上,墨迹未干。好友因参与进步活动已被当局盯上,急需转移,但任何接触都可能让你自己也陷入险境。
+  - `q10.a`：结构检查通过 — 不顾个人安危,立即设法帮助好友脱险
+  - `q10.b`：结构检查通过 — 暗中联络可靠人士,寻找最稳妥的转移方案
+  - `q10.c`：结构检查通过 — 提供物资帮助但不直接参与,避免连累家人
+  - `q10.d`：结构检查通过 — 劝好友暂时避风头,等待时机再行动
+- **q11** 题干：文人雅集上,茶香氤氲,一位才女当众质疑'女子相夫教子是天职'的传统观念,在场宾客哗然,有人点头称是,有人面露不悦。
+  - `q11.a`：结构检查通过 — 当场驳斥,女子当以相夫教子为本,离经叛道有伤风化
+  - `q11.b`：结构检查通过 — 保持沉默,内心认同传统但不愿卷入争议
+  - `q11.c`：结构检查通过 — 加入讨论,提出女子也可参与社会事务的不同见解
+  - `q11.d`：结构检查通过 — 调和双方,主张传统与现代价值观可以共存
+- **q12** 题干：书房内,阳光透过雕花窗棂洒在书桌上。案头摊开一本《新青年》,墨香与樟木书柜的气味交织,你手握毛笔,思绪万千。
+  - `q12.a`：结构检查通过 — 沉浸在西方启蒙思想中,思考国家变革之道
+  - `q12.b`：结构检查通过 — 研习古典经史,修身养性以应对动荡时局
+  - `q12.c`：结构检查通过 — 两者兼修,取中西之长,形成自己的见解
+  - `q12.d`：结构检查通过 — 更关注文学创作,以笔抒发内心情感
+- **q13** 题干：家书一封摆在案头,字字句句皆是对你的期望与担忧。赴海外留学的机会摆在眼前,但需要与未婚夫解除婚约,这在当时会被视为不忠不孝。
+  - `q13.a`：结构检查通过 — 毅然解除婚约,追求自我发展,不囿于传统束缚
+  - `q13.b`：结构检查通过 — 与未婚夫商议,寻求共同认可的解决方案
+  - `q13.c`：结构检查通过 — 放弃留学机会,履行婚约责任,另寻发展途径
+  - `q13.d`：结构检查通过 — 延迟决定,先在国内深造,等待更合适的时机
+- **q14** 题干：女子学堂的刺绣课上,阳光透过窗棂照在绣架上。老师示范着传统牡丹纹样,而你望着窗外飞鸟,脑中浮现一个大胆的创新想法。
+  - `q14.a`：结构检查通过 — 按传统图案一丝不苟地完成作业,尊重师道
+  - `q14.b`：结构检查通过 — 在传统基础上稍作改良,既保留韵味又有新意
+  - `q14.c`：结构检查通过 — 大胆尝试创新风格,哪怕被批评离经叛道
+  - `q14.d`：结构检查通过 — 私下练习创新,课堂作业仍按传统完成
+- **q15** 题干：电报如雪片般落在书桌上,墨迹未干的家乡水灾消息与你面前摊开的考卷形成刺眼对比。窗外雨声渐密,你将如何抉择？
+  - `q15.a`：结构检查通过 — 立即放下学业,不顾一切赶回家乡,哪怕因此错过考试
+  - `q15.b`：结构检查通过 — 一边准备考试,一边筹款捐助家乡,考完即刻返乡
+  - `q15.c`：结构检查通过 — 继续完成学业,坚信学有所成才能更好地帮助家乡
+  - `q15.d`：结构检查通过 — 托付亲友代为照顾,自己专注于学业,待日后有能力再作补偿
+- **q16** 题干：社交沙龙中,一位女士慷慨激昂地控诉社会不公,脸颊因激动而泛红,声音时而哽咽。男士们或低头不语,或转移话题,你如何回应？
+  - `q16.a`：结构检查通过 — 与她并肩而立,同样情绪高昂地支持她的每一句话
+  - `q16.b`：结构检查通过 — 虽被感动,却保持克制,默默倾听并记录她的观点,稍后再理性讨论
+  - `q16.c`：结构检查通过 — 委婉劝她冷静,认为过于激烈的情绪不利于问题的解决
+  - `q16.d`：结构检查通过 — 借故暂时离场,避免卷入这场情绪化的讨论
+- **q17** 题干：窗外阳光明媚,茶香袅袅,你面对难得的周末闲暇时光,内心盘旋着两种截然不同的选择。你会如何度过这宝贵的时光？
+  - `q17.a`：结构检查通过 — 前往进步社团,与志同道合者探讨国家前途与救国之道
+  - `q17.b`：结构检查通过 — 与闺中密友聚会,品茗谈诗,在艺术与文学中寻求慰藉
+  - `q17.c`：结构检查通过 — 独自前往图书馆,研读西方思潮,思考如何将新思想引入国门
+  - `q17.d`：结构检查通过 — 留在家中整理旧物,翻阅古籍,思考传统文化的价值与意义
+- **q18** 题干：你发表的文章在文坛掀起轩然大波,支持者赞其思想激进,反对者斥其离经叛道。编辑来信告知,继续创作可能招致更大压力。你将如何应对？
+  - `q18.a`：结构检查通过 — 坚持己见,继续创作,宁可承受压力也要表达真实想法
+  - `q18.b`：结构检查通过 — 调整表达方式,保留核心思想但降低锋芒,寻求更温和的表达
+  - `q18.c`：结构检查通过 — 暂时搁笔,转而研究传统文化,寻找思想与传统的结合点
+  - `q18.d`：结构检查通过 — 停止发表争议性文章,转而撰写安全无害的作品,避开政治敏感话题
+- **q19** 题干：家族聚会上,烛光摇曳,长辈们的目光如炬,围绕你的婚事展开讨论。他们希望你嫁入豪门相夫教子,而你心中另有抱负。你如何应对？
+  - `q19.a`：结构检查通过 — 婉转表达自己的想法,坚持追求个人理想,不因家族期望而妥协
+  - `q19.b`：结构检查通过 — 表面顺从家族安排,暗中继续自己的追求,寻求两全之策
+  - `q19.c`：结构检查通过 — 认同家族安排,认为婚姻是女性最好的归宿,放弃个人抱负
+  - `q19.d`：结构检查通过 — 提出折中方案,如先完成学业再谈婚事,或婚后继续追求理想
+- **q20** 题干：一封匿名信悄然放在你的案头,揭露官场腐败,证据确凿但可能危及性命。公开举报可能引发政治风暴,保持沉默则同流合污。你将如何抉择？
+  - `q20.a`：结构检查通过 — 立即将信件转交报社,公开揭露真相,即使面临生命危险也在所不惜
+  - `q20.b`：结构检查通过 — 谨慎收集更多证据,选择合适的时机和方式举报,确保自身安全
+  - `q20.c`：结构检查通过 — 将信件交给信任的高层官员,希望他们能内部处理,避免公开冲突
+  - `q20.d`：结构检查通过 — 销毁信件,告诫自己远离是非,保全自身才是明智之举
+
+### 逐结果
+- **r1**（宋庆龄）：profile 键与范围检查通过。
+- **r2**（林徽因）：profile 键与范围检查通过。
+- **r3**（陆小曼）：profile 键与范围检查通过。
+- **r4**（张爱玲）：profile 键与范围检查通过。
+- **r5**（秋瑾）：profile 键与范围检查通过。
+- **r6**（宋美龄）：profile 键与范围检查通过。
+- **r7**（江冬秀）：profile 键与范围检查通过。
+
+## shanhaijing-shenshou
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 6
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：你独自穿越幽深森林,腐叶的气息弥漫四周。前方出现两条岔路:一条是熟悉但已被藤蔓半封的小径,另一条是陌生却散发着奇异光芒的隐秘小径。森林深处传来神秘低语,似乎在呼唤你做出选择。你会如何前行？
+  - `q1.a`：结构检查通过 — 沿着熟悉的小径谨慎前行,藤蔓虽多但路径明确
+  - `q1.b`：结构检查通过 — 毫不犹豫地踏入散发光芒的隐秘小径,好奇心驱使你探索未知
+  - `q1.c`：结构检查通过 — 先在原地静听低语,感受森林的呼唤再做决定
+  - `q1.d`：结构检查通过 — 寻找高处俯瞰两条小径,分析哪条更有可能通向目的地
+- **q2** 题干：古老的祭坛前,月光如水般流淌。两件神器静静闪耀:一件散发着灼热气息,能增强力量但需要牺牲一段珍贵记忆；另一件散发着柔和光芒,能守护内心平静但会让你错过重要启示。你会选择哪件神器？
+  - `q2.a`：结构检查通过 — 选择增强力量的神器,认为失去的记忆可以重新获得
+  - `q2.b`：结构检查通过 — 选择守护内心的神器,相信平静的心灵比力量更重要
+  - `q2.c`：结构检查通过 — 尝试同时接触两件神器,寻找不牺牲也不错过的平衡点
+  - `q2.d`：结构检查通过 — 放弃选择两件神器,转身离开寻找其他途径
+- **q3** 题干：星空下的山顶,远处森林传来如呼吸般的轻响。两样宝物悬浮空中:一本记载天地奥秘的古籍,散发着古老智慧的气息；一把能雕刻生命形态的刻刀,闪烁着创造的光芒。你会如何与它们互动？
+  - `q3.a`：结构检查通过 — 立即拿起刻刀,迫不及待地尝试创造属于自己的生命形态
+  - `q3.b`：结构检查通过 — 小心翼翼翻开古籍,一字一句研读其中的天地奥秘
+  - `q3.c`：结构检查通过 — 先观察两样宝物,思考它们之间的关系再决定如何使用
+  - `q3.d`：结构检查通过 — 将宝物置于星空下,观察它们在星光下的变化再做选择
+- **q4** 题干：山涧边,溪水潺潺流淌。两种药草散发着不同气息:一种生长在险峻悬崖,采摘需要冒生命危险；另一种生长在沼泽深处,采摘需要忍受精神干扰。远处传来神兽的嘶鸣声,仿佛在考验你的决心。你会如何选择？
+  - `q4.a`：结构检查通过 — 选择悬崖边的药草,相信通过努力冒险可以获得更强的灵力
+  - `q4.b`：结构检查通过 — 选择沼泽深处的药草,认为精神上的干扰可以通过意志力克服
+  - `q4.c`：结构检查通过 — 寻找第三种可能,或许在溪流上游有更安全的药草生长
+  - `q4.d`：结构检查通过 — 放弃采摘药草,转向寻找其他提升灵力的方式
+- **q5** 题干：古老的石洞中,火把摇曳映照墙壁。一幅未完成的壁画展现在你面前,已有图案风格古朴神秘。洞内回声阵阵,壁画上的古老形象似乎在注视着你。你会如何完成这幅作品？
+  - `q5.a`：结构检查通过 — 严格遵循原有风格继续完成,不敢有丝毫偏差
+  - `q5.b`：结构检查通过 — 融入自己的创意元素,在传统基础上加入新意
+  - `q5.c`：结构检查通过 — 先研究壁画的原始意义,理解后再决定如何完成
+  - `q5.d`：结构检查通过 — 与壁画中的古老形象对话,听取它们的建议再决定
+- **q6** 题干：山洞深处,一只受伤的灵兽独自疗伤,拒绝其他生物靠近。它的伤口散发着微光,低沉的哀鸣回荡在洞中。你的第一反应是什么？
+  - `q6.a`：结构检查通过 — 尊重它的选择,在不打扰的距离静静观察
+  - `q6.b`：结构检查通过 — 不顾它的拒绝,上前提供帮助,相信自己的善意能被理解
+  - `q6.c`：结构检查通过 — 寻找草药或其他疗伤物品,放在洞口让它自行取用
+  - `q6.d`：结构检查通过 — 分析它的伤势和情绪,思考最佳的接近时机
+- **q7** 题干：古老迷宫中,墙壁缓缓移动,出口忽远忽近。中央有一处静止不动的古老符文,四周不断出现幻象考验你的判断。迷宫的回声仿佛在引导你,又似在迷惑你。你会如何寻找出路？
+  - `q7.a`：结构检查通过 — 专注于中央的古老符文,相信它是解开迷宫的关键
+  - `q7.b`：结构检查通过 — 跟随幻象的引导,相信它们背后隐藏着真相
+  - `q7.c`：结构检查通过 — 寻找墙壁移动的规律,利用迷宫的变化找到出口
+  - `q7.d`：结构检查通过 — 静心感受迷宫的脉动,与自己内心的方向感连接
+- **q8** 题干：星空下的湖面如碎银铺就,远处传来神兽的低沉呼唤。你感受到两种修行方式:一种是日复一日静坐冥想,感受天地灵气；另一种是游历四方,在险境中磨练心性。你会选择哪种方式？
+  - `q8.a`：结构检查通过 — 在湖边搭建草庐,每日定时静坐,观察星辰变化,记录灵气流转
+  - `q8.b`：结构检查通过 — 沿着湖边游历,拜访各处修行者,收集不同流派的修行心得
+  - `q8.c`：结构检查通过 — 先静坐三年打牢根基,再出发游历四方,每处停留数月深入体验
+  - `q8.d`：结构检查通过 — 听从内心呼唤,随时改变方向,有时驻足观察,有时深入险境
+- **q9** 题干：药草园中奇香四溢,有的药草按五行排列整齐有序,有的却自由生长不受约束。阳光透过树叶洒在药草上,露珠闪烁着奇异光芒。你会如何采集这些药草？
+  - `q9.a`：结构检查通过 — 按照五行相生顺序依次采集,记录每种药草的特性与功效,建立完整药典
+  - `q9.b`：结构检查通过 — 随机选择药草采集,根据形态与香气判断品质,寻找最独特的个体
+  - `q9.c`：结构检查通过 — 先采集排列整齐的药草,再探索自由生长区域的稀有品种,兼顾两种方式
+  - `q9.d`：结构检查通过 — 只采集那些打破五行规则、自由生长的药草,相信特例蕴含非凡力量
+- **q10** 题干：神庙外火光冲天,古老的钟声在夜色中回荡。入侵者的脚步声越来越近,你必须决定如何守护神庙核心秘密。庙内香火缭绕,壁画上的神兽似乎在注视着你。你会怎么做？
+  - `q10.a`：结构检查通过 — 独自一人面对入侵者,用神庙机关与秘术拖延时间,誓死守护核心秘密
+  - `q10.b`：结构检查通过 — 将部分秘密告知村民,组织众人共同守护神庙,分散入侵者的注意力
+  - `q10.c`：结构检查通过 — 先独自抵挡第一波攻击,同时暗中通知村民,择机与村民合力反击
+  - `q10.d`：结构检查通过 — 启动神庙最古老的守护仪式,牺牲个人力量唤醒沉睡的神兽,保护所有人
+- **q11** 题干：山洞深处,一位修行者面容沧桑却目光如炬,他在孤独中闭关十年,只为领悟一道真谛。洞壁上刻满古老符文,空气中弥漫着檀香与尘土的气息。你看到这一幕的感受是？
+  - `q11.a`：结构检查通过 — 敬佩这种执着精神,认为只有深入内心、远离外界干扰才能获得真知
+  - `q11.b`：结构检查通过 — 担忧这种极端方式,觉得修行应当兼顾内外,闭关太久会脱离现实
+  - `q11.c`：结构检查通过 — 理解这种选择,但认为修行可以有多种方式,不必完全隔绝外界
+  - `q11.d`：结构检查通过 — 质疑这种孤独修行,觉得真理应当在社会实践中领悟而非独自冥想
+- **q12** 题干：古老遗迹中,两件宝物在月光下泛着微光。一件能让你洞悉万物真相,但会让你背负沉重的预言负担；另一件能让你保持内心平静,但会让你错过重要启示。壁画上的神兽似乎在注视着你的选择。你会选择？
+  - `q12.a`：结构检查通过 — 选择洞悉真相的宝物,愿意承担预言的负担,以获得更深刻的智慧
+  - `q12.b`：结构检查通过 — 选择内心平静的宝物,相信直觉比真相更重要,保护自己不被预言困扰
+  - `q12.c`：结构检查通过 — 先尝试洞悉真相,但设定心理防线,不让预言完全控制自己的思想
+  - `q12.d`：结构检查通过 — 放弃选择任何宝物,相信真正的力量来自内心,而非外物
+- **q13** 题干：月圆之夜,月光如水银泻地。两条道路在你面前延伸:一条通向古老宗门,灯火通明,能接受系统的修行指导；另一条深入荒野,月影斑驳,能在未知中寻找自己的道法。远处传来神秘钟声。你会选择？
+  - `q13.a`：结构检查通过 — 沿着月光下的小径,前往古老宗门,跟随师父系统学习,掌握正统修行之法
+  - `q13.b`：结构检查通过 — 毅然踏入荒野深处,在未知中探索自己的道法,相信经历磨难才能得道
+  - `q13.c`：结构检查通过 — 先在宗门学习基础,再独自前往荒野验证所学,理论与实践相结合
+  - `q13.d`：结构检查通过 — 在荒野边缘徘徊,时而聆听宗门钟声,时而探索未知领域,保持开放心态
+- **q14** 题干：古籍室中尘埃弥漫,一本残卷记载着古老仪式。有的步骤详尽具体,有的却留有空白需要自行填补。烛火摇曳,残卷上的文字仿佛在流动。你会如何处理这本残卷？
+  - `q14.a`：结构检查通过 — 严格按照已有步骤执行,对空白部分谨慎补充,确保仪式的完整性与安全性
+  - `q14.b`：结构检查通过 — 专注于填补空白部分,发挥创造力,相信仪式的精髓在于创新而非墨守成规
+  - `q14.c`：结构检查通过 — 先研究已有步骤,理解其意义后再大胆创新,保留核心要素同时加入个人理解
+  - `q14.d`：结构检查通过 — 寻求古籍中其他残卷的参考,寻找线索填补空白,相信古人自有其智慧
+- **q15** 题干：乌云压顶,雷声如鼓,山风裹挟着泥土的气息扑面而来。你发现村落即将被山洪吞噬,必须立即行动。你更倾向于:
+  - `q15.a`：结构检查通过 — 独自施展秘法,以一人之力转移洪水流向,挽救全村性命
+  - `q15.b`：结构检查通过 — 迅速组织村民转移,同时教他们识别危险信号的常识
+  - `q15.c`：结构检查通过 — 深入上游寻找洪水源头的灵脉,从根本上阻断灾厄
+  - `q15.d`：结构检查通过 — 搭建临时祭坛,祈求山神庇护,引导村民集体祷告
+- **q16** 题干：悬崖之上,狂风呼啸,一位修行者在生死关头依然一丝不苟地完成古老仪式,每一手势、每一咒语都精准无误。你对此的直觉是:
+  - `q16.a`：结构检查通过 — 他过于执着于形式,在危急时刻应该更灵活地应对
+  - `q16.b`：结构检查通过 — 仪式蕴含着超越逻辑的力量,他的坚持可能正是救人之道
+  - `q16.c`：结构检查通过 — 这种死板的做法只会浪费时间,应该立即采取实际行动
+  - `q16.d`：结构检查通过 — 他深谙仪式背后的玄机,看似不变实则暗藏变通
+- **q17** 题干：灵气氤氲的山谷中,水雾缭绕,古老的吟唱声在岩壁间回荡。你面前有两处修行宝地:一处是灵气稳定如恒的山洞,另一处是灵气变幻莫测的瀑布下。你会选择:
+  - `q17.a`：结构检查通过 — 山洞:日复一日地修炼,在稳定中积累深厚功力
+  - `q17.b`：结构检查通过 — 瀑布下:随水流的节奏修行,感受灵气的千变万化
+  - `q17.c`：结构检查通过 — 瀑布下:在无常中寻求顿悟,挑战极限
+  - `q17.d`：结构检查通过 — 山洞:建立系统化的修行计划,循序渐进
+- **q18** 题干：古老祭坛上,烛火摇曳,神像双目低垂,仿佛在审视着每一个选择。你面前摆着两条传承之路:一条是完整的传承但需恪守千年规矩,一条是核心传承却可自由发挥。你会:
+  - `q18.a`：结构检查通过 — 选择完整传承,在规则框架内精进,不越雷池一步
+  - `q18.b`：结构检查通过 — 选择核心传承,在保留本质的前提下创新演绎
+  - `q18.c`：结构检查通过 — 先完整学习,再逐步突破限制,实现新旧融合
+  - `q18.d`：结构检查通过 — 只保留最根本的道义,其余皆可随时代变化
+- **q19** 题干：祭祀广场上,檀香袅���,村民们神情肃穆。祭品摆放方式有不同传统:一种强调严格的顺序和方位,一种注重心意与自然流动。你决定:
+  - `q19.a`：结构检查通过 — 严格遵循古法,每一个位置、每一种祭品都一丝不苟
+  - `q19.b`：结构检查通过 — 根据自己的理解调整,让祭品摆放更符合自然韵律
+  - `q19.c`：结构检查通过 — 询问长老意见,尊重传统但允许适当变通
+  - `q19.d`：结构检查通过 — 观察其他人的做法,融入集体而不突出个人
+- **q20** 题干：星空下,一位修行者面对唾手可得的力量,却因不愿违背内心道义而毅然放弃。你目睹此景的感受是:
+  - `q20.a`：结构检查通过 — 他过于固执,明明可以兼顾力量与道义
+  - `q20.b`：结构检查通过 — 他坚守本心,宁可舍弃外物也不违背内在准则
+  - `q20.c`：结构检查通过 — 这种纯粹的理想主义在现实中难以立足
+  - `q20.d`：结构检查通过 — 他洞悉了力量的本质,外在不过是表象
+
+### 逐结果
+- **r1**（青龙）：profile 键与范围检查通过。
+- **r2**（朱雀）：profile 键与范围检查通过。
+- **r3**（玄武）：profile 键与范围检查通过。
+- **r4**（白虎）：profile 键与范围检查通过。
+- **r5**（麒麟）：profile 键与范围检查通过。
+- **r6**（凤凰）：profile 键与范围检查通过。
+
+## sherlock-character-match
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：贝克街221B的客厅内,煤油灯的光线在凶手摇晃的刀尖上跳跃,华生握紧了椅子扶手,你闻到空气中弥漫着恐惧与烟草混合的气息。
+  - `q1.a`：结构检查通过 — 立即起身,以最快的速度制服凶手,保护在场所有人
+  - `q1.b`：结构检查通过 — 冷静观察凶手的动作,寻找制服他的最佳时机
+  - `q1.c`：结构检查通过 — 用言语分散凶手注意力,同时示意华生协助行动
+  - `q1.d`：结构检查通过 — 保持不动,等待夏洛克的指令,避免激怒凶手
+- **q2** 题干：阳光透过伦敦雾气洒在街道上,空气中弥漫着新鲜出炉的面包香气与马粪的混合气味,整个城市在你面前展开。
+  - `q2.a`：结构检查通过 — 前往苏格兰场,与探员们讨论最近的案件进展
+  - `q2.b`：结构检查通过 — 独自漫步在泰晤士河畔,观察来往行人的微小细节
+  - `q2.c`：结构检查通过 — 躲在家中,沉浸在书本和笔记中,无人打扰
+  - `q2.d`：结构检查通过 — 前往伦敦最混乱的街区,寻找一些刺激的冒险
+- **q3** 题干：苏格兰场调查室内,煤油灯照亮桌上的证据袋,雷斯垂德探长站在窗边,烟斗中飘出的烟雾在空气中盘旋。
+  - `q3.a`：结构检查通过 — 公开证据,相信案件真相高于个人安全
+  - `q3.b`：结构检查通过 — 寻找保护线人的方法,在保证安全的前提下使用证据
+  - `q3.c`：结构检查通过 — 暂缓行动,寻找其他突破口,避免暴露线人
+  - `q3.d`：结构检查通过 — 私下会见线人,寻求更多信息再做决定
+- **q4** 题干：泰晤士河畔的雾气中,你注意到一位绅士的靴子上沾有特殊的红色泥土痕迹,与报纸上报道的肯特郡粘土颜色完全一致。
+  - `q4.a`：结构检查通过 — 立即上前询问这位绅士,追踪他的行踪
+  - `q4.b`：结构检查通过 — 记下细节,回到住所后研究肯特郡的相关案件
+  - `q4.c`：结构检查通过 — 认为这只是巧合,不予理会,继续自己的行程
+  - `q4.d`：结构检查通过 — 设法接近这位绅士,在交谈中获取更多信息
+- **q5** 题干：华生医生在日记中写道:'他有时会忽略明显的情感线索,只专注于事实本身,仿佛人性只是需要被破解的密码。'
+  - `q5.a`：结构检查通过 — 华生说得对,情感是干扰推理的噪音
+  - `q5.b`：结构检查通过 — 情感与事实同样重要,共同构成完整真相
+  - `q5.c`：结构检查通过 — 华生过于感性,理解不了纯粹的逻辑之美
+  - `q5.d`：结构检查通过 — 情感是案件的动机,但证据才是破案的关键
+- **q6** 题干：伦敦东区的一个昏暗小巷中,你目睹了一场抢劫案,劫匪正向一名老妇人施暴,远处传来几声模糊的犬吠声。
+  - `q6.a`：结构检查通过 — 冲上前直接与劫匪对抗,用武力制止犯罪
+  - `q6.b`：结构检查通过 — 高声呼救,吸引路人注意,同时记录劫匪特征
+  - `q6.c`：结构检查通过 — 寻找附近警察巡逻的路线,或利用环境设下陷阱
+  - `q6.d`：结构检查通过 — 悄悄离开,向最近的警察局报案
+- **q7** 题干：伦敦市立图书馆的古籍区,空气中弥漫着旧纸张和墨水的气息,阳光透过高窗洒在积满灰尘的书脊上。
+  - `q7.a`：结构检查通过 — 选择一本关于犯罪心理学的著作,研究罪犯行为模式
+  - `q7.b`：结构检查通过 — 翻阅伦敦地图集,寻找历史上未解案件的线索
+  - `q7.c`：结构检查通过 — 挑选一本医学古籍,了解法医学的基础知识
+  - `q7.d`：结构检查通过 — 阅读一位著名侦探的传记,学习他的破案方法
+- **q8** 题干：贝克街的清晨,信使送来两封匿名信。一封墨迹未干,指控上校叛国；另一封泛黄陈旧,称年轻人被栽赃。你抚摸着两封信纸的质感,该从何处着手？
+  - `q8.a`：结构检查通过 — 立即调查上校,叛国罪危害更大,必须优先处理
+  - `q8.b`：结构检查通过 — 先确认两封信的来源时间,新线索往往比旧线索更可靠
+  - `q8.c`：结构检查通过 — 同时调查两案,真相可能隐藏在两案的关联中
+  - `q8.d`：结构检查通过 — 暂时搁置,等待更多证据出现再做判断
+- **q9** 题干：壁炉的火光映照着华生坚毅的面庞,他讲述阿富汗战役时,你注意到他描述的某处地名与地理志记载有微妙差异。如何应对这一发现？
+  - `q9.a`：结构检查通过 — 立即指出错误,事实必须准确,哪怕是朋友的回忆
+  - `q9.b`：结构检查通过 — 暂不声张,私下查阅资料核实,避免当众让华生难堪
+  - `q9.c`：结构检查通过 — 继续聆听,关注故事本身而非地理细节,记忆偏差很正常
+  - `q9.d`：结构检查通过 — 打断华生,询问战役的其他细节转移注意力
+- **q10** 题干：苏格兰场的咖啡厅里,雷斯垂德探长摇着头说:'他总能从我们忽略的地方找到线索,仿佛他看到的不是同一个世界。'你望着窗外繁忙的街道,如何回应？
+  - `q10.a`：结构检查通过 — 这正是侦探工作的精髓,细节往往决定成败
+  - `q10.b`：结构检查通过 — 过度关注细节有时会迷失整体方向
+  - `q10.c`：结构检查通过 — 每个人的观察角度不同,没有绝对的优劣之分
+  - `q10.d`：结构检查通过 — 或许天赋异禀,普通人难以模仿
+- **q11** 题干：水晶吊灯的光芒下,你注意到那位贵族的领针上刻着陌生的符号,他正与外国大使低声密谈。舞池中的音乐声掩盖了他们的谈话内容,你会怎么做？
+  - `q11.a`：结构检查通过 — 立即上前质问,国家利益高于一切礼仪
+  - `q11.b`：结构检查通过 — 暗中观察,寻找机会接近他们的谈话
+  - `q11.c`：结构检查通过 — 向女王身边的侍卫暗示,由官方处理更为妥当
+  - `q11.d`：结构检查通过 — 暂时保持距离,收集更多证据后再行动
+- **q12** 题干：伦敦博物馆的埃及展厅里,新出土的文物散发着古老而神秘的气息。你可以选择独自研究这些文物的每一个细节,或是加入由多位专家组成的研讨团队。
+  - `q12.a`：结构检查通过 — 独自研究,个人专注能发现团队忽略的细微之处
+  - `q12.b`：结构检查通过 — 加入团队,不同领域的专业视角能带来更全面的认识
+  - `q12.c`：结构检查通过 — 先独自研究基础部分,再与团队分享发现
+  - `q12.d`：结构检查通过 — 参观即可,留给专业学者处理
+- **q13** 题干：昏暗的审讯室里,你掌握了一种非常规方法,可以迅速突破嫌疑人的心理防线。然而,这种方法可能触及道德底线,甚至被视作酷刑。你将如何抉择？
+  - `q13.a`：结构检查通过 — 立即使用,真相比手段更重要
+  - `q13.b`：结构检查通过 — 寻求法律许可,确保程序正当性
+  - `q13.c`：结构检查通过 — 寻找其他合法途径,不触碰道德红线
+  - `q13.d`：结构检查通过 — 向上级汇报,让更有经验的人做决定
+- **q14** 题干：前往苏格兰场的马车颠簸前行,你对面的乘客袖口有一处特殊的污渍,形状与你最近追查的一系列珠宝盗窃案嫌疑人特征吻合。你会怎么做？
+  - `q14.a`：结构检查通过 — 立即上前质问,抓住可能的罪犯
+  - `q14.b`：结构检查通过 — 不动声色,继续观察他的其他特征和举止
+  - `q14.c`：结构检查通过 — 到达苏格兰场后通知雷斯垂德,让官方处理
+  - `q14.d`：结构检查通过 — 袖口污渍可能只是巧合,不必过度反应
+- **q15** 题干：莫里亚蒂教授在烟雾缭绕的俱乐部里抿了一口白兰地,眼神锐利地评价:'他总是能在规则的边缘跳舞,却从不真正打破规则,这既是他的优势,也是他的局限。'你会如何回应？
+  - `q15.a`：结构检查通过 — 规则是智慧的结晶,创新应在其框架内谨慎推进,颠覆传统往往带来不可控的后果。
+  - `q15.b`：结构检查通过 — 规则只是暂时的真理,真正的突破需要挑战既有框架,即使不被理解也在所不惜。
+  - `q15.c`：结构检查通过 — 规则的存在有其合理性,但必要时可以灵活运用,不必拘泥于形式而忽视实质。
+  - `q15.d`：结构检查通过 — 规则是智慧的结晶,尊重权威和传统方法,创新应建立在充分理解的基础上。
+- **q16** 题干：伦敦东区火光冲天,灼热的空气扭曲着视线,木梁在火中发出噼啪声,楼下人群的惊呼声穿透浓烟。二楼唯一的窗户外,火焰正舔舐着窗框。
+  - `q16.a`：结构检查通过 — 迅速寻找水源,用桌布制作简易绳索,先尝试扑灭小火,争取逃生时间。
+  - `q16.b`：结构检查通过 — 分析建筑结构,寻找最稳固的支撑点,评估不同逃生路径的可行性,再做决定。
+  - `q16.c`：结构检查通过 — 大声呼救,吸引下方救援人员的注意,同时寻找衣物捂住口鼻,防止烟雾窒息。
+  - `q16.d`：结构检查通过 — 检查门窗是否可以承受高温,寻找其他可能的出口,避免贸然行动陷入危险。
+- **q17** 题干：周日午后的阳光透过俱乐部高大的窗户洒进来,空气中弥漫着雪茄和皮革的香气,几位绅士正围坐在壁炉旁低声交谈。
+  - `q17.a`：结构检查通过 — 穿上实验服,沉浸在化学试剂和仪器中,享受独自探索的宁静时光。
+  - `q17.b`：结构检查通过 — 前往俱乐部,与同行们分享新发现的线索,期待集思广益的讨论。
+  - `q17.c`：结构检查通过 — 独自前往图书馆,查阅相关资料,为下周的案件调查做准备。
+  - `q17.d`：结构检查通过 — 邀请几位志同道合的同事到实验室,共同进行实验,分享发现。
+- **q18** 题干：在苏格兰场的调查室里,你手中握着一份可能颠覆案件的线索,纸张边缘因紧张而微微颤抖。另一条调查方向已经投入了大量资源。
+  - `q18.a`：结构检查通过 — 立即转向新线索,直觉往往比既定计划更接近真相,机会稍纵即逝。
+  - `q18.b`：结构检查通过 — 权衡两条线索的可能性,评估投入产出比,选择最有可能成功的方向继续。
+  - `q18.c`：结构检查通过 — 将线索交给同事,让他们在原有调查方向上继续,自己专注于新线索的追踪。
+  - `q18.d`：结构检查通过 — 坚持原定计划,避免因一时冲动浪费已投入的资源,理性决策才是关键。
+- **q19** 题干：牛津街咖啡馆里,浓郁的咖啡香气中,邻桌两位访客压低声音交谈,其中一人提到一个不为人知的地点名称,与你正在调查的案件惊人地吻合。
+  - `q19.a`：结构检查通过 — 立即记录下这个地名,不动声色地继续观察,寻找更多相关线索。
+  - `q19.b`：结构检查通过 — 假装不经意地加入对话,探听更多信息,同时评估他们的可信度。
+  - `q19.c`：结构检查通过 — 忽略这条线索,专注于案件的主要方向,偶然发现的线索往往不可靠。
+  - `q19.d`：结构检查通过 — 结账后立即前往那个地点,相信直觉往往比周密计划更有效。
+- **q20** 题干：一位委托人在贝克街的客厅里焦虑地踱步,终于停下脚步说:'他似乎总是能看透人们的伪装,却对那些真实的情感视而不见,仿佛人类只是有趣的谜题。'
+  - `q20.a`：结构检查通过 — 情感是人性中最复杂的部分,理解它们比破解谜题更能揭示真相的本质。
+  - `q20.b`：结构检查通过 — 人们的言行往往隐藏着更深层次的动机,洞察伪装才能接近事实的核心。
+  - `q20.c`：结构检查通过 — 情感因素会影响判断,客观分析才是破案的关键,个人感受不应干扰调查。
+  - `q20.d`：结构检查通过 — 每个人都是独特的谜题,情感与逻辑并重才能全面理解人性的复杂。
+
+### 逐结果
+- **r1**（夏洛克·福尔摩斯）：profile 键与范围检查通过。
+- **r2**（约翰·华生）：profile 键与范围检查通过。
+- **r3**（赫德森太太）：profile 键与范围检查通过。
+- **r4**（詹姆斯·莫里亚蒂）：profile 键与范围检查通过。
+- **r5**（雷斯垂德）：profile 键与范围检查通过。
+- **r6**（玛丽·摩斯坦）：profile 键与范围检查通过。
+- **r7**（麦克唐纳）：profile 键与范围检查通过。
+- **r8**（艾琳·艾德勒）：profile 键与范围检查通过。
+
+## spending-personality-test
+- **计分**：`bipolar-dimension` · 维度数 4 · 题数 16 · 结果数 8
+- **错误（7）**
+  - bipolar axis "即时满足vs延迟满足": missing lowInsight
+  - bipolar axis "体验vs物品": missing lowInsight
+  - bipolar axis "社交展示vs个人独享": missing lowInsight
+  - bipolar axis "实用vs审美": missing lowInsight
+  - r4 is unreachable — dominated by r2 on all dimensions
+  - r4 is unreachable — dominated by r7 on all dimensions
+  - r7 is unreachable — dominated by r2 on all dimensions
+- **警告（65）**
+  - q1.a: bipolar option has 3 scored dimensions (max 2)
+  - q1.a: bipolar option mixes positive and negative scores
+  - q1.b: bipolar option mixes positive and negative scores
+  - q1.c: bipolar option has 3 scored dimensions (max 2)
+  - q1.c: bipolar option mixes positive and negative scores
+  - q1.d: bipolar option has 3 scored dimensions (max 2)
+  - q1.d: bipolar option mixes positive and negative scores
+  - q3.b: bipolar option has 3 scored dimensions (max 2)
+  - q3.b: bipolar option mixes positive and negative scores
+  - q3.d: bipolar option has 3 scored dimensions (max 2)
+  - q3.d: bipolar option mixes positive and negative scores
+  - q4.a: bipolar option has 3 scored dimensions (max 2)
+  - q5.a: bipolar option has 3 scored dimensions (max 2)
+  - q5.a: bipolar option mixes positive and negative scores
+  - q5.b: bipolar option has 3 scored dimensions (max 2)
+  - q5.b: bipolar option mixes positive and negative scores
+  - q5.c: bipolar option has 3 scored dimensions (max 2)
+  - q5.c: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option mixes positive and negative scores
+  - q6.a: bipolar option has 3 scored dimensions (max 2)
+  - q6.a: bipolar option mixes positive and negative scores
+  - q6.b: bipolar option mixes positive and negative scores
+  - q6.c: bipolar option mixes positive and negative scores
+  - q6.d: bipolar option mixes positive and negative scores
+  - q7.a: bipolar option mixes positive and negative scores
+  - q7.b: bipolar option has 3 scored dimensions (max 2)
+  - q7.b: bipolar option mixes positive and negative scores
+  - q7.c: bipolar option has 3 scored dimensions (max 2)
+  - q7.c: bipolar option mixes positive and negative scores
+  - q7.d: bipolar option has 3 scored dimensions (max 2)
+  - q7.d: bipolar option mixes positive and negative scores
+  - q8.a: bipolar option has 3 scored dimensions (max 2)
+  - q8.a: bipolar option mixes positive and negative scores
+  - q8.a: score -3 out of range [-2,3] for "实用vs审美"
+  - q8.a: bipolar score -3 should be one of -2,-1,1,2
+  - q8.d: bipolar option has 4 scored dimensions (max 2)
+  - q8.d: bipolar option mixes positive and negative scores
+  - q9.b: bipolar option has 3 scored dimensions (max 2)
+  - q9.b: bipolar option mixes positive and negative scores
+  - q9.d: bipolar option has 3 scored dimensions (max 2)
+  - q9.d: bipolar option mixes positive and negative scores
+  - q10.a: bipolar option has 3 scored dimensions (max 2)
+  - q10.b: bipolar option has 3 scored dimensions (max 2)
+  - q10.b: bipolar option mixes positive and negative scores
+  - q10.c: bipolar option has 3 scored dimensions (max 2)
+  - q10.c: bipolar option mixes positive and negative scores
+  - q11.a: bipolar option mixes positive and negative scores
+  - q11.b: bipolar option mixes positive and negative scores
+  - q11.c: bipolar option has 3 scored dimensions (max 2)
+  - q11.c: bipolar option mixes positive and negative scores
+  - q12.a: bipolar option has 3 scored dimensions (max 2)
+  - q12.a: bipolar option mixes positive and negative scores
+  - q12.c: bipolar option has 3 scored dimensions (max 2)
+  - q12.c: bipolar option mixes positive and negative scores
+  - q12.d: bipolar option has 3 scored dimensions (max 2)
+  - q12.d: bipolar option mixes positive and negative scores
+  - q13.b: bipolar option mixes positive and negative scores
+  - q14.c: bipolar option has 3 scored dimensions (max 2)
+  - q14.c: bipolar option mixes positive and negative scores
+  - q14.d: bipolar option mixes positive and negative scores
+  - q15.a: bipolar option has 3 scored dimensions (max 2)
+  - q15.a: bipolar option mixes positive and negative scores
+  - r4 is unreachable — dominated by r2 on all dimensions
+  - r4 is unreachable — dominated by r7 on all dimensions
+  - r7 is unreachable — dominated by r2 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：在购物中心看到一件限量版设计师联名款外套，价格远超预算，你会
+  - `q1.a`：双极混号；双极维度键>2 — 立即刷卡买下，错过就没了
+  - `q1.b`：双极混号 — 记下款式，等打折季再买
+  - `q1.c`：双极混号；双极维度键>2 — 买下后立即拍照发朋友圈
+  - `q1.d`：双极混号；双极维度键>2 — 放弃购买，存钱做更有意义的事
+- **q2** 题干：难得的周末，面对两种选择，你会
+  - `q2.a`：结构检查通过 — 预定一家高级餐厅品尝新菜式
+  - `q2.b`：结构检查通过 — 购买心仪已久的电子产品
+  - `q2.c`：结构检查通过 — 约上三五好友聚会，分享见闻
+  - `q2.d`：结构检查通过 — 在家看电影整理房间，享受宁静
+- **q3** 题干：看到一家新开的网红咖啡店，你会
+  - `q3.a`：结构检查通过 — 立刻前往打卡，不管排队多久
+  - `q3.b`：双极混号；双极维度键>2 — 等网上评价稳定后再去尝试
+  - `q3.c`：结构检查通过 — 前往打卡，拍照发社交媒体，获得点赞
+  - `q3.d`：双极混号；双极维度键>2 — 默默记下，等心情好再去
+- **q4** 题干：朋友送了你一件不太合你审美的礼物，你会
+  - `q4.a`：双极维度键>2 — 立刻买下更喜欢的替代品
+  - `q4.b`：结构检查通过 — 保留礼物，以后可能用得上
+  - `q4.c`：结构检查通过 — 拍照发朋友圈，感谢朋友的好意
+  - `q4.d`：结构检查通过 — 选择不购买，只保留朋友的情意
+- **q5** 题干：在书店看到一本精装版艺术画册，价格不菲，你会
+  - `q5.a`：双极混号；双极维度键>2 — 毫不犹豫买下，满足收藏欲
+  - `q5.b`：双极混号；双极维度键>2 — 记下，等打折季再买
+  - `q5.c`：双极混号；双极维度键>2 — 买下后放在书架显眼处，展示品味
+  - `q5.d`：双极混号 — 选择电子版，节省空间和金钱
+- **q6** 题干：健身房推出新会员套餐，包含私教课程，价格很高，你会
+  - `q6.a`：双极混号；双极维度键>2 — 立即报名，期待立即看到效果
+  - `q6.b`：双极混号 — 先观察一个月，看效果再决定
+  - `q6.c`：双极混号 — 报名后在社交媒体分享健身计划
+  - `q6.d`：双极混号 — 选择基础会员，自己制定计划
+- **q7** 题干：在购物中心看到限量版球鞋发售，现场排着长队，你会
+  - `q7.a`：双极混号 — 立刻排队购买，不想错过这个热门商品
+  - `q7.b`：双极混号；双极维度键>2 — 先回家做足功课，研究价格走势再决定
+  - `q7.c`：双极混号；双极维度键>2 — 直接网购，避免排队麻烦但同样能拥有
+  - `q7.d`：双极混号；双极维度键>2 — 完全没兴趣，觉得这只是营销噱头
+- **q8** 题干：周末朋友聚餐，你会选择
+  - `q8.a`：实用vs审美=-3 越界[-2,3]；实用vs审美=-3 非±1/±2；双极混号；双极维度键>2 — 网红打卡餐厅，拍照发朋友圈分享
+  - `q8.b`：结构检查通过 — 家常小馆，专注于和朋友的交流
+  - `q8.c`：结构检查通过 — 高端餐厅，追求精致的用餐环境
+  - `q8.d`：双极混号；双极维度键>2 — 在家自己做，经济实惠又合口味
+- **q9** 题干：看到电影院上映期待已久的大片，你会
+  - `q9.a`：结构检查通过 — 首映日就去，不想被剧透
+  - `q9.b`：双极混号；双极维度键>2 — 等影评出来后再决定是否值得
+  - `q9.c`：结构检查通过 — 买好票约朋友一起，分享观影感受
+  - `q9.d`：双极混号；双极维度键>2 — 等视频网站上线，在家看更舒适
+- **q10** 题干：在书店看到一本精美的艺术画册，价格不菲，你会
+  - `q10.a`：双极维度键>2 — 毫不犹豫买下，它值得收藏
+  - `q10.b`：双极混号；双极维度键>2 — 先拍下封面，手机拍照代替购买
+  - `q10.c`：双极混号；双极维度键>2 — 买下来放在客厅，作为家居装饰
+  - `q10.d`：结构检查通过 — 去图书馆借阅，免费获取内容
+- **q11** 题干：健身房推出年卡促销，你会
+  - `q11.a`：双极混号 — 立刻办卡，激励自己开始锻炼
+  - `q11.b`：双极混号 — 先体验几次，确认自己真的需要
+  - `q11.c`：双极混号；双极维度键>2 — 办卡后经常发朋友圈打卡，展示自律
+  - `q11.d`：结构检查通过 — 在家锻炼，无需办卡同样有效
+- **q12** 题干：音乐会门票很贵且座位一般，你会
+  - `q12.a`：双极混号；双极维度键>2 — 抢前排VIP座位，追求最佳体验
+  - `q12.b`：结构检查通过 — 买普通座位，把钱省下来买周边
+  - `q12.c`：双极混号；双极维度键>2 — 买票并分享到社交媒体，展现品味
+  - `q12.d`：双极混号；双极维度键>2 — 在家听直播或录音，效果差不多
+- **q13** 题干：在购物中心遇到一场限时特卖，你眼前有一件心仪已久的限量版外套正在打折，但原价你本打算用来报名一个专业技能提升课程。
+  - `q13.a`：结构检查通过 — 立刻抢购这件外套，机会难得，错过就没有了
+  - `q13.b`：双极混号 — 放弃外套，把钱投入到能提升自己未来的课程中
+  - `q13.c`：结构检查通过 — 先买下外套，但随后取消课程预约，给自己一个理由
+  - `q13.d`：结构检查通过 — 犹豫不决，反复比较两者的价值和意义
+- **q14** 题干：在一家新开的网红餐厅，发现他们提供一款普通但外观非常精美的餐具，可以单独购买。
+  - `q14.a`：结构检查通过 — 毫不犹豫买下这套餐具，因为它能让日常餐桌更有格调
+  - `q14.b`：结构检查通过 — 只点餐享用美食，餐具是餐厅应该提供的，没必要额外花钱
+  - `q14.c`：双极混号；双极维度键>2 — 购买餐具并拍照发朋友圈，让大家知道你品味独特
+  - `q14.d`：双极混号 — 觉得餐具好看但没必要，只是欣赏一下就算了
+- **q15** 题干：周末朋友邀请你参加一个高档派对，但需要购买一套新正装，或者你可以选择独自在家享受一场沉浸式的电影马拉松。
+  - `q15.a`：双极混号；双极维度键>2 — 立刻买下正装，派对是社交拓展的绝佳机会
+  - `q15.b`：结构检查通过 — 选择宅家看电影，享受一个人的宁静时光
+  - `q15.c`：结构检查通过 — 买下正装，但派对上一直担心衣服不合身或不合时宜
+  - `q15.d`：结构检查通过 — 找借口婉拒派对，但内心又有些后悔错过社交机会
+- **q16** 题干：在书店发现一套精装的经典文学作品，价格不菲，但你已经有电子版；同时书店旁边有一家小型咖啡店，据说他们的手冲咖啡体验非常好。
+  - `q16.a`：结构检查通过 — 毫不犹豫买下精装书，纸质书的质感和收藏价值无可替代
+  - `q16.b`：结构检查通过 — 直奔咖啡店，花钱体验一次独特的手冲咖啡过程
+  - `q16.c`：结构检查通过 — 买下书，然后在书店的咖啡区边喝咖啡边翻阅新书
+  - `q16.d`：结构检查通过 — 只看不买，觉得电子版和普通咖啡就能满足需求
+
+### 逐结果
+- **r1**（旅行体验）：profile 键与范围检查通过。
+- **r2**（精致美食）：profile 键与范围检查通过。
+- **r3**（电子产品）：profile 键与范围检查通过。
+- **r4**（书籍学习）：profile 键与范围检查通过。
+- **r5**（时尚单品）：profile 键与范围检查通过。
+- **r6**（演出音乐会）：profile 键与范围检查通过。
+- **r7**（健身运动）：profile 键与范围检查通过。
+- **r8**（居家品质）：profile 键与范围检查通过。
+
+## spirited-away-character-match
+- **计分**：`bipolar-dimension` · 维度数 4 · 题数 18 · 结果数 8
+- **错误（10）**
+  - bipolar axis "环境适应力": missing highPole
+  - bipolar axis "权力关系处理": missing highPole
+  - bipolar axis "自我认同稳固度": missing highPole
+  - bipolar axis "给予索取模式": missing highPole
+  - r7 is unreachable — dominated by r1 on all dimensions
+  - r7 is unreachable — dominated by r2 on all dimensions
+  - r7 is unreachable — dominated by r3 on all dimensions
+  - r7 is unreachable — dominated by r4 on all dimensions
+  - r7 is unreachable — dominated by r5 on all dimensions
+  - r7 is unreachable — dominated by r8 on all dimensions
+- **警告（35）**
+  - q1.a: bipolar option mixes positive and negative scores
+  - q1.b: bipolar option mixes positive and negative scores
+  - q2.a: bipolar option mixes positive and negative scores
+  - q2.b: bipolar option mixes positive and negative scores
+  - q4.a: bipolar option mixes positive and negative scores
+  - q4.b: bipolar option mixes positive and negative scores
+  - q4.d: bipolar option mixes positive and negative scores
+  - q5.a: bipolar option mixes positive and negative scores
+  - q6.a: bipolar option mixes positive and negative scores
+  - q6.b: bipolar option mixes positive and negative scores
+  - q6.d: bipolar option mixes positive and negative scores
+  - q7.a: bipolar option mixes positive and negative scores
+  - q7.b: bipolar option mixes positive and negative scores
+  - q7.c: bipolar option mixes positive and negative scores
+  - q8.a: bipolar option mixes positive and negative scores
+  - q9.a: bipolar option mixes positive and negative scores
+  - q9.d: bipolar option mixes positive and negative scores
+  - q10.a: bipolar option mixes positive and negative scores
+  - q10.c: bipolar option mixes positive and negative scores
+  - q12.a: bipolar option mixes positive and negative scores
+  - q12.b: bipolar option mixes positive and negative scores
+  - q12.c: bipolar option mixes positive and negative scores
+  - q12.d: bipolar option mixes positive and negative scores
+  - q14.c: bipolar option mixes positive and negative scores
+  - q14.d: bipolar option mixes positive and negative scores
+  - q15.b: bipolar option mixes positive and negative scores
+  - q15.c: bipolar option mixes positive and negative scores
+  - q17.c: bipolar option mixes positive and negative scores
+  - q18.d: bipolar option mixes positive and negative scores
+  - r7 is unreachable — dominated by r1 on all dimensions
+  - r7 is unreachable — dominated by r2 on all dimensions
+  - r7 is unreachable — dominated by r3 on all dimensions
+  - r7 is unreachable — dominated by r4 on all dimensions
+  - r7 is unreachable — dominated by r5 on all dimensions
+  - r7 is unreachable — dominated by r8 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：当你第一次进入汤婆婆的浴场，发现这里的一切都陌生而奇特，你会如何开始探索这个新世界？
+  - `q1.a`：双极混号 — 悄悄观察周围人的行为模式，然后模仿他们
+  - `q1.b`：双极混号 — 直接向路过的员工询问各个区域的功能和规则
+  - `q1.c`：结构检查通过 — 凭借直觉找到看似重要的区域，尝试参与进去
+  - `q1.d`：结构检查通过 — 先找个角落藏起来，等确定安全后再行动
+- **q2** 题干：汤婆婆发现你在浴场里没有工作，威胁要将你变成小老鼠。你会如何回应她的权威？
+  - `q2.a`：双极混号 — 立刻承认错误，承诺会找到工作来弥补
+  - `q2.b`：双极混号 — 直视她的眼睛，冷静地解释自己的困境和寻找工作的努力
+  - `q2.c`：结构检查通过 — 提出一个对她有价值的交换条件，展示自己的独特技能
+  - `q2.d`：结构检查通过 — 转身逃跑，希望能在其他地方找到庇护
+- **q3** 题干：在锅炉爷爷的帮助下，你得到了在浴场工作的机会。你会如何处理这份来自权威的帮助？
+  - `q3.a`：结构检查通过 — 接受帮助但坚持靠自己完成工作，不欠人情
+  - `q3.b`：结构检查通过 — 欣然接受帮助，并希望未来能回报这份恩情
+  - `q3.c`：结构检查通过 — 尽量避免再次寻求帮助，怕形成依赖关系
+  - `q3.d`：结构检查通过 — 将帮助视为理所当然，专注于自己的工作表现
+- **q4** 题干：当无脸男开始跟随你并试图给予你金子时，你的反应是？
+  - `q4.a`：双极混号 — 接受他的好意，但不接受他给予的贵重物品
+  - `q4.b`：双极混号 — 礼貌地拒绝他的跟随和礼物，保持适当距离
+  - `q4.c`：结构检查通过 — 鼓励他融入群体，分享他的财富帮助他人
+  - `q4.d`：双极混号 — 对他产生警惕，担心他的动机和带来的麻烦
+- **q5** 题干：在浴场的夜晚，你需要独自前往锅炉房取煤。面对黑暗和陌生的路径，你会？
+  - `q5.a`：双极混号 — 点亮随身的小灯，仔细观察周围环境前进
+  - `q5.b`：结构检查通过 — 相信自己的记忆和直觉，快速完成任务
+  - `q5.c`：结构检查通过 — 寻找同行伙伴一起前往，减少独自面对的恐惧
+  - `q5.d`：结构检查通过 — 推迟任务，等到天亮后再去取煤
+- **q6** 题干：当你的名字被汤婆婆偷走，变成了"小千"，你如何找回自己的身份？
+  - `q6.a`：双极混号 — 记住自己是谁，即使名字被改，也不忘记本心
+  - `q6.b`：双极混号 — 接受新身份，在规则内找到立足点，等待时机
+  - `q6.c`：结构检查通过 — 寻求白龙的帮助，利用他与汤婆婆的特殊关系
+  - `q6.d`：双极混号 — 尝试直接对抗汤婆婆，要求归还自己的名字
+- **q7** 题干：在汤婆婆的澡堂工作第一天，你面对陌生的环境和严格的规则，你会怎么做？
+  - `q7.a`：双极混号 — 仔细观察周围人的行为，模仿学习适应新环境
+  - `q7.b`：双极混号 — 坚持做自己，拒绝改变自己的行为方式来迎合规则
+  - `q7.c`：双极混号 — 主动向经验丰富的工友请教，寻求帮助和建议
+  - `q7.d`：结构检查通过 — 暗中观察汤婆婆的性格特点，尝试找到她的喜好和弱点
+- **q8** 题干：当锅炉爷爷要求你帮忙搬运煤炭时，你注意到小煤球们很辛苦，你会怎么做？
+  - `q8.a`：双极混号 — 按照指示完成任务，不额外关心煤球的感受
+  - `q8.b`：结构检查通过 — 想办法让煤球们搬运更轻松，同时完成任务
+  - `q8.c`：结构检查通过 — 质疑为什么要让煤球们做苦力，试图改变现状
+  - `q8.d`：结构检查通过 — 只做分内的事，不干涉其他角色的工作方式
+- **q9** 题干：在夜晚的屋顶上，你无意中听到汤婆婆和无面男之间的秘密谈话，你会怎么做？
+  - `q9.a`：双极混号 — 假装没听到，继续自己的事情，不卷入其中
+  - `q9.b`：结构检查通过 — 仔细聆听并记住所有细节，思考可能的含义和后果
+  - `q9.c`：结构检查通过 — 直接质问汤婆婆，表明自己听到了谈话
+  - `q9.d`：双极混号 — 思考如何利用这个信息来改善自己的处境
+- **q10** 题干：当无面男开始暴饮暴食，吸引所有人的注意力时，你的反应是？
+  - `q10.a`：双极混号 — 远离他，避免被卷入混乱的局面
+  - `q10.b`：结构检查通过 — 尝试与无面男交流，理解他的孤独和渴望
+  - `q10.c`：双极混号 — 利用这个机会在汤婆婆面前表现自己的能力
+  - `q10.d`：结构检查通过 — 批评无面男的行为，认为他太过分了
+- **q11** 题干：在魔法森林的迷雾中，你与同伴走散了，你会怎么做？
+  - `q11.a`：结构检查通过 — 冷静分析周围环境，寻找熟悉的标志或路径
+  - `q11.b`：结构检查通过 — 按照直觉和感觉选择一个方向前进
+  - `q11.c`：结构检查通过 — 大声呼喊同伴的名字，希望得到回应
+  - `q11.d`：结构检查通过 — 感到恐慌和害怕，不知所措地原地等待
+- **q12** 题干：当汤婆婆试图用金钱和权力诱惑你忘记自己的名字和身份时，你会？
+  - `q12.a`：双极混号 — 坚定地拒绝诱惑，坚持记住自己的名字和身份
+  - `q12.b`：双极混号 — 暂时接受诱惑，但暗中寻找机会恢复自己的身份
+  - `q12.c`：双极混号 — 毫不犹豫地接受诱惑，享受权力和地位
+  - `q12.d`：双极混号 — 质疑汤婆婆的动机，分析她的真实目的
+- **q13** 题干：在汤婆婆的魔法澡堂里，你发现自己的身体正在一点点变成透明，只有努力工作才能恢复原状。你会怎么做？
+  - `q13.a`：结构检查通过 — 立刻放下一切，专注于完成分配的任务，相信努力会带来回报
+  - `q13.b`：结构检查通过 — 四处寻找捷径或魔法，试图快速恢复身体而不愿踏实工作
+  - `q13.c`：结构检查通过 — 寻找其他同样处境的人，互相帮助并分享工作心得
+  - `q13.d`：结构检查通过 — 对汤婆婆的规则表示不满，拒绝服从并试图反抗整个系统
+- **q14** 题干：在夜晚的屋顶上，小玲递给你一把满是泥巴的饭团，说这是给你的报酬。你的反应是？
+  - `q14.a`：结构检查通过 — 毫不犹豫地接过饭团，即使它看起来不可食用，也视作工作应有的报酬
+  - `q14.b`：结构检查通过 — 直接拒绝饭团，认为自己应得更好的待遇或直接要求报酬
+  - `q14.c`：双极混号 — 礼貌地接过饭团，但悄悄将其藏起来，寻找更好的食物补充
+  - `q14.d`：双极混号 — 质问小玲为何给这样的报酬，并质疑整个报酬体系的合理性
+- **q15** 题干：当汤婆婆发现你偷偷帮助无脸男时，她威胁要惩罚你和所有与你相关的人。你会如何应对？
+  - `q15.a`：结构检查通过 — 立刻承认错误，承担全部责任，保护他人免受惩罚
+  - `q15.b`：双极混号 — 指责汤婆婆不公平，坚持自己的帮助行为是正确的
+  - `q15.c`：双极混号 — 暗中寻找其他帮助无脸男的方法，避开汤婆婆的监视
+  - `q15.d`：结构检查通过 — 放弃帮助无脸男，专注于保护自己不受惩罚
+- **q16** 题干：在魔法森林中，你意外发现了一条能带你离开这个地方的秘密通道，但同时也知道离开意味着将永远失去与外界联系的机会。你会如何选择？
+  - `q16.a`：结构检查通过 — 毫不犹豫地选择离开，即使这意味着将永远失去回到原世界的可能
+  - `q16.b`：结构检查通过 — 选择留下，相信通过自己的努力最终能找到回家的方法
+  - `q16.c`：结构检查通过 — 先秘密探索通道，同时继续在澡堂工作，为自己保留更多选择
+  - `q16.d`：结构检查通过 — 向汤婆婆透露通道的存在，希望借此获得特殊优待或权力
+- **q17** 题干：当锅炉爷爷要求你帮他搬运沉重的煤块，而你知道这违反了汤婆婆的规定时，你会怎么做？
+  - `q17.a`：结构检查通过 — 毫不犹豫地帮助锅炉爷爷，认为规则不应阻止助人为乐
+  - `q17.b`：结构检查通过 — 拒绝帮助锅炉爷爷，严格遵守汤婆婆的所有规定，不越雷池一步
+  - `q17.c`：双极混号 — 暗中寻找不违反规则的方法帮助锅炉爷爷，比如建议他向汤婆婆申请帮助
+  - `q17.d`：结构检查通过 — 告诉锅炉爷爷违反规定的后果，建议他自己面对并处理这个问题
+- **q18** 题干：在漂浮的河面上，你发现了一艘能带你前往钱婆婆小屋的小船，但船上没有桨。你的选择是？
+  - `q18.a`：结构检查通过 — 尝试用双手划水，即使速度很慢也坚持向钱婆婆的小屋前进
+  - `q18.b`：结构检查通过 — 放弃前往钱婆婆小屋的计划，回到熟悉的澡堂环境，寻找其他帮助无脸男的方法
+  - `q18.c`：结构检查通过 — 尝试用魔法或河边的树枝制作临时船桨，寻找创造性的解决方案
+  - `q18.d`：双极混号 — 等待其他船经过，请求搭乘顺风船前往目的地
+
+### 逐结果
+- **r1**（千寻）：profile 键与范围检查通过。
+- **r2**（白龙）：profile 键与范围检查通过。
+- **r3**（汤婆婆）：profile 键与范围检查通过。
+- **r4**（钱婆婆）：profile 键与范围检查通过。
+- **r5**（小玲）：profile 键与范围检查通过。
+- **r6**（无脸男）：profile 键与范围检查通过。
+- **r7**（坊宝宝）：profile 键与范围检查通过。
+- **r8**（锅炉爷爷）：profile 键与范围检查通过。
+
+## spiritual-homeland-match
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 18 · 结果数 8
+- **警告（28）**
+  - r1: missing "strengths"
+  - r1: missing "weaknesses"
+  - r1: only 0 strengths (want 3)
+  - r1: only 0 weaknesses (want 3)
+  - r2: missing "strengths"
+  - r2: missing "weaknesses"
+  - r2: only 0 strengths (want 3)
+  - r2: only 0 weaknesses (want 3)
+  - r4: missing "strengths"
+  - r4: missing "weaknesses"
+  - r4: only 0 strengths (want 3)
+  - r4: only 0 weaknesses (want 3)
+  - r5: missing "strengths"
+  - r5: missing "weaknesses"
+  - r5: only 0 strengths (want 3)
+  - r5: only 0 weaknesses (want 3)
+  - r6: missing "strengths"
+  - r6: missing "weaknesses"
+  - r6: only 0 strengths (want 3)
+  - r6: only 0 weaknesses (want 3)
+  - r7: missing "strengths"
+  - r7: missing "weaknesses"
+  - r7: only 0 strengths (want 3)
+  - r7: only 0 weaknesses (want 3)
+  - r8: missing "strengths"
+  - r8: missing "weaknesses"
+  - r8: only 0 strengths (want 3)
+  - r8: only 0 weaknesses (want 3)
+
+### 逐题 · 逐选项
+- **q1** 题干：漫步在石板路上，你偶然发现一家隐匿在转角的老书店，橱窗里摆满了泛黄的古旧书籍，门上挂着一个小铃铛。你会如何对待这个发现？
+  - `q1.a`：结构检查通过 — 推门而入，在书架间游走，手指轻触书脊，感受时光的痕迹
+  - `q1.b`：结构检查通过 — 站在橱窗外，静静凝视那些旧书，想象它们曾见证的故事
+  - `q1.c`：结构检查通过 — 匆匆记下地址，决定改天带朋友一起来探索这个宝藏
+  - `q1.d`：结构检查通过 — 继续向前，心里盘算着晚上回家后可以网购类似的书籍
+- **q2** 题干：午后阳光斜照，你走进一家安静的咖啡馆，角落里有一架钢琴，一位老人正在即兴演奏。你会如何度过这个下午？
+  - `q2.a`：结构检查通过 — 点一杯咖啡，坐在靠窗的位置，任由钢琴声和思绪一起流淌
+  - `q2.b`：结构检查通过 — 观察咖啡馆里每个人的神态，记录下这些平凡生活中的诗意瞬间
+  - `q2.c`：结构检查通过 — 尝试与老人攀谈，询问他的音乐故事和这座城市的变迁
+  - `q2.d`：结构检查通过 — 拿出笔记本，将那些即兴的旋律和窗外的光影一起记下来
+- **q3** 题干：在一条狭窄的老巷里，你发现一面爬满藤蔓的墙壁，上面的涂鸦与岁月留下的痕迹交织在一起。你会做什么？
+  - `q3.a`：结构检查通过 — 举起相机，从不同角度捕捉这独特的城市肌理与时间印记
+  - `q3.b`：结构检查通过 — 轻轻触摸墙面，感受不同年代留下的温度与故事
+  - `q3.c`：结构检查通过 — 寻找巷子里的居民，询问这面墙背后的故事和变迁
+  - `q3.d`：结构检查通过 — 在这里稍作停留，让这份宁静修复内心的疲惫
+- **q4** 题干：黄昏时分，你站在一座古老石桥上，河水倒映着夕阳余晖，桥下的小船缓缓划过。你会如何度过这片刻？
+  - `q4.a`：结构检查通过 — 静静站立，感受时光在此刻的流动与凝固，思绪随波光摇曳
+  - `q4.b`：结构检查通过 — 仔细观察水面的光影变化和桥上斑驳的石纹，感受自然的韵律
+  - `q4.c`：结构检查通过 — 向桥上的路人打听这座桥的历史和周围的变迁故事
+  - `q4.d`：结构检查通过 — 坐在桥边的长椅上，让这份宁静治愈一天的疲惫
+- **q5** 题干：在一个周末的市集上，你看到一位手工艺人正在制作传统工艺品，周围围满了好奇的围观者。你会怎么做？
+  - `q5.a`：结构检查通过 — 挤进人群，近距离观察手工艺人的每一个动作细节，感受专注的力量
+  - `q5.b`：结构检查通过 — 静静等待人群散去，再与手工艺人交流，了解技艺背后的历史传承
+  - `q5.c`：结构检查通过 — 购买一件作品，支持这门手工艺，并期待下一次市集的到来
+  - `q5.d`：结构检查通过 — 用手机记录下这一幕，回家后查阅相关的文化背景
+- **q6** 题干：在城市的一角，你发现一个被遗忘的小花园，野草丛生，但依然有几株顽强绽放的花朵。你会如何对待这个发现？
+  - `q6.a`：结构检查通过 — 蹲下身，仔细观察那些花朵如何在逆境中绽放，感受生命的韧性
+  - `q6.b`：结构检查通过 — 思考这个花园的过去与未来，想象它曾经的辉煌和可能的转变
+  - `q6.c`：结构检查通过 — 询问附近的居民，了解这个花园的历史和它所承载的记忆
+  - `q6.d`：结构检查通过 — 在这里停留片刻，让这份野性的宁静滋养内心
+- **q7** 题干：漫步在古老石板路上，突然发现一家不起眼的手工皮具作坊，橱窗里陈列着一件精致的皮夹。
+  - `q7.a`：结构检查通过 — 驻足欣赏工艺细节，思考皮革如何历经岁月而愈发柔韧
+  - `q7.b`：结构检查通过 — 好奇店主故事，想象皮具背后的人与岁月，推门而入
+  - `q7.c`：结构检查通过 — 迅速记录下店铺位置，计划下次带朋友一起来分享发现
+  - `q7.d`：结构检查通过 — 只看一眼就离开，心中已有更重要的目的地，不愿在此停留
+- **q8** 题干：午后阳光斜照在广场一角，几位老人围坐闲谈，身旁是一棵百年古树。
+  - `q8.a`：结构检查通过 — 选择远处的长椅坐下，静静聆听对话片段，感受时光流逝
+  - `q8.b`：结构检查通过 — 自然地加入谈话，询问古树历史，聆听老人口中的往事
+  - `q8.c`：结构检查通过 — 用手机记录下这一刻，将光影与人物融入构图，捕捉城市记忆
+  - `q8.d`：结构检查通过 — 绕过广场继续前行，古树虽美但无法停留太久，还有更多地方要去
+- **q9** 题干：在旧书店的角落发现一本泛黄的地图册，标记着城市早已消失的街巷和建筑。
+  - `q9.a`：结构检查通过 — 立即买下，沿着地图上的路线漫步，寻找历史的痕迹
+  - `q9.b`：结构检查通过 — 静静翻阅，想象每个地点曾经的故事和人物，内心充满感动
+  - `q9.c`：结构检查通过 — 只看几页就放下，现代城市的变迁更有吸引力，不愿沉溺过去
+  - `q9.d`：结构检查通过 — 询问店主更多关于地图册的故事，了解城市的记忆如何保存
+- **q10** 题干：傍晚时分，城市的霓虹灯逐渐亮起，你站在高处俯瞰万家灯火。
+  - `q10.a`：结构检查通过 — 寻找制高点，想捕捉城市全貌的光影变化，构图拍摄
+  - `q10.b`：结构检查通过 — 想象每个灯光背后的人和生活，思考城市的呼吸与脉搏
+  - `q10.c`：结构检查通过 — 快速记录下几个亮点位置，计划晚上再去探索这些热闹区域
+  - `q10.d`：结构检查通过 — 加入观景台的人群，聆听他人对城市的感受，分享自己的发现
+- **q11** 题干：穿过一条窄巷，突然闻到新鲜出炉的面包香气，一家小面包坊出现在眼前。
+  - `q11.a`：结构检查通过 — 被香气吸引，推门而入，询问面包师傅的手艺和灵感来源
+  - `q11.b`：结构检查通过 — 驻足观察面包坊的装修风格和氛围，欣赏传统与现代的融合
+  - `q11.c`：结构检查通过 — 匆匆买下一个面包，边走边吃，继续未完成的探索之旅
+  - `q11.d`：结构检查通过 — 思考面包背后的历史和文化，想象这家店在城市变迁中的角色
+- **q12** 题干：在城市公园的长椅上休息，周围是不同年龄、不同背景的人各自享受着自己的时光。
+  - `q12.a`：结构检查通过 — 观察人群的互动和节奏，思考城市如何容纳多样生活方式
+  - `q12.b`：结构检查通过 — 选择人群中的安静角落，沉浸在自己的思绪中，感受城市的呼吸
+  - `q12.c`：结构检查通过 — 主动与陌生人交谈，了解他们的故事和与城市的联结
+  - `q12.d`：结构检查通过 — 记录下公园的细节变化，思考城市空间如何被不同的人重新定义
+- **q13** 题干：漫步在古老石板路上，你发现一处被岁月磨平的青石阶，上面刻着模糊的碑文，阳光透过树叶在石面上投下斑驳光影。你会
+  - `q13.a`：结构检查通过 — 蹲下来仔细辨认每一个字迹，想象着这里曾经发生的故事
+  - `q13.b`：结构检查通过 — 直接跨过石阶，继续往前走，寻找下一个可能的景点
+  - `q13.c`：结构检查通过 — 站在石阶旁，静静感受阳光的温度和石头的质感
+  - `q13.d`：结构检查通过 — 掏出手机拍下这一刻，稍后查查这个地方的历史背景
+- **q14** 题干：市集的角落里，一位老艺人正在手工制作传统工艺品，周围稀疏地站着几个驻足的观众。你会
+  - `q14.a`：结构检查通过 — 静静地坐在一旁，观看完整的制作过程，感受指尖与材料的对话
+  - `q14.b`：结构检查通过 — 询问价格并购买一件作品，支持传统技艺的传承
+  - `q14.c`：结构检查通过 — 向艺人请教制作技巧，希望能亲身体验一次
+  - `q14.d`：结构检查通过 — 只是匆匆一瞥，对成品有基本评价后便离开
+- **q15** 题干：午后，你走进一家隐藏在老巷中的咖啡馆，窗户透进柔和的光线，木质书架上摆满了旧书。咖啡师问你需要什么饮品，你会
+  - `q15.a`：结构检查通过 — 点一杯特调咖啡，询问背后的故事和制作理念
+  - `q15.b`：结构检查通过 — 只点一杯美式咖啡，然后找角落的座位开始阅读
+  - `q15.c`：结构检查通过 — 尝试店员推荐的当季特饮，与咖啡师交流味道感受
+  - `q15.d`：结构检查通过 — 点一杯拿铁，快速喝完继续行程中的下一站
+- **q16** 题干：黄昏时分，你站在高处俯瞰城市轮廓，远处教堂的钟声与近处街道的车流声交织。你会
+  - `q16.a`：结构检查通过 — 静静聆听钟声的回响，感受时间在城市中的流逝
+  - `q16.b`：结构检查通过 — 拿出相机捕捉城市与天空交界处的光影变化
+  - `q16.c`：结构检查通过 — 想象这座城市的历史变迁和未来可能的样子
+  - `q16.d`：结构检查通过 — 计算还需要多久才能回到住处，规划晚上的活动
+- **q17** 题干：你路过一家旧书店，橱窗里摆着一本封面泛黄的诗集。你会
+  - `q17.a`：结构检查通过 — 推门而入，寻找类似风格的其他作品，沉浸在文字的海洋中
+  - `q17.b`：结构检查通过 — 驻足橱窗前，尝试从封面和书名推测内容，想象其中的故事
+  - `q17.c`：结构检查通过 — 记下书名和作者，稍后在网上查找评价和简介
+  - `q17.d`：结构检查通过 — 只是匆匆一瞥，对旧书没有特别兴趣，继续前行
+- **q18** 题干：城市公园的长椅上，一位老人正在喂鸽子，周围的树枝上栖息着几只麻雀。你会
+  - `q18.a`：结构检查通过 — 静静地坐在老人旁边，观察他与鸽子的互动，感受城市的宁静
+  - `q18.b`：结构检查通过 — 拿出手机拍摄这场景，捕捉人与自然的和谐画面
+  - `q18.c`：结构检查通过 — 与老人交谈，了解他每天来公园喂鸽子的故事
+  - `q18.d`：结构检查通过 — 绕开鸽子，找另一张空着的长椅坐下休息
+
+### 逐结果
+- **r1**（京都）：profile 键与范围检查通过。
+- **r2**（大理）：profile 键与范围检查通过。
+- **r3**（巴黎）：profile 键与范围检查通过。
+- **r4**（纽约）：profile 键与范围检查通过。
+- **r5**（伊斯坦布尔）：profile 键与范围检查通过。
+- **r6**（布拉格）：profile 键与范围检查通过。
+- **r7**（冰岛）：profile 键与范围检查通过。
+- **r8**（加德满都）：profile 键与范围检查通过。
+
+## spiritual-homeland
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 18 · 结果数 12
+- **错误（6）**
+  - r4 ↔ r11: profiles too similar (max diff 0.10)
+  - r5 ↔ r9: profiles too similar (max diff 0.10)
+  - r1 is unreachable — dominated by r9 on all dimensions
+  - r2 is unreachable — dominated by r10 on all dimensions
+  - r4 is unreachable — dominated by r12 on all dimensions
+  - r6 is unreachable — dominated by r10 on all dimensions
+- **警告（56）**
+  - r5 ↔ r6: profiles too similar (max diff 0.15)
+  - r1: missing "strengths"
+  - r1: missing "weaknesses"
+  - r1: only 0 strengths (want 3)
+  - r1: only 0 weaknesses (want 3)
+  - r2: missing "strengths"
+  - r2: missing "weaknesses"
+  - r2: only 0 strengths (want 3)
+  - r2: only 0 weaknesses (want 3)
+  - r3: missing "strengths"
+  - r3: missing "weaknesses"
+  - r3: only 0 strengths (want 3)
+  - r3: only 0 weaknesses (want 3)
+  - r4: missing "strengths"
+  - r4: missing "weaknesses"
+  - r4: only 0 strengths (want 3)
+  - r4: only 0 weaknesses (want 3)
+  - r5: missing "strengths"
+  - r5: missing "weaknesses"
+  - r5: only 0 strengths (want 3)
+  - r5: only 0 weaknesses (want 3)
+  - r6: missing "strengths"
+  - r6: missing "weaknesses"
+  - r6: only 0 strengths (want 3)
+  - r6: only 0 weaknesses (want 3)
+  - r7: missing "strengths"
+  - r7: missing "weaknesses"
+  - r7: only 0 strengths (want 3)
+  - r7: only 0 weaknesses (want 3)
+  - r8: missing "strengths"
+  - r8: missing "weaknesses"
+  - r8: only 0 strengths (want 3)
+  - r8: only 0 weaknesses (want 3)
+  - r9: missing "strengths"
+  - r9: missing "weaknesses"
+  - r9: only 0 strengths (want 3)
+  - r9: only 0 weaknesses (want 3)
+  - r10: missing "strengths"
+  - r10: missing "weaknesses"
+  - r10: only 0 strengths (want 3)
+  - r10: only 0 weaknesses (want 3)
+  - r11: missing "strengths"
+  - r11: missing "weaknesses"
+  - r11: only 0 strengths (want 3)
+  - r11: only 0 weaknesses (want 3)
+  - r12: missing "strengths"
+  - r12: missing "weaknesses"
+  - r12: only 0 strengths (want 3)
+  - r12: only 0 weaknesses (want 3)
+  - r4 ↔ r11: profiles too similar (max diff 0.10), users may cluster
+  - r5 ↔ r6: profiles too similar (max diff 0.15), users may cluster
+  - r5 ↔ r9: profiles too similar (max diff 0.10), users may cluster
+  - r1 is unreachable — dominated by r9 on all dimensions
+  - r2 is unreachable — dominated by r10 on all dimensions
+  - r4 is unreachable — dominated by r12 on all dimensions
+  - r6 is unreachable — dominated by r10 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：在京都一处古朴的茶室内，你被邀请参与一场传统的茶道仪式。茶师正在准备抹茶，动作行云流水。你此刻的感受是什么？
+  - `q1.a`：结构检查通过 — 专注观察每一个细节，感受器皿的质地与茶香的变化
+  - `q1.b`：结构检查通过 — 思考茶道背后的禅意，如何在忙碌生活中找到平静
+  - `q1.c`：结构检查通过 — 期待与茶师交流，了解不同流派茶道的差异与特点
+  - `q1.d`：结构检查通过 — 欣赏茶室的简约美学，感受空间与光影的和谐
+- **q2** 题干：威尼斯圣马可广场上，一位街头艺人正在演奏巴洛克时期的古典音乐。游客们驻足聆听，鸽子在人群中穿梭。你会如何度过这段时光？
+  - `q2.a`：结构检查通过 — 选择一个角落，静静聆听，让音乐在脑海中形成完整的画面
+  - `q2.b`：结构检查通过 — 走近艺人，询问他关于曲目和演奏技巧的问题
+  - `q2.c`：结构检查通过 — 观察周围游客的反应，思考音乐如何跨越语言和文化
+  - `q2.d`：结构检查通过 — 沿着运河漫步，让建筑与自然光影成为音乐的背景
+- **q3** 题干：在巴黎左岸的一家老咖啡馆里，阳光透过落地窗洒在木质桌面上。你面前放着一杯浓缩咖啡，笔记本摊开。你此刻最想做什么？
+  - `q3.a`：结构检查通过 — 记录下窗外的街景和行人的姿态，捕捉日常生活中的诗意
+  - `q3.b`：结构检查通过 — 与邻座的陌生人闲聊，听听他们的故事和观点
+  - `q3.c`：结构检查通过 — 沉浸在自己的思绪中，让咖啡的苦涩激发深刻的思考
+  - `q3.d`：结构检查通过 — 欣赏咖啡馆的艺术装饰和历史痕迹，感受时光的沉淀
+- **q4** 题干：在挪威的森林小径上徒步，阳光透过茂密的松树林，在苔藓覆盖的地面上投下斑驳的光影。远处传来瀑布的声音，空气中弥漫着松针的清香。你更倾向于如何体验这一刻？
+  - `q4.a`：结构检查通过 — 停下脚步，静静聆听自然的声音，感受森林的脉搏
+  - `q4.b`：结构检查通过 — 仔细观察每一种植物和昆虫，记录它们之间的生态关系
+  - `q4.c`：结构检查通过 — 思考人类在自然中的位置，以及如何与自然和谐共处
+  - `q4.d`：结构检查通过 — 期待与偶遇的其他徒步者分享路线和观景体验
+- **q5** 题干：在印度瓦拉纳西的恒河岸边，晨雾中，信徒们正在进行晨祷。祭司们摇响铃铛，诵经声在空气中回荡。你被这幅场景深深吸引，你会如何参与其中？
+  - `q5.a`：结构检查通过 — 跟随当地人的节奏，参与简单的祈祷仪式，感受精神的力量
+  - `q5.b`：结构检查通过 — 观察祭司们的手势和服饰，记录下这些文化符号的细节
+  - `q5.c`：结构检查通过 — 与一位老者交谈，了解恒河在他们生活中的精神意义
+  - `q5.d`：结构检查通过 — 反思不同文化中对生命和死亡的理解，以及仪式背后的哲学
+- **q6** 题干：在摩洛哥马拉喀什的庭院中，喷泉水声潺潺，彩色瓷砖在阳光下熠熠生辉。空气中弥漫着香料和烤面包的香气。你会如何度过这个午后？
+  - `q6.a`：结构检查通过 — 坐在喷泉旁，闭上眼睛，让水声和香气交织成感官的盛宴
+  - `q6.b`：结构检查通过 — 与当地手工艺人交谈，了解传统图案背后的文化含义
+  - `q6.c`：结构检查通过 — 思考多元文化如何在同一空间中和谐共存，互相影响
+  - `q6.d`：结构检查通过 — 记录下庭院中的光影变化和几何图案，感受美学的规律
+- **q7** 题干：在意大利广场的露天咖啡座上，一位街头艺人正在演奏小提琴。你会如何度过这个下午？
+  - `q7.a`：结构检查通过 — 点一杯浓缩咖啡，安静地聆听音乐，观察行色匆匆的路人
+  - `q7.b`：结构检查通过 — 主动搭讪艺人，探讨音乐技巧，甚至即兴加入演奏
+  - `q7.c`：结构检查通过 — 选择角落的位置，一边品尝咖啡，一边素描广场上的建筑和人物
+  - `q7.d`：结构检查通过 — 思考这座城市的历史变迁，思考艺术如何在现代社会中保持生命力
+- **q8** 题干：在法国左岸的旧书店里，你发现了一本泛黄的日记。封面上的字迹已经模糊，但隐约可见十九世纪的日期。你会？
+  - `q8.a`：结构检查通过 — 立即买下它，在街角的咖啡馆里一页页阅读，试图拼凑作者的生活
+  - `q8.b`：结构检查通过 — 犹豫不决，担心这是某人的隐私，最终只买了一本现代诗集
+  - `q8.c`：结构检查通过 — 向店主询问这本日记的来历，期待能发现更多关于作者的信息
+  - `q8.d`：结构检查通过 — 想象日记中可能记录的日常生活和思想，思考时代变迁中人性的不变
+- **q9** 题干：在北欧森林的小木屋里，窗外飘着细雪，壁炉里的木柴发出噼啪声。你如何度过这个夜晚？
+  - `q9.a`：结构检查通过 — 专注于手工艺，用当地的桦树皮制作一件小饰品
+  - `q9.b`：结构检查通过 — 邀请几位当地村民围坐壁炉，分享各自的故事和传统
+  - `q9.c`：结构检查通过 — 静静观察窗外的自然变化，记录光影和雪景的细微差别
+  - `q9.d`：结构检查通过 — 思考极简生活的本质，思考人与自然和谐共处的可能性
+- **q10** 题干：在印度市集的香料摊位前，空气中弥漫着姜黄、豆蔻和檀香的复杂香气。面对琳琅满目的香料，你会？
+  - `q10.a`：结构检查通过 — 询问每种香料的用途和搭配方法，详细记录下来以便日后尝试
+  - `q10.b`：结构检查通过 — 根据直觉挑选几种，相信自己的感官能找到最和谐的组合
+  - `q10.c`：结构检查通过 — 与摊主攀谈，了解这些香料在当地文化和仪式中的意义
+  - `q10.d`：结构检查通过 — 思考香料贸易的历史，思考不同文明通过香料建立的连接
+- **q11** 题干：在摩洛哥庭院的喷泉旁，你被墙上复杂的几何图案吸引。这些图案在阳光照射下投下不断变化的阴影。你？
+  - `q11.a`：结构检查通过 — 仔细研究图案的数学原理，思考几何与美学的结合
+  - `q11.b`：结构检查通过 — 邀请当地艺术家分享这些图案背后的宗教和文化含义
+  - `q11.c`：结构检查通过 — 用相机记录不同时间光线下的图案变化，思考时间对艺术的影响
+  - `q11.d`：结构检查通过 — 思考秩序与混沌的平衡，思考人类如何在混乱中寻找意义
+- **q12** 题干：在新西兰山脉的徒步途中，你发现一处原住民的岩画遗址，图案描绘着传说中的生物和自然力量。你会？
+  - `q12.a`：结构检查通过 — 小心翼翼地记录下来，不带任何现代解释，尊重原意
+  - `q12.b`：结构检查通过 — 思考这些图案与现代环保理念的共鸣，思考人与自然的关系
+  - `q12.c`：结构检查通过 — 寻找当地向导，了解这些图案背后的故事和传统
+  - `q12.d`：结构检查通过 — 尝试用现代艺术手法重新诠释这些古老图案，探索传统与现代的融合
+- **q13** 题干：在京都古朴的茶室中，主人正为你准备抹茶。茶具简朴，空间寂静，只有热水注入茶碗的声音。你会如何度过这段品茶时光？
+  - `q13.a`：结构检查通过 — 专注品味茶香，感受每一口的味道变化
+  - `q13.b`：结构检查通过 — 与主人交谈，了解茶道背后的哲学故事
+  - `q13.c`：结构检查通过 — 静静观察茶室细节，感受空间的禅意氛围
+  - `q13.d`：结构检查通过 — 思考如何将这种简约美学融入日常生活
+- **q14** 题干：在威尼斯的圣马可广场，黄昏时分，鸽子群飞过古老建筑。街头艺人正在演奏，游客如织，而你手握一杯浓缩咖啡。
+  - `q14.a`：结构检查通过 — 站在广场中央，感受历史与现代交融的震撼
+  - `q14.b`：结构检查通过 — 坐在咖啡馆角落，观察来往人群，捕捉生活片段
+  - `q14.c`：结构检查通过 — 加入当地人的闲谈，了解这座城市的生活故事
+  - `q14.d`：结构检查通过 — 思考如何在快节奏生活中保持这种优雅从容
+- **q15** 题干：巴黎左岸的咖啡馆里，雨水拍打着窗户，你正在等待一位朋友。桌上放着一本未读完的诗集，邻桌是两位热烈讨论的法国人。
+  - `q15.a`：结构检查通过 — 继续沉浸在诗的世界，享受独处的静谧时光
+  - `q15.b`：结构检查通过 — 加入邻桌的讨论，即使语言不通也尝试交流
+  - `q15.c`：结构检查通过 — 观察窗外行人，思考城市生活的诗意与矛盾
+  - `q15.d`：结构检查通过 — 记录此刻的感受，思考艺术如何反映生活本质
+- **q16** 题干：在挪威的森林小径上，阳光透过高大松树洒落斑驳光影，远处是雪山。你独自徒步，只有鸟鸣和风吹树叶的声音陪伴。
+  - `q16.a`：结构检查通过 — 停下脚步，仔细观察森林中的微小生命，感受自然和谐
+  - `q16.b`：结构检查通过 — 继续前行，享受与自然独处的宁静力量
+  - `q16.c`：结构检查通过 — 思考如何在现代社会中保持与自然的连接
+  - `q16.d`：结构检查通过 — 尝试与偶遇的其他徒步者分享对自然的感悟
+- **q17** 题干：在德累斯顿的古老图书馆，阳光透过高窗照亮尘埃飞舞的空气。书架间弥漫着皮革和旧纸张的气味，周围是潜心阅读的人们。
+  - `q17.a`：结构检查通过 — 穿梭于书架之间，寻找一本偶然吸引你的古籍
+  - `q17.b`：结构检查通过 — 找一个安静的角落，沉浸在书中的世界
+  - `q17.c`：结构检查通过 — 与旁边的读者讨论书籍内容，交换见解
+  - `q17.d`：结构检查通过 — 思考知识传承如何塑造文明的根基
+- **q18** 题干：在希腊德尔斐的古神庙遗址上，夕阳为石柱镀上金边，远处是爱琴海的蔚蓝。一位当地老人正讲述着古老的神话传说。
+  - `q18.a`：结构检查通过 — 静静地聆听，感受神话与历史的厚重
+  - `q18.b`：结构检查通过 — 仔细观察遗址的细节，想象古代人的生活
+  - `q18.c`：结构检查通过 — 与老人深入交谈，了解这些故事背后的智慧
+  - `q18.d`：结构检查通过 — 思考古老智慧如何指引现代人的生活选择
+
+### 逐结果
+- **r1**（日本）：profile 键与范围检查通过。
+- **r2**（意大利）：profile 键与范围检查通过。
+- **r3**（法国）：profile 键与范围检查通过。
+- **r4**（北欧）：profile 键与范围检查通过。
+- **r5**（印度）：profile 键与范围检查通过。
+- **r6**（摩洛哥）：profile 键与范围检查通过。
+- **r7**（巴西）：profile 键与范围检查通过。
+- **r8**（德国）：profile 键与范围检查通过。
+- **r9**（希腊）：profile 键与范围检查通过。
+- **r10**（墨西哥）：profile 键与范围检查通过。
+- **r11**（英国）：profile 键与范围检查通过。
+- **r12**（新西兰）：profile 键与范围检查通过。
+
+## study-abroad-fit-test
+- **计分**：`weighted-dimension` · 维度数 3 · 题数 18 · 结果数 8
+- **错误（1）**
+  - r4 ↔ r8: profiles too similar (max diff 0.10)
+- **警告（1）**
+  - r4 ↔ r8: profiles too similar (max diff 0.10), users may cluster
+
+### 逐题 · 逐选项
+- **q1** 题干：当你抵达国外大学宿舍，发现室友来自不同文化背景，有人习惯深夜开派对，有人需要绝对安静。你会如何安排住宿空间？
+  - `q1.a`：结构检查通过 — 主动与室友协商制定共同遵守的作息规则
+  - `q1.b`：结构检查通过 — 佩戴降噪耳机，专注于自己的学习计划
+  - `q1.c`：结构检查通过 — 邀请大家各自分享家乡文化习俗，互相适应
+  - `q1.d`：结构检查通过 — 尽快申请调换宿舍，寻找与自己作息匹配的室友
+- **q2** 题干：国际课堂上，教授提出一个具有文化争议性的话题，要求学生发表个人观点。你会如何回应？
+  - `q2.a`：结构检查通过 — 结合自身文化背景，提出独特视角并解释原因
+  - `q2.b`：结构检查通过 — 先观察其他同学观点，再选择支持或补充
+  - `q2.c`：结构检查通过 — 直接表达自己最真实的想法，不刻意迎合
+  - `q2.d`：结构检查通过 — 尝试理解不同文化背景下的多种观点，寻找共识
+- **q3** 题干：在准备小组作业时，来自不同国家的组员对工作方式和时间安排有不同期望。你会如何协调？
+  - `q3.a`：结构检查通过 — 制定详细的时间表和分工表，确保每个人都明确职责
+  - `q3.b`：结构检查通过 — 尊重每个人的工作习惯，灵活调整进度
+  - `q3.c`：结构检查通过 — 主动承担最难的部分，让组员按自己节奏完成其他任务
+  - `q3.d`：结构检查通过 — 组织线上会议，讨论各国学习特点，融合最佳实践
+- **q4** 题干：周末校园国际文化节，各国学生展示传统美食和习俗。你会如何参与？
+  - `q4.a`：结构检查通过 — 按地图和时间表，有计划地参观不同展区
+  - `q4.b`：结构检查通过 — 随机漫步，遇到感兴趣的就停下来体验
+  - `q4.c`：结构检查通过 — 主动与各国学生交流，学习制作传统美食
+  - `q4.d`：结构检查通过 — 先研究各国文化背景，再选择性地深入体验
+- **q5** 题干：面对国外教授不同于国内的教学方式（如频繁小组讨论、开放式问题），你会如何适应？
+  - `q5.a`：结构检查通过 — 提前准备讨论要点，确保发言有条理
+  - `q5.b`：结构检查通过 — 积极参与讨论，即使观点不成熟也愿意分享
+  - `q5.c`：结构检查通过 — 私下请教适应较好的同学，了解教授期望
+  - `q5.d`：结构检查通过 — 欣赏不同教学方式带来的思维拓展，主动调整学习方法
+- **q6** 题干：在异国他乡遇到文化冲击或沟通障碍时，你会如何应对？
+  - `q6.a`：结构检查通过 — 记录困惑点，寻找规律，逐步建立适应机制
+  - `q6.b`：结构检查通过 — 沉浸其中，视之为成长必经之路，耐心适应
+  - `q6.c`：结构检查通过 — 主动向当地人请教，深入了解文化差异
+  - `q6.d`：结构检查通过 — 寻找与自己文化背景相似的朋友，抱团取暖
+- **q7** 题干：你刚抵达国外大学，室友来自不同文化背景，他们邀请你一起准备各自国家的传统菜肴分享。你会如何反应？
+  - `q7.a`：结构检查通过 — 主动研究室友国家的食谱，准备最地道的家乡美食，详细介绍其文化背景
+  - `q7.b`：结构检查通过 — 礼貌参与，但坚持做自己熟悉的家常菜，保持舒适区
+  - `q7.c`：结构检查通过 — 完全按室友的安排准备，尝试所有不熟悉的材料和烹饪方式
+  - `q7.d`：结构检查通过 — 委婉表示不感兴趣，建议点外卖或各自用餐
+- **q8** 题干：在小组作业中，来自不同国家的组员有着截然不同的工作习惯和时间观念。你会如何协调？
+  - `q8.a`：结构检查通过 — 接受多元的工作节奏，灵活调整自己的计划以适应团队
+  - `q8.b`：结构检查通过 — 坚持制定详细计划表，明确每个时间节点，要求所有人遵守
+  - `q8.c`：结构检查通过 — 主动与每个组员单独沟通，了解他们的工作方式后寻找平衡点
+  - `q8.d`：结构检查通过 — 选择独立完成自己的部分，不参与团队协调
+- **q9** 题干：周末当地学生邀请你参加一个非正式的社交活动，包括参观当地市场、品尝街头小吃。你通常会？
+  - `q9.a`：结构检查通过 — 欣然接受，提前研究当地文化禁忌和礼仪，积极参与
+  - `q9.b`：结构检查通过 — 先确认活动具体内容，有明确计划后才决定是否参加
+  - `q9.c`：结构检查通过 — 礼貌拒绝，选择独自参观当地博物馆或文化中心
+  - `q9.d`：结构检查通过 — 勉强参加但保持观望，不太主动交流
+- **q10** 题干：面对期末考试，你的学习方式通常是？
+  - `q10.a`：结构检查通过 — 按教授提供的详细大纲和参考资料系统复习，制定严格的时间表
+  - `q10.b`：结构检查通过 — 与同学组建学习小组，讨论不同文化视角下的课程内容
+  - `q10.c`：结构检查通过 — 独自整理笔记，按自己的节奏和理解方式复习
+  - `q10.d`：结构检查通过 — 考前突击，根据重点和难点高效复习
+- **q11** 题干：在宿舍生活中，面对不同文化背景室友的生活习惯差异，你会？
+  - `q11.a`：结构检查通过 — 主动了解并尊重各种文化习惯，寻找共同点
+  - `q11.b`：结构检查通过 — 制定明确的宿舍规则，要求所有人遵守
+  - `q11.c`：结构检查通过 — 尽量减少公共空间使用，保持个人区域独立
+  - `q11.d`：结构检查通过 — 偶尔交流但不深入，维持表面和谐
+- **q12** 题干：当需要解决一个跨文化沟通问题时，你会？
+  - `q12.a`：结构检查通过 — 直接提出问题，寻求明确解决方案
+  - `q12.b`：结构检查通过 — 先研究不同文化的沟通方式，再调整策略
+  - `q12.c`：结构检查通过 — 遵循已有的解决方案手册或流程
+  - `q12.d`：结构检查通过 — 尝试多种沟通方式，观察哪种最有效
+- **q13** 题干：你的室友来自不同国家，周末他们计划一起准备家乡特色食物并分享。你会如何参与？
+  - `q13.a`：结构检查通过 — 主动研究各国菜谱，精心准备一道自己的拿手菜
+  - `q13.b`：结构检查通过 — 提供帮助，但主要任务是协助组织协调而非烹饪
+  - `q13.c`：结构检查通过 — 独自准备自己的食物，等大家分享完再尝试其他国家的
+  - `q13.d`：结构检查通过 — 直接告诉他们自己不参与烹饪，但会尝试所有食物
+- **q14** 题干：在异国大学的课堂上，教授要求进行小组讨论，但组员来自不同文化背景，讨论方式差异明显。你会？
+  - `q14.a`：结构检查通过 — 主导讨论流程，确保每个人都能表达观点
+  - `q14.b`：结构检查通过 — 适应不同讨论风格，寻找共同点推进话题
+  - `q14.c`：结构检查通过 — 先倾听他人观点，再提出自己的想法
+  - `q14.d`：结构检查通过 — 直接采用自己熟悉的讨论方式，期待他人适应
+- **q15** 题干：周末室友邀请你参加当地的传统节日活动，但你需要完成重要的作业。你会？
+  - `q15.a`：结构检查通过 — 提前规划好时间，先完成作业再参加活动
+  - `q15.b`：结构检查通过 — 参加活动，相信能找到时间完成作业
+  - `q15.c`：结构检查通过 — 礼貌拒绝，专注完成作业
+  - `q15.d`：结构检查通过 — 参加活动但缩短时间，确保作业能完成
+- **q16** 题干：你在国外学习期间，当地朋友邀请你参观他们的家庭。你会？
+  - `q16.a`：结构检查通过 — 研究当地习俗，准备合适的礼物和话题
+  - `q16.b`：结构检查通过 — 欣然前往，自然融入当地家庭氛围
+  - `q16.c`：结构检查通过 — 先了解家庭情况，再决定是否参加
+  - `q16.d`：结构检查通过 — 要求详细的活动流程，以便安排自己的时间
+- **q17** 题干：在异国大学的小组项目中，组员们的工作习惯和效率标准各不相同。你会？
+  - `q17.a`：结构检查通过 — 制定明确的时间表和分工标准
+  - `q17.b`：结构检查通过 — 适应不同工作方式，找到高效合作的平衡点
+  - `q17.c`：结构检查通过 — 承担核心任务，确保项目质量
+  - `q17.d`：结构检查通过 — 直接采用自己熟悉的工作方法
+- **q18** 题干：假期期间，同学们计划背包旅行探索周边国家，但路线和时间安排尚未确定。你会？
+  - `q18.a`：结构检查通过 — 详细规划每日行程，确保充分利用时间
+  - `q18.b`：结构检查通过 — 加入团队，随遇而安地体验沿途风景
+  - `q18.c`：结构检查通过 — 独自安排自己的行程，与团队保持一定距离
+  - `q18.d`：结构检查通过 — 参与规划，但保留灵活调整的余地
+
+### 逐结果
+- **r1**（世界漫游者）：profile 键与范围检查通过。
+- **r2**（文化传承者）：profile 键与范围检查通过。
+- **r3**（独行冒险家）：profile 键与范围检查通过。
+- **r4**（团队支持者）：profile 键与范围检查通过。
+- **r5**（规则构建者）：profile 键与范围检查通过。
+- **r6**（自由艺术家）：profile 键与范围检查通过。
+- **r7**（灵活变色龙）：profile 键与范围检查通过。
+- **r8**（冷静分析家）：profile 键与范围检查通过。
+
+## tang-poets
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 5 · 结果数 4
+- **警告（16）**
+  - libai: missing "strengths"
+  - libai: missing "weaknesses"
+  - libai: only 0 strengths (want 3)
+  - libai: only 0 weaknesses (want 3)
+  - dufu: missing "strengths"
+  - dufu: missing "weaknesses"
+  - dufu: only 0 strengths (want 3)
+  - dufu: only 0 weaknesses (want 3)
+  - wangwei: missing "strengths"
+  - wangwei: missing "weaknesses"
+  - wangwei: only 0 strengths (want 3)
+  - wangwei: only 0 weaknesses (want 3)
+  - baijuyi: missing "strengths"
+  - baijuyi: missing "weaknesses"
+  - baijuyi: only 0 strengths (want 3)
+  - baijuyi: only 0 weaknesses (want 3)
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜，月光落在你窗台。你最想做什么？
+  - `q1.a`：结构检查通过 — 开窗，让夜风进来，随手写几行字
+  - `q1.b`：结构检查通过 — 想起远方的人和世事的无常，心里发沉
+  - `q1.c`：结构检查通过 — 把窗帘拉好，泡一杯茶，静静坐着
+  - `q1.d`：结构检查通过 — 刷一会儿手机，看看今天发生了什么
+- **q2** 题干：朋友邀你一起去一个你从未去过的远方。你的第一反应？
+  - `q2.a`：结构检查通过 — 好啊，什么时候走？
+  - `q2.b`：结构检查通过 — 想去，但担心一路上的辛苦和变数
+  - `q2.c`：结构检查通过 — 婉拒，旅途喧嚣，不如在家种花读书
+  - `q2.d`：结构检查通过 — 要看具体情况——时间、费用、目的地
+- **q3** 题干：你在路上看见一个流浪的老人。你会？
+  - `q3.a`：结构检查通过 — 给他钱，然后在心里编一个他的故事走开
+  - `q3.b`：结构检查通过 — 给他钱，心里久久难以平静，想起更多人的苦
+  - `q3.c`：结构检查通过 — 合掌，默念，继续走
+  - `q3.d`：结构检查通过 — 给他钱，然后继续赶自己的路
+- **q4** 题干：你觉得"诗意地生活"是什么意思？
+  - `q4.a`：结构检查通过 — 随心所欲，不管世俗眼光
+  - `q4.b`：结构检查通过 — 在苦难里也能看见意义
+  - `q4.c`：结构检查通过 — 简单、清净、不被欲望驱动
+  - `q4.d`：结构检查通过 — 生活稳定，有爱的人陪
+- **q5** 题干：你最记得的一次醉酒是？
+  - `q5.a`：结构检查通过 — 喝到忘记自己是谁，觉得很自由
+  - `q5.b`：结构检查通过 — 喝多了哭，为很多没办法的事情
+  - `q5.c`：结构检查通过 — 我几乎不喝酒
+  - `q5.d`：结构检查通过 — 在某个饭局上，应酬，喝得有点勉强
+
+### 逐结果
+- **libai**（李白型）：profile 键与范围检查通过。
+- **dufu**（杜甫型）：profile 键与范围检查通过。
+- **wangwei**（王维型）：profile 键与范围检查通过。
+- **baijuyi**（白居易型）：profile 键与范围检查通过。
+
+## tang-song-masters
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：雨夜书房,烛火摇曳,你刚完成一篇政论,墨迹未干。家人急促的咳嗽声从内室传来,而朝廷密使已立于门外,要求你修改文章立场。此时你会如何抉择？
+  - `q1.a`：结构检查通过 — 立即修改文章,保全家人安危,政治前途可来日方长
+  - `q1.b`：结构检查通过 — 坚守文章原意,宁可舍官弃职,也不违心改作
+  - `q1.c`：结构检查通过 — 密使婉言周旋,既保全文章主旨,又暗中安排家人避祸
+  - `q1.d`：结构检查通过 — 以家母病重为由,暂避风头,待局势明朗再做决定
+- **q2** 题干：春日午后,窗外的桃花飘落案头,友人送来两本诗集,一为恪守格律的佳作,一为突破常规的新作。独处闲适,你会如何度过这半日时光？
+  - `q2.a`：结构检查通过 — 细读传统诗集,品味格律之美,从中汲取创作养分
+  - `q2.b`：结构检查通过 — 迫不及待翻开新作,惊叹于其打破常规的意境与表达
+  - `q2.c`：结构检查通过 — 两本诗集并置阅读,比较异同,思考传统与创新的融合之道
+  - `q2.d`：结构检查通过 — 将诗集置于一旁,提笔尝试创作一首融合二者风格的诗作
+- **q3** 题干：清晨庭院,露珠沾湿了青石板,你正在整理昨日诗作,墨香与花香交织。书童递来一封家书,信中提到乡下的母亲思念已久,而案头还有一篇未完成的应制文等着今日上交。
+  - `q3.a`：结构检查通过 — 立即放下诗作,修书一封派人速送母亲,并请求宽限呈交应制文
+  - `q3.b`：结构检查通过 — 先完成应制文,再抽空写回信,并安排仆人接母亲来京
+  - `q3.c`：结构检查通过 — 将应制文暂置一旁,提笔写一封饱含思念的家书,再匆匆赶工完成文章
+  - `q3.d`：结构检查通过 — 派得力家仆回乡照料母亲,自己专心完成应制文,日后再亲自探望
+- **q4** 题干：你受邀参与一场重要的文坛雅集,途中收到消息,挚友正遭遇困境需要帮助。雅集可能让你获得更多声望和机会,而帮助朋友则可能让你错失良机。
+  - `q4.a`：结构检查通过 — 立即前往友人处相助,文坛声望可来日再图,朋友之情不可辜负
+  - `q4.b`：结构检查通过 — 先赴雅集,半途借故离席,速去友人处相助,再返回完成雅集
+  - `q4.c`：结构检查通过 — 派人带去银两和书信安抚友人,自己继续参加雅集,事后再亲自探望
+  - `q4.d`：结构检查通过 — 婉拒雅集邀请,全心帮助友人解决困境,日后再寻机会补偿
+- **q5** 题干：你在酒楼偶遇一位当朝官员,对着满座宾客高声宣扬文章应当教化万民,而邻座一位隐士则低声反驳说文章只是个人情感的表达。酒楼内酒香四溢,众说纷纭。
+  - `q5.a`：结构检查通过 — 起身附和官员观点,引经据典阐述文以载道的重要性
+  - `q5.b`：结构检查通过 — 默默聆听双方观点,不置可否,心中自有评判
+  - `q5.c`：结构检查通过 — 转向隐士请教,探讨文学艺术价值与个人情感表达的深层联系
+  - `q5.d`：结构检查通过 — 提出调和观点,认为文章兼具教化功能与情感表达的双重价值
+- **q6** 题干：京城之外,你被任命为地方知县,却发现当地豪强横行,百姓疾苦。朝廷内部斗争激烈,支持你的官员可能随时倒台。整顿吏治可能招致报复,但袖手旁观又于心不忍。
+  - `q6.a`：结构检查通过 — 雷厉风行整顿吏治,不畏强权,哪怕为此丢官也在所不惜
+  - `q6.b`：结构检查通过 — 暗中收集证据,等待时机成熟,再一举铲除豪强势力
+  - `q6.c`：结构检查通过 — 先安抚百姓,同时设法寻求朝中更多支持,再着手整顿吏治
+  - `q6.d`：结构检查通过 — 明哲保身,不直接与豪强对抗,设法调离此地或请求辞官
+- **q7** 题干：月下独酌,清辉洒满庭院,你翻开旧日诗集,看到一首年轻时写的情诗,思绪万千。门房来报,有位仰慕你的年轻学子正在门外求见,希望能得到你的指点。
+  - `q7.a`：结构检查通过 — 放下诗集,欣然会见学子,倾囊相授自己的创作心得
+  - `q7.b`：结构检查通过 — 先静心回味旧作,待情绪平复后再会见学子,分享文学感悟
+  - `q7.c`：结构检查通过 — 命门房请学子明日再来,今晚沉浸于回忆与诗情中
+  - `q7.d`：结构检查通过 — 召学子入内,共赏月下诗作,以诗会友,探讨文学与人生
+- **q8** 题干：秋日山寺,古木参天,枫叶如火。寺中藏有大量古籍,墨香氤氲,寺主含笑允你们随意借阅。这几日时光,你最想做什么？
+  - `q8.a`：结构检查通过 — 逐字研读古籍,力求还原古本原貌,不妄加改动
+  - `q8.b`：结构检查通过 — 通读各类典籍,摘录精华,尝试融会贯通,自成一家
+  - `q8.c`：结构检查通过 — 只选一本古籍反复研读,深入探究其精髓,不涉其他
+  - `q8.d`：结构检查通过 — 翻阅古籍寻找灵感,尝试用新形式表达旧思想
+- **q9** 题干：案上两封信笺,一封是京城权贵的请柬,字迹华美；另一封是家书,墨迹略显潦草。你面临抉择:赴宴还是归乡守孝？
+  - `q9.a`：结构检查通过 — 毅然回乡,尽孝道为先,前程可待来日
+  - `q9.b`：结构检查通过 — 先赴京城宴席,寻机委婉表达归乡之意
+  - `q9.c`：结构检查通过 — 以身体不适婉拒两方,静观局势变化
+  - `q9.d`：结构检查通过 — 坚守原则,宁肯永不回京也不改初心
+- **q10** 题干：烛光摇曳,你捧读新作,作者大胆质疑经典,言辞犀利。窗外夜色渐深,书斋内却因此文掀起波澜,你如何看？
+  - `q10.a`：结构检查通过 — 虽觉新奇,但经典不容轻疑,应先尊古训
+  - `q10.b`：结构检查通过 — 文章虽有偏颇,但敢于突破传统,实属可贵
+  - `q10.c`：结构检查通过 — 既不赞也不贬,静观其变,待时日检验
+  - `q10.d`：结构检查通过 — 此等离经叛道之言,当予驳斥,以正视听
+- **q11** 题干：秋风萧瑟,你收拾行装将被贬谪。友人泪眼相劝,有人递上和光同尘的锦囊,有人递上不屈不挠的竹简。你将如何？
+  - `q11.a`：结构检查通过 — 收敛锋芒,暂避其锋,以图他日东山再起
+  - `q11.b`：结构检查通过 — 坚守原则,宁折不弯,虽九死其犹未悔
+  - `q11.c`：结构检查通过 — 以退为进,明哲保身,暗中积蓄力量
+  - `q11.d`：结构检查通过 — 随遇而安,既来之则安之,不以物喜不以己悲
+- **q12** 题干：春日园中,柳絮飞舞,几位弟子正围着你请教诗文。一位弟子欲挑战传统格律,另一位则坚持先精研经典,你如何回应？
+  - `q12.a`：结构检查通过 — 先夯实基础,精通经典,待功底深厚后再创新
+  - `q12.b`：结构检查通过 — 鼓励尝试新形式,但需在理解传统的基础上进行
+  - `q12.c`：结构检查通过 — 格律不可废,但可适度变通,不必拘泥于形式
+  - `q12.d`：结构检查通过 — 尊重传统,创新需谨慎,宁可守成勿求变
+- **q13** 题干：密室之内,烛光摇曳。一位神秘人物向你递上入会文书,言称将革新朝政。但他也坦言此路艰险,可能累及家人。
+  - `q13.a`：结构检查通过 — 慎重考虑,先观望形势,不急于表态
+  - `q13.b`：结构检查通过 — 果断加入,为国为民,不计个人得失
+  - `q13.c`：结构检查通过 — 婉拒邀约,独善其身,专注学术创作
+  - `q13.d`：结构检查通过 — 暗中支持但不直接参与,既可施展抱负又可保全家人
+- **q14** 题干：渡口风起,江水滔滔。你与好友即将分别,此去山高水远,不知何时重逢。船夫催促启航,你如何度过这最后的时光？
+  - `q14.a`：结构检查通过 — 与好友相对无言,举杯共饮,一切尽在不言中
+  - `q14.b`：结构检查通过 — 挥毫写下赠别诗,直抒胸臆,情深意切
+  - `q14.c`：结构检查通过 — 冷静告别,叮嘱珍重,不流露过多情感
+  - `q14.d`：结构检查通过 — 共赏江月,吟诗作对,以诗言志,以情寄远
+- **q15** 题干：酒楼内烛光摇曳,杯盏交错。一位官员正高谈文章应当教化万民,言语铿锵,眼神却时而瞟向门外,仿佛期待什么。你注意到他袖中藏着一卷诗集,封面隐约可见风花雪月的字样。对此,你作何感想？
+  - `q15.a`：结构检查通过 — 言行不一,虚伪至极,文章应当表里如一,坚守教化之道
+  - `q15.b`：结构检查通过 — 人非圣贤,官员私下抒情无妨,只要公开场合坚持教化即可
+  - `q15.c`：结构检查通过 — 文章贵在真情实感,私人创作风花雪月,公开言论教化万民,各得其所
+  - `q15.d`：结构检查通过 — 教化与抒情并非对立,文人应当多面展现才华,不必拘于一格
+- **q16** 题干：夜阑人静,烛火映照着你手中的考卷。窗外传来低语,一名锦衣华服之人悄然入内,悄声许诺丰厚回报,只求你笔下留情。此时,科举公平与个人前程在你心中如何权衡？
+  - `q16.a`：结构检查通过 — 立即揭发,宁可得罪权贵也要维护科举公正,这关系到天下读书人的希望
+  - `q16.b`：结构检查通过 — 表面收下承诺,暗中记录证据,待考后再公之于众,既不当下得罪人,又能伸张正义
+  - `q16.c`：结构检查通过 — 婉言拒绝,表明科举关系国家选才,不容私情,但态度温和,不留把柄
+  - `q16.d`：结构检查通过 — 默许此事,但要求对方暗中相助,自己也可借此机会在朝中立足
+- **q17** 题干：油灯摇曳,照着泛黄的诗稿。你手捧年轻时那些充满个人情感但不符合教化之道的诗文,墨香与回忆交织。窗外的月光如水,照在你犹豫不决的脸上,这些作品究竟该何去何从？
+  - `q17.a`：结构检查通过 — 全部销毁,文章应当以教化为先,不合道义的作品不宜流传
+  - `q17.b`：结构检查通过 — 选择部分符合教化标准的付梓,其余则束之高阁,不示于人
+  - `q17.c`：结构检查通过 — 全部付梓,情感真实比教化更重要,后人自会评判其价值
+  - `q17.d`：结构检查通过 — 重新修改,将个人情感融入教化之道,既保留真情又不失雅正
+- **q18** 题干：案前两封邀请函并置,一封来自京城,官职显赫,可施展政治抱负；一封来自乡野,环境清幽,可专心著书。窗外秋风萧瑟,书卷墨香与朝堂威仪在你脑海中交替浮现,如何抉择？
+  - `q18.a`：结构检查通过 — 欣然接受京城之邀,治国平天下是文人最大的抱负,著书立说可留待日后
+  - `q18.b`：结构检查通过 — 婉拒京城之邀,选择乡野著书,政治变幻无常,不如学问永恒
+  - `q18.c`：结构检查通过 — 先赴京城履职,待时机成熟再隐退著书,实现政治理想与学术追求的平衡
+  - `q18.d`：结构检查通过 — 请求短期赴京考察,若环境不适则返回乡野,不急于做出决定
+- **q19** 题干：秋日山居,枫叶如火,菊香满院。你有一整天的闲暇时光,面前摆放着琴棋书画诗酒茶,窗外松涛阵阵,远处鸟鸣清脆。你会如何度过这段悠闲时光？
+  - `q19.a`：结构检查通过 — 独坐抚琴,让琴音与山水共鸣,抒发胸中逸气,不求教化,但求畅快
+  - `q19.b`：结构检查通过 — 品茶读书,将古人教化之言细细品味,笔记心得,修身养性
+  - `q19.c`：结构检查通过 — 挥毫泼墨,尝试新的笔法,不拘传统,画出心中的秋日山居
+  - `q19.d`：结构检查通过 — 邀友对弈,边下棋边论道,在棋局中探讨人生哲理,切磋学问
+- **q20** 题干：书斋内,你手捧一篇新游记,字句奇特,意境新颖,不循常理。仆人进来通报,几位同僚正在门外,有人赞此文开一代新风,也有人批评其过于标新立异,失了古典韵味。你将如何回应？
+  - `q20.a`：结构检查通过 — 立即召见同僚,力陈此文创新之处,鼓励文人突破传统,不必拘泥古法
+  - `q20.b`：结构检查通过 — 私下赞赏此文,但公开场合保持中立,不卷入文人争端,明哲保身
+  - `q20.c`：结构检查通过 — 认同批评者观点,认为创新应建立在传统基础上,否则不过是哗众取宠
+  - `q20.d`：结构检查通过 — 建议作者保留创新之处,同时融入传统元素,兼顾新颖与典雅
+
+### 逐结果
+- **r1**（韩愈）：profile 键与范围检查通过。
+- **r2**（柳宗元）：profile 键与范围检查通过。
+- **r3**（欧阳修）：profile 键与范围检查通过。
+- **r4**（苏轼）：profile 键与范围检查通过。
+- **r5**（王安石）：profile 键与范围检查通过。
+- **r6**（苏洵）：profile 键与范围检查通过。
+- **r7**（苏辙）：profile 键与范围检查通过。
+- **r8**（曾巩）：profile 键与范围检查通过。
+
+## temple
+- **计分**：`temple` · 维度数 0 · 题数 12 · 结果数 15
+- **警告（1）**
+  - （说明）scoring.type=`temple` 非三种标准计分族，已跳过 validateQuestions / validateResults(profile) / validateDimensionProfiles / validateScoreMap，以免误报。
+
+### 逐题 · 逐选项
+- **T01** 题干：踏入山门的一刻，什么最先让你停下脚步？
+  - `T01.a`：scores 键：baoguo,guoqing,lingyin,wenshu — 一棵比大殿更老的树，树根已经把石板撑裂了
+  - `T01.b`：scores 键：dacien,famen,taer,yonghe — 香炉里的烟，你看着它往上走，一直跟着看，直到它散掉
+  - `T01.c`：scores 键：baima,hanshan,shaolin,xiantong — 大殿角落的一块石碑，字已经模糊，有人在碑前插了一束野花
+  - `T01.d`：scores 键：hanshan,nanputuo,puji,roushen — 放生池里的水声——你走了很久才意识到，这里没有其他声音
+- **T02** 题干：你此刻心里有一件放不下的事，它更接近哪种？
+  - `T02.a`：scores 键：dacien,lingyin,shaolin,yonghe — 有一扇门，你站在门口，没有推
+  - `T02.b`：scores 键：hanshan,nanputuo,wenshu — 有一句话，你该说，你没说
+  - `T02.c`：scores 键：baoguo,puji,roushen — 有一个人，你不知道他现在好不好
+  - `T02.d`：scores 键：famen,guoqing,taer,xiantong — 有一种感觉：原来的路好像走到头了，但新的路还没出现
+- **T03** 题干：你理想中的那座寺，是什么样的？
+  - `T03.a`：scores 键：baoguo,guoqing,roushen,xiantong — 在山里，深到你觉得，如果在那里住一个月，出来的时候你会不一样
+  - `T03.b`：scores 键：lingyin,nanputuo,wenshu,yonghe — 闹市里，红墙，门口有人卖糖葫芦，进去之后安静得像另一个世界
+  - `T03.c`：scores 键：hanshan,nanputuo,puji — 水边，你记不清是湖还是海，只记得那里的光和别处不同
+  - `T03.d`：scores 键：baima,dacien,famen,shaolin — 其实不需要多远，是某个地方，让你觉得你是专程去的
+- **T04** 题干：如果要和一座寺庙留下某种连接，你会选哪种方式？
+  - `T04.a`：scores 键：dacien,famen,taer,yonghe — 点一盏灯，供一年，知道那里一直有一盏灯是你的
+  - `T04.b`：scores 键：baima,lingyin,shaolin — 带走一样东西，哪怕只是一根香的气味留在衣服上
+  - `T04.c`：scores 键：dacien,guoqing,hanshan,xiantong — 抄一段经文，不一定懂，但一笔一画地写完它
+  - `T04.d`：scores 键：nanputuo,puji,roushen,wenshu — 把一件很久以来压着你的事，在那里说出来，然后走
+- **T05** 题干：下面这几种「少了点什么」的感觉，哪个最近和你最像？
+  - `T05.a`：scores 键：baoguo,guoqing,lingyin,wenshu — 有一股劲儿憋着，但使不上去
+  - `T05.b`：scores 键：dacien,famen,shaolin,yonghe — 凡事都能看清楚，就是迈不了腿
+  - `T05.c`：scores 键：hanshan,nanputuo,puji — 很多事在动，但你觉得自己像个旁观者
+  - `T05.d`：scores 键：dacien,famen,taer,wenshu — 心里有个地方是冷的，暖不起来
+  - `T05.e`：scores 键：baima,roushen,shaolin,xiantong — 脚踩着地，但总觉得没站稳
+- **T06** 题干：你在哪位菩萨/护法面前，最可能真的开口说话？
+  - `T06.a`：scores 键：guoqing,wenshu,xiantong — 文殊菩萨——你觉得他会要你说清楚，不接受含糊的答案
+  - `T06.b`：scores 键：baoguo,nanputuo,puji — 观音菩萨——你不需要说完，他已经听见了
+  - `T06.c`：scores 键：baima,hanshan,roushen — 地藏菩萨——你想说的那件事，只有他不会评判
+  - `T06.d`：scores 键：dacien,lingyin,shaolin,yonghe — 韦陀护法——去那里站一下，告诉自己可以继续走了
+- **T07** 题干：你理想中的一次朝圣，更像哪件事？
+  - `T07.a`：scores 键：baima,hanshan,shaolin — 一次很久没有回去的地方，终于去了
+  - `T07.b`：scores 键：roushen,taer,xiantong — 一个专门为自己空出来的一天
+  - `T07.c`：scores 键：baoguo,nanputuo,wenshu — 和一个不用说话也舒服的人，一起去
+  - `T07.d`：scores 键：guoqing,lingyin,puji — 走着走着，发现自己到了，原来一直都是想去的
+- **T08** 题干：有一位香客在同一座寺庙坐了七年，从未许愿。第七年，他说他得到了一切想要的。你听到这件事，第一个念头是什么？
+  - `T08.a`：scores 键：baoguo,nanputuo,puji,wenshu — 他有那个心。
+  - `T08.b`：scores 键：famen,lingyin,taer,yonghe — 那个地方有某种东西。
+  - `T08.c`：scores 键：dacien,guoqing,shaolin — 七年，他变了。
+  - `T08.d`：scores 键：baima,hanshan,roushen — 我不知道他要的是什么，但我相信他。
+- **T09** 题干：如果可以在寺庙里待上一整天，你最想做的是？
+  - `T09.a`：scores 键：hanshan,puji,roushen — 什么都不做，只是坐着，直到日落
+  - `T09.b`：scores 键：baima,taer,xiantong,yonghe — 跟着晨钟暮鼓，跟着他们的节奏走一次
+  - `T09.c`：scores 键：dacien,guoqing,wenshu — 在寺里的书院或茶室，读一下午的书
+  - `T09.d`：scores 键：baoguo,famen,lingyin,shaolin — 去每一座殿堂，认认真真地看每一尊像
+- **T10** 题干：如果这次祈愿真的灵验了，你希望它以哪种方式出现？
+  - `T10.a`：scores 键：dacien,lingyin,yonghe — 突然来了一个你没预料到的机会
+  - `T10.b`：scores 键：baoguo,nanputuo,wenshu — 某段关系出现了松动，不再那么僵
+  - `T10.c`：scores 键：guoqing,shaolin,wenshu,xiantong — 有一天你突然有了一个很清晰的答案
+  - `T10.d`：scores 键：baima,puji,roushen — 回头看才发现，那段时间一直很平安
+- **T11** 题干：你和寺庙的关系，现在更像哪种？
+  - `T11.a`：scores 键：baoguo,guoqing,lingyin,wenshu — 偶尔去，每次都有收获，但说不清楚是什么
+  - `T11.b`：scores 键：hanshan,nanputuo,roushen — 每次有什么压着的时候，才会想去
+  - `T11.c`：scores 键：dacien,famen,taer,yonghe — 很少去，但去了就很认真
+  - `T11.d`：scores 键：baima,shaolin,xiantong — 还没有找到那座「对的」寺庙
+- **T12** 题干：有人说：去寺庙前，最重要的是想清楚「为什么去」。你怎么看？
+  - `T12.a`：scores 键：dacien,famen,shaolin,yonghe — 对，目标清楚，感应才会清楚
+  - `T12.b`：scores 键：guoqing,puji,wenshu — 不一定，有时候去了才知道自己为什么去
+  - `T12.c`：scores 键：baima,hanshan,roushen — 不重要，心里干净就够了
+  - `T12.d`：scores 键：baoguo,lingyin,nanputuo,taer — 这个问题我没想过，现在想了，还是不确定
+
+### 逐结果
+- **shaolin**（少林寺）：缺 dimension_profile
+- **baima**（白马寺）：缺 dimension_profile
+- **famen**（法门寺）：缺 dimension_profile
+- **taer**（塔尔寺）：缺 dimension_profile
+- **guoqing**（国清寺）：缺 dimension_profile
+- **lingyin**（灵隐寺）：缺 dimension_profile
+- **yonghe**（雍和宫）：缺 dimension_profile
+- **xiantong**（显通寺）：缺 dimension_profile
+- **puji**（普济寺）：缺 dimension_profile
+- **baoguo**（报国寺）：缺 dimension_profile
+- **roushen**（肉身宝殿）：缺 dimension_profile
+- **hanshan**（寒山寺）：缺 dimension_profile
+- **dacien**（大慈恩寺）：缺 dimension_profile
+- **nanputuo**（南普陀寺）：缺 dimension_profile
+- **wenshu**（文殊院）：缺 dimension_profile
+
+## three-kingdoms-strategist-match
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 10
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：军帐内烛火摇曳,地图铺满案几,探马急促的喘息声犹在耳畔。敌军已在险要山谷设下埋伏,你必须在两个时辰内决定是按原计划行军,还是另辟蹊径。
+  - `q1.a`：结构检查通过 — 按原计划行军,派出精锐小队先期探查,虚实结合,出其不意
+  - `q1.b`：结构检查通过 — 立即改变行军路线,绕道而行,宁可多走三日路程,也要确保万无一失
+  - `q1.c`：结构检查通过 — 分兵两路,主力绕道,精锐按原计划前进,迷惑敌军,声东击西
+  - `q1.d`：结构检查通过 — 按原计划行军,但严令全军戒备,一旦遇伏,立即就地应战
+- **q2** 题干：书房内檀香袅袅,阳光透过窗棂洒在古籍上。你独坐案前,指尖轻抚过《孙子兵法》、《论语》、《史记》和《鬼谷子》,心中思忖着翻阅哪一部。
+  - `q2.a`：结构检查通过 — 先读《鬼谷子》,揣摩其中纵横捭阖之术,寻找破敌新策
+  - `q2.b`：结构检查通过 — 翻阅《史记》,纵观历代兴衰成败,从中汲取智慧
+  - `q2.c`：结构检查通过 — 细读《论语》,修身养性,以德服人,不战而屈人之兵
+  - `q2.d`：结构检查通过 — 重温《孙子兵法》,温故而知新,巩固已有战法
+- **q3** 题干：密室内烛光昏暗,敌使将密信呈上后便垂手而立,屏退左右后,你展开书信,敌将愿以重金和城池归降,条件是必须暗杀自己的主公。
+  - `q3.a`：结构检查通过 — 立即答应,派心腹前往执行,待敌将刺杀成功后,大军入城接管
+  - `q3.b`：结构检查通过 — 假意答应,实则告知主公,设下圈套,将敌将诱来擒获
+  - `q3.c`：结构检查通过 — 严词拒绝,坚守道德底线,宁可强攻城池,也不行此卑劣手段
+  - `q3.d`：结构检查通过 — 表面答应,实则拖延,暗中联络城中反对敌将的势力,里应外合
+- **q4** 题干：延续上场景,敌使见你拒绝暗杀条件,又呈上第二封信,敌将愿开城投降,但要求保全家族财产和性命,否则宁愿死战到底。
+  - `q4.a`：结构检查通过 — 答应保全其家族,但需交出所有财富和兵权,作为归降条件
+  - `q4.b`：结构检查通过 — 只保全性命,财产尽数没收,家族成员流放边远之地
+  - `q4.c`：结构检查通过 — 拒绝所有条件,坚持必须无条件投降,否则强攻到底
+  - `q4.d`：结构检查通过 — 答应条件,但要求敌将亲自前来投降,以示诚意
+- **q5** 题干：集市上人声鼎沸,老者摔倒在地,周围行人纷纷避让,无人敢上前。老者紧握一卷地图,面容痛苦,似乎那地图比性命还重要。
+  - `q5.a`：结构检查通过 — 立即上前扶起老者,归还地图,询问是否需要请医
+  - `q5.b`：结构检查通过 — 不动声色地观察四周,确认无人注意后,悄悄取走地图,迅速离开
+  - `q5.c`：结构检查通过 — 派人将老者扶起,但暗中派人跟踪,查清地图来历和用途
+  - `q5.d`：结构检查通过 — 命人将老者送回府中,好生照料,趁机了解地图所载情报
+- **q6** 题干：朝堂之上,金碧辉煌,丞相当众斥责一位同僚的计谋是'妇人之仁,不足以成大事'。那位同僚面色涨红,额头冒汗,却不敢出声反驳。
+  - `q6.a`：结构检查通过 — 立即挺身而出,为同僚辩护,认为计谋虽有仁心,却非妇人之仁
+  - `q6.b`：结构检查通过 — 保持沉默,暗自观察丞相和同僚的反应,思考其中利害
+  - `q6.c`：结构检查通过 — 委婉提出折中之策,既保留同僚计谋中的仁心,又增添实用之策
+  - `q6.d`：结构检查通过 — 附和丞相意见,但指出同僚计谋虽有不足,却非一无是处
+- **q7** 题干：军营中弥漫着草药苦涩的气味,伤员的呻吟声此起彼伏。军医束手无策,探马来报敌军正趁机集结兵力,准备突袭。你必须在三日之内控制疫情。
+  - `q7.a`：结构检查通过 — 立即封锁营区,隔离病患,同时派人四处寻找名医秘方
+  - `q7.b`：结构检查通过 — 采用非常规疗法,以毒攻毒,即使牺牲部分病患,也要迅速遏制疫情
+  - `q7.c`：结构检查通过 — 分兵两路,一半军士继续寻找良方,一半军士备战,同时让病患转移至安全地带
+  - `q7.d`：结构检查通过 — 按照常规疗法,隔离病患,发放常规药物,同时祈祷上天眷顾
+- **q8** 题干：烛光摇曳的雅集上,文人墨客围坐一席,棋盘黑白交错,墨香与酒气交织。有人提议以'天下大势'为题对弈作诗,你会如何应对？
+  - `q8.a`：结构检查通过 — 推辞对弈,执笔泼墨,以诗言志,描绘天下三分之势
+  - `q8.b`：结构检查通过 — 欣然对弈,每步皆以棋局隐喻天下大势,布局深远
+  - `q8.c`：结构检查通过 — 婉拒提议,静观他人对弈,只言片语点破棋局关键
+  - `q8.d`：结构检查通过 — 提议讨论当前时政,分析各国强弱,直言利弊
+- **q9** 题干：战前点将台上,将军铠甲铮亮,高举酒碗,声如洪钟:'此战不成功便成仁!'台下将士热血沸腾,你目睹此景,心中作何感想？
+  - `q9.a`：结构检查通过 — 深受鼓舞,愿随将军冲锋陷阵,以死明志
+  - `q9.b`：结构检查通过 — 暗自思量,此战若败,将军豪言恐成绝唱,早当另谋退路
+  - `q9.c`：结构检查通过 — 不动声色,高声应和,心中却已计算胜算与代价
+  - `q9.d`：结构检查通过 — 将军豪迈,但成败非一日之功,当以计谋取胜
+- **q10** 题干：山路崎岖,林间突然杀出山贼,刀光剑影中,证人倒在血泊中,气息奄奄。山贼头目狞笑着:'交出证人,饶你不死。'你如何抉择？
+  - `q10.a`：结构检查通过 — 放下武器,交出证人,保住自己性命,日后另寻他法
+  - `q10.b`：结构检查通过 — 与山贼周旋,假意交出证人,伺机救证人脱险
+  - `q10.c`：结构检查通过 — 拼死抵抗,宁可同归于尽,也不让证人落入敌手
+  - `q10.d`：结构检查通过 — 与山贼谈判,以重金换取证人生命,同时保全自己
+- **q11** 题干：军中密报,一名将领与敌军私通,证据确凿。若上报,军心必乱；若隐忍,后患无穷。你的声誉与军中大局,孰轻孰重？
+  - `q11.a`：结构检查通过 — 私下警告该将领,若再犯必严惩,既保全大局又不声张
+  - `q11.b`：结构检查通过 — 立即上报,宁可引发军中震荡,也要肃清内奸
+  - `q11.c`：结构检查通过 — 设下圈套,让该将领自曝其短,既保全军心又除隐患
+  - `q11.d`：结构检查通过 — 默许此事,借该将领之手获取敌军情报,待时机成熟再处置
+- **q12** 题干：军务账目前,你发现一位下属多次在军粮账目上做手脚,数额不大但屡教不改。作为主将,你如何处理此事？
+  - `q12.a`：结构检查通过 — 严厉惩处,杀一儆百,以儆效尤
+  - `q12.b`：结构检查通过 — 睁一只眼闭一只眼,只要数额不大,不必小题大做
+  - `q12.c`：结构检查通过 — 暗中查证,若确有隐情,则给予改过机会；若纯粹贪墨,则严惩不贷
+  - `q12.d`：结构检查通过 — 调离其职,安排他人接管,不追究过往但杜绝后患
+- **q13** 题干：朝堂之上,有人评价一位谋士:'计谋虽巧,却失之仁义。'另一位谋士则被讥为:'过于迂腐,不懂变通。'你如何看待这两种评价？
+  - `q13.a`：结构检查通过 — 计谋当以结果为先,仁义只是虚名
+  - `q13.b`：结构检查通过 — 无论结果如何,手段必须合乎道义
+  - `q13.c`：结构检查通过 — 两者各有所长,关键在于时机与场合
+  - `q13.d`：结构检查通过 — 真正的智者当能权衡利弊,不拘泥于一方之见
+- **q14** 题干：敌城久攻不下,城中粮草将尽,敌军使者求和,条件苛刻。同时,你的后方粮草也即将告罄。此时你会如何决策？
+  - `q14.a`：结构检查通过 — 接受和谈条件,保存实力,待时机再战
+  - `q14.b`：结构检查通过 — 强攻到底,即使损失惨重也要一鼓作气拿下城池
+  - `q14.c`：结构检查通过 — 假意接受和谈,暗中将计就计,设下埋伏
+  - `q14.d`：结构检查通过 — 撤军回防,保全有生力量,另寻战机
+- **q15** 题干：军帐内烛火摇曳,案上摊开兵书,窗外传来隐约的更鼓声。难得的闲暇时光,你会如何安排？
+  - `q15.a`：结构检查通过 — 独自研读兵法,推敲战术变化,不受外界干扰
+  - `q15.b`：结构检查通过 — 巡视营地,与将士们交谈,了解军中情况
+  - `q15.c`：结构检查通过 — 邀请几位心腹将领,在营中设宴畅饮,交流军情
+  - `q15.d`：结构检查通过 — 独坐案前,思考天下大势,谋划长远战略
+- **q16** 题干：夜色深沉,你发现一条隐秘通道可潜入敌营。灯火通明处,敌军主帅正独自议事。刺杀成功可扭转战局,但一旦失败,全军将陷入绝境。
+  - `q16.a`：结构检查通过 — 立即召集精锐,制定周密计划,冒险一试
+  - `q16.b`：结构检查通过 — 放弃刺杀计划,改用其他稳妥战术,不冒全军风险
+  - `q16.c`：结构检查通过 — 派人散布谣言,制造敌军内部分裂,从内部瓦解
+  - `q16.d`：结构检查通过 — 设疑兵之计,佯攻另一方向,迫使敌军主帅移动位置
+- **q17** 题干：军营中尘土飞扬,你看到一位老将军骑着瘦骨嶙峋的老马,在晨光中缓缓前行。这匹战马已显老态,多次劝他更换,他却执意不肯。
+  - `q17.a`：结构检查通过 — 尊重老将意愿,不强求更换,但暗中为其准备上等战马以备不时之需
+  - `q17.b`：结构检查通过 — 以军令为由,强行更换战马,强调军令如山不容私情
+  - `q17.c`：结构检查通过 — 找到老将军,讲述战马老去可能带来的战场风险,建议他接受新马但保留旧马作为念想
+  - `q17.d`：结构检查通过 — 私下为老马精心调养,延长其使用寿命,同时准备新马但不言明
+- **q18** 题干：朝堂之上,一位谋士面对丞相的严厉质问,神色自若。他不直接回答,而是巧妙转移话题,引经据典,让丞相无言以对。
+  - `q18.a`：结构检查通过 — 欣赏这种应对方式,认为谋士应当善于言辞,能在复杂局势中周旋
+  - `q18.b`：结构检查通过 — 认为这种回答过于圆滑,缺乏诚意,质疑其背后是否有不可告人的目的
+  - `q18.c`：结构检查通过 — 暗自揣摩其言下之意,思考这种应对背后的真实意图
+  - `q18.d`：结构检查通过 — 佩服其应变能力,但认为在关键时刻应当直截了当,不回避问题
+- **q19** 题干：孤城之内,箭矢如雨,城墙上可见血迹斑斑。敌军兵临城下,而城中兵力不足。一群富商暗中联系敌军,表示愿开城投降以保全财产。
+  - `q19.a`：结构检查通过 — 立即处决富商,以儆效尤,鼓舞城中将士死守决心
+  - `q19.b`：结构检查通过 — 接受富商提议,保全全城百姓性命,同时暗中准备后路
+  - `q19.c`：结构检查通过 — 假意接受富商提议,却设下埋伏,待敌军入城时内外夹击
+  - `q19.d`：结构检查通过 — 与富商谈判,要求他们出资犒赏三军,共同守城,事成后加倍偿还
+- **q20** 题干：密室内烛火摇曳,你手中握着一封密信,内容可扭转战局。然而,获取情报的手段有违道德。使用它可赢得战役,保全无数将士；拒绝使用,则坚守了原则。
+  - `q20.a`：结构检查通过 — 立即销毁情报,认为道德底线不容突破,宁可付出更大代价
+  - `q20.b`：结构检查通过 — 使用情报赢得战役,但事后自首接受惩罚,认为结果大于过程
+  - `q20.c`：结构检查通过 — 寻找其他途径获取相同情报,避免使用有违道德的手段
+  - `q20.d`：结构检查通过 — 使用情报,但暗中调查并惩罚提供情报的人,认为手段可以不完美
+
+### 逐结果
+- **r1**（诸葛亮）：profile 键与范围检查通过。
+- **r2**（司马懿）：profile 键与范围检查通过。
+- **r3**（郭嘉）：profile 键与范围检查通过。
+- **r4**（曹操）：profile 键与范围检查通过。
+- **r5**（贾诩）：profile 键与范围检查通过。
+- **r6**（荀彧）：profile 键与范围检查通过。
+- **r7**（庞统）：profile 键与范围检查通过。
+- **r8**（周瑜）：profile 键与范围检查通过。
+- **r9**（程昱）：profile 键与范围检查通过。
+- **r10**（陆逊）：profile 键与范围检查通过。
+
+## wangjiawei-character
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜的香港街头,雨滴敲打窗户,空气中弥漫着潮湿气息。手机屏幕亮起,前任的短信询问明天的雨中见面。窗外的霓虹灯在湿漉漉的街道上拉长身影。你会如何回应？
+  - `q1.a`：结构检查通过 — 立即回复'好,明天见',心跳加速地期待重逢
+  - `q1.b`：结构检查通过 — 回复'需要考虑一下',思绪在雨声中翻涌
+  - `q1.c`：结构检查通过 — 无视短信,拉上窗帘,让雨声淹没回忆
+  - `q1.d`：结构检查通过 — 回复'对不起,我已经放下了',平静如水
+- **q2** 题干：旺角昏暗酒吧,窗外的霓虹灯在酒杯上投下斑驳光影。爵士乐低吟浅唱,你独坐角落。邻座有人轻声搭讪,邀请共饮。你的反应是？
+  - `q2.a`：结构检查通过 — 微笑点头,邀请对方坐下,分享故事
+  - `q2.b`：结构检查通过 — 礼貌拒绝,享受独处的宁静
+  - `q2.c`：结构检查通过 — 眼神交汇片刻,继续沉浸在自己的思绪里
+  - `q2.d`：结构检查通过 — 起身离开,寻找更孤独的角落
+- **q3** 题干：九龙城旧书店,尘埃在阳光中飞舞。你发现一本1960年代香港街头日记,珍贵但超出预算,店主不再打折。你的手指轻轻拂过泛黄的书页,该如何抉择？
+  - `q3.a`：结构检查通过 — 毫不犹豫买下,情感价值超越价格
+  - `q3.b`：结构检查通过 — 询问是否可以分期付款,寻找现实解决方案
+  - `q3.c`：结构检查通过 — 记录下内容,放弃购买,期待未来机缘
+  - `q3.d`：结构检查通过 — 翻阅后离开,让记忆留在书店里
+- **q4** 题干：你买下日记,发现夹着一张旧照片和纸条,背面写着'时间是用来浪费的'。照片中的人站在雨中的天桥上,模糊而遥远。这句话让你想起了什么？
+  - `q4.a`：结构检查通过 — 放下一切,立刻去寻找照片中的地点
+  - `q4.b`：结构检查通过 — 将纸条和日记一起珍藏,当作生活的提醒
+  - `q4.c`：结构检查通过 — 思考这句话背后的故事,陷入回忆
+  - `q4.d`：结构检查通过 — 微笑着将纸条收好,继续看日记
+- **q5** 题干：维多利亚港码头,海风咸涩神秘。有人提出交易:给你回到过去的机会,但代价是忘记现在所爱的人。海浪拍打着岸边的石头,你的回答是？
+  - `q5.a`：结构检查通过 — 毫不犹豫拒绝,有些回忆宁可保留
+  - `q5.b`：结构检查通过 — 犹豫不决,在爱与过去之间挣扎
+  - `q5.c`：结构检查通过 — 接受交易,认为值得为过去冒险
+  - `q5.d`：结构检查通过 — 询问是否可以保留部分记忆,寻求折中
+- **q6** 题干：细雨中的香港天桥,雨丝模糊了视线。你俯瞰着脚下流动的人群和车辆,一切遥远而不真实。手机震动,是重要的人发来的消息,你会如何回应？
+  - `q6.a`：结构检查通过 — 回拨过去,分享眼前的雨景和感受
+  - `q6.b`：结构检查通过 — 回复'稍后联系',继续沉浸在这片刻的孤独中
+  - `q6.c`：结构检查通过 — 忽略消息,让雨声带走思绪
+  - `q6.d`：结构检查通过 — 回复'你还好吗',关心对方的近况
+- **q7** 题干：深夜24小时茶餐厅,陌生人反复拨号又挂断,手机屏幕显示'我错过你了'。咖啡的香气混着夜宵的味道,灯光映照着疲惫的脸庞。你会？
+  - `q7.a`：结构检查通过 — 递上纸巾,轻声询问是否需要帮助
+  - `q7.b`：结构检查通过 — 默默注视,保持距离但心存同情
+  - `q7.c`：结构检查通过 — 移开视线,专注自己的咖啡
+  - `q7.d`：结构检查通过 — 轻轻询问'是否需要聊聊',给予陪伴
+- **q8** 题干：在尖沙咀的一家旧电影院,昏暗的光线下,你看到前排座位上的人正是你一直在寻找却多年未联系的人。空气中弥漫着旧地毯和电影胶片的气味,银幕上光影闪烁,电影即将开始,灯光即将熄灭。你会怎么做？
+  - `q8.a`：结构检查通过 — 立刻起身,绕过排排座椅,不顾他人目光走向那人,即使电影已经开始
+  - `q8.b`：结构检查通过 — 等到电影散场,在人群中悄然跟随,直到确定对方是否仍是记忆中的样子
+  - `q8.c`：结构检查通过 — 拿出手机,编辑一条简短信息,发送后再决定是否上前交谈,给自己留一条退路
+  - `q8.d`：结构检查通过 — 将目光移开,假装没看见,专注看电影,内心却为错过再次相遇的机会而遗憾
+- **q9** 题干：在深水埗的一条小巷里,潮湿的空气中飘着雨水的气息。你遇到一位卖古董钟表的老者,他的眼睛在昏暗的灯光下闪烁着神秘的光芒。他愿意以低价卖给你一个据说可以停止时间的怀表,但代价是你会失去一段重要的记忆。你会如何回应？
+  - `q9.a`：结构检查通过 — 毫不犹豫地买下,认为当下的感受比过去的记忆更重要,人生本就是不断向前
+  - `q9.b`：结构检查通过 — 拒绝交易,认为过去的记忆塑造了现在的自己,失去它们就失去了完整的自己
+  - `q9.c`：结构检查通过 — 询问能否选择性地保留某些记忆,试图在停止时间和保留过去之间找到平衡
+  - `q9.d`：结构检查通过 — 买下怀表但永远不使用它,把它当作一个装饰,享受拥有它的安全感而不改变现实
+- **q10** 题干：在中环的写字楼里,冷气开得很足,你看到一位女子站在镜子前,一遍遍练习如何说出「我需要帮助」。她的手指微微颤抖,眼神中流露出犹豫和不安,随后又将纸条揉成一团扔进垃圾桶。这一幕让你想起什么？
+  - `q10.a`：结构检查通过 — 想起自己也曾如此挣扎于表达脆弱,最终选择独自承受一切,不向任何人求助
+  - `q10.b`：结构检查通过 — 认为她应该勇敢表达自己的需求,不必在意他人的眼光,真实地面对自己
+  - `q10.c`：结构检查通过 — 理解她的犹豫,认为保持一定的自我边界是必要的,不必事事寻求帮助
+  - `q10.d`：结构检查通过 — 想象自己走过去,告诉她不必刻意练习,真诚的表达才是最重要的
+- **q11** 题干：台风夜,你的公寓突然断电,窗外风雨交加,雨点敲打窗户的声音此起彼伏。黑暗中,你只有手机最后一格电量,屏幕微弱的光照亮了你紧张的脸。这时,你收到一条信息,是那个你一直想联系却不敢联系的人发来的。你会如何回应？
+  - `q11.a`：结构检查通过 — 立刻回复,即使只有最后一格电量也要表达自己的感受,不给自己留下遗憾
+  - `q11.b`：结构检查通过 — 保存电量,等到天亮后再回复,认为在情绪激动时做出的决定往往不够理性
+  - `q11.c`：结构检查通过 — 犹豫再三,最终选择不回复,将这份思念留在心中,等待一个更合适的时机
+  - `q11.d`：结构检查通过 — 回复一条简短的信息,试探对方的反应,不暴露太多自己的真实情感
+- **q12** 题干：在香港一家老茶餐厅里,混杂着咖啡香和食物气味的空气中,你看到邻桌的客人遗落了一个信封。信封边缘已经磨损,里面装着一张泛黄的照片和一把小小的钥匙。餐厅嘈杂的声音中,服务员正忙着收拾其他桌子。你会怎么做？
+  - `q12.a`：结构检查通过 — 立刻将信封交给服务员,认为物归原主是最基本的责任,不管里面是什么
+  - `q12.b`：结构检查通过 — 悄悄打开信封查看内容,试图找到失主的信息,再决定如何处理
+  - `q12.c`：结构检查通过 — 将信封收起来,认为机缘巧合下得到的东西自有其意义,不必急于归还
+  - `q12.d`：结构检查通过 — 在桌上留一张纸条,说明你发现了信封,但不透露自己的身份,给失主自己选择的空间
+- **q13** 题干：雨后的黄昏,太平山顶的空气清新而微凉。你站在观景台上,俯瞰着逐渐亮起灯火的香港城市,霓虹灯在潮湿的空气中显得格外朦胧。远处海面上,一艘孤独的船缓缓驶过,留下一道微弱的光轨。这一刻,你感受到什么？
+  - `q13.a`：结构检查通过 — 强烈的孤独感,渴望身边能有一个人分享这美景,感受不再孤单
+  - `q13.b`：结构检查通过 — 内心的平静与满足,享受这独处的时刻,认为与自己对话才是最珍贵的
+  - `q13.c`：结构检查通过 — 对远方船只的好奇,想象它驶向何方,思考自己的人生是否也像这艘船一样漂泊
+  - `q13.d`：结构检查通过 — 对城市繁华的疏离感,感觉自己与这片灯火格格不入,如同远方的船只一样不属于这里
+- **q14** 题干：在铜锣湾的一家古董店,空气中弥漫着旧木料和灰尘的气息。你发现了一面据说可以映照出内心真实想法的镜子,镜框雕刻着繁复的花纹,店主的眼神中闪烁着神秘的光芒。他警告你,使用它可能会看到一些你不想面对的真相。你会如何选择？
+  - `q14.a`：结构检查通过 — 毫不犹豫地买下并立即使用,认为了解真实的自己比逃避痛苦更重要
+  - `q14.b`：结构检查通过 — 拒绝购买,认为有些真相一旦知晓就无法回头,宁愿保持现在的状态
+  - `q14.c`：结构检查通过 — 买下但永远不会使用它,将它放在角落,享受拥有它的安全感而不面对真相
+  - `q14.d`：结构检查通过 — 询问店主是否可以控制看到的内容,试图在了解自己和保护自我之间找到平衡
+- **q15** 题干：兰桂坊酒吧角落,霓虹灯闪烁,一个男人独自对着空座位举杯,轻声说着「下次,我们一起」,饮尽杯中酒,眼神中带着一丝期待和忧伤。
+  - `q15.a`：结构检查通过 — 你会走过去,直接询问他是否需要陪伴
+  - `q15.b`：结构检查通过 — 你默默观察,在心中想象他可能的故事
+  - `q15.c`：结构检查通过 — 你选择无视,继续沉浸在自己的世界里
+  - `q15.d`：结构检查通过 — 你犹豫着,最终离开,但心中为他默默祝福
+- **q16** 题干：拥挤的香港街头,人潮涌动,一位陌生人突然认出你,声称认识你很久,掌握着你过去的重要信息,眼神中带着不容置疑的确定。
+  - `q16.a`：结构检查通过 — 你会直接表明自己的困惑,要求对方提供具体证据
+  - `q16.b`：结构检查通过 — 你会礼貌地保持距离,表示可能认错了人
+  - `q16.c`：结构检查通过 — 你会跟随对方去了解所谓的'过去',好奇会驱使你
+  - `q16.d`：结构检查通过 — 你会立刻离开,避免任何可能的麻烦
+- **q17** 题干：旺角深夜咖啡馆,灯光昏黄,咖啡香气弥漫,你发现杯底一行小字:「时间的钟摆,从不为谁停留。」窗外雨声淅沥,店内只有偶尔的交谈声。
+  - `q17.a`：结构检查通过 — 你会拍照记录这句话,作为今天的纪念
+  - `q17.b`：结构检查通过 — 你会把这行字当作一种提醒,珍惜当下每一刻
+  - `q17.c`：结构检查通过 — 你会思考这句话背后的含义,回忆过去的遗憾
+  - `q17.d`：结构检查通过 — 你会忽略这句话,专注于享受咖啡的香气
+- **q18** 题干：寂静的香港图书馆,阳光透过窗户洒在书架上,你独自坐在窗边,窗外夕阳渐沉,书架间只有偶尔翻书的声音,空气中弥漫着纸张的墨香。
+  - `q18.a`：结构检查通过 — 你会沉浸在阅读中,享受这份独处的宁静
+  - `q18.b`：结构检查通过 — 你会观察周围的其他读者,想象他们的故事
+  - `q18.c`：结构检查通过 — 你会感到孤独,渴望有人分享此刻的感受
+  - `q18.d`：结构检查通过 — 你会留意时间,担心图书馆即将闭馆
+- **q19** 题干：偏僻的香港小巷,雨水打湿了石板路,你遇到一位神秘老者,他愿意给你机会重新选择过去的一个决定,但代价是失去现在所有的成就和关系。
+  - `q19.a`：结构检查通过 — 你会毫不犹豫地接受,认为过去的遗憾值得弥补
+  - `q19.b`：结构检查通过 — 你会详细询问老者,了解改变可能带来的具体后果
+  - `q19.c`：结构检查通过 — 你会拒绝,因为现在的成就和关系对你同样重要
+  - `q19.d`：结构检查通过 — 你会犹豫不决,难以做出决定
+- **q20** 题干：尖沙咀海边,夕阳西下,一位女子对着大海反复投掷漂流瓶,每个瓶子里都装着一封信,海风吹拂着她的长发,表情始终难以捉摸。
+  - `q20.a`：结构检查通过 — 你会走过去,直接询问她是否需要帮助
+  - `q20.b`：结构检查通过 — 你会远远观望,在心中猜测她的故事
+  - `q20.c`：结构检查通过 — 你会选择离开,不愿打扰他人的私人时刻
+  - `q20.d`：结构检查通过 — 你会找到机会,悄悄带走一个漂流瓶窥探内容
+
+### 逐结果
+- **r1**（何宝荣）：profile 键与范围检查通过。
+- **r2**（苏丽珍）：profile 键与范围检查通过。
+- **r3**（阿飞）：profile 键与范围检查通过。
+- **r4**（周慕云）：profile 键与范围检查通过。
+- **r5**（黎耀辉）：profile 键与范围检查通过。
+- **r6**（何玉环）：profile 键与范围检查通过。
+- **r7**（金城武）：profile 键与范围检查通过。
+- **r8**（张曼玉）：profile 键与范围检查通过。
+
+## what-pet-fits-you
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 8
+- **错误（1）**
+  - talkative-bird-friend is unreachable — dominated by smart-interactive-partner on all dimensions
+- **警告（2）**
+  - q5.d: unknown dimension "观���乐趣" (valid: 独立需求, 秩序偏好, 情感投射, 精力投入, 冒险精神, 观察乐趣)
+  - talkative-bird-friend is unreachable — dominated by smart-interactive-partner on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：你理想中的宠物互动，最接近以下哪种画面？
+  - `q1.a`：结构检查通过 — 它在你工作时安静地趴在脚边，偶尔抬头看你一眼。
+  - `q1.b`：结构检查通过 — 每天固定时间，它会准时出现在食盆前等你喂食。
+  - `q1.c`：结构检查通过 — 一回家它就冲过来迎接，兴奋地围着你打转。
+  - `q1.d`：结构检查通过 — 它有自己的探索路线，你们在屋子里偶然相遇，互相打量。
+- **q2** 题干：看到网上有人给宠物做精致复杂的鲜食，你的想法是？
+  - `q2.a`：结构检查通过 — 偶尔可以试试，当作一种有趣的生活实验。
+  - `q2.b`：结构检查通过 — 太麻烦了，选择科学配方的成品粮更省心可靠。
+  - `q2.c`：结构检查通过 — 如果它喜欢，我愿意花时间研究，这本身就是一种爱意表达。
+  - `q2.d`：结构检查通过 — 没必要，宠物自己知道什么对它好，顺其自然。
+- **q3** 题干：在公园长椅上，你更倾向于观察什么？
+  - `q3.a`：结构检查通过 — 一只松鼠谨慎地藏起坚果，动作敏捷而警惕。
+  - `q3.b`：结构检查通过 — 一群鸽子聚散有序，形成某种移动的图案。
+  - `q3.c`：结构检查通过 — 别人家的狗在草地上快乐地追逐飞盘。
+  - `q3.d`：结构检查通过 — 蚂蚁排成长队运输食物，路线精确。
+- **q4** 题干：宠物不小心打翻了你心爱的东西，你的第一反应是？
+  - `q4.a`：结构检查通过 — 有点心疼，但立刻检查它有没有受伤或受惊。
+  - `q4.b`：结构检查通过 — 先收拾残局，然后思考如何避免类似情况再次发生。
+  - `q4.c`：结构检查通过 — 无奈地笑笑，觉得它懵懂的样子有点可爱。
+  - `q4.d`：结构检查通过 — 好奇它为什么会这么做，是玩耍还是被别的东西吸引？
+- **q5** 题干：你如何看待给宠物穿衣服、戴饰品的行为？
+  - `q5.a`：结构检查通过 — 很有趣，是表达创意和亲密感的方式。
+  - `q5.b`：结构检查通过 — 实用至上，只在必要时（如保暖）才考虑。
+  - `q5.c`：结构检查通过 — 不太喜欢，觉得干扰了它们自然的状态。
+  - `q5.d`：未知维「观���乐趣」 — 如果它不抗拒，可以尝试一些特别的风格。
+- **q6** 题干：朋友想送你一只宠物作为生日礼物，你会？
+  - `q6.a`：结构检查通过 — 非常感动，立刻开始规划需要准备的一切。
+  - `q6.b`：结构检查通过 — 婉拒，认为养宠物需要自己深思熟虑后主动选择。
+  - `q6.c`：结构检查通过 — 先答应下来，但会花时间研究哪种宠物最适合当前生活。
+  - `q6.d`：结构检查通过 — 欣然接受，觉得生命中的意外相遇也是一种缘分。
+- **q7** 题干：你更享受以下哪种与自然接触的方式？
+  - `q7.a`：结构检查通过 — 在阳台种几盆好打理的香草，随手摘来用。
+  - `q7.b`：结构检查通过 — 去郊野公园徒步，观察沿途不同的植物和昆虫。
+  - `q7.c`：结构检查通过 — 定期去固定的河边或树林散步，熟悉那里的季节变化。
+  - `q7.d`：结构检查通过 — 躺在草地上晒太阳，感受风吹过皮肤，什么也不想。
+- **q8** 题干：听到宠物在夜里发出不寻常的声响，你会？
+  - `q8.a`：结构检查通过 — 立刻起身查看，担心它是不是不舒服或害怕。
+  - `q8.b`：结构检查通过 — 先判断声音来源和类型，再决定是否需要干预。
+  - `q8.c`：结构检查通过 — 翻个身继续睡，相信它能处理好自己的事。
+  - `q8.d`：结构检查通过 — 有点好奇，可能会悄悄观察一下它在做什么。
+- **q9** 题干：你选择宠物用品（如窝、玩具）时，最看重什么？
+  - `q9.a`：结构检查通过 — 安全性和耐用性，材质必须可靠。
+  - `q9.b`：结构检查通过 — 是否有趣、有创意，能激发彼此互动的欲望。
+  - `q9.c`：结构检查通过 — 易于清洁和收纳，不给日常生活增添负担。
+  - `q9.d`：结构检查通过 — 是否符合宠物的天性，比如猫喜欢钻，狗喜欢咬。
+- **q10** 题干：对于宠物可能掉毛、产生异味或需要经常清理这件事，你怎么看？
+  - `q10.a`：结构检查通过 — 这是共同生活的一部分，愿意为此调整清洁习惯。
+  - `q10.b`：结构检查通过 — 会优先选择掉毛少、异味轻的品种，或做好周全的清洁计划。
+  - `q10.c`：结构检查通过 — 有点头疼，希望宠物能相对"干净"和省心。
+  - `q10.d`：结构检查通过 — 觉得这是生命活力的痕迹，不算什么大问题。
+- **q11** 题干：你发现宠物有一个独特的小习惯（比如总在特定时间望向窗外），你会？
+  - `q11.a`：结构检查通过 — 觉得可爱，可能会拍照记录，甚至猜测它在想什么。
+  - `q11.b`：结构检查通过 — 观察并记录这个规律，看是否与环境变化（如鸟群经过）有关。
+  - `q11.c`：结构检查通过 — 不打扰，让它享受自己的固定仪式。
+  - `q11.d`：结构检查通过 — 尝试在那个时候也看向窗外，看看它到底在看什么。
+- **q12** 题干：你更愿意通过什么方式了解养宠知识？
+  - `q12.a`：结构检查通过 — 阅读权威书籍或科学文献，建立系统的知识框架。
+  - `q12.b`：结构检查通过 — 在实践和互动中摸索，向有经验的人请教具体问题。
+  - `q12.c`：结构检查通过 — 浏览社交平台，看其他宠主的分享和日常。
+  - `q12.d`：结构检查通过 — 顺其自然，遇到问题再查找针对性解决方案。
+- **q13** 题干：想象一下，你的宠物似乎能感知你的情绪，当你低落时它会靠近你。这时你通常？
+  - `q13.a`：结构检查通过 — 非常感动，会抱着它倾诉，感觉被深深理解。
+  - `q13.b`：结构检查通过 — 享受这份安静的陪伴，但不会过度解读它的行为。
+  - `q13.c`：结构检查通过 — 观察它是通过什么（声音、气味、动作）感知到的。
+  - `q13.d`：结构检查通过 — 可能会因此振作一点，觉得有责任不让它担心。
+- **q14** 题干：你如何看待"宠物社交"（如带狗聚会、猫友交流）？
+  - `q14.a`：结构检查通过 — 很重要，是宠物学习和快乐的一部分，也是主人拓展社交的方式。
+  - `q14.b`：结构检查通过 — 谨慎参与，需评估宠物性格和健康状况是否适合。
+  - `q14.c`：结构检查通过 — 不太热衷，宠物在家自在就好，外出社交可能带来压力。
+  - `q14.d`：结构检查通过 — 有趣，可以观察不同宠物之间的互动模式。
+- **q15** 题干：如果宠物对你喜欢的某样食物（非宠物食品）表现出极大兴趣，你会？
+  - `q15.a`：结构检查通过 — 坚决不给，查阅确认它能否食用，严格遵守饮食纪律。
+  - `q15.b`：结构检查通过 — 偶尔分享一点点安全的、它可食用的部分，看它开心的样子。
+  - `q15.c`：结构检查通过 — 不给，但可能会专门为它寻找或制作类似的宠物零食。
+  - `q15.d`：结构检查通过 — 好奇它为什么会被这个吸引，是气味、颜色还是质地？
+- **q16** 题干：你希望宠物在你的生活空间中扮演什么样的"角色"？
+  - `q16.a`：结构检查通过 — 家庭的一份子，参与许多日常活动，有它的固定位置。
+  - `q16.b`：结构检查通过 — 一个安静的陪伴者，让空间更有生机，但不主导生活节奏。
+  - `q16.c`：结构检查通过 — 一个需要被照顾和规划的对象，它的需求被纳入时间管理。
+  - `q16.d`：结构检查通过 — 一个带来意外和趣味的变量，让每天都有点不一样。
+- **q17** 题干：当你在专注工作或阅读时，宠物过来打扰，你会？
+  - `q17.a`：结构检查通过 — 暂时放下手头的事，回应它一下，然后再继续。
+  - `q17.b`：结构检查通过 — 温和但坚定地让它明白现在不是互动时间，引导它去别处。
+  - `q17.c`：结构检查通过 — 看情况，如果不紧急就忽略，让它自己找乐子。
+  - `q17.d`：结构检查通过 — 可能会被它打断，转而观察它在做什么，为什么这时候来。
+- **q18** 题干：你如何规划宠物一天的生活（如喂食、活动、休息）？
+  - `q18.a`：结构检查通过 — 有大致固定的时间表，让宠物和自己的生活都规律。
+  - `q18.b`：结构检查通过 — 根据宠物的表现和需求灵活调整，没有严格规定。
+  - `q18.c`：结构检查通过 — 投入不少时间互动和玩耍，希望它每天充实快乐。
+  - `q18.d`：结构检查通过 — 提供基本保障，其余时间让它自由支配，探索环境。
+- **q19** 题干：对于网络上流行的"宠物成精"搞笑视频，你的看法是？
+  - `q19.a`：结构检查通过 — 很有趣，是主人情感投射和创意剪辑的结合。
+  - `q19.b`：结构检查通过 — 会心一笑，但明白那是巧合或训练的结果。
+  - `q19.c`：结构检查通过 — 喜欢看，也会分析动物行为背后的自然动机。
+  - `q19.d`：结构检查通过 — 不太关注，更在意现实中宠物的真实状态。
+- **q20** 题干：如果宠物表现出对某种新事物（如一种新玩具、一处新角落）的恐惧，你会？
+  - `q20.a`：结构检查通过 — 耐心引导和鼓励，用零食和安抚帮助它慢慢适应。
+  - `q20.b`：结构检查通过 — 暂时移除恐惧源，给它时间，不强求立刻接受。
+  - `q20.c`：结构检查通过 — 分析恐惧的原因（声音、形状、气味），尝试消除或解释。
+  - `q20.d`：结构检查通过 — 觉得这是正常的探索过程，不过度干预，让它自己观察判断。
+- **q21** 题干：你理想中的"与宠物共度的完美一天"是怎样的？
+  - `q21.a`：结构检查通过 — 一起完成一些事，比如散步、训练新技能，然后安静地各自休息。
+  - `q21.b`：结构检查通过 — 它黏在身边，无论是做饭、看书还是看电视，都能感受到它的陪伴。
+  - `q21.c`：结构检查通过 — 各自安好，互不打扰，但在偶尔对视或擦身而过时感到安心。
+  - `q21.d`：结构检查通过 — 带它去一个新的环境探险，观察它对陌生事物的��应。
+  - `q21.e`：结构检查通过 — 一切按计划进行，喂食、清洁、玩耍、休息，井井有条。
+- **q22** 题干：最终，你希望宠物为你的人生带来最主要的是什么？
+  - `q22.a`：结构检查通过 — 无条件的爱和情感联结，一种被深深需要的感觉。
+  - `q22.b`：结构检查通过 — 生活的秩序感和责任感，让日常更有结构和意义。
+  - `q22.c`：结构检查通过 — 一个安静独立的陪伴者，共享空间但不彼此束缚。
+  - `q22.d`：结构检查通过 — 观察另一个生命形态的窗口，满足好奇心和探索欲。
+  - `q22.e`：结构检查通过 — 打破常规的乐趣和惊喜，让生活不那么 predictable。
+  - `q22.f`：结构检查通过 — 一个简单纯粹的照顾对象，付出本身就能带来平静。
+
+### 逐结果
+- **independent-cat-partner**（独立猫系伙伴）：profile 键与范围检查通过。
+- **loyal-dog-family**（忠诚狗系家人）：profile 键与范围检查通过。
+- **serene-aquarium-observer**（静谧水族观察家）：profile 键与范围检查通过。
+- **low-maintenance-reptile-roommate**（低维护爬宠室友）：profile 键与范围检查通过。
+- **talkative-bird-friend**（话痨鸟系朋友）：profile 键与范围检查通过。
+- **healing-small-pet-partner**（治愈系小宠伙伴）：profile 键与范围检查通过。
+- **smart-interactive-partner**（智能互动伙伴）：profile 键与范围检查通过。
+- **cloud-pet-plant-master**（云养宠/植物系达人）：profile 键与范围检查通过。
+
+## which-ancient-greek-philosopher-resonates-with-you
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：在集市上，你目睹两位公民就"正义源于强权还是约定"激烈辩论，逐渐演变成人身攻击。你会？
+  - `q1.a`：结构检查通过 — 介入辩论，指出双方逻辑上的谬误，将讨论拉回概念本身。
+  - `q1.b`：结构检查通过 — 被其中一方充满感染力的言辞打动，忍不住为其喝彩。
+  - `q1.c`：结构检查通过 — 认为这种公开争吵有失体面，默默离开，去更安静的地方思考。
+  - `q1.d`：结构检查通过 — 仔细观察围观者的反应，思考"正义"这个概念如何被表演和操纵。
+- **q2** 题干：你被邀请参加一场夜间酒会，气氛热烈，美酒与诗歌不断。面对劝酒，你通常？
+  - `q2.a`：结构检查通过 — 浅尝辄止，保持清醒以便观察众人的醉后真言与行为逻辑。
+  - `q2.b`：结构检查通过 — 尽情投入，认为微醺时灵感与真情才会毫无保留地涌现。
+  - `q2.c`：结构检查通过 — 礼貌但坚定地拒绝过量饮酒，认为放纵会损害灵魂的秩序。
+  - `q2.d`：结构检查通过 — 思考酒作为一种社会仪式，如何短暂地打破日常规则，又巩固了它。
+- **q3** 题干：当你仰望星空，心中最常涌现的念头是？
+  - `q3.a`：结构检查通过 — 试图理解星辰运行的规律与宇宙构成的数学和谐。
+  - `q3.b`：结构检查通过 — 感到一种与浩瀚相连的颤栗与无法言说的美感。
+  - `q3.c`：结构检查通过 — 意识到人类纷争的渺小，内心获得一种平静的疏离感。
+  - `q3.d`：结构检查通过 — 怀疑关于星辰的神话与科学解释，都只是人类理解力的暂时投射。
+- **q4** 题干：面对城邦一项新颁布的、你认为不甚合理的法令，你的第一反应是？
+  - `q4.a`：结构检查通过 — 撰写论稿，公开剖析该法令在前提和推论上的逻辑缺陷。
+  - `q4.b`：结构检查通过 — 感到愤慨，并试图在公民集会中演讲，激发大家的反对情绪。
+  - `q4.c`：结构检查通过 — 遵守它，但调整自己的私人生活，尽量减少该法令带来���影响。
+  - `q4.d`：结构检查通过 — 深入调查该法令出台的背后，是哪些力量博弈和利益交换的结果。
+- **q5** 题干：你被委托教育一位富家子弟，但他只对战车、狩猎感兴趣。你会？
+  - `q5.a`：结构检查通过 — 从战车的力学原理或狩猎的动物习性入手，引导他进入自然哲学。
+  - `q5.b`：结构检查通过 — 用荷马史诗中英雄的激情与命运来比拟他的爱好，点燃他对更高价值的向往。
+  - `q5.c`：结构检查通过 — 先严格规范他的作息与言行，认为纪律是接受任何教导的前提。
+  - `q5.d`：结构检查通过 — 质疑"教育"他的必要性，也许他现有的生活方式本身就是一种合理的"善"。
+- **q6** 题干：在雕刻作坊，面对一块上好的大理石，工匠问你对最终雕像的期望。你说？
+  - `q6.a`：结构检查通过 — "请严格遵循人体最和谐的比例，比如黄金分割。"
+  - `q6.b`：结构检查通过 — "要能捕捉神祇降临或英雄悲怆的那一瞬间神韵。"
+  - `q6.c`：结构检查通过 — "简洁、庄重、克制，去除一切不必要的装饰。"
+  - `q6.d`：结构检查通过 — "也许保留一部分石头的原始粗粝感，提醒我们它本来的面目。"
+- **q7** 题干：长途航海遭遇持续风暴，船员开始恐慌并向神祈祷。此时你？
+  - `q7.a`：结构检查通过 — 观察风向、洋流，与舵手讨论最符合流体动力学的应对方案。
+  - `q7.b`：结构检查通过 — 大声吟诵《奥德赛》中穿越险境的篇章，以勇气感染众人。
+  - `q7.c`：结构检查通过 — 保持镇定，有条不紊地检查物资固定情况，并分配淡水。
+  - `q7.d`：结构检查通过 — 思考这场风暴在多大程度上是自然现象，多大程度是集体恐惧的投射。
+- **q8** 题干：一位朋友坚信通过某种神秘的仪式可以与逝者沟通，并邀请你参加。你会？
+  - `q8.a`：结构检查通过 — 要求他清晰定义"沟通"的标准和可验证的证据，否则不予采信。
+  - `q8.b`：结构检查通过 — 被仪式的氛围和朋友的虔诚打动，愿意暂时放下怀疑去体验。
+  - `q8.c`：结构检查通过 — 婉拒，认为沉迷于此类超自然事务会扰乱内心的平静与理性。
+  - `q8.d`：结构检查通过 — 感兴趣的不是仪式是否"灵验"，而是它如何满足人对联结与意义的需求。
+- **q9** 题干：你发现自己在某个重要问题上，长期坚持的观点可能是错的。这时你？
+  - `q9.a`：结构检查通过 — 感到兴奋，因为修正错误意味着向真理又迈进了一步。
+  - `q9.b`：结构检查通过 — 经历强烈的内心震荡，如同部分旧的自我被撕裂。
+  - `q9.c`：结构检查通过 — 谨慎地重新检视所有证据，不急于公开转变，避免再次失误。
+  - `q9.d`：结构检查通过 — 进而怀疑"对"与"错"的二元框架本身，是否过于简化了现实。
+- **q10** 题干：在体育场观看竞技，当冠军诞生、全场沸腾时，你最深切的感受是？
+  - `q10.a`：结构检查通过 — 分析冠军的战术、训练方法，思考其胜利背后的必然因素。
+  - `q10.b`：结构检查通过 — 被现场山呼海啸般的激情淹没，感到与集体荣耀融为一体。
+  - `q10.c`：结构检查通过 — 提醒自己荣誉转瞬即逝，真正的价值在于日常训练的纪律与坚持。
+  - `q10.d`：结构检查通过 — 观察观众的反应，思考竞技如何成为城邦凝聚力和价值观的展演。
+- **q11** 题干：你要为自己建造一座乡间居所。选址时，最优先考虑的是？
+  - `q11.a`：结构检查通过 — 地势、水源、光照、风向，确保居住功能与自然条件的和谐最优解。
+  - `q11.b`：结构检查通过 — 风景是否壮丽动人，能否激发创作灵感或带来心潮澎湃的感受。
+  - `q11.c`：结构检查通过 — 是否足够僻静、简朴，能远离尘嚣，专注于内心的修养与沉思。
+  - `q11.d`：结构检查通过 — 思考"隐居"这个行为本身，是否是对城邦生活的另一种依赖和逃避。
+- **q12** 题干：聆听一场关于"至善"的精彩演讲后，朋友问你有何感想。你回答？
+  - `q12.a`：结构检查通过 — 演讲者将'善'分为三个层次，但第二层到第三层的过渡缺乏必���性论证。
+  - `q12.b`：结构检查通过 — 我感到一种强烈的渴望，想要立刻按照他所描述的方式去生活。
+  - `q12.c`：结构检查通过 — 言辞虽美，但真正的善行是沉默的，需要在日常点滴中践行。
+  - `q12.d`：结构检查通过 — 我在想，一个能如此流畅定义'至善'的人，是否离真正的善最远？
+- **q13** 题干：你饲养的宠物（或熟悉的动物）死去。处理这件事时，你倾向于？
+  - `q13.a`：结构检查通过 — 理解这是生命周期的自然环节，并可能解剖或观察以了解其构造。
+  - `q13.b`：结构检查通过 — 举行一个小仪式，真诚地哀悼，并允许自己感受这份失去的痛苦。
+  - `q13.c`：结构检查通过 — 平静地埋葬它，提醒自己万物皆逝，对一切拥有之物保持适度依恋。
+  - `q13.d`：结构检查通过 — 思考人类为动物赋予情感意义的行为，以及"宠物"这个概念的人造性。
+- **q14** 题干：在公民大会投票前，对于一项利弊参半的提案，你如何做出决定？
+  - `q14.a`：结构检查通过 — 绘制图表，列出所有可能后果及其概率，计算期望值。
+  - `q14.b`：结构检查通过 — 聆听最后一位发言者的演说，他的激情和信念常常决定我的票向。
+  - `q14.c`：结构检查通过 — 倾向于投反对票，因为变革带来的未知风险通常大于可预见的收益。
+  - `q14.d`：结构检查通过 — 意识到自己的决定可能无关紧要，重点在于观察投票背后的派系合纵连横。
+  - `q14.e`：结构检查通过 — 放弃投票，认为真���的智慧在于认识到此类公共决策固有的局限性。
+- **q15** 题干：当你感到强烈的愤怒或悲伤时，你通常如何应对这种情绪？
+  - `q15.a`：结构检查通过 — 分析情绪产生的具体原因和触发逻辑，将其"问题化"来处理。
+  - `q15.b`：结构检查通过 — 通过写诗、剧烈运动或向密友倾诉，将其充分表达和释放出来。
+  - `q15.c`：结构检查通过 — 独处，通过冥想或深呼吸，等待情绪像海浪一样自然平复。
+  - `q15.d`：结构检查通过 — 观察情绪中的自己，思考"我"与"我的情绪"之间的距离。
+- **q16** 题干：有人宣称发现了一种"幸福公式"，只要按步骤执行就能获得幸福。你听后？
+  - `q16.a`：结构检查通过 — 要求检验该公式的前提假设、变量定义和推导过程是否可靠。
+  - `q16.b`：结构检查通过 — 被这种充满希望和确定性的想法吸引，愿意尝试看看。
+  - `q16.c`：结构检查通过 — 怀疑这种将幸福"技术化"的企图，会让人失去感受真实生活的能力。
+  - `q16.d`：结构检查通过 — 思考"幸福公式"这个概念的流行，反映了时代对确定性和捷径的何种焦虑。
+- **q17** 题干：你被卷入一场政治风波，面临不公指控。在审判前夜，你主要在想？
+  - `q17.a`：结构检查通过 — 构思法庭陈述的逻辑框架，预判指控者的漏洞并准备反驳证据。
+  - `q17.b`：结构检查通过 — 回忆自己一生坚持的原则，感到悲壮，并准备在法庭上慷慨陈词。
+  - `q17.c`：结构检查通过 — 练习控制恐惧与愤怒，确保无论结果如何，灵魂都能保持平静与尊严。
+  - `q17.d`：结构检查通过 — 思考"公正"的审判在多大程度上是法律程序，多大程度上是政治表演。
+- **q18** 题干：漫步在精心规划的皇家花园中，你对这种"人造自然"的看法是？
+  - `q18.a`：结构检查通过 — 欣赏其对称、几何形态所体现的人类理性对混沌自然的胜利。
+  - `q18.b`：结构检查通过 — 觉得它过于呆板，缺乏荒野中那种原始、不可预测的生命力与惊喜。
+  - `q18.c`：结构检查通过 — 认为适度的规划是好的，它象征了欲望与理性之间的平衡状态。
+  - `q18.d`：结构检查通过 — 看到权力如何通过对自然的编排，来展示其控制力与审美趣味。
+- **q19** 题干：一位智者说："认识你自己。"你认为践行这句话最难的部分在于？
+  - `q19.a`：结构检查通过 — 剥离情绪和偏见的影响，对自身动机和行为进行客观、系统的分析。
+  - `q19.b`：结构检查通过 — 直面自己内心深处那些黑暗、矛盾、甚至令人羞愧的欲望与冲动。
+  - `q19.c`：结构检查通过 — 持续不懈地监督和约束那些将你拉离"真正自我"的习惯与惰性。
+  - `q19.d`：结构检查通过 — "自己"并非一个固定实体，而是在关系和行动中不断流变的过程。
+- **q20** 题干：你获得一次机会，可以向一位传说中的先知（如德尔斐神谕）提一个问题。你会问？
+  - `q20.a`：结构检查通过 — "宇宙的终极构成单元是什么，它们遵循怎样的运动法则？"
+  - `q20.b`：结构检查通过 — "我此生能否体验到那种超越一切、与至高存在合一的狂喜？"
+  - `q20.c`：结构检查通过 — "为了获得内心的真正安宁，我最需要克服的性格弱点是什么？"
+  - `q20.d`：结构检查通过 — "你的预言，在多大程度上塑造了它所谓的'未来'？"
+  - `q20.e`：结构检查通过 — "如果我不问任何问题，会对我的命运产生什么影响？"
+- **q21** 题干：在整理先人留下的手稿时，你发现其中对同一历史事件的记载自相矛盾。你会？
+  - `q21.a`：结构检查通过 — 交叉比对时间、人物、地点等客观信息，尝试还原最可能的事实版本。
+  - `q21.b`：结构检查通过 — 被这种矛盾本身吸引，觉得它揭示了历史叙述中动人的复杂性与人性张力。
+  - `q21.c`：结构检查通过 — 谨慎对待两份记载，不轻易采信任何一方，直到找到更多可靠旁证。
+  - `q21.d`：结构检查通过 — 认为这恰恰证明"历史真相"不可企及，我们拥有的永远是叙述的竞争。
+- **q22** 题干：生命的最后时刻，如果只能留下一句话给后世，你会选择说什么？
+  - `q22.a`：结构检查通过 — "万物皆数，和谐存在于度量之中。"
+  - `q22.b`：结构检查通过 — "尽情去爱，去创造，去感受，不要虚度这仅有一次的燃烧。"
+  - `q22.c`：结构检查通过 — "保持中道，控制欲望，灵魂的安宁是最高财富。"
+  - `q22.d`：结构检查通过 — "我所知唯一确切的，就是我一无所知。"
+  - `q22.e`：结构检查通过 — "像大地一样坚实，像天空一样自由。"
+  - `q22.f`：结构检查通过 — "去生活吧，答案在行动之中，不在言辞之内。"
+
+### 逐结果
+- **result-plato**（柏拉图）：profile 键与范围检查通过。
+- **result-heraclitus**（赫拉克利特）：profile 键与范围检查通过。
+- **result-aristotle**（亚里士多德）：profile 键与范围检查通过。
+- **result-socrates**（苏格拉底）：profile 键与范围检查通过。
+- **result-plotinus**（普罗提诺）：profile 键与范围检查通过。
+- **result-epicurus**（伊壁鸠鲁）：profile 键与范围检查通过。
+- **result-diogenes**（第欧根尼）：profile 键与范围检查通过。
+- **result-democritus**（德谟克利特）：profile 键与范围检查通过。
+- **result-pythagoras**（毕达哥拉斯）：profile 键与范围检查通过。
+- **result-zeno-stoic**（芝诺（斯多葛））：profile 键与范围检查通过。
+
+## which-japanese-sengoku-daimyo-are-you
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **警告（3）**
+  - q12.a: score -1 out of range [0,3] for "谋略"
+  - q13.a: score -1 out of range [0,3] for "务实"
+  - q17.a: score -1 out of range [0,3] for "务实"
+
+### 逐题 · 逐选项
+- **q1** 题干：你的宿敌在决战前夜派来使者，提出用你被俘的家臣交换他走失的爱马。你会如何回应？
+  - `q1.a`：结构检查通过 — 同意交换，并额外赠送一袋马粮，展现气度。
+  - `q1.b`：结构检查通过 — 同意交换，但要求对方先放人，并设伏准备扣押使者。
+  - `q1.c`：结构检查通过 — 拒绝交换，当众斩杀使者祭旗，以振军威。
+  - `q1.d`：结构检查通过 — 扣下使者，派人去敌营散布其叛变的谣言。
+- **q2** 题干：盟友的城池被围，粮草将尽，送来血书求援。但此时出兵会打乱你积蓄力量的计划。
+  - `q2.a`：结构检查通过 — 立即点兵驰援，盟约重于泰山，不能见死不救。
+  - `q2.b`：结构检查通过 — 派小股精锐骚扰敌军粮道，拖延时间，但不正面决战。
+  - `q2.c`：结构检查通过 — 按兵不动，趁双方消耗，准备接收盟友溃散的兵力与领地。
+  - `q2.d`：结构检查通过 — 严词拒绝，并斥责盟友无能，将血书公之于众以儆效尤。
+- **q3** 题干：在评定战功时，一位勇猛但桀骜的家臣与一位忠诚但平庸的老臣争抢头功，互不相让。
+  - `q3.a`：结构检查通过 — 将头功授予老臣，以安抚人心，彰显不忘旧恩。
+  - `q3.b`：结构检查通过 — 根据详细的军功记录，客观裁定，不偏不倚。
+  - `q3.c`：结构检查通过 — 将头功授予桀骜的家臣，并当众训斥老臣无能，激励竞争。
+  - `q3.d`：结构检查通过 — 宣布二人皆无头功，头功归于自己，以绝对权威压下争议。
+- **q4** 题干：你的领地内爆发一揆（农民起义），原因是连年征战赋税过重。镇压的军队已准备就绪。
+  - `q4.a`：结构检查通过 — 亲自前往安抚，承诺减免赋税，诛杀几个贪腐代官以平民愤。
+  - `q4.b`：结构检查通过 — 派兵迅速镇压首领，同时颁布轻徭薄赋的新法，软硬兼施。
+  - `q4.c`：结构检查通过 — 强力镇压，将所有参与者的村庄焚毁，以儆效尤，确保再无后患。
+  - `q4.d`：结构检查通过 — 利用起义军，将其编入炮灰部队，驱使他们攻打敌人的城池。
+- **q5** 题干：一位流浪的茶道宗师来到你的城下町，他技艺高超但性格孤僻，拒绝为任何大名服务。
+  - `q5.a`：结构检查通过 — 真诚拜访，只论茶道，不论功业，成为他的茶友。
+  - `q5.b`：结构检查通过 — 提供资金让他开设茶室，借此吸引商人与文化人，繁荣城下町。
+  - `q5.c`：结构检查通过 — 不予理会，认为乱世中舞刀弄枪才是正途，风雅无用。
+  - `q5.d`：结构检查通过 — 强迫他入府服务，若不肯，便以"怠慢君主"之罪处罚。
+- **q6** 题干：你的军师提出了一个极为冒险的奇袭方案，成功则天下震动，失败则万劫不复。
+  - `q6.a`：结构检查通过 — 否决方案，选择更稳妥的推进策略，不能拿家臣们的性命赌博。
+  - `q6.b`：结构检查通过 — 要求军师完善所有细节，准备多条退路，再谨慎执行。
+  - `q6.c`：结构检查通过 — 热血沸腾，亲自担任先锋，率领精锐部队执行奇袭。
+  - `q6.d`：结构检查通过 — 采纳方案，但让军师立下军令状，若失败则需切腹负责。
+- **q7** 题干：击败强敌后，在接收其城池时，发现对方年幼的继承人藏匿其中。
+  - `q7.a`：结构检查通过 — 将其收养为义子，好生教导，以安抚旧臣，收买人心。
+  - `q7.b`：结构检查通过 — 将其送往寺庙出家，断绝其家族的政治血脉，永绝后患。
+  - `q7.c`：结构检查通过 — 当众处决，用最残酷的方式宣告旧时代的终结与新秩序的建立。
+  - `q7.d`：结构检查通过 — 秘密囚禁，作为将来要挟其家族旧臣或交换利益的人质。
+- **q8** 题干：你的重臣在酒宴后向你密报，另一位家老似乎与京都的公家（朝廷贵族）有秘密往来。
+  - `q8.a`：结构检查通过 — 开诚布公地询问那位家老，相信他的解释，并告诫他注意分寸。
+  - `q8.b`：结构检查通过 — 不动声色，暗中调查他与公家往来的真实目的与内容。
+  - `q8.c`：结构检查通过 — 立即召集所有家臣，当众质问并剥夺其职务，以震慑内外。
+  - `q8.d`：结构检查通过 — 反而更加重用那位家老，利用他与公家的渠道为自己谋求官位。
+- **q9** 题干：在修筑关键防御要塞时，预算严重超支，工程可能停滞。
+  - `q9.a`：结构检查通过 — 削减自己的用度，并号召家臣捐献，与民共度时艰。
+  - `q9.b`：结构检查通过 — 重新审计工程，严查贪腐，优化方案，用最低成本完成核心部分。
+  - `q9.c`：结构检查通过 — 向豪商课以重税，或"借用"寺庙的铜钟佛像来熔铸资金。
+  - `q9.d`：结构检查通过 — 暂停工程，将资金转而用于招募浪人，以攻代守。
+- **q10** 题干：一位来自南蛮（欧洲）的传教士希望在你的领地传教，并带来地图、火枪等新奇之物。
+  - `q10.a`：结构检查通过 — 允许传教，但要求他同时教授医术与天文，造福领民。
+  - `q10.b`：结构检查通过 — 只对火枪和地图感兴趣，重金聘请工匠学习仿制，严格限制传教。
+  - `q10.c`：结构检查通过 — 欣然接纳，建造教堂，希望通过南蛮渠道直接与海外贸易。
+  - `q10.d`：结构检查通过 — 驱逐传教士，没收其物品，认为异端邪说会扰乱领内秩序。
+- **q11** 题干：天下大势已渐明朗，最强的两个势力都派来使者，要求你表明立场，加入其中一方。
+  - `q11.a`：结构检查通过 — 选择理念更合、对待家臣更仁厚的一方，坚信道义终将胜利。
+  - `q11.b`：结构检查通过 — 仔细分析双方实力、胜算与承诺的条件，选择赢面更大的一方。
+  - `q11.c`：结构检查通过 — 两边都答应，但按兵不动，等待双方决战至精疲力尽时再出手。
+  - `q11.d`：结构检查通过 — 将双方使者都赶出去，宣布自己要走"第三条路"，独立对抗天下。
+- **q12** 题干：你的盟友在决战前夜送来密信，请求你分兵支援他岌岌可危的侧翼，这会削弱你自己的主阵。
+  - `q12.a`：谋略=-1 越界[0,3] — 同意分兵，唇亡齿寒，必须维持联盟。
+  - `q12.b`：结构检查通过 — 拒绝请求，集中兵力确保自己主阵的胜利。
+  - `q12.c`：结构检查通过 — 口头答应，但实际按兵不动，观察战局再做决定。
+  - `q12.d`：结构检查通过 — 不仅不分兵，反而要求盟友向你靠拢，整合力量。
+- **q13** 题干：攻下一座富庶的商町后，发现町民因战乱饥寒交迫，而你的军粮也并不宽裕。
+  - `q13.a`：务实=-1 越界[0,3] — 开仓放粮，赈济町民，哪怕军队要节食几日。
+  - `q13.b`：结构检查通过 — 优先保障军队供给，町民可令其自行筹措或投靠他处。
+  - `q13.c`：结构检查通过 — 发放少量粮食稳定人心，同时组织町民恢复生产，以工代赈。
+  - `q13.d`：结构检查通过 — 将青壮编入辅兵或劳役，老弱则令其迁出，集中资源用于下一步征战。
+- **q14** 题干：一位能力出众但出身低微的足轻头，在合战中屡立奇功，你的谱代家臣们却联合反对提拔他。
+  - `q14.a`：结构检查通过 — 力排众议，按功行赏，破格提拔他为侍大将。
+  - `q14.b`：结构检查通过 — 暂时压下，给予厚禄赏赐但不给高位，以安抚家臣。
+  - `q14.c`：结构检查通过 — 采纳家臣意见，仅给予物质奖励，并私下安抚这位足轻头。
+  - `q14.d`：结构检查通过 — 借此机会整顿家臣团，削弱反对者的权力，再行提拔。
+- **q15** 题干：与一位实力相当的大名长期对峙，耗资巨大。对方派来使者，提议联姻结盟。
+  - `q15.a`：结构检查通过 — 欣然接受，化敌为友，集中精力应对更大的威胁。
+  - `q15.b`：结构检查通过 — 断然拒绝，认为这是对方的缓兵之计，准备决战。
+  - `q15.c`：结构检查通过 — 假意应允，争取时间巩固防线、联络其他势力，再图后计。
+  - `q15.d`：结构检查通过 — 提出更苛刻的条件（如让对方送子为质），试探其诚意。
+- **q16** 题干：你的侦察兵发现敌方一支运粮队路线偏僻、守备薄弱，但劫掠它会暴露你的位置，可能打乱整个伏击计划。
+  - `q16.a`：结构检查通过 — 放弃劫粮，绝不因小利而暴露全局部署。
+  - `q16.b`：结构检查通过 — 果断劫粮，削弱敌军就是胜利，暴露了再调整战术。
+  - `q16.c`：结构检查通过 — 派小股精锐伪装成山贼劫掠，制造混乱，自己主力仍隐蔽。
+  - `q16.d`：结构检查通过 — 按兵不动，但将情报透露给附近的第三方势力，驱虎吞狼。
+- **q17** 题干：一位曾对你有恩的豪族，如今领地夹在你与强敌之间，他请求你庇护其家族迁入你的领地。
+  - `q17.a`：务实=-1 越界[0,3] — 立即接纳，并派兵接应，报答昔日恩情。
+  - `q17.b`：结构检查通过 — 婉言拒绝，表示目前形势紧张，接纳他会引来强敌攻击。
+  - `q17.c`：结构检查通过 — 同意接纳，但要求他交出部分兵权和领地作为"诚意"。
+  - `q17.d`：结构检查通过 — 建议他暂时向强敌假意臣服，充当你的内应，承诺日后加倍回报。
+- **q18** 题干：在评定军功时，两位战功相近的家臣为一件关键战功的归属争执不下，互不相让。
+  - `q18.a`：结构检查通过 — 将战功平分给两人，并额外赏赐以平息争执。
+  - `q18.b`：结构检查通过 — 详细调查，听取证人，严格按照事实裁定归属，赏罚分明。
+  - `q18.c`：结构检查通过 — 将战功判给其中更忠诚或未来潜力更大的一位，私下补偿另一位。
+  - `q18.d`：结构检查通过 — 斥责两人不顾大局，将战功收回，用于奖赏其他谦逊的将士。
+- **q19** 题干：你的居城被大军围困，水源被断。有忍者献计，可挖掘密道奇袭敌营，但成功率不足三成，失败则城破人亡。
+  - `q19.a`：结构检查通过 — 否决计策，坚守待援，相信盟友或天气会出现转机。
+  - `q19.b`：结构检查通过 — 采纳计策，亲自挑选死士执行，与其坐以待毙，不如拼死一搏。
+  - `q19.c`：结构检查通过 — 采纳计策，但同时派使者诈降谈判，为奇袭争取时间和制造混乱。
+  - `q19.d`：结构检查通过 — 表面采纳，实则准备在奇袭发动时，自己率亲信从另一条小路突围。
+- **q20** 题干：你发现一位深受信赖的家老，可能私下与京都公家势力有过密接触，但尚无确凿反迹。
+  - `q20.a`：结构检查通过 — 开诚布公地询问他，表示信任，希望他主动解释。
+  - `q20.b`：结构检查通过 — 不动声色，暗中调查，并逐步削减其权力，安插自己人。
+  - `q20.c`：结构检查通过 — 立��将其调离核心岗位，明升暗降，观察反应。
+  - `q20.d`：结构检查通过 — 利用此事，设局试探其忠诚，若确有问题则公开严惩以儆效尤。
+- **q21** 题干：经过多年征战，你终于与另一位强大势力形成东西对峙局面。此时，朝廷使者到来，欲授予你更高的官位，但要求你进京谢恩。
+  - `q21.a`：结构检查通过 — 欣然接受，亲自或派重臣进京，借助朝廷大义名分壮大声望。
+  - `q21.b`：结构检查通过 — 婉拒官位，表示乱世未平，无心虚名，继续专注军事扩张。
+  - `q21.c`：结构检查通过 — 接受官位，但以军务繁忙为由拒绝进京，只送上厚礼。
+  - `q21.d`：结构检查通过 — 不仅接受，还大肆宣扬，并鼓动对方也接受朝廷册封，在名分上压制他。
+- **q22** 题干：在即将完成天下布武的最后阶段，你身染重病。医生坦言，若静养或可延寿数年，但若继续劳心军国大事，则时日无多。
+  - `q22.a`：结构检查通过 — 选择静养，将未竟事业托付给值得信赖的继承者，并为其铺平道路。
+  - `q22.b`：结构检查通过 — 隐瞒病情，以更激进的方式加快统一进程，哪怕燃尽生命。
+  - `q22.c`：结构检查通过 — 一边有限度地处理政务，一边加紧培养和考验继承人，平稳过渡。
+  - `q22.d`：结构检查通过 — 利用最后的时间，精心设计一个能确保身后势力格局稳定的方略，哪怕它冷酷无情。
+
+### 逐结果
+- **result-strategist**（毛利元就）：profile 键与范围检查通过。
+- **result-valiant**（本多忠胜）：profile 键与范围检查通过。
+- **result-benevolent**（上杉谦信）：profile 键与范围检查通过。
+- **result-pragmatist**（德川家康）：profile 键与范围检查通过。
+- **result-ambitious**（织田信长）：profile 键与范围检查通过。
+- **result-proud**（伊达政宗）：profile 键与范围检查通过。
+- **result-toyotomi-hideyoshi**（丰臣秀吉）：profile 键与范围检查通过。
+- **result-takeda-shingen**（武田信玄）：profile 键与范围检查通过。
+- **result-sanada-yukimura**（真田幸村）：profile 键与范围检查通过。
+- **result-shimazu-yoshihiro**（岛津义弘）：profile 键与范围检查通过。
+
+## which-literary-giant-are-you
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **错误（3）**
+  - result-storm-and-stars is unreachable — dominated by result-hugo on all dimensions
+  - result-social-capillary is unreachable — dominated by result-tolstoy on all dimensions
+  - result-social-capillary is unreachable — dominated by result-flaubert on all dimensions
+- **警告（16）**
+  - q13.d: unknown dimension "象��主义" (valid: 浪漫, 现实, 古典主义, 现代主义, 自然主义, 象征主义)
+  - q19.a: score -0.5 out of range [0,3] for "古典主义"
+  - result-storm-and-stars: profile "古典主义" = 0 (should be in (0,1))
+  - result-storm-and-stars: profile "自然主义" = 0 (should be in (0,1))
+  - result-social-capillary: profile "浪漫" = 0 (should be in (0,1))
+  - result-social-capillary: profile "象征主义" = 0 (should be in (0,1))
+  - result-rational-guardian: profile "浪漫" = 0 (should be in (0,1))
+  - result-rational-guardian: profile "现代主义" = 0 (should be in (0,1))
+  - result-fragmented-vanguard: profile "古典主义" = 0 (should be in (0,1))
+  - result-fragmented-vanguard: profile "自然主义" = 0 (should be in (0,1))
+  - result-environmental-observer: profile "浪漫" = 0 (should be in (0,1))
+  - result-metaphor-dreamer: profile "现实" = 0 (should be in (0,1))
+  - result-metaphor-dreamer: profile "自然主义" = 0 (should be in (0,1))
+  - result-storm-and-stars is unreachable — dominated by result-hugo on all dimensions
+  - result-social-capillary is unreachable — dominated by result-tolstoy on all dimensions
+  - result-social-capillary is unreachable — dominated by result-flaubert on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：当你读到一段极其优美的景物描写时，你通常会？
+  - `q1.a`：结构检查通过 — 立刻被唤起强烈的个人情感与记忆，仿佛身临其境。
+  - `q1.b`：结构检查通过 — 分析作者用了哪些具体的细节和感官描写来达成效果。
+  - `q1.c`：结构检查通过 — 思考它是否符合某种经典的美学范式，或暗含道德训诫。
+  - `q1.d`：结构检查通过 — 觉得语言本身在舞蹈，意义退居其次，形式即是内容。
+- **q2** 题干：构思一个故事时，你通常从哪里获得最初的灵感火花？
+  - `q2.a`：结构检查通过 — 一个强烈、无法抑制的个人情绪或欲望。
+  - `q2.b`：结构检查通过 — 一个在街头或新闻里观察到的、有代表性的人物或事件。
+  - `q2.c`：结构检查通过 — 一个古老的神话、寓言或历史事件的现代翻版念头。
+  - `q2.d`：结构检查通过 — 一个无法用逻辑解释的意象、梦境或语言碎片。
+- **q3** 题干：在修改自己文稿的初稿时，你的首要关注点是？
+  - `q3.a`：结构检查通过 — 情感是否充沛、真挚，能否打动人心。
+  - `q3.b`：结构检查通过 — 事实、逻辑和细节是否准确无误，经得起推敲。
+  - `q3.c`：结构检查通过 — 结构是否均衡、语言是否典雅，符合文体规范。
+  - `q3.d`：结构检查通过 — 语言是否足够新颖、锐利，打破了惯常的表���。
+- **q4** 题干：你如何看待文学中的"英雄"或"主角"？
+  - `q4.a`：结构检查通过 — 他们是理想、激情与反抗精神的化身，激励读者。
+  - `q4.b`：结构检查通过 — 他们是特定社会环境和时代压力下的产物，有其局限性。
+  - `q4.c`：结构检查通过 — 他们应体现普世的道德品质，其命运寓示着某种教训。
+  - `q4.d`：结构检查通过 — "英雄"本身可能就是个反讽，或是平庸、破碎的个体。
+- **q5** 题干：当你陷入写作瓶颈，长时间写不出一个字时，你会？
+  - `q5.a`：结构检查通过 — 暂时离开，去大自然或充满活力的地方寻找激情。
+  - `q5.b`：结构检查通过 — 强迫自己坐下，从记录最枯燥的日常事实开始。
+  - `q5.c`：结构检查通过 — 重读经典，从大师的范式中寻找结构和语言的启发。
+  - `q5.d`：结构检查通过 — 接受"空白"也是创作的一部分，甚至开始书写这种阻滞感。
+- **q6** 题干：你偏爱使用哪种比喻或象征？
+  - `q6.a`：结构检查通过 — 将情感与自然现象直接相连（如"心像暴风雨中的海"）。
+  - `q6.b`：结构检查通过 — 基于日常观察的、精准的实物类比（如"他的声音像生锈的铰链"）。
+  - `q6.c`：结构检查通过 — 引用经典、神话或具有普遍共识的文化符号。
+  - `q6.d`：结构检查通过 — 创造私密的、有时令人��解��意象，连接看似无关的事物。
+- **q7** 题干：你如何描述自己与笔下人物（或叙述者）的关系？
+  - `q7.a`：结构检查通过 — 情感共鸣极深，有时觉得自己就是他们，共享悲欢。
+  - `q7.b`：结构检查通过 — 像科学家观察样本，保持距离，记录其言行与动机。
+  - `q7.c`：结构检查通过 — 像导演指导演员，赋予其符合角色定位的台词与行动。
+  - `q7.d`：结构检查通过 — 人物是意识的碎片、语言的实验场，关系疏离而多变。
+- **q8** 题干：你如何看待文学中的"道德说教"或"明确主题"？
+  - `q8.a`：结构检查通过 — 反感直白的说教，认为美与情感体验本身就有净化作用。
+  - `q8.b`：结构检查通过 — 主题应从对复杂现实的忠实描绘中自然浮现，而非强加。
+  - `q8.c`：结构检查通过 — 文学应有教化的功能，明确的主题能引导读者向善。
+  - `q8.d`：结构检查通过 — 怀疑任何单一的、明确的主题，更倾向呈现模糊与多义。
+- **q9** 题干：在描述一个房间时，你会最先注意到并想写下什么？
+  - `q9.a`：结构检查通过 — 它整体给人的氛围：是忧郁的、温馨的，还是令人不安的。
+  - `q9.b`：结构检查通过 — 最显眼、最具功能的几件家具及其磨损痕迹。
+  - `q9.c`：结构检查通过 — 空间的布局、比例，以及是否符合某种美学对称。
+  - `q9.d`：结构检查通过 — 某个���兀、不协调的细节，或光线投下的奇异形状。
+- **q10** 题干：你偏爱阅读（或创作）哪种时间跨度的故事？
+  - `q10.a`：结构检查通过 — 聚焦于一个决定性瞬间或短暂而强烈的情感爆发。
+  - `q10.b`：结构检查通过 — 展现人物在较长岁月中，受环境影响的缓慢变化。
+  - `q10.c`：结构检查通过 — 跨越数代，展现家族或文明的兴衰与循环。
+  - `q10.d`：结构检查通过 — 时间非线性，过去、现在、未来交织或并置。
+- **q11** 题干：你如何处理写作中的"性"与"暴力"元素？
+  - `q11.a`：结构检查通过 — 将其升华为炽热情感或崇高悲剧的一部分，避免直白描写。
+  - `q11.b`：结构检查通过 — 将其作为人性与生存状态的一部分，冷静、不加修饰地呈现。
+  - `q11.c`：结构检查通过 — 谨慎处理，使其服务于道德警示或情节结构的需要。
+  - `q11.d`：结构检查通过 — 将其视为打破禁忌、探索人性边缘与语言极限的领域。
+- **q12** 题干：你相信作家需要怎样的"生活体验"？
+  - `q12.a`：结构检查通过 — 需要极致的、跌宕起伏的情感体验，爱过、痛过、疯狂过。
+  - `q12.b`：结构检查通过 — 需要广泛、深入、细致地观察各行各业与各种生存状态。
+  - `q12.c`：结构检查通过 — 需要深厚的学识修养和对人性普遍规律的洞察。
+  - `q12.d`：结构检查通过 — 内在的精神冒险与思维实验，有时比外部体验更重要。
+- **q13** 题干：你如何看待方言、俚语或非标准语法在文学中的使用？
+  - `q13.a`：结构检查通过 — 它们充满鲜活的生命力和地域色彩，能增加真实感与温度。
+  - `q13.b`：结构检查通过 — 应谨慎使用，主要用于塑造特定人物或营造地方氛围。
+  - `q13.c`：结构检查通过 — 应以规范、典雅的语言为主，避免过度使用以免流于粗俗。
+  - `q13.d`：未知维「象��主义」 — 是打破语言陈规、创造新表达方式的重要实验场。
+- **q14** 题干：当你读到一部结局"不圆满"或"悬而未决"的作品时，通常感觉如何？
+  - `q14.a`：结构检查通过 — 感到遗憾甚至愤怒，渴望一个符合情感正义的结局。
+  - `q14.b`：结构检查通过 — 觉得这更符合生活的复杂性与开放性，反而真实。
+  - `q14.c`：结构检查通过 — 认为好的作品应结构完整，给予读者明确的收束感。
+  - `q14.d`：结构检查通过 — 欣赏这种不确定性，它迫使读者参与意义的构建。
+- **q15** 题干：在咖啡馆听到邻桌一段有趣的对话��段，你通常会？
+  - `q15.a`：结构检查通过 — 立刻在脑中为其补全前因后果，编织成一个微型故事。
+  - `q15.b`：结构检查通过 — 不动声色地记下对话内容、语气和说话人的外貌特征。
+  - `q15.c`：结构检查通过 — 判断这段对话反映了怎样的人情世故或普遍人性。
+  - `q15.d`：结构检查通过 — 被语言本身的节奏、无逻辑跳跃或沉默的间隙吸引。
+- **q16** 题干：你如何���择一本书的阅读顺序（此题有5个选项）？
+  - `q16.a`：结构检查通过 — 完全凭当下的心情和直觉，可能从中间任何一页开始。
+  - `q16.b`：结构检查通过 — 严格从序言、目录到正文，逐页推进，不做跳跃。
+  - `q16.c`：结构检查通过 — 先快速浏览全书，了解梗概和人物，再决定精读部分。
+  - `q16.d`：结构检查通过 — 被某个反复出现的意象或难懂的段落吸引，反复研读那里。
+  - `q16.e`：结构检查通过 — 对照着文学史或评论文章，将其放在流派脉络中理解。
+- **q17** 题干：你认为"风景"在文学中主要扮演什么角色？
+  - `q17.a`：结构检查通过 — 是人物内心情感的延伸与投射，所谓"一切景语皆情语"。
+  - `q17.b`：结构检查通过 — 是人物活动的客观舞台，其描写应准确、独立于情感。
+  - `q17.c`：结构检查通过 — 是营造氛围、调节叙事节奏、体现和谐美学的手段。
+  - `q17.d`：结构检查通过 — 可以是异化的、压迫性的存在，或纯粹的形式与色彩实验。
+- **q18** 题干：你如何看待文学中的"幽默"与"讽刺"？
+  - `q18.a`：结构检查通过 — 是智慧与乐观精神的闪光，能缓解沉重，增添趣味。
+  - `q18.b`：结构检查通过 — 是揭露社会矛盾、人性弱点与荒诞现实的锐利武器。
+  - `q18.c`：结构检查通过 — 应温和敦厚，有教益而不流于尖刻，符合中庸之道。
+  - `q18.d`：结构检查通过 — 是解构权威、消解意义、呈现存在荒诞性的核心方式。
+- **q19** 题干：在创作中，你更信任"灵感"还是"技艺"？
+  - `q19.a`：古典主义=-0.5 越界[0,3] — 没有灵感的火花，一切技艺都是空洞的匠气。
+  - `q19.b`：结构检查通过 — 扎实的观察与描摹技艺，本身就能催生深刻的洞察。
+  - `q19.c`：结构检查通过 — 技艺是驾驭灵感、使其成为完美作品的必要框架。
+  - `q19.d`：结构检查通过 — 需要不断突破既有"技艺"定义的、反技艺的实验精神。
+- **q20** 题干：你偏爱哪种叙事视角？
+  - `q20.a`：结构检查通过 — 第一人称，深入角色内心，直接倾诉情感与体验。
+  - `q20.b`：结构检查通过 — 冷静的第三人称，像摄像机一样记录外部言行。
+  - `q20.c`：结构检查通过 — 全知全能视角，掌控全局，引导读者理解人物与事件。
+  - `q20.d`：结构检查通过 — 多视角、不可靠叙述者，或视角在人物间频繁跳跃。
+- **q21** 题干：你如何看待"文学传统"与"个人创新"的关系？
+  - `q21.a`：结构检查通过 — 伟大的创新往往源于对传统的激烈反叛与个人天才的迸发。
+  - `q21.b`：结构检查通过 — 创新应建立在对传统的扎实继承之上，是渐进式的演变。
+  - `q21.c`：结构检查通过 — 传统提供了丰富的素材与范式，个人只需从中选择与组合。
+  - `q21.d`：结构检查通过 — 传统有时是沉重的负担，真正的创新需要彻底的语言革命。
+- **q22** 题干：你认为写作的终极目的（或对你个人的意义）是什么？（此题有6个选项）
+  - `q22.a`：结构检查通过 — 表达独一无二的自我，对抗遗忘，在文字中获得不朽。
+  - `q22.b`：结构检查通过 — 记录时代的真相，揭示被忽视的生活，为无声者发声。
+  - `q22.c`：结构检查通过 — 探索人性的普遍规律，传递智慧，教化人心，追求至善。
+  - `q22.d`：结构检查通过 — 探索语言与形式的可能性，创造全新的审美体验。
+  - `q22.e`：结构检查通过 — 是一种近乎本能的冲动，是整理混乱内心世界的方式。
+  - `q22.f`：结构检查通过 — 提出问题而非给出答案，引发思考，保持对世界的困惑。
+
+### 逐结果
+- **result-storm-and-stars**（拜伦）：古典主义=0 不在 (0,1)；自然主义=0 不在 (0,1)
+- **result-social-capillary**（巴尔扎克）：浪漫=0 不在 (0,1)；象征主义=0 不在 (0,1)
+- **result-rational-guardian**（歌德）：浪漫=0 不在 (0,1)；现代主义=0 不在 (0,1)
+- **result-fragmented-vanguard**（卡夫卡）：古典主义=0 不在 (0,1)；自然主义=0 不在 (0,1)
+- **result-environmental-observer**（左拉）：浪漫=0 不在 (0,1)
+- **result-metaphor-dreamer**（波德莱尔）：现实=0 不在 (0,1)；自然主义=0 不在 (0,1)
+- **result-tolstoy**（列夫·托尔斯泰）：profile 键与范围检查通过。
+- **result-hugo**（维克多·雨果）：profile 键与范围检查通过。
+- **result-flaubert**（福楼拜）：profile 键与范围检查通过。
+- **result-hemingway**（欧内斯特·海明威）：profile 键与范围检查通过。
+
+## which-school-of-thought-are-you
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：你受邀参加一场贵族宴会，席间一位宾客公然嘲笑侍从的出身，引得众人附和。你最可能的反应是？
+  - `q1.a`：结构检查通过 — 起身离席，以示不屑与此类人为伍。
+  - `q1.b`：结构检查通过 — 当场引用古礼，委婉指出其言行失当。
+  - `q1.c`：结构检查通过 — 走到侍从身边，亲自为他斟酒。
+  - `q1.d`：结构检查通过 — 冷眼旁观，记下每个人的反应，盘算日后如何利用。
+- **q2** 题干：你所在的城邦面临强敌压境，君主召集群臣问策。朝堂上主战与主和两派争执不下，你会如何进言？
+  - `q2.a`：结构检查通过 — 分析敌我实力、地形粮草，提出最务实的作战或防守方案。
+  - `q2.b`：结构检查通过 — 主张先派使者以礼交涉，宣扬仁德，不战而屈人之兵。
+  - `q2.c`：结构检查通过 — 建议君主修明法令，严赏罚，让军民一心，战与和皆有底气。
+  - `q2.d`：结构检查通过 — 反问君主：战与和，究竟是为了社稷安稳，还是君主的个人威名？
+- **q3** 题干：你途经一个因战乱而凋敝的村庄，村民食不果腹。你身上有些干粮和钱币，会如何处理？
+  - `q3.a`：结构检查通过 — 将大部分分给老弱妇孺，自己留一点即可。
+  - `q3.b`：结构检查通过 — 观察村中情况，教他们一些更有效率的耕作或渔猎方法。
+  - `q3.c`：结构检查通过 — 默默离开，不打扰他们固有的生活秩序。
+  - `q3.d`：结构检查通过 — 用食物换取他们手中一件看似无用、但你觉得有潜力的旧物。
+- **q4** 题干：一位朋友陷入巨大的悲痛，终日消沉。你会如何劝慰他？
+  - `q4.a`：结构检查通过 — 陪他静坐，告诉他天地万物皆有消长，悲伤也是自然的一部分。
+  - `q4.b`：结构检查通过 — 讲述古代圣贤遭遇类似困境时的选择与超越。
+  - `q4.c`：结构检查通过 — 带他去帮助其他更需要帮助的人，在付出中忘记自己的痛苦。
+  - `q4.d`：结构检查通过 — 用一连串逻辑问题引导他思考：悲伤的本质是什么？它改变了事实吗？
+- **q5** 题干：你发现身边一位同僚很可能在暗中损害集体利益以自肥，但没有确凿证据。你会？
+  - `q5.a`：结构检查通过 — 私下搜集证据，制定周密的揭露计划，一击即中。
+  - `q5.b`：结构检查通过 — 公开质疑他的某些行为，用逻辑辩论迫使其露出破绽。
+  - `q5.c`：结构检查通过 — 尝试用真诚感化他，相信人性本善，只是暂时迷失。
+  - `q5.d`：结构检查通过 — 不直接对抗，但调整自己的行为，避免被牵连，静观其变。
+- **q6** 题干：你被委托管理一片公共林地，有人主张严格划分区域、定时砍伐；有人主张放任自然生长、随用随取。你倾向于？
+  - `q6.a`：结构检查通过 — 制定清晰的砍伐规则与惩罚措施，并公示于众。
+  - `q6.b`：结构检查通过 — 相信大家会自觉爱护，过度干预反而破坏自然平衡。
+  - `q6.c`：结构检查通过 — 组织大家共同讨论，达成一个兼顾各方需求的约定。
+  - `q6.d`：结构检查通过 — 引入一种快速生长的树种，并推广更高效的木材利用技术。
+- **q7** 题干：一场重要的辩论中，对手引用了一个公认的权威观点来驳斥你。你会如何回应？
+  - `q7.a`：结构检查通过 — 指出该权威观点在当下情境中的不适用性，甚至其内在矛盾。
+  - `q7.b`：结构检查通过 — 引用更古老、更根本的经典，来论证对方理解有偏差。
+  - `q7.c`：结构检查通过 — 不直接反驳，而是提出一个全新的、更根本的问题，转移争论焦点。
+  - `q7.d`：结构检查通过 — 用事实和数据，证明遵循对方观点可能导致的不良后果。
+- **q8** 题干：你理想中的社会关系是怎样的？
+  - `q8.a`：结构检查通过 — 长幼有序，君臣有义，朋友有信，每个人都清楚自己的位置与责任。
+  - `q8.b`：结构检查通过 — 视人之国若视其国，视人之家若视其家，视人之身若视其身。
+  - `q8.c`：结构检查通过 — 鸡犬之声相闻，民至老死不相往来。各自安好，便是太平。
+  - `q8.d`：结构检查通过 — 以法为教，以吏为师，赏厚而信，刑重而必。人人皆知何可为，何不可为。
+- **q9** 题干：你获得了一笔不小的财富，打算如何使用最能体现你的价值观？
+  - `q9.a`：结构检查通过 — 投资于教育和礼仪场所的培养，教化乡里。
+  - `q9.b`：结构检查通过 — 购置粮食衣物，周济沿途遇到的穷苦之人。
+  - `q9.c`：结构检查通过 — 用于改善武器装备或农业工具，增强自己或集体的实力。
+  - `q9.d`：结构检查通过 — 存起来，或者换取土地，保障自己未来的生活无忧。
+- **q10** 题干：临终前，你回顾一生，最希望后人如何评价你？
+  - `q10.a`：结构检查通过 — 一位恢复了礼乐秩序、教化了一方的君子。
+  - `q10.b`：结构检查通过 — 一个真切地爱过众人、并推动了兼爱非攻的实践者。
+  - `q10.c`：结构检查通过 — 一个洞察了自然与人生规律、并与之和谐共处的智者。
+  - `q10.d`：结构检查通过 — 一位建立了清晰有效的制度、让国家变得强大的奠基者。
+  - `q10.e`：结构检查通过 — 一个用智慧和辩才挑战了无数成见、拓宽了思想边界的人。
+  - `q10.f`：结构检查通过 — 一个务实进取，让跟随他的人生活富足、不受欺辱的领袖。
+- **q11** 题干：你独自面对一个棘手的问题，最本能的第一步是？
+  - `q11.a`：结构检查通过 — 先在脑子里逐一澄清所有涉及的概念——名分不清，思路就会跑偏。
+  - `q11.b`：结构检查通过 — 翻出历史上类似的处境，看看它们走向了何处，寻找可借鉴的节律。
+  - `q11.c`：结构检查通过 — 找几个真正信任的人聊聊，不同的视角往往能照亮盲区。
+  - `q11.d`：结构检查通过 — 把问题拆解成具体任务，先攻克最紧迫的那部分，边做边调整。
+- **q12** 题干：一位年轻人找到你，诚恳地问：我想改变世界，该从哪里入手？你会说？
+  - `q12.a`：结构检查通过 — 先改变你自己。修身是一切的根本，没有内在的秩序，外部的改变只是幻觉。
+  - `q12.b`：结构检查通过 — 找到最受苦的那群人，去到他们身边，把能做的事做完再说别的。
+  - `q12.c`：结构检查通过 — 先弄清楚这个时代的势在哪里。强求只会被反噬，顺势而为才能事半功倍。
+  - `q12.d`：结构检查通过 — 建立一套好制度。真正可持续的改变不依赖某个人的好心，靠的是规则。
+- **q13** 题干：朋友说「你懂我的意思就行了」，但你觉得他用的那个词其实语焉不详。你会？
+  - `q13.a`：结构检查通过 — 算了，意思差不多就行，继续往下聊。
+  - `q13.b`：结构检查通过 — 心里打个问号，但不说，自己理解就好。
+  - `q13.c`：结构检查通过 — 换个方式重述一遍，确认我们在说同一件事。
+  - `q13.d`：结构检查通过 — 直接问他：这个词你指的是哪种情况？
+  - `q13.e`：结构检查通过 — 先把那个词的定义说清楚，再继续——没有这一步，后面说什么都可能跑偏。
+- **q14** 题干：你参与创建了一个小型共同体。随着人数增多，内部矛盾渐起。你最倾向于？
+  - `q14.a`：结构检查通过 — 制定一套成文规则，清楚说明什么行为会有何后果，并公开执行。
+  - `q14.b`：结构检查通过 — 发展一些大家共同参与的仪式和传统，在重复的行动中积累归属感。
+  - `q14.c`：结构检查通过 — 不急于干预，矛盾往往是系统在自我调整，过度管理反而破坏平衡。
+  - `q14.d`：结构检查通过 — 找到几个核心人物，分别了解他们的诉求，再找到彼此利益的交汇点。
+- **q15** 题干：朋友与你争论，争到最后，分歧落在对同一个词的不同理解上。对方说：「你只是在抠字眼。」你会？
+  - `q15.a`：结构检查通过 — 「字眼本身就是问题所在。把定义说清楚，我们才能知道是否在讨论同一件事。」
+  - `q15.b`：结构检查通过 — 搁置争议。关系比赢得辩论重要，有些分歧本来就容得下共存。
+  - `q15.c`：结构检查通过 — 换一个双方都能接受的表达方式，绕过那个词，继续往下谈实质问题。
+  - `q15.d`：结构检查通过 — 接受对方的定义，先看看他的逻辑在他的框架里是否能自洽。
+- **q16** 题干：一种颠覆性的新工具出现了，周��人争相讨论。你的第一个念头是什么？
+  - `q16.a`：结构检查通过 — 它究竟改变了什么？我想把它的运作逻辑弄清楚，而不只是跟着用它。
+  - `q16.b`：结构检查通过 — 谁会因此获益？谁会被甩下？它将如何重新分配权力和优势？
+  - `q16.c`：结构检查通过 — 它让人更靠近真实的劳动，还是让人变得更加疏离？
+  - `q16.d`：结构检查通过 — 观察大多数人如何使用它——集体的反应，往往预示着接下来的走向。
+- **q17** 题干：有一件对你来说很重要的事，需要交给别人处理。你最真实的反应是？
+  - `q17.a`：结构检查通过 — 放心交出去，选对人比自己盯着更重要。
+  - `q17.b`：结构检查通过 — 交出去，但约好几个节点确认一下进展。
+  - `q17.c`：结构检查通过 — 有点不放心，会忍住不干预，但心里一直挂着。
+  - `q17.d`：结构检查通过 — 交出去，但会暗中留意，随时准备接回来。
+  - `q17.e`：结构检查通过 — 重要的事还是自己来，交出去总觉得不放心。
+- **q18** 题干：你被公开指责做了某件事，但事实并非如此。你最倾向于？
+  - `q18.a`：结构检查通过 — 冷静指出指控在逻辑上的每一处漏洞，追问到对方无法继续为止。
+  - `q18.b`：结构检查通过 — 先不急着反驳，观察谁在相信这件事、他们的动机是什么，再决定如何回应。
+  - `q18.c`：结构检查通过 — 通过正式渠道提交证据，让程序来作结论——规则存在的意义就在于此。
+  - `q18.d`：结构检查通过 — 只向真正了解你的人解释，不试图改变所有人的看法。
+- **q19** 题干：你是团队负责人，面临一个重大决策，但成员意见分歧严重。你会？
+  - `q19.a`：结构检查通过 — 让所有声音先摆出来，从大家共同关心的根本点出发，寻找真正的共识。
+  - `q19.b`：结构检查通过 — 自己判断后拍板，执行要果断，事后用结果说话——优柔寡断才是最贵的代价。
+  - `q19.c`：结构检查通过 — 分别与几个关键人物单独沟通，摸清各方底牌，再公开表态。
+  - `q19.d`：结构检查通过 — 放慢节奏，不强行收束分歧，等待自然的沉淀与共识浮现。
+- **q20** 题干：一位哲人说：「天下没有新鲜事，今日之患古已有之，观其规律便知应对之法。」你的感受是？
+  - `q20.a`：结构检查通过 — 深感认同——历史在不同形式下循环往复，这种节律让你着迷。
+  - `q20.b`：结构检查通过 — 部分认同，但技术与制度的迭代让直接照搬历史经验变得危险。
+  - `q20.c`：结构检查通过 — 对「规律」本身持怀疑：什么样的证据，才算真的证明了一个历史规律？
+  - `q20.d`：结构检查通过 — 规律也许存在，但更重要的是：当下的人，是否真的愿意改变。
+- **q21** 题干：一个组织想要运转良好，你更依赖哪个？
+  - `q21.a`：结构检查通过 — 核心人物的品格——有德行的人在，规则不完善也能撑起来。
+  - `q21.b`：结构检查通过 — 信任和文化——大家真心认同共同的价值观，规则只是辅助。
+  - `q21.c`：结构检查通过 — 两者都要——好人加好制度，缺一不可。
+  - `q21.d`：结构检查通过 — 清晰的制度——规则明确了，对谁都一样，不用靠某个人的自觉。
+  - `q21.e`：结构检查通过 — 完善的系统设计——好的机制让普通人也能做出正确的选择。
+- **q22** 题干：如果你只能选择一种方式影响后来的人，你选择？
+  - `q22.a`：结构检查通过 — 留下一套至今仍在运转的规则与制度。
+  - `q22.b`：结构检查通过 — 留下几个改变人们思维方式的根本论证。
+  - `q22.c`：结构检查通过 — 留下一个你用一生践行的行动榜样。
+  - `q22.d`：结构检查通过 — 留下一批你亲手培育出来的人。
+  - `q22.e`：结构检查通过 — 留下一片你亲手建造的、可以自给自足的地方。
+  - `q22.f`：结构检查通过 — 什么都不需要特意留下，顺其自然就是最好的遗产。
+
+### 逐结果
+- **rujia**（儒家）：profile 键与范围检查通过。
+- **mojia**（墨家）：profile 键与范围检查通过。
+- **daojia**（道家）：profile 键与范围检查通过。
+- **fajia**（法家）：profile 键与范围检查通过。
+- **zonghengjia**（纵横家）：profile 键与范围检查通过。
+- **bingjia**（兵家）：profile 键与范围检查通过。
+- **mingjia**（名家）：profile 键与范围检查通过。
+- **yinyangita**（阴阳家）：profile 键与范围检查通过。
+- **nongjia**（农家）：profile 键与范围检查通过。
+- **zajia**（杂家）：profile 键与范围检查通过。
+
+## which-sport-fits-your-release
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 4
+- **警告（12）**
+  - q1.a: score -0.5 out of range [0,3] for "控制感"
+  - q2.a: score -0.3 out of range [0,3] for "耐力"
+  - q2.c: score -0.5 out of range [0,3] for "控制感"
+  - q7.b: score -0.5 out of range [0,3] for "社交性"
+  - q8.a: score -0.8 out of range [0,3] for "控制感"
+  - q10.a: score -0.5 out of range [0,3] for "耐力"
+  - q10.c: score -0.8 out of range [0,3] for "控制感"
+  - q12.a: score -0.5 out of range [0,3] for "耐力"
+  - q13.a: score -0.3 out of range [0,3] for "耐力"
+  - q14.a: score -0.8 out of range [0,3] for "控制感"
+  - q19.a: score -0.3 out of range [0,3] for "耐力"
+  - q21.a: score -0.5 out of range [0,3] for "社交性"
+
+### 逐题 · 逐选项
+- **q1** 题干：训练馆里，教练示范了一个高难度组合动作。你第一反应是？
+  - `q1.a`：控制感=-0.5 越界[0,3] — 立刻尝试，哪怕动作变形，也要感受那股爆发力。
+  - `q1.b`：结构检查通过 — 拆解成几个基础步骤，一遍遍重复练习，直到形成肌肉记忆。
+  - `q1.c`：结构检查通过 — 观察动作的衔接和节奏，思考如何加入自己的风格。
+  - `q1.d`：结构检查通过 — 转头看看同伴的反应，或者直接问他们觉得难点在哪。
+- **q2** 题干：长跑途中遇到一段陡峭的上坡，你的身体和念头会如何应对？
+  - `q2.a`：耐力=-0.3 越界[0,3] — 深吸一口气，调动全身力量冲刺上去，尽快结束这种折磨。
+  - `q2.b`：结构检查通过 — 调整呼吸和步频，保持稳定节奏，把爬坡视为训练的一部分。
+  - `q2.c`：控制感=-0.5 越界[0,3] — 可能会偏离主路，看看旁边有没有更缓或更有趣的小径。
+  - `q2.d`：结构检查通过 — 观察前后跑者的策略，或想象教练在旁指导的动作要领。
+- **q3** 题干：团队训练中，你的固定搭档今天状态奇差，频频失误。你会？
+  - `q3.a`：结构检查通过 — 用更积极的跑动和更拼命的防守来弥补，带动场上气势。
+  - `q3.b`：结构检查通过 — 不受影响，专注执行好自己的每一次战术跑位和动作。
+  - `q3.c`：结构检查通过 — 尝试一些非常规的传球或走位，打破僵局。
+  - `q3.d`：结构检查通过 — 主动喊个暂停，拍拍他肩膀，简单沟通两句。
+- **q4** 题干：学习一套新的舞蹈或武术套路时，你最在意哪个环节？
+  - `q4.a`：结构检查通过 — 其中几个最具力量和速度感的标志性动作。
+  - `q4.b`：结构检查通过 — 整套动作的流畅衔接和持久完成的能力。
+  - `q4.c`：结构检查通过 — 理解动作背后的原理，甚至想改编几个小节。
+  - `q4.d`：结构检查通过 — 和同伴的配合是否默契，动作是否整齐划一。
+- **q5** 题干：健身房力量区，面对一个你从未尝试过的最大重量，你会？
+  - `q5.a`：结构检查通过 — 让同伴辅助，调动所有肾上腺素，挑战一次极限。
+  - `q5.b`：结构检查通过 — 放弃这次尝试，回到安全重量，增加组数巩固基础。
+  - `q5.c`：结构检查通过 — 研究器械结构和发力原理，或许换个角度就能突破。
+  - `q5.d`：结构检查通过 — 先观察别人怎么做的，或者直接请教练得好的朋友。
+- **q6** 题干：进行户外徒步，导航显示有两条路：一条平坦大路，一条野趣小径。你选？
+  - `q6.a`：结构检查通过 — 小径，并且会找机会离开路径，攀爬途中的岩石或陡坡。
+  - `q6.b`：结构检查通过 — 大路，可以保持稳定配速，专注于行走本身和呼吸。
+  - `q6.c`：结构检查通过 — 小径，对可能遇到的动植物和地貌充满好奇。
+  - `q6.d`：结构检查通过 — 看同伴怎么选，或者提议猜拳决定，过程比路线重要。
+- **q7** 题干：参加一个运动主题的派对，音乐响起时，你通常会？
+  - `q7.a`：结构检查通过 — 迅速进入舞池中央，用大幅度的动作带动气氛。
+  - `q7.b`：社交性=-0.5 越界[0,3] — 在角落或边缘，随着音乐轻微律动，享受独处的节奏。
+  - `q7.c`：结构检查通过 — 观察不同人的舞步，甚至尝试模仿或融合一些奇怪的动作。
+  - `q7.d`：结构检查通过 — 主动邀请不太放得开的朋友一起跳，或者组织小组游戏。
+- **q8** 题干：练习投篮（或类似精准类项目）时，连续十次不中，你的下一步是？
+  - `q8.a`：控制感=-0.8 越界[0,3] — 用更大力量再试一次，仿佛要把篮筐砸穿。
+  - `q8.b`：结构检查通过 — 停下来，深呼吸，从最近的距离开始，重新调整姿势和手感。
+  - `q8.c`：结构检查通过 — 换一种投篮姿势或角度试试，也许歪打正着。
+  - `q8.d`：结构检查通过 — ��朋友过来看看，或者给自己录个像找问题。
+- **q9** 题干：进行高强度间歇训练（HIIT），到最后一组已筋疲力尽，你会？
+  - `q9.a`：结构检查通过 — 咆哮一声，压榨出最后一丝能量，以最快速度冲完。
+  - `q9.b`：结构检查通过 — 降低动作幅度，但坚持完成规定时间，绝不中途放弃。
+  - `q9.c`：结构检查通过 — 可能会偷偷改变一下动作，用不同的肌肉群代偿完成。
+  - `q9.d`：结构检查通过 — 看向同伴，如果大家都一样惨，反而能笑出来并坚持完。
+- **q10** 题干：你更愿意如何度过一个下午的自主训练时间？
+  - `q10.a`：耐力=-0.5 越界[0,3] — 进行短距离全力冲刺、爆发性跳跃等练习，追求瞬间功率。
+  - `q10.b`：结构检查通过 — 设定一个长时间、中等强度的有氧计划，比如匀速骑行两小时。
+  - `q10.c`：控制感=-0.8 越界[0,3] — 不带计划，随意尝试场馆里各种没玩过的器械或课程。
+  - `q10.d`：结构检查通过 — 约上训练伙伴，进行对抗性或配合性的练习。
+- **q11** 题干：观看一场顶尖竞技比赛时，最能吸引你注意的是？
+  - `q11.a`：结构检查通过 — 运动员在关键时刻的暴力扣杀、极限超车等决定性瞬间。
+  - `q11.b`：结构检查通过 — 选手在漫长赛程中展现出的稳定心态和战术执行力。
+  - `q11.c`：结构检查通过 — 那些打破常规、极具想象力的"神仙球"或创新战术。
+  - `q11.d`：结构检查通过 — 团队之间的精妙配合、赛后拥抱或对手间的惺惺相惜。
+- **q12** 题干：运动后拉伸放松时，你通常的状态是？
+  - `q12.a`：耐力=-0.5 越界[0,3] — 草草了事，觉得拉伸太慢，不如留着精力干点别的。
+  - `q12.b`：结构检查通过 — 严格按照每个动作的时长和顺序进行，视为训练的正式收尾。
+  - `q12.c`：结构检查通过 — 会尝试一些奇怪的拉伸姿势，感受不同角度的肌肉牵拉。
+  - `q12.d`：结构检查通过 — 和同伴边拉伸边聊天，复盘刚才的训练或聊聊闲天。
+- **q13** 题干：如果必须选择一项运动长期坚持，你更看重它的？
+  - `q13.a`：耐力=-0.3 越界[0,3] — 能让我在短时间内释放大量能量，感到畅快淋漓。
+  - `q13.b`：结构检查通过 — 能培养我的毅力和心性，在重复中寻求进步与平静。
+  - `q13.c`：结构检查通过 — 充满变化和创造性，每次练习都有新的体验和发现。
+  - `q13.d`：结构检查通过 — 有强烈的社群属性，能结识朋友，感受团队归属感。
+- **q14** 题干：运动时，你如何处理身体发出的"疼痛"信号？
+  - `q14.a`：控制感=-0.8 越界[0,3] — 将其视为突破极限的必然伴随物，只要不是剧痛就继续冲。
+  - `q14.b`：结构检查通过 — 立刻评估疼痛性质和位置，调整动作或强度，避免受伤。
+  - `q14.c`：结构检查通过 — 好奇地感受它，尝试用不同动作去"试探"疼痛的边界。
+  - `q14.d`：结构检查通过 — 马上告诉教练或同伴，听取他们的经验和建议。
+- **q15** 题干：在需要高度专注的射击、射箭等项目中，你如何进入状态？
+  - `q15.a`：结构检查通过 — 快速完成几次深呼吸，然后果断击发，不过多犹豫。
+  - `q15.b`：结构检查通过 — 建立一套固定的预备 ritual，从站姿到呼吸，一步步执行。
+  - `q15.c`：结构检查通过 — 尝试不同的瞄准方法或身体姿态，寻找最"舒服"的那个点。
+  - `q15.d`：结构检查通过 — 观察旁边高手的动作，或在心里默念教练的指导要点。
+- **q16** 题干：当你成功完成一个长期训练目标（如完成首马、解锁新动作），庆祝方式是？
+  - `q16.a`：结构检查通过 — 立刻投入到下一个更具挑战性的目标设定中。
+  - `q16.b`：结构检查通过 — 享受片刻成就感，然后回归日常训练节奏，巩固成果。
+  - `q16.c`：结构检查通过 — 研究整个过程，分析成功因素，甚至写点心得。
+  - `q16.d`：结构检查通过 — 呼朋引伴，大吃一顿，或组织个小聚会分享喜悦。
+- **q17** 题干：进行团体操或广场舞这类有固定编排的活动时，你倾向于？
+  - `q17.a`：结构检查通过 — 在动作规范的基础上，加入自己更有力的表现。
+  - `q17.b`：结构检查通过 — 力求每个动作的幅度、节奏都与领队或音乐精准同步。
+  - `q17.c`：结构检查通过 — 偶尔会走神，自己改编一两个小节，或者观察别人的不同跳法。
+  - `q17.d`：结构检查通过 — 享受身处人群、动作一致的集体感和氛围。
+- **q18** 题干：运动装备对你而言，最重要的是？
+  - `q18.a`：结构检查通过 — 性能，能否在爆发瞬间提供足够的支撑和回弹。
+  - `q18.b`：结构检查通过 — 可靠与舒适，能陪伴我完成长时间、高里程的训练。
+  - `q18.c`：结构检查通过 — 新奇有趣，喜欢尝试各种小众或科技感强的装备。
+  - `q18.d`：结构检查通过 — 品牌或款式是否有辨识度，能否成为社交中的话题。
+- **q19** 题干：在对抗性运动中（如拳击、格斗），你更擅长或喜欢？
+  - `q19.a`：耐力=-0.3 越界[0,3] — 寻找机会，用一两次重击迅速结束战斗或建立优势。
+  - `q19.b`：结构检查通过 — 保持距离和节奏，消耗对手体力，等待其露出破绽。
+  - `q19.c`：结构检查通过 — 使用非常规的战术或假动作，打乱对手的节奏。
+  - `q19.d`：结构检查通过 — 享受与对手在规则内的智力与身体博弈，赛后握手致意。
+- **q20** 题干：如果运动时有"心流"体验（完全沉浸，忘记时间），它通常发生在？
+  - `q20.a`：结构检查通过 — 全力冲刺，将速度推到极限，风声呼啸而过的时刻。
+  - `q20.b`：结构检查通过 — 长跑中呼吸与步伐达成稳定共振，可以一直跑下去的状态。
+  - `q20.c`：结构检查通过 — 探索新路线或尝试新动作，全身心投入解决问题的过程。
+  - `q20.d`：结构检查通过 — 与队友完成一次精妙绝伦的配合，无需言语的默契瞬间。
+- **q21** 题干：对���运动中的竞争，你的核心看法是？（本题5选项）
+  - `q21.a`：社交性=-0.5 越界[0,3] — 竞争是运动的本质，目标是赢，享受碾压对手的快感。
+  - `q21.b`：结构检查通过 — 竞争是检验训练成果的标尺，重点在于超越过去的自己。
+  - `q21.c`：结构检查通过 — 竞争是激发创造力和应变能力的绝佳场景。
+  - `q21.d`：结构检查通过 — 竞争是建立尊重和友谊的特殊桥梁。
+  - `q21.e`：结构检查通过 — 不太喜欢直接竞争，更享受运动过程本身带来的乐趣。
+- **q22** 题干：想象你是一座"运动能量"发电站，你最主要的发电模式是？（本题6选项）
+  - `q22.a`：结构检查通过 — 【水力发电-爆发型】积蓄能量，然后在关键时刻开闸，汹涌释放。
+  - `q22.b`：结构检查通过 — 【风力发电-耐力型】依靠稳定持续的气流（努力），细水长流地产生能量。
+  - `q22.c`：结构检查通过 — 【太阳能发电-节奏型】跟随自然的韵律（内在/外在节奏），有规律地吸收和转化能量。
+  - `q22.d`：结构检查通过 — 【地热发电-探索型】向深处挖掘，利用地下不为人知的热能（新奇体验）发电。
+  - `q22.e`：结构检查通过 — 【核电站-控制型】通过精密复杂的控制反应（技术、计划），高效稳定地输出巨大能量。
+  - `q22.f`：结构检查通过 — 【潮汐电站-社交型】能量来自天体引力（人与人之间的连接），随着"人群"的引力涨落而波动。
+
+### 逐结果
+- **street-parkour-explorer**（街头跑酷者）：profile 键与范围检查通过。
+- **mountain-forest-hiker**（山林徒步家）：profile 键与范围检查通过。
+- **water-meditation-master**（水中冥想者）：profile 键与范围检查通过。
+- **boxing-release-soul**（拳击释放者）：profile 键与范围检查通过。
+
+## which-tang-poet-lives-in-your-heart
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 10
+- **警告（10）**
+  - result-wang-wei ↔ result-meng-haoran: profiles too similar (max diff 0.15)
+  - result-li-bai: profile "恬淡" = 0 (should be in (0,1))
+  - result-wang-wei: profile "奇崛" = 0 (should be in (0,1))
+  - result-wang-wei: profile "豪放" = 0 (should be in (0,1))
+  - result-li-he: profile "恬淡" = 0 (should be in (0,1))
+  - result-li-he: profile "清丽" = 0 (should be in (0,1))
+  - result-li-shangyin: profile "豪放" = 0 (should be in (0,1))
+  - result-meng-haoran: profile "奇崛" = 0 (should be in (0,1))
+  - result-cen-shen: profile "恬淡" = 0 (should be in (0,1))
+  - result-wang-wei ↔ result-meng-haoran: profiles too similar (max diff 0.15), users may cluster
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜，外面下起了雨。你会？
+  - `q1.a`：结构检查通过 — 推开窗，任凭雨声和湿气把整个房间填满。
+  - `q1.b`：结构检查通过 — 卧在床上，听雨声，想起很多过去的事。
+  - `q1.c`：结构检查通过 — 点一盏灯，提笔，想写点什么。
+  - `q1.d`：结构检查通过 — 披衣坐到窗边，就这样看着，什么都不想。
+- **q2** 题干：一个人在外地，夜里抬头看见满月。你的第一个念头是？
+  - `q2.a`：结构检查通过 — 举起酒杯，对月独饮，觉得不孤独，反而自在。
+  - `q2.b`：结构检查通过 — 想到家人、故友，心里有一种很重的东西压下来。
+  - `q2.c`：结构检查通过 — 感觉月亮很近，很想就这样坐到天亮。
+  - `q2.d`：结构检查通过 — 想起某句诗，觉得古人和你共享了这一刻。
+- **q3** 题干：送别一个即将远行的朋友，在渡口道别。你会？
+  - `q3.a`：结构检查通过 — 多喝几杯，笑着送他上船，不落泪。
+  - `q3.b`：结构检查通过 — 什么都说不出口，船走了还站在岸边很久。
+  - `q3.c`：结构检查通过 — 折一支柳递给他，目送船影消失在水天之间。
+  - `q3.d`：结构检查通过 — 把这个场景记在心里，像一幅画，舍不得让它模糊。
+- **q4** 题干：身处边关，黄沙漫天，长城延伸向天边。你心里想的是？
+  - `q4.a`：结构检查通过 — 立功立业，把名字留在这片土地上。
+  - `q4.b`：结构检查通过 — 多少人因此回不了家，这个重量压在心上。
+  - `q4.c`：结构检查通过 — 这片苍茫辽阔有一种别处没有的壮美，值得一看。
+  - `q4.d`：结构检查通过 — 想写一首诗，用这里的黄沙和孤月作背景。
+- **q5** 题干：你独自走入一片深山，越走越深，周围只有溪声和鸟鸣。你感到？
+  - `q5.a`：结构检查通过 — 一种前所未有的自由，恨不得一直走下去。
+  - `q5.b`：结构检查通过 — 这里才是真正的世界，尘世的事都变得很小。
+  - `q5.c`：结构检查通过 — 眼前每一处都值得细细凝视——光影、苔痕、流水。
+  - `q5.d`：结构检查通过 — 突然理解了为什么有人要在山里住一辈子。
+- **q6** 题干：一壶酒，你会选什么场合喝它？
+  - `q6.a`：结构检查通过 — 月下，独饮，仰天长啸。
+  - `q6.b`：结构检查通过 — 和老友倾诉积压已久的话，喝完了事情也轻了。
+  - `q6.c`：结构检查通过 — 傍晚，在水边，喝完静静地看夕阳落山。
+  - `q6.d`：结构检查通过 — 秋夜，点灯，伴着诗稿，一杯一杯地喝。
+- **q7** 题干：看见一树盛开的花，你的反应是？
+  - `q7.a`：结构检查通过 — 折一枝，带走，送给某个人。
+  - `q7.b`：结构检查通过 — 想到花期太短，有一种说不清的哀愁。
+  - `q7.c`：结构检查通过 — 只是看，久久地看，觉得够了。
+  - `q7.d`：结构检查通过 — 想到这棵树年年如此，不知陪过了多少人的悲喜。
+- **q8** 题干：出门远行，你只能选一种方式。
+  - `q8.a`：结构检查通过 — 骑马，无目的地走，走到哪算哪。
+  - `q8.b`：结构检查通过 — 坐船，沿水路走，看两岸山色和炊烟。
+  - `q8.c`：结构检查通过 — 去西域、去边疆，看最壮阔、最极端的景。
+  - `q8.d`：结构检查通过 — 沿着某位诗人走过的路，重新走一遍。
+- **q9** 题干：你相信自己有才华，但世界暂时不给你机会。你会？
+  - `q9.a`：结构检查通过 — 该做什么做什么，管它承不承认。
+  - `q9.b`：结构检查通过 — 把这种愤懑和郁结全部写进文字里。
+  - `q9.c`：结构检查通过 — 退回自己的世界，那里才真正属于你。
+  - `q9.d`：结构检查通过 — 用华丽的形式把内心的伤包裹起来，让人看见美而非痛。
+- **q10** 题干：「逝者如斯夫，不舍昼夜」——面对时间的流逝，你的底层感受是？
+  - `q10.a`：结构检查通过 — 所以要活得尽兴，每一天都不能辜负。
+  - `q10.b`：结构检查通过 — 所以人生的每一次失去，都让人格外难以放下。
+  - `q10.c`：结构检查通过 — 所以不如顺着时间走，不执着，不强求。
+  - `q10.d`：结构检查通过 — 所以要用最精致的语言，把转瞬即逝的美留住。
+- **q11** 题干：路过一处战乱后凋敝的村庄，你心里升起的是？
+  - `q11.a`：结构检查通过 — 无力感——世界本该更好，但自己能做的有限。
+  - `q11.b`：结构检查通过 — 愤怒——这些苦难不该是无辜者承担的。
+  - `q11.c`：结构检查通过 — 想把这些记下来，让更多人看见。
+  - `q11.d`：结构检查通过 — 给出力所能及的帮助，然后继续上路。
+- **q12** 题干：一段时间的独处之后，你通常感到？
+  - `q12.a`：结构检查通过 — 像充好了电，很满足。
+  - `q12.b`：结构检查通过 — 有些东西在独处里变得更清晰，也更沉。
+  - `q12.c`：结构检查通过 — 开始蠢蠢欲动，想出去，想要新的刺激和冒险。
+  - `q12.d`：结构检查通过 — 心里有一片很安静的地方被重新滋养了。
+- **q13** 题干：有一种美，明知奇怪，却偏偏觉得迷人。你最容易被哪种吸引？
+  - `q13.a`：结构检查通过 — 鬼火、枯骨、腐败中生长出的植物。
+  - `q13.b`：结构检查通过 — 荒漠里的一株红柳，废墟上蔓延的藤蔓。
+  - `q13.c`：结构检查通过 — 残月、冷泉、空城里的踏歌声。
+  - `q13.d`：结构检查通过 — 月亮后面的云，和云后面深不见底的星。
+- **q14** 题干：「建功立业，名留青史」——你怎么看这件事？
+  - `q14.a`：结构检查通过 — 值得为之一搏，哪怕付出代价。
+  - `q14.b`：结构检查通过 — 功名不如一首好诗，诗更长久。
+  - `q14.c`：结构检查通过 — 济世救民才是真正的功业，其他都是虚名。
+  - `q14.d`：结构检查通过 — 淡泊名利，做好眼前的事就够了。
+- **q15** 题干：如果你的心境是一种颜色，今天是？
+  - `q15.a`：结构检查通过 — 金色——灼热，充满能量。
+  - `q15.b`：结构检查通过 — 灰蓝——沉静，但有厚度。
+  - `q15.c`：结构检查通过 — 碧绿——清透，带着水汽和草气。
+  - `q15.d`：结构检查通过 — 深紫——浓烈，不张扬，但藏着很多。
+- **q16** 题干：如果可以选择，你希望住在哪里？
+  - `q16.a`：结构检查通过 — 边关要塞，天苍苍，野茫茫，烽烟时起。
+  - `q16.b`：结构检查通过 — 山中小屋，晴耕雨读，偶尔有朋友来访。
+  - `q16.c`：结构检查通过 — 繁华都市深处，歌楼酒肆，人声鼎沸。
+  - `q16.d`：结构检查通过 — 水边古宅，帘动风起，夜里灯火孤明。
+- **q17** 题干：以下哪个意象，最让你心有戚戚？
+  - `q17.a`：结构检查通过 — 大漠孤烟直，长河落日圆。
+  - `q17.b`：结构检查通过 — 烽火连三月，家书抵万金。
+  - `q17.c`：结构检查通过 — 明月松间照，清泉石上流。
+  - `q17.d`：结构检查通过 — 春蚕到死丝方尽，蜡炬成灰泪始干。
+- **q18** 题干：最好的表达，往往在什么时候到来？
+  - `q18.a`：结构检查通过 — 喝了酒，醉意上来，笔就停不下来。
+  - `q18.b`：结构检查通过 — 某个深夜，悲喜交加，像有什么东西要破土而出。
+  - `q18.c`：结构检查通过 — 很安静，四周无人，只有眼前的山水和光线。
+  - `q18.d`：结构检查通过 — 心里突然冒出一个奇特的意象，不写出来就难受。
+- **q19** 题干：面对「人终有一死」这件事，你的底层态度是？
+  - `q19.a`：结构检查通过 — 所以更要活得放肆，活得痛快，不留遗憾。
+  - `q19.b`：结构检查通过 — 所以更要记录，让那些美好的时刻不完全消失。
+  - `q19.c`：结构检查通过 — 死亡是归于自然的一部分，不必恐惧，也不必抵抗。
+  - `q19.d`：结构检查通过 — 这件事让人感到无力，也感到一种沉甸甸的重量。
+- **q20** 题干：如果要写关于苦难的文字，你的方式更接近？
+  - `q20.a`：结构检查通过 — 直接写，不美化，让人看见它本来的面目。
+  - `q20.b`：结构检查通过 — 用壮烈包裹苦难，让它变成一种悲怆之美。
+  - `q20.c`：结构检查通过 — 把苦难转化成精致的意象，让阅读本身成为一种慰藉。
+  - `q20.d`：结构检查通过 — 更愿意写苦难之外那些尚存的美好，作为一种对抗。
+- **q21** 题干：你对待语言和表达的方式，更接近哪种？
+  - `q21.a`：结构检查通过 — 兴来就写，不拘一格，有时连自己都意外。
+  - `q21.b`：结构检查通过 — 反复斟酌，一个字的选择可以想很久。
+  - `q21.c`：结构检查通过 — 追求自然流露，过度雕琢反而失真。
+  - `q21.d`：结构检查通过 — 喜欢用冷僻的词、反常的组合，制造一种惊异感。
+- **q22** 题干：用一句诗形容你理想中的人生，你选？
+  - `q22.a`：结构检查通过 — 仰天大笑出门去，我辈岂是蓬蒿人。
+  - `q22.b`：结构检查通过 — 安得广厦千万间，大庇天下寒士俱欢颜。
+  - `q22.c`：结构检查通过 — 行到水穷处，坐看云起时。
+  - `q22.d`：结构检查通过 — 会当凌绝顶，一览众山小。
+  - `q22.e`：结构检查通过 — 此情可待成追忆，只是当时已惘然。
+  - `q22.f`：结构检查通过 — 采菊东篱下，悠然见南山。
+
+### 逐结果
+- **result-li-bai**（李白）：恬淡=0 不在 (0,1)
+- **result-du-fu**（杜甫）：profile 键与范围检查通过。
+- **result-wang-wei**（王维）：奇崛=0 不在 (0,1)；豪放=0 不在 (0,1)
+- **result-li-he**（李贺）：恬淡=0 不在 (0,1)；清丽=0 不在 (0,1)
+- **result-li-shangyin**（李商隐）：豪放=0 不在 (0,1)
+- **result-meng-haoran**（孟浩然）：奇崛=0 不在 (0,1)
+- **result-wang-changling**（王昌龄）：profile 键与范围检查通过。
+- **result-cen-shen**（岑参）：恬淡=0 不在 (0,1)
+- **result-gao-shi**（高适）：profile 键与范围检查通过。
+- **result-wang-zhihuan**（王之涣）：profile 键与范围检查通过。
+
+## your-aesthetic-and-which-painter
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 12
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：当你走进一座古老的教堂，第一眼被什么吸引？
+  - `q1.a`：结构检查通过 — 穹顶的几何结构与精确的对称线条
+  - `q1.b`：结构检查通过 — 彩色玻璃窗投下的斑斓光影与静谧氛围
+  - `q1.c`：结构检查通过 — 壁画上人物衣褶的纹理与剥落的颜料层次
+  - `q1.d`：结构检查通过 — 祭坛画中象征苦难与希望的浓烈色彩
+- **q2** 题干：朋友请你为一本诗集设计封面，你的第一反应是？
+  - `q2.a`：结构检查通过 — 用严谨的网格系统安排书名、作者与留白
+  - `q2.b`：结构检查通过 — 捕捉一个模糊的、雾气笼罩的湖畔影像
+  - `q2.c`：结构检查通过 — 将纸张揉皱再扫描，获得独特的背景肌理
+  - `q2.d`：结构检查通过 — 使用对比强烈的互补色块，碰撞出情绪张力
+- **q3** 题干：拍摄城市夜景时，你最想捕捉的是什么？
+  - `q3.a`：结构检查通过 — 建筑轮廓与街道线条构成的清晰构图
+  - `q3.b`：结构检查通过 — 霓虹灯光在湿漉漉街道上的迷离倒影
+  - `q3.c`：结构检查通过 — 广告牌褪色的字迹与墙面斑驳的污渍
+  - `q3.d`：结构检查通过 — 车流划过的红色尾灯在蓝色夜幕中的轨迹
+- **q4** 题干：欣赏一幅肖像画，你最先会注意哪里？
+  - `q4.a`：结构检查通过 — 人物姿态与画面空间分割形成的平衡感
+  - `q4.b`：结构检查通过 — 眼神与表情中流露的难以言说的情绪
+  - `q4.c`：结构检查通过 — 皮肤质感、发丝光泽或衣物织物的细微笔触
+  - `q4.d`：结构检查通过 — 面部明暗交界线如何塑造出立体与深度
+- **q5** 题干：布置自己的书房时，你对墙面装饰的核心要求是？
+  - `q5.a`：结构检查通过 — 挂画尺寸、间距严格对齐，形成视觉秩序
+  - `q5.b`：结构检查通过 — 能营造一个让我沉浸思考的安静角落氛围
+  - `q5.c`：结构检查通过 — 偏爱带有手工感、材料原始纹理的艺术品
+  - `q5.d`：结构检查通过 — 随着昼夜光线变化，画面会产生不同的效果
+- **q6** 题干：面对一片秋日森林，你最想用哪种方式记录它？
+  - `q6.a`：结构检查通过 — 用线条速写树木枝干的生长走向与空间关系
+  - `q6.b`：结构检查通过 — 拍摄林间薄雾，捕捉那种朦胧寂静的整体感受
+  - `q6.c`：结构检查通过 — 收集不同形状和颜色的落叶，研究其脉络
+  - `q6.d`：结构检查通过 — 专注于阳光穿过树叶缝隙形成的金色光斑
+- **q7** 题干：观看一场现代舞演出，你的视觉焦点通常在哪里？
+  - `q7.a`：结构检查通过 — 舞者身体在空间中划出的轨迹与构图变化
+  - `q7.b`：结构检查通过 — 肢体语言与音乐共同营造的抽象情感空间
+  - `q7.c`：结构检查通过 — 汗水、肌肉线条与服装面料随动作产生的细微变化
+  - `q7.d`：结构检查通过 — 舞台灯光在舞者身上制造出的强烈明暗对比
+- **q8** 题干：如果为一款香水设计视觉海报，你会强调？
+  - `q8.a`：结构检查通过 — 瓶身造型与文字信息排版的极简主义布局
+  - `q8.b`：结构检查通过 — 一个能唤起特定记忆或情绪的朦胧场景
+  - `q8.c`：结构检查通过 — 香水原料（如花瓣、香料）的高清特写与纹理
+  - `q8.d`：结构检查通过 — 运用象征性的色彩渐变来隐喻香调的变化
+- **q9** 题干：在古董市场，一件物品的什么特质最可能让你驻足？
+  - `q9.a`：结构检查通过 — 器物造型符合某种经典的、和谐的比例
+  - `q9.b`：结构检查通过 — 它似乎承载着一段故事，散发着旧时光的气息
+  - `q9.c`：结构检查通过 — 表面经年累月使用产生的包浆、划痕与磨损
+  - `q9.d`：结构检查通过 — 釉彩在特定角度下闪烁的、难以复制的光泽
+- **q10** 题干：你如何看待"留白"在一幅画中的作用？
+  - `q10.a`：结构检查通过 — 是构图不可或缺的部分，控制着画面的节奏与呼吸
+  - `q10.b`：结构检查通过 — 营造想象空间，让画面的意境得以延伸和弥漫
+  - `q10.c`：结构检查通过 — 衬托出主体笔触的力度与材质的微妙对比
+  - `q10.d`：结构检查通过 — 让光线在画面上自由流动，形成虚实变化
+- **q11** 题干：为一场关于"记忆"的展览选择主视觉，你倾向于？
+  - `q11.a`：结构检查通过 — 将老照片碎片化后，按时间线重新拼贴成网格
+  - `q11.b`：结构检查通过 — 一张过度曝光、边缘虚化的旧房间窗景照片
+  - `q11.c`：结构检查通过 — 放大旧书信纸张的纤维与墨水洇染的痕迹
+  - `q11.d`：结构检查通过 — 使用褪色的、象征不同年代感的色块层叠交织
+- **q12** 题干：你走进一座古老的教堂，阳光透过彩色玻璃窗洒下。你第一眼被什么吸引？
+  - `q12.a`：结构检查通过 — 光束在空气中形成的清晰路径，以及墙上明暗分明的几何光斑。
+  - `q12.b`：结构检查通过 — 彩色玻璃上繁复的宗教故事图案和人物衣物的纹理细节。
+  - `q12.c`：结构检查通过 — 整个空间被染上宝石般色彩后，那种庄严又梦幻的整体氛围。
+  - `q12.d`：结构检查通过 — 光线如何让石柱上的藤蔓浮雕和岁月痕迹显得生机勃勃。
+- **q13** 题干：朋友请你为一本诗集设计封面，你会最先从哪里获得灵感？
+  - `q13.a`：结构检查通过 — 分析诗集的章节结构和韵律节奏，转化为视觉上的网格与留白。
+  - `q13.b`：结构检查通过 — 捕捉诗歌中最打动你的那句所传递的情绪，用色彩和模糊笔触来表现。
+  - `q13.c`：结构检查通过 — 研究纸张的质感、印刷的工艺，甚至想好封面字体细微的笔画变化。
+  - `q13.d`：结构检查通过 — 从诗里提到的自然意象（如风暴、���枝、晨露）中提取视觉元素。
+- **q14** 题干：面对一幅未完成的风景画，你觉得最需要添加什么来让它"活"起来？
+  - `q14.a`：结构检查通过 — 明确的地平线和前景、中景、远景的清晰层次关系。
+  - `q14.b`：结构检查通过 — 一抹能奠定整幅画情绪基调的、微妙的天空色彩或雾气。
+  - `q14.c`：结构检查通过 — 树叶的纹理、水波的涟漪、岩石的裂痕这些具体的细节。
+  - `q14.d`：结构检查通过 — 一道决定性的光源，它能塑造形体并投下戏剧性的阴影。
+- **q15** 题干：你被要求用三种颜色代表"记忆"，你会选择哪三种，并如何组合？
+  - `q15.a`：结构检查通过 — 灰、白、黑。用清晰的色块分割来表现记忆的片段与分类。
+  - `q15.b`：结构检查通过 — 旧照片的泛黄、褪色的蓝、一点暖棕。让它们柔和地晕染在一起。
+  - `q15.c`：结构检查通过 — 选择有细微颗粒质感的颜色，如亚麻布白、生褐、铅灰，并保留笔触。
+  - `q15.d`：结构检查通过 — 新芽的嫩绿、泥土的赭石、天空的钴蓝。将它们并置，象征生长与循环。
+- **q16** 题干：参观一个当代艺术展，一件由无数金属碎片悬挂组成的装置让你驻足。你在看什么？
+  - `q16.a`：结构检查通过 — 碎片在空中构成的精确三维矩阵，以及它们随着气流摆动的规律。
+  - `q16.b`：结构检查通过 — 光线穿过碎片时，在墙壁和地面上投下的、不断变幻的迷离光影。
+  - `q16.c`：结构检查通过 — 每一片金属边缘的切割痕迹、反光特性和可能隐藏的锈迹。
+  - `q16.d`：结构检查通过 — 整个装置像一片冰冷的金属森林或星空，引发的关于人造与自然的联想。
+- **q17** 题干：你要拍摄一组人物肖像，最重要的准备工作是什么？
+  - `q17.a`：结构检查通过 — 精心设计构图，确定人物在画面中的位置、比例和与背景的关系。
+  - `q17.b`：结构检查通过 — 与模特深入交谈，捕捉他/她独特的气质，并找到能烘托这种气质的场景。
+  - `q17.c`：结构检查通过 — 检查服装的织物纹理、配饰的细节，确保它们在特写中也能经得起推敲。
+  - `q17.d`：结构检查通过 — 等待或制造理想的光线条件，用侧光或逆光来勾勒轮廓、塑造立体感。
+- **q18** 题干：你如何看待"留白"在一幅画中的作用？
+  - `q18.a`：结构检查通过 — 它是构图不可或缺的一部分，通过负空间来平衡和突出主体。
+  - `q18.b`：结构检查通过 — 它营造呼吸感和想象空间，让画面的情绪得以蔓延和沉淀。
+  - `q18.c`：结构检查通过 — 关注画布本身的质地或颜料在空白边缘自然形成的微妙痕迹。
+  - `q18.d`：结构检查通过 — 它像雾气或水面，是自然元素的一部分，连接着有形与无形。
+- **q19** 题干：如果城市是一个调色盘，你认为最能定义它的颜色来自哪里？
+  - `q19.a`：结构检查通过 — 来自建筑立面的几何色块、道路标线和玻璃幕墙的规律反光。
+  - `q19.b`：结构检查通过 — 来自黄昏时天际的粉紫色、深夜便利店的暖光，这些时刻的情绪色。
+  - `q19.c`：结构检查通过 — 来自斑驳墙漆的剥落层次、锈蚀水管和沥青路面的颗粒质感。
+  - `q19.d`：结构检查通过 — 来自公园里四季变化的树木、雨水冲刷后街道的倒影。
+- **q20** 题干：欣赏一幅描绘风暴中海浪的画作，什么最让你感到震撼？
+  - `q20.a`：结构检查通过 — 巨浪卷曲形成的强大动势和画面中隐含的力学结构。
+  - `q20.b`：结构检查通过 — 画面传递出的那种狂暴、恐惧与壮美交织的压倒性情绪。
+  - `q20.c`：结构检查通过 — 浪花飞溅的无数透明水珠、乌云不同层次的灰色笔触。
+  - `q20.d`：结构检查通过 — 阴郁天光与惨白浪峰之间极致的明暗对比，以及海面的深邃反光。
+- **q21** 题干：你要为自己创作一个代表符号（如徽章、图腾），灵感核心会是什么？
+  - `q21.a`：结构检查通过 — 一个简洁、对称且可无限延伸的几何图形组合。
+  - `q21.b`：结构检查通过 — 一种能概括我内心主要情绪的、非具象的色彩渐变或流体形态。
+  - `q21.c`：结构检查通过 — 一个由极其精细的线条、点阵或微小元素重复构成的复杂图案。
+  - `q21.d`：结构检查通过 — 一种植物、动物或自然现象（如藤蔓、飞鸟、涟漪）的抽象变形。
+- **q22** 题干：在整理多年的摄影/画作档案时，你发现自己有一个贯穿始终的偏好，它最可能是？
+  - `q22.a`：结构检查通过 — 对平行、垂直、黄金分割等严谨构图形式的执着运用。
+  - `q22.b`：结构检查通过 — 总被那些暧昧、朦胧、介于真实与梦境之间的场景所吸引。
+  - `q22.c`：结构检查通过 — 热衷于拍摄/描绘物体表面的磨损、风化、剥落等时间痕迹。
+  - `q22.d`：结构检查通过 — 作品中强烈的明暗对比，或对逆光、剪影效果的频繁使用。
+
+### 逐结果
+- **rational-order-builder**（皮耶罗·德拉·弗朗切斯卡）：profile 键与范围检查通过。
+- **light-shadow-poet**（伦勃朗）：profile 键与范围检查通过。
+- **detail-pilgrim**（维米尔）：profile 键与范围检查通过。
+- **color-alchemist**（梵高）：profile 键与范围检查通过。
+- **atmosphere-catcher**（莫奈）：profile 键与范围检查通过。
+- **nature-life-celebrant**（透纳）：profile 键与范围检查通过。
+- **inner-drama-director**（蒙克）：profile 键与范围检查通过。
+- **abstract-form-pioneer**（康定斯基）：profile 键与范围检查通过。
+- **decoration-dream-master**（穆夏）：profile 键与范围检查通过。
+- **social-reality-observer**（毕加索）：profile 键与范围检查通过。
+- **result-qi-baishi**（齐白石）：profile 键与范围检查通过。
+- **result-xu-beihong**（徐悲鸿）：profile 键与范围检查通过。
+
+## your-perfect-perfume-type
+- **计分**：`weighted-dimension` · 维度数 6 · 题数 22 · 结果数 6
+- **警告（30）**
+  - creative-fresh: missing "strengths"
+  - creative-fresh: missing "weaknesses"
+  - creative-fresh: only 0 strengths (want 3)
+  - creative-fresh: only 0 weaknesses (want 3)
+  - sensual-deep: missing "strengths"
+  - sensual-deep: missing "weaknesses"
+  - sensual-deep: only 0 strengths (want 3)
+  - sensual-deep: only 0 weaknesses (want 3)
+  - floral-romantic: missing "strengths"
+  - floral-romantic: missing "weaknesses"
+  - floral-romantic: only 0 strengths (want 3)
+  - floral-romantic: only 0 weaknesses (want 3)
+  - woody-classic: missing "strengths"
+  - woody-classic: missing "weaknesses"
+  - woody-classic: only 0 strengths (want 3)
+  - woody-classic: only 0 weaknesses (want 3)
+  - green-adventure: missing "strengths"
+  - green-adventure: missing "weaknesses"
+  - green-adventure: only 0 strengths (want 3)
+  - green-adventure: only 0 weaknesses (want 3)
+  - oriental-passion: missing "strengths"
+  - oriental-passion: missing "weaknesses"
+  - oriental-passion: only 0 strengths (want 3)
+  - oriental-passion: only 0 weaknesses (want 3)
+  - creative-fresh: profile "创意" = 1 (should be in (0,1))
+  - sensual-deep: profile "感性" = 1 (should be in (0,1))
+  - floral-romantic: profile "浪漫" = 1 (should be in (0,1))
+  - woody-classic: profile "经典" = 1 (should be in (0,1))
+  - green-adventure: profile "探险" = 1 (should be in (0,1))
+  - oriental-passion: profile "热情" = 1 (should be in (0,1))
+
+### 逐题 · 逐选项
+- **q1** 题干：周六下午突然空出来了，你最可能做什么？
+  - `q1.a`：结构检查通过 — 骑车或步行去没去过的街区随便逛逛
+  - `q1.b`：结构检查通过 — 泡一杯茶，重读一本书或看一部老电影
+  - `q1.c`：结构检查通过 — 约一个朋友出去，不用计划，走到哪算哪
+  - `q1.d`：结构检查通过 — 把积压很久的事处理掉，让房间重新清爽
+- **q2** 题干：给关系很好的朋友挑生日礼物，你倾向于选？
+  - `q2.a`：结构检查通过 — 一本你觉得他/她会喜欢的书或一件艺术小物
+  - `q2.b`：结构检查通过 — 你们一起可以体验的活动或短途旅行
+  - `q2.c`：结构检查通过 — 你精心挑选的、有品质感的日常用品
+  - `q2.d`：结构检查通过 — 带花或手写一封信，郑重又有仪式感
+- **q3** 题干：走进一个陌生人的家，你第一眼会注意到什么？
+  - `q3.a`：结构检查通过 — 书架和桌面上放着什么
+  - `q3.b`：结构检查通过 — 整体气氛是否让人觉得放松
+  - `q3.c`：结构检查通过 — 有没有旅行纪念品或奇怪的收藏
+  - `q3.d`：结构检查通过 — 家具的质感和布置是否有章法
+- **q4** 题干：你记忆中最清晰的一段气味，是哪种？
+  - `q4.a`：结构检查通过 — 某个城市某条街的味道，你甚至记得是哪一年
+  - `q4.b`：结构检查通过 — 某个人身上的气息，一闻到就能想起他/她
+  - `q4.c`：结构检查通过 — 雨后的泥土、海边的咸风，或者山里的松木
+  - `q4.d`：结构检查通过 — 老房子或图书馆里，纸张和木头的气味
+- **q5** 题干：工作或学习时，你更容易因为什么进入状态？
+  - `q5.a`：结构检查通过 — 任务本身足够有意思，能让你发挥创造力
+  - `q5.b`：结构检查通过 — 环境安静，一个人，没有任何打扰
+  - `q5.c`：结构检查通过 — 和志同道合的人在一起，互相激发
+  - `q5.d`：结构检查通过 — 有清晰的目标和框架，知道接下来要做什么
+- **q6** 题干：朋友描述你的穿搭风格，最可能怎么说？
+  - `q6.a`：结构检查通过 — "你总有一件奇怪但意外好看的单品"
+  - `q6.b`：结构检查通过 — "很舒适，不追潮流，但有自己的感觉"
+  - `q6.c`：结构检查通过 — "永远干净体面，像一道基准线"
+  - `q6.d`：结构检查通过 — "每次出门都让人有点意外"
+- **q7** 题干：你对一座城市产生好感，通常是因为什么？
+  - `q7.a`：结构检查通过 — 它有独特的气质，跟你在别处见过的都不一样
+  - `q7.b`：结构检查通过 — 走在街上感觉舒服，城市本身有生命力
+  - `q7.c`：结构检查通过 — 有历史，建筑或街道讲得清楚来历
+  - `q7.d`：结构检查通过 — 那里有你喜欢的人，或者一段重要的记忆
+- **q8** 题干：如果要给自己挑选一个专属的私人空间，你会选？
+  - `q8.a`：结构检查通过 — 充满绿植和自然光的工作室，可以适当乱
+  - `q8.b`：结构检查通过 — 安静、温暖，有香氛或蜡烛的小屋
+  - `q8.c`：结构检查通过 — 高挑或开阔的空间，带点博物馆的气质
+  - `q8.d`：结构检查通过 — 推开门就是户外或山野的地方
+- **q9** 题干：你在听音乐时，通常会被什么吸引？
+  - `q9.a`：结构检查通过 — 歌词很准，说出了你自己说不出来的东西
+  - `q9.b`：结构检查通过 — 编曲复杂，能听出很多层次和细节
+  - `q9.c`：结构检查通过 — 让身体想动起来的节奏和能量
+  - `q9.d`：结构检查通过 — 干净克制，少即是多的东西
+- **q10** 题干：独自旅行，你倾向于选哪种方式？
+  - `q10.a`：结构检查通过 — 做好功课，有目标，但也留出随机的空间
+  - `q10.b`：结构检查通过 — 基本不做计划，到了再说
+  - `q10.c`：结构检查通过 — 选一个地方待上几天，感受当地的日常节奏
+  - `q10.d`：结构检查通过 — 跟着感觉走，被哪里吸引就停在哪里
+- **q11** 题干：你觉得一段关系里，最重要的是什么？
+  - `q11.a`：结构检查通过 — 能一起走进对方从未打开过的某个角落
+  - `q11.b`：结构检查通过 — 彼此保留各自的边界和独立空间
+  - `q11.c`：结构检查通过 — 能让你做自己，不需要扮演任何角色
+  - `q11.d`：结构检查通过 — 有共鸣，聊得拢，互相看得懂
+- **q12** 题干：拿到一本新书，你会先做什么？
+  - `q12.a`：结构检查通过 — 翻到某一页随机读一段，看有没有感觉
+  - `q12.b`：结构检查通过 — 先看目录，了解整体结构，再从头开始
+  - `q12.c`：结构检查通过 — 闻一下，感受纸张和油墨的气味
+  - `q12.d`：结构检查通过 — 看封面设计，判断它的世界观和立场
+- **q13** 题干：你觉得自己处于哪种状态时，感觉最「对」？
+  - `q13.a`：结构检查通过 — 脑子高速运转，手停不下来，在做一件有意思的事
+  - `q13.b`：结构检查通过 — 安静，跟自己在一起，不需要向任何人解释
+  - `q13.c`：结构检查通过 — 被某件事或某个人彻底吸引，什么都顾不上
+  - `q13.d`：结构检查通过 — 走在一条没走过的路上，不知道前面是什么
+- **q14** 题干：对你来说，「美」是什么？
+  - `q14.a`：结构检查通过 — 某种让人安静下来的东西，简单，难以言说
+  - `q14.b`：结构检查通过 — 有历史或积累感的东西，能看出时间在上面留过痕迹
+  - `q14.c`：结构检查通过 — 出其不意，打破了你的某种预期
+  - `q14.d`：结构检查通过 — 让人想走过去触碰，或者想变成它描述的样子
+- **q15** 题干：在你特别难受的时候，你最可能做什么？
+  - `q15.a`：结构检查通过 — 出去走走，换个地方待着，让身体动起来
+  - `q15.b`：结构检查通过 — 一个人待着，等它自然过去
+  - `q15.c`：结构检查通过 — 找一个你信任的人倾诉
+  - `q15.d`：结构检查通过 — 用写字、画画或折腾东西来转移注意力
+- **q16** 题干：聚会结束回家的路上，你通常在想什么？
+  - `q16.a`：结构检查通过 — 今晚某个细节，某句话，某个眼神
+  - `q16.b`：结构检查通过 — 回顾今天哪些地方处理得好，哪些没有
+  - `q16.c`：结构检查通过 — 脑子里还是热的，希望今晚还没结束
+  - `q16.d`：结构检查通过 — 基本什么都不想，感觉满足或者空空的
+- **q17** 题干：你最喜欢的一种光线是？
+  - `q17.a`：结构检查通过 — 正午的强光，清晰，什么都看得明白
+  - `q17.b`：结构检查通过 — 清晨的第一缕，带点雾气和不确定
+  - `q17.c`：结构检查通过 — 傍晚的侧光，金黄，有时间在流逝的感觉
+  - `q17.d`：结构检查通过 — 室内的灯光，温暖、集中，把空间缩小到刚好
+- **q18** 题干：面对一件不确定自己喜不喜欢的东西，你会怎么做？
+  - `q18.a`：结构检查通过 — 直接试，喜不喜欢让感受说话
+  - `q18.b`：结构检查通过 — 先观察别人的反应，再形成自己的判断
+  - `q18.c`：结构检查通过 — 让它在视野里多出现几次，慢慢感受
+  - `q18.d`：结构检查通过 — 自己琢磨它为什么这样，弄懂了再决定
+- **q19** 题干：你觉得一个人「很有魅力」，通常因为什么？
+  - `q19.a`：结构检查通过 — 对某件事有深度，聊起来就停不下来
+  - `q19.b`：结构检查通过 — 举止从容，不需要向任何人证明什么
+  - `q19.c`：结构检查通过 — 有一种说不清楚的气场，让人想靠近
+  - `q19.d`：结构检查通过 — 真实，带点粗糙，没把自己包装得很完美
+- **q20** 题干：你的床头柜或书桌上，通常放着什么？
+  - `q20.a`：结构检查通过 — 很多书和正在进行的项目，有点乱但你知道在哪
+  - `q20.b`：结构检查通过 — 少而精的几样，每一样都有来历或意义
+  - `q20.c`：结构检查通过 — 一盏灯、一朵花或一株植物，像个小场景
+  - `q20.d`：结构检查通过 — 随时拿得到的东西，功����第一
+- **q21** 题干：你最理想的独处方式是？
+  - `q21.a`：结构检查通过 — 在野外，一个人走一段路
+  - `q21.b`：结构检查通过 — 泡在浴缸里，或者什么都不做地躺着
+  - `q21.c`：结构检查通过 — 在厨房，认真做一顿饭
+  - `q21.d`：结构检查通过 — 逛书店或商店，不一定买东西
+- **q22** 题干：如果你的人生有一种气味，你希望它是？
+  - `q22.a`：结构检查通过 — 清晨的户外，草木和泥土的混合
+  - `q22.b`：结构检查通过 — 某种复杂的东西，需要靠近才能闻到
+  - `q22.c`：结构检查通过 — 干净、温暖，让人觉得安全
+  - `q22.d`：结构检查通过 — 说不清楚，但只有你有，别人闻到会记住
+
+### 逐结果
+- **creative-fresh**（清新创意调）：创意=1 不在 (0,1)
+- **sensual-deep**（馥郁感性调）：感性=1 不在 (0,1)
+- **floral-romantic**（花香浪漫调）：浪漫=1 不在 (0,1)
+- **woody-classic**（木质经典调）：经典=1 不在 (0,1)
+- **green-adventure**（草木探险调）：探险=1 不在 (0,1)
+- **oriental-passion**（东方热情调）：热情=1 不在 (0,1)
+
+## zhenhuan-character-match
+- **计分**：`weighted-dimension` · 维度数 4 · 题数 12 · 结果数 5
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：太后召见你,有意提拔你为掌管六宫事务的掌印太监。你得知此事后,第一反应是:
+  - `q1.a`：结构检查通过 — 立即拜见太后,详细陈述自己多年来的忠诚与付出,暗示自己是最合适的人选
+  - `q1.b`：结构检查通过 — 私下调查太后的真实意图,同时联系宫中其他有影响力的太监,形成支持自己的联盟
+  - `q1.c`：结构检查通过 — 婉拒太后的好意,表示自己只想在宫中默默做事,不愿卷入权力漩涡
+  - `q1.d`：结构检查通过 — 向太后推荐其他更有资历的太监,同时暗中收集各宫嫔妃的喜好,以便未来找到更好的机会
+- **q2** 题干：宫宴上,你注意到一位常受冷落的嫔妃被众人忽视,独自一人在角落默默饮酒。你会:
+  - `q2.a`：结构检查通过 — 主动上前,直言不讳地指责众人的冷漠,并邀请这位嫔妃与自己同坐
+  - `q2.b`：结构检查通过 — 私下派人送去美食和美酒,并委婉询问是否需要帮助,但保持适当距离
+  - `q2.c`：结构检查通过 — 视若无睹,继续与身边的贵人谈笑风生,避免因关注失宠者而影响自己的地位
+  - `q2.d`：结构检查通过 — 与这位嫔妃短暂交谈,表达理解与同情,但避免公开表态,以免卷入不必要的麻烦
+- **q3** 题干：你得知皇上即将巡幸江南,各宫嫔妃都在准备献礼。你会:
+  - `q3.a`：结构检查通过 — 提前数月开始筹备,收集江南珍品,并暗中打探皇上的喜好,确保礼物能打动圣心
+  - `q3.b`：结构检查通过 — 委托可靠的人代为准备,自己则专注于收集各宫嫔妃准备的信息,以便在适当时机加以利用
+  - `q3.c`：结构检查通过 — 简单准备一份寻常礼物,相信皇上的恩宠不在于这些表面功夫
+  - `q3.d`：结构检查通过 — 联合其他嫔妃共同准备一份大礼,既节省开支,又能增强自己在宫中的影响力
+- **q4** 题干：你发现一位深受宠爱的嫔妃私下收受贿赂,违反宫规。皇帝询问此事时,你会:
+  - `q4.a`：结构检查通过 — 如实禀告,即使这意味着可能会得罪那位嫔妃和她的支持者
+  - `q4.b`：结构检查通过 — 向皇帝暗示此事,但保持距离,让皇帝自己决定如何处理
+  - `q4.c`：结构检查通过 — 装作不知情,避免卷入其中,保全自己的地位和安全
+  - `q4.d`：结构检查通过 — 私下提醒那位嫔妃,让她自行处理,同时收集她的把柄以备不时之需
+- **q5** 题干：皇上欲提拔一位新任总管太监,几位候选者各有背景。你作为后宫掌权者,会如何选择？
+  - `q5.a`：结构检查通过 — 选择与自己有深厚交情且绝对忠诚的人,即使能力稍逊也在所不惜,稳固自己的权力基础比什么都重要。
+  - `q5.b`：结构检查通过 — 推荐才干出众但背景中立的太监,让皇上看到自己的公正无私,同时借此拉拢这位有能力的新人,为未来布局。
+  - `q5.c`：结构检查通过 — 尊重皇上的选择,不主动推荐任何人,只确保自己的宫中事务不受新任太监的干扰,保持自己的小天地不受外界影响。
+  - `q5.d`：结构检查通过 — 推举一位品行端正但能力平庸的太监,减少后宫争斗,宁可牺牲自己的影响力,也要换来宫中的平静安宁。
+- **q6** 题干：得知与自己交好的妃嫔被皇后责罚,你得知内情后会如何反应？
+  - `q6.a`：结构检查通过 — 直接前往该妃嫔处,当着众人的面表达关心和支持,让所有人看到你们的情谊和自己的仗义。
+  - `q6.b`：结构检查通过 — 私下安慰受罚的妃嫔,并暗示她可以借机向皇上哭诉,既表达了自己的关心,又给了对方翻身的机会。
+  - `q6.c`：结构检查通过 — 表面装作不知情,避免卷入风波,但暗中派人送去安慰和帮助,不让任何人看出自己与这件事的关联。
+  - `q6.d`：结构检查通过 — 选择默默承受,不表达任何情感,认为在深宫中表露情感只会招来更多麻烦,不如保持冷静。
+- **q7** 题干：宫中突然传出一位得宠的妃嫔有失德之举,皇上震怒。作为知情者,你会如何应对？
+  - `q7.a`：结构检查通过 — 立即调查真相,收集证据后直接呈报皇上,不仅显示自己的公正,还能借此机会在皇上心中树立正直形象。
+  - `q7.b`：结构检查通过 — 暗中了解情况,若发现是诬告,则设计让真相水落石出,既挽救无辜之人,又借机拉拢对方为己所用。
+  - `q7.c`：结构检查通过 — 保持中立,不参与调查,只在自己的宫中告诫下人谨言慎行,避免卷入是非漩涡,等待风平浪静。
+  - `q7.d`：结构检查通过 — 直接向受诬陷的妃嫔表达支持,即使真相未明也要维护她,相信自己的判断,不惧皇上的怒火。
+- **q8** 题干：得知一位宫女掌握了对你不利的证据,她私下向你提出交易,要求你提拔她的家人作为交换。你会如何选择？
+  - `q8.a`：结构检查通过 — 拒绝交易,宁可冒险也要坚持原则,相信自己的清白终会得到证明,不愿用权力做违背道德的事。
+  - `q8.b`：结构检查通过 — 表面答应,暗中寻找机会将证据销毁或反制,不直接交易但也不坐以待毙,先保全自己再考虑其他。
+  - `q8.c`：结构检查通过 — 答应交易但暗中准备后路,既满足对方要求,又设法收集更多把柄,确保自己不会陷入被动。
+  - `q8.d`：结构检查通过 — 直接告知此事给皇上,表明自己的忠诚和对宫规的尊重,宁愿承受风险也要维护后宫的秩序和自己的清白。
+- **q9** 题干：太后赐予你管理六宫的权力,但同时也暗示你需要铲除几位有影响力的妃嫔以巩固自己的地位。你会如何处理这机会？
+  - `q9.a`：结构检查通过 — 欣然接受,借此机会清除所有可能的威胁,确保自己的绝对权威
+  - `q9.b`：结构检查通过 — 谨慎行动,只针对那些真正构成威胁的人,同时展示自己的宽厚仁德
+  - `q9.c`：结构检查通过 — 表面上接受太后的安排,暗中寻找更为稳固的权力基础,不急于树敌
+  - `q9.d`：结构检查通过 — 婉拒太后的暗示,宁愿保持现状也不愿伤害无辜,宁可放弃额外的权力
+- **q10** 题干：在宫宴上,你发现有人故意在你的茶中下了东西,让你在众人面前出丑。面对这种情况,你通常会？
+  - `q10.a`：结构检查通过 — 当场发作,直接指责下毒之人,让所有人知道你的愤怒和不满
+  - `q10.b`：结构检查通过 — 不动声色地喝下茶水,随后私下找机会报复,让对方付出代价
+  - `q10.c`：结构检查通过 — 忍气吞声,表面上若无其事,但心中记下这笔账,伺机而动
+  - `q10.d`：结构检查通过 — 以退为进,假装不小心自己打翻了茶杯,避免正面冲突,私下再查真相
+- **q11** 题干：你得知皇后正在暗中调查几位受宠妃嫔的过往,意图找出她们的把柄。作为知情者,你会？
+  - `q11.a`：结构检查通过 — 主动向皇后提供线索,借机获得她的信任和提拔
+  - `q11.b`：结构检查通过 — 保持中立,既不帮助皇后也不泄露消息,静观其变
+  - `q11.c`：结构检查通过 — 暗中提醒可能被调查的妃嫔,让她们有所准备,同时保留自己的退路
+  - `q11.d`：结构检查通过 — 直接找皇后面谈,劝她不要伤害无辜,宁可自己承担风险
+- **q12** 题干：皇上赐给你一份厚礼,但你知道这是从一位刚被降级的妃嫔那里没收的。你会？
+  - `q12.a`：结构检查通过 — 欣然接受,认为这是皇上的恩宠,不必在意礼物来源
+  - `q12.b`：结构检查通过 — 私下将礼物转送给那位降级的妃嫔,表达自己的同情和尊重
+  - `q12.c`：结构检查通过 — 收下礼物,但暗中帮助那位妃嫔改善处境,平衡自己的行为
+  - `q12.d`：结构检查通过 — 婉拒皇上的赏赐,直言不妥,宁可失去恩宠也不愿接受不义之财
+
+### 逐结果
+- **r1**（甄嬛）：profile 键与范围检查通过。
+- **r3**（华妃）：profile 键与范围检查通过。
+- **r5**（安陵容）：profile 键与范围检查通过。
+- **r7**（端妃）：profile 键与范围检查通过。
+- **r8**（宁嫔）：profile 键与范围检查通过。
+
+## zhifou-character-match
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 8
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：科举放榜之日,阳光透过窗棂照在红榜上,家人议论声此起彼伏。主母唤你到厅堂,面色凝重地低语有人散布不利于家族的谣言,询问你如何应对？
+  - `q1.a`：结构检查通过 — 立即召集族人,找出散布谣言之人,当众揭穿其阴谋
+  - `q1.b`：结构检查通过 — 暗中调查,收集证据,待时机成熟再向主母禀报详情
+  - `q1.c`：结构检查通过 — 装作不知情,只向主母表示信任家族众人,不节外生枝
+  - `q1.d`：结构检查通过 — 私下与散布谣言之人交谈,晓以利害,使其主动收回言论
+- **q2** 题干：月下庭院,母亲与你对坐,手中捧着一封婚书,烛光摇曳映着她期盼的眼神。她娓娓道来两家联姻的好处,又叹惋你心仪之人家道中落,请你权衡抉择。
+  - `q2.a`：结构检查通过 — 听从家族安排,接受这门婚事,认为家族利益高于个人情感
+  - `q2.b`：结构检查通过 — 婉拒这门婚事,坚持与心仪之人相守,认为情投意合比家世重要
+  - `q2.c`：结构检查通过 — 与家人商议,提出折中之策,延后婚事以观时局变化
+  - `q2.d`：结构检查通过 — 表面应允,暗中与心上人私定终身,待时机成熟再禀明家族
+- **q3** 题干：午后阳光斜照进书阁,墨香与茶香交织。友人或执笔抄诗,或对弈品茗,或研读医书,各有兴致。你在书架间踱步,不知如何打发这悠闲时光。
+  - `q3.a`：结构检查通过 — 加入抄诗行列,与友人共赏诗词歌赋,沉浸于文字之美
+  - `q3.b`：结构检查通过 — 与人对弈,在黑白棋局中感受策略与智慧的碰撞
+  - `q3.c`：结构检查通过 — 独坐角落,研习医书,认为实用之学比风花雪月更有价值
+  - `q3.d`：结构检查通过 — 默默旁观,欣赏他人所为,内心却不为所动
+- **q4** 题干：祠堂前,族长召集众人商议修缮事宜,账目短缺。你抚摸着怀中藏着的银袋,那是你节俭数月所得,原想用来购置心仪已久的古籍,如今却面临抉择。
+  - `q4.a`：结构检查通过 — 毫不犹豫捐出全部银两,认为家族荣光重于个人喜好
+  - `q4.b`：结构检查通过 — 捐出一半,留下部分购置古籍,兼顾家族与个人所需
+  - `q4.c`：结构检查通过 — 谎称银两另有他用,暗中购置古籍,不愿牺牲个人追求
+  - `q4.d`：结构检查通过 — 提议家族向富亲借贷,既不损私财又解燃眉之急
+- **q5** 题干：家宴之上,欢声笑语不断。你身着新裁的素色长裙,优雅地品茶。忽然,年幼表妹慌乱间打翻了茶盏,热茶泼洒,污了你的裙裾。
+  - `q5.a`：结构检查通过 — 微笑宽慰表妹,起身更衣,不责怪也不张扬,保全众人颜面
+  - `q5.b`：结构检查通过 — 轻声提醒下人处理,向表妹说明此事教训,希望她日后小心
+  - `q5.c`：结构检查通过 — 面色不悦,直言表妹莽撞,要求家人给予赔偿或弥补
+  - `q5.d`：结构检查通过 — 默然不语,心中暗自恼火,面上却强颜欢笑
+- **q6** 题干：午后花园漫步,远远听见几位族中长辈闲坐亭中,谈及女子读书一事。其中一人低声道'女子无才便是德,读书太多反而会惹祸上身',与你擦肩而过。
+  - `q6.a`：结构检查通过 — 驻足反驳,力陈女子读书有益,不应被世俗偏见所限
+  - `q6.b`：结构检查通过 — 装作未闻,径直离去,但心中暗自立志更加精进学识
+  - `q6.c`：结构检查通过 — 礼貌加入谈话,委婉表达不同见解,试图说服长辈改变看法
+  - `q6.d`：结构检查通过 — 认同长辈观点,认为女子当以持家为重,读书非必需
+- **q7** 题干：夜深人静,你路过偏厅,无意中听见几位族人密谋陷害嫡出子弟。当你转身欲走,一人察觉,对你使了个威胁的眼神,随后悄然离去。
+  - `q7.a`：结构检查通过 — 挺身而出,当众揭露阴谋,即使面临家族内部纷争也在所不惜
+  - `q7.b`：结构检查通过 — 暗中收集证据,待时机成熟向嫡出子弟预警,共同应对危机
+  - `q7.c`：结构检查通过 — 装作不知情,避开嫌疑,只求明哲保身不卷入是非
+  - `q7.d`：结构检查通过 — 私下与密谋者谈判,换取自身利益或承诺不追究此事
+- **q8** 题干：元宵灯会,庭院灯火通明,人声鼎沸,花灯摇曳生辉,映照着每个人的笑脸。此刻你会选择如何度过这个夜晚？
+  - `q8.a`：结构检查通过 — 与长辈同坐,细细品评花灯的精巧工艺,聆听家族故事
+  - `q8.b`：结构检查通过 — 与同龄人在庭院中猜谜游戏,欢声笑语,感受节日的欢腾
+  - `q8.c`：结构检查通过 — 独自在阁楼赏月,远离喧嚣,在静谧中品味月色之美
+  - `q8.d`：结构检查通过 — 在各处游走,与不同辈分的人交谈,维系家族关系网
+- **q9** 题干：祖母心爱的花瓶被仆人不慎打碎,清脆的碎裂声惊动了全场,仆人面如土色,众人皆惊慌失措。你会如何应对？
+  - `q9.a`：结构检查通过 — 立即上前安慰仆人,并表示花瓶不打紧,不必过于自责
+  - `q9.b`：结构检查通过 — 挺身而出,主动承担责任,承诺赔偿并安抚祖母情绪
+  - `q9.c`：结构检查通过 — 保持沉默,观察事态发展,等待他人处理此事
+  - `q9.d`：结构检查通过 — 建议仆人立即收拾残骸,并提醒祖母此花瓶并非特别珍贵
+- **q10** 题干：家族祠堂祭祀当日,香火缭绕,庄严肃穆。突然有族人高声质疑族谱记载的真实性,引发争执,气氛紧张。你会怎么做？
+  - `q10.a`：结构检查通过 — 挺身而出,据理力争,维护家族荣誉与祖先尊严
+  - `q10.b`：结构检查通过 — 提议请族中长者出面调解,避免矛盾公开化
+  - `q10.c`：结构检查通过 — 保持中立,不参与争论,静待家族自行解决此事
+  - `q10.d`：结构检查通过 — 私下与质疑者交谈,了解其动机,寻求私下解决之道
+- **q11** 题干：家族中有人对你说:'女子终究是要嫁为人妇,读书再多也改变不了命运。'你闻言后会作何反应？
+  - `q11.a`：结构检查通过 — 默然不语,点头应允,不反驳也不争辩
+  - `q11.b`：结构检查通过 — 坦然反驳,坚持女子同样可以追求学识与自我价值
+  - `q11.c`：结构检查通过 — 巧妙转移话题,不直接回应,但以实际行动证明自己的能力
+  - `q11.d`：结构检查通过 — 表示理解传统观念,但婉转表达自己的追求与理想
+- **q12** 题干：家族需要有人前往边远地区管理一处产业,那里条件艰苦但有晋升机会,家人希望你前去。你会如何选择？
+  - `q12.a`：结构检查通过 — 欣然应允,视此为家族考验与自我提升的机会
+  - `q12.b`：结构检查通过 — 婉言拒绝,表达对京城生活的向往,不愿远离繁华
+  - `q12.c`：结构检查通过 — 提出折中方案,如短期前往或派人代劳,同时保持家族利益
+  - `q12.d`：结构检查通过 — 寻求家族中其他更合适人选,自己则专注于京城的发展
+- **q13** 题干：重阳节家宴后,庭院菊香四溢,晚风习习。你可以选择参与家族女眷的赏菊诗会,或留在厅堂与男眷们讨论时政,或独自前往花园赏菊。你会如何选择？
+  - `q13.a`：结构检查通过 — 参与女眷的赏菊诗会,吟诗作对,感受雅集之乐
+  - `q13.b`：结构检查通过 — 留在厅堂与男眷们讨论时政,参与家族重要事务
+  - `q13.c`：结构检查通过 — 独自前往花园赏菊,远离喧嚣,在宁静中品味秋意
+  - `q13.d`：结构检查通过 — 在各处之间游走,既参与女眷活动,也不错过男眷讨论
+- **q14** 题干：家族中有人送来贵重礼物,包装精美,香气扑鼻。你知道对方有所求,但尚未明说。你会如何处理？
+  - `q14.a`：结构检查通过 — 欣然收下,不问缘由,维持家族和谐关系
+  - `q14.b`：结构检查通过 — 婉拒礼物,表示无功不受禄,不愿接受不明不白的好处
+  - `q14.c`：结构检查通过 — 先收下礼物,私下探明对方意图,再决定如何回应
+  - `q14.d`：结构检查通过 — 将礼物转赠他人,既不直接得罪送礼人,也不让自己陷入两难
+- **q15** 题干：家族议事厅内,檀香袅袅,父亲眉头紧锁,族谱在烛光下泛着黄。有人提议与对手家族联姻以挽救生意,但这将打乱你已定的婚约。此时你会？
+  - `q15.a`：结构检查通过 — 联姻可保家族安稳,个人婚事可再议,家族利益为先
+  - `q15.b`：结构检查通过 — 坚持原有婚约,宁可生意受损也不牺牲个人幸福
+  - `q15.c`：结构检查通过 — 寻找第三条路,既不联姻也不放弃原有婚约
+  - `q15.d`：结构检查通过 — 推辞决定权,让家族长辈权衡利弊后定夺
+- **q16** 题干：祠堂内,烛光摇曳,族谱在阴影中显得格外庄重。祖父轻抚先祖牌位,叹息道:'盛家的荣耀,需要每一代人都为之奋斗,不能有丝毫懈怠。'你听后？
+  - `q16.a`：结构检查通过 — 深感责任重大,誓要为家族荣耀竭尽全力
+  - `q16.b`：结构检查通过 — 认为家族荣耀不应成为个人追求的枷锁
+  - `q16.c`：结构检查通过 — 默默记下,但更在意如何在家族框架内实现自我价值
+  - `q16.d`：结构检查通过 — 赞同,但认为应更注重家族的和谐而非表面的荣耀
+- **q17** 题干：藏书阁内,古籍墨香弥漫,窗外竹影婆娑。你有半日闲暇,可以在族谱、医术古籍和名家字帖间选择一种方式度过。你会？
+  - `q17.a`：结构检查通过 — 翻阅先祖族谱,了解家族渊源与血脉传承
+  - `q17.b`：结构检查通过 — 研习医术古籍,掌握一门实用技能以备不时之需
+  - `q17.c`：结构检查通过 — 临摹名家字帖,在笔墨间抒发个人情感与才情
+  - `q17.d`：结构检查通过 — 三者皆涉猎,以全面适应家族各方面的期望
+- **q18** 题干：书房内,烛光摇曳,窗外雨声淅沥。家族需要有人参加科举考试以光耀门楌,但备考将占用你研究诗词的大量时间。你会？
+  - `q18.a`：结构检查通过 — 全力备考,家族声誉高于个人喜好
+  - `q18.b`：结构检查通过 — 坚持研究诗词,科举可让他人去考
+  - `q18.c`：结构检查通过 — 平衡两者,白天备考,夜晚研诗
+  - `q18.d`：结构检查通过 — 请求家族另选他人,自己不适合科举
+- **q19** 题干：家族宴会上,杯盏交错,笑语盈盈。二婶举杯称赞他人才华,对你却只字不提,脸上挂着恰到好处的笑容。你察觉到？
+  - `q19.a`：结构检查通过 — 淡然处之,不与计较,维持表面和谐
+  - `q19.b`：结构检查通过 — 心中不悦,但面上不露,暗自记下这笔账
+  - `q19.c`：结构检查通过 — 直言指出二婶的偏颇,维护自己的尊严
+  - `q19.d`：结构检查通过 — 以才华回应,在诗词或才艺上胜过他人
+- **q20** 题干：闺房内,夜深人静,烛火摇曳。丫鬟悄悄告诉你,有人散布对你不利的谣言,意图破坏你的婚事,而对方势力庞大。你会？
+  - `q20.a`：结构检查通过 — 暗中收集证据,找家族长辈主持公道
+  - `q20.b`：结构检查通过 — 亲自出面澄清谣言,即使可能得罪权贵
+  - `q20.c`：结构检查通过 — 静观其变,看谣言是否自生自灭
+  - `q20.d`：结构检查通过 — 寻求盟友,联合其他家族势力共同应对
+
+### 逐结果
+- **r1**（盛明兰）：profile 键与范围检查通过。
+- **r2**（顾廷烨）：profile 键与范围检查通过。
+- **r3**（盛墨兰）：profile 键与范围检查通过。
+- **r4**（盛老太太）：profile 键与范围检查通过。
+- **r5**（盛长柏）：profile 键与范围检查通过。
+- **r6**（小公爷）：profile 键与范围检查通过。
+- **r7**（林小娘）：profile 键与范围检查通过。
+- **r8**（华兰）：profile 键与范围检查通过。
+
+## zootopia-character-match
+- **计分**：`bipolar-dimension` · 维度数 2 · 题数 18 · 结果数 4
+- **错误（5）**
+  - bipolar axis "理想主义/犬儒现实主义": missing highPole
+  - bipolar axis "遵从体制/颠覆体制": missing highPole
+  - r2 is unreachable — dominated by r1 on all dimensions
+  - r2 is unreachable — dominated by r3 on all dimensions
+  - r4 is unreachable — dominated by r1 on all dimensions
+- **警告（57）**
+  - q1.c: bipolar option mixes positive and negative scores
+  - q1.d: bipolar option mixes positive and negative scores
+  - q2.a: bipolar option mixes positive and negative scores
+  - q2.b: bipolar option mixes positive and negative scores
+  - q2.c: bipolar option mixes positive and negative scores
+  - q2.d: bipolar option mixes positive and negative scores
+  - q3.b: bipolar option mixes positive and negative scores
+  - q3.d: bipolar option mixes positive and negative scores
+  - q4.a: bipolar option mixes positive and negative scores
+  - q4.b: bipolar option mixes positive and negative scores
+  - q5.c: bipolar option mixes positive and negative scores
+  - q5.d: bipolar option mixes positive and negative scores
+  - q6.a: bipolar option mixes positive and negative scores
+  - q6.b: bipolar option mixes positive and negative scores
+  - q6.d: bipolar option mixes positive and negative scores
+  - q7.c: bipolar option mixes positive and negative scores
+  - q7.d: bipolar option mixes positive and negative scores
+  - q8.a: bipolar option mixes positive and negative scores
+  - q8.b: bipolar option mixes positive and negative scores
+  - q8.c: bipolar option mixes positive and negative scores
+  - q8.d: bipolar option mixes positive and negative scores
+  - q9.a: bipolar option mixes positive and negative scores
+  - q9.b: bipolar option mixes positive and negative scores
+  - q9.c: bipolar option mixes positive and negative scores
+  - q9.d: bipolar option mixes positive and negative scores
+  - q10.a: bipolar option mixes positive and negative scores
+  - q10.b: bipolar option mixes positive and negative scores
+  - q10.c: bipolar option mixes positive and negative scores
+  - q11.a: bipolar option mixes positive and negative scores
+  - q11.b: bipolar option mixes positive and negative scores
+  - q11.c: bipolar option mixes positive and negative scores
+  - q11.d: bipolar option mixes positive and negative scores
+  - q12.a: bipolar option mixes positive and negative scores
+  - q12.b: bipolar option mixes positive and negative scores
+  - q12.c: bipolar option mixes positive and negative scores
+  - q13.a: bipolar option mixes positive and negative scores
+  - q13.b: bipolar option mixes positive and negative scores
+  - q13.c: bipolar option mixes positive and negative scores
+  - q13.d: bipolar option mixes positive and negative scores
+  - q14.a: bipolar option mixes positive and negative scores
+  - q14.b: bipolar option mixes positive and negative scores
+  - q15.a: bipolar option mixes positive and negative scores
+  - q15.b: bipolar option mixes positive and negative scores
+  - q15.c: bipolar option mixes positive and negative scores
+  - q16.a: bipolar option mixes positive and negative scores
+  - q16.b: bipolar option mixes positive and negative scores
+  - q17.a: bipolar option mixes positive and negative scores
+  - q17.b: bipolar option mixes positive and negative scores
+  - q17.c: bipolar option mixes positive and negative scores
+  - q17.d: bipolar option mixes positive and negative scores
+  - q18.a: bipolar option mixes positive and negative scores
+  - q18.b: bipolar option mixes positive and negative scores
+  - q18.c: bipolar option mixes positive and negative scores
+  - q18.d: bipolar option mixes positive and negative scores
+  - r2 is unreachable — dominated by r1 on all dimensions
+  - r2 is unreachable — dominated by r3 on all dimensions
+  - r4 is unreachable — dominated by r1 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：你正在处理一桩复杂的动物失踪案，证据指向一位有影响力的市民。上级暗示你不要深究，以免影响城市形象。你会如何处理？
+  - `q1.a`：结构检查通过 — 坚持调查真相，无论结果如何都要公布于众
+  - `q1.b`：结构检查通过 — 按照上级指示停止调查，维护城市和谐形象
+  - `q1.c`：双极混号 — 暗中继续调查但不公开，私下收集证据等待时机
+  - `q1.d`：双极混号 — 公开质疑上级决定，呼吁成立独立调查委员会
+- **q2** 题干：动物城新市长提出了一项激进的城市改造计划，将拆除历史悠久的树洞社区，建设现代化商业区。作为市议员，你会如何表态？
+  - `q2.a`：双极混号 — 全力支持计划，认为现代化是城市发展的必然方向
+  - `q2.b`：双极混号 — 坚决反对，保护树洞社区的历史文化和居民权益
+  - `q2.c`：双极混号 — 提出折中方案，保留部分历史建筑同时进行适度改造
+  - `q2.d`：双极混号 — 支持但要求增加透明度和居民参与决策过程
+- **q3** 题干：你发现动物城警察局内部存在系统性偏见，小型动物和外来物种遭受不公平对待。作为调查员，你会如何行动？
+  - `q3.a`：结构检查通过 — 匿名向媒体爆料，引发公众关注推动变革
+  - `q3.b`：双极混号 — 在系统内部提交详细报告，希望通过程序解决
+  - `q3.c`：结构检查通过 — 私下收集证据但保持沉默，担心职业生涯受影响
+  - `q3.d`：双极混号 — 联合受影响的同事，集体向管理层提出改革建议
+- **q4** 题干：动物城举办年度才艺大赛，你被选为评委。参赛者包括一位有背景的狮子和一位默默无闻的兔子，两人实力相当但表现风格迥异。你会如何评判？
+  - `q4.a`：双极混号 — 完全基于表演质量打分，不看背景和名气
+  - `q4.b`：双极混号 — 倾向于选择狮子，认为他的表演更符合主流审美
+  - `q4.c`：结构检查通过 — 给狮子略高分，但公开表扬兔子的创新精神
+  - `q4.d`：结构检查通过 — 冒险选择兔子，希望能打破行业固有偏见
+- **q5** 题干：你发现城市供水系统被污染，可能导致大规模疾病。市长办公室暗示这是"小问题"，不要引起恐慌。作为卫生部门负责人，你会如何处理？
+  - `q5.a`：结构检查通过 — 立即公开真相，启动紧急预案保护市民健康
+  - `q5.b`：结构检查通过 — 按照指示淡化处理，私下小范围解决污染源
+  - `q5.c`：双极混号 — 准备详细报告但暂缓公布，等待更确凿证据
+  - `q5.d`：双极混号 — 与媒体私下沟通，选择性泄露信息施压政府行动
+- **q6** 题干：动物城即将举行大游行，抗议不平等政策。作为警察局指挥官，你接到命令要阻止游行。现场气氛紧张，游行组织者愿意和平表达诉求。你会如何处理？
+  - `q6.a`：双极混号 — 严格执行命令，使用必要手段阻止游行
+  - `q6.b`：双极混号 — 暗中允许和平游行进行，避免冲突升级
+  - `q6.c`：结构检查通过 — 公开辞职以示对命令的抗议，加入游行队伍
+  - `q6.d`：双极混号 — 提出折中方案，允许指定区域和平表达但限制规模
+- **q7** 题干：动物城新开了一家融合餐厅，菜单上既有食草动物的沙拉，也有食肉动物的肉排。作为主厨，你会如何设计餐厅的经营理念？
+  - `q7.a`：结构检查通过 — 设计分区菜单，食肉区和食草区完全分开，确保每位顾客都能安心享用符合自己饮食习惯的食物
+  - `q7.b`：结构检查通过 — 推出创新融合料理，将肉和蔬菜巧妙结合，创造前所未有的美食体验，打破物种饮食界限
+  - `q7.c`：双极混号 — 提供多样化的选择，让顾客自行决定，但确保所有食材都标注清晰来源和制作方式
+  - `q7.d`：双极混号 — 仅提供最基础的素食选项，认为动物世界应该遵循自然法则，食肉动物就该吃肉
+- **q8** 题干：动物城发生了一起重大盗窃案，所有证据都指向了你的朋友尼克。你会如何处理这个局面？
+  - `q8.a`：双极混号 — 相信警方的调查结果，劝朋友自首，认为法律面前人人平等，即使朋友也不能例外
+  - `q8.b`：双极混号 — 私下调查真相，找出真正的罪犯，即使这意味着要挑战警方的权威和既有的调查程序
+  - `q8.c`：双极混号 — 建议朋友寻求专业律师帮助，同时私下询问他是否有其他可以解释情况的信息
+  - `q8.d`：双极混号 — 坚信朋友无辜，组织所有认识他的人为他作证，认为体制有时也会犯错
+- **q9** 题干：动物城正在举办年度才艺大赛，规则明确规定参赛作品必须体现动物城和谐共处的价值观。你的创作灵感来自于动物间的自然捕食关系。你会如何处理？
+  - `q9.a`：双极混号 — 完全按照规则修改创作，将捕食关系转化为生存竞争的寓言，强调在竞争中寻求平衡
+  - `q9.b`：双极混号 — 坚持原始创作理念，认为艺术应该真实反映自然规律，即使与官方价值观相悖
+  - `q9.c`：双极混号 — 创作两套作品，一套符合规则参赛，另一套私下展示，保留自己的艺术表达
+  - `q9.d`：双极混号 — 放弃参赛，认为在规则框架内的创作已经失去了本真，选择举办自己的独立展览
+- **q10** 题干：动物城面临严重的食物短缺问题，市长提出配给制方案。作为市议员，你会如何投票？
+  - `q10.a`：双极混号 — 支持配给制，认为这是最公平的解决方案，确保所有动物都能获得基本生存所需
+  - `q10.b`：双极混号 — 反对配给制，认为自由市场机制能更有效地分配资源，政府干预只会让情况恶化
+  - `q10.c`：双极混号 — 提出折中方案，基本食物实行配给制，但允许特殊需求通过市场渠道满足
+  - `q10.d`：结构检查通过 — 呼吁紧急从周边地区调运食物，认为临时措施比改变长期制度更实际
+- **q11** 题干：动物城动物园的老虎因长期圈养出现心理问题，动物保护组织要求释放它到自然保护区。作为动物园园长，你会如何决定？
+  - `q11.a`：双极混号 — 尊重科学评估，如果专家确认放生能改善老虎健康，就执行放生计划
+  - `q11.b`：双极混号 — 坚持动物园的传统使命，认为保护物种就是人工饲养，放生是对责任的逃避
+  - `q11.c`：双极混号 — 推动动物园改造，创造更接近自然的环境，同时研究放归野外的可能性
+  - `q11.d`：双极混号 — 组织公开听证会，让动物专家、保护组织和市民共同参与决策
+- **q12** 题干：动物城出现新型动物病毒，专家建议隔离所有症状相似的动物。作为卫生部门负责人，你会如何处理？
+  - `q12.a`：双极混号 — 严格执行隔离政策，认为这是控制疫情蔓延的最有效手段，个体利益服从集体安全
+  - `q12.b`：双极混号 — 反对强制性隔离，认为应尊重动物自由，并相信大多数动物会自觉遵守卫生建议
+  - `q12.c`：双极混号 — 实施分级管理，仅对重症患者强制隔离，轻症动物自愿居家隔离并接受监测
+  - `q12.d`：结构检查通过 — 投入资源研发特效疫苗，同时实施临时隔离措施，但承诺疫情解除后全面评估政策影响
+- **q13** 题干：你发现动物城最近出现了一系列针对小型哺乳动物的犯罪事件，上级指示你按照常规流程调查，但你知道这可能会因为程序繁琐而延误时机。
+  - `q13.a`：双极混号 — 立即行动，即使需要绕过某些规定也要尽快抓住罪犯
+  - `q13.b`：双极混号 — 严格遵守所有程序，相信正义终会通过正确的途径实现
+  - `q13.c`：双极混号 — 先按程序走，但暗中加快进度，同时寻找更有效的解决方案
+  - `q13.d`：双极混号 — 向上级申请特别权限，希望能在遵守规则的同时提高效率
+- **q14** 题干：市长邀请你参加一个关于动物城未来发展方向的闭门会议，会上提出了一个可能对食草动物和食肉动物关系产生重大影响的政策。
+  - `q14.a`：双极混号 — 勇敢提出不同意见，即使这可能会得罪在场的权贵
+  - `q14.b`：双极混号 — 支持市长提案，相信这是经过深思熟虑的最佳方案
+  - `q14.c`：结构检查通过 — 私下收集更多数据，为下次会议做更充分的准备
+  - `q14.d`：结构检查通过 — 保持沉默，观察各方反应后再决定立场
+- **q15** 题干：你负责调查一起发生在雨夜的案件，所有证据都指向一位有前科的狐狸，但你发现了一些细微的疑点，暗示可能有真相被掩盖。
+  - `q15.a`：双极混号 — 坚持深入调查，即使这可能会推翻整个警方的初步结论
+  - `q15.b`：双极混号 — 相信专业判断，认为警方已经做了全面调查
+  - `q15.c`：双极混号 — 提出疑点，但不质疑整体调查方向，寻求更多合作
+  - `q15.d`：结构检查通过 — 私下单独调查，不与团队分享自己的怀疑
+- **q16** 题干：动物城发生大规模抗议活动，反对一项新的城市规划法案，你的朋友因参与抗议而被捕，而这项法案恰好是你参与制定的。
+  - `q16.a`：双极混号 — 公开承认自己的疏忽，推动修改法案以回应民众关切
+  - `q16.b`：双极混号 — 坚持法案的必要性，相信时间会证明其价值
+  - `q16.c`：结构检查通过 — 寻求折中方案，在保留核心内容的同时做一些调整
+  - `q16.d`：结构检查通过 — 利用职权私下帮助朋友，但不公开表明立场
+- **q17** 题干：你发现动物城警局内部存在系统性偏见，某些动物群体被过度执法，但揭露这一问题可能会危及你的职业生涯和人际关系。
+  - `q17.a`：双极混号 — 收集证据，通过官方渠道公开揭露系统性偏见
+  - `q17.b`：双极混号 — 相信内部改革能够解决问题，选择在体制内推动改变
+  - `q17.c`：双极混号 — 私下与受影响群体合作，在不破坏系统的情况下提供帮助
+  - `q17.d`：双极混号 — 调离这个部门，避免卷入复杂的人际和政治纠纷
+- **q18** 题干：动物城即将举办一场重要的国际峰会，你需要负责安保工作。收到情报表明可能会有抗议者试图破坏会议，但抗议者提出的某些问题确实值得重视。
+  - `q18.a`：双极混号 — 确保会议顺利进行的同时，安排专人记录抗议者的合理诉求
+  - `q18.b`：双极混号 — 采取一切必要措施确保会议安全，相信秩序高于一切
+  - `q18.c`：双极混号 — 提前与抗议者代表对话，寻求和平解决方案
+  - `q18.d`：双极混号 — 向上级申请增派警力，准备应对各种可能的情况
+
+### 逐结果
+- **r1**（朱迪）：profile 键与范围检查通过。
+- **r2**（尼克）：profile 键与范围检查通过。
+- **r3**（博戈局长）：profile 键与范围检查通过。
+- **r4**（贝尔韦瑟）：profile 键与范围检查通过。
+
+## 自媒体人格原型
+- **计分**：`weighted-dimension` · 维度数 5 · 题数 20 · 结果数 6
+- **聚合校验**：无 error / warning。
+
+### 逐题 · 逐选项
+- **q1** 题干：深夜的工作室里,台灯映照着键盘上斑驳的指印,屏幕上未发送的文章与评论区数百条互动形成刺眼对比。你此刻会怎么做？
+  - `q1.a`：结构检查通过 — 立即发布文章,添加独特视角和补充分析,抢回话题主导权
+  - `q1.b`：结构检查通过 — 删除文章,重新寻找未被探讨的角度,等待更合适的时机
+  - `q1.c`：结构检查通过 — 保留文章但不发布,转为内部资料积累,为后续内容做准备
+  - `q1.d`：结构检查通过 — 将文章改写成简短评论,加入热门话题标签,快速蹭流量
+- **q2** 题干：品牌方赞助金额可观,但要求植入与你风格不符的产品。看着合同上诱人的数字和粉丝可能的质疑,你会如何决策？
+  - `q2.a`：结构检查通过 — 接受合作,但巧妙改编产品使用场景,使其符合个人调性
+  - `q2.b`：结构检查通过 — 婉拒合作,坚持内容原创性和真实性,寻找更契合的品牌
+  - `q2.c`：结构检查通过 — 接受合作但公开说明商业合作立场,保持与粉丝的透明沟通
+  - `q2.d`：结构检查通过 — 提出折中方案,仅展示产品而非深度使用,平衡商业需求和内容质量
+- **q3** 题干：周末的午后,阳光透过百叶窗洒在书桌上,刚完成高强度创作的你感到疲惫但又有新的灵感涌现。你选择如何度过这两小时？
+  - `q3.a`：结构检查通过 — 漫步城市街头,观察陌生人的互动和街角小店,寻找生活故事
+  - `q3.b`：结构检查通过 — 阅读专业书籍或行业报告,积累知识和观点,为下周内容做准备
+  - `q3.c`：结构检查通过 — 回复粉丝留言和评论,深入了解受众需求,建立更紧密连接
+  - `q3.d`：结构检查通过 — 整理本周数据,分析内容表现,优化创作策略和方向
+- **q4** 题干：两个合作邀请摆在面前:知名KOL能带来巨大流量,但可能稀释个人风格；小众创作者虽粉丝少,但能深化内容质量。你会如何选择？
+  - `q4.a`：结构检查通过 — 选择与知名KOL合作,借助其影响力扩大个人品牌,再逐步融入个人风格
+  - `q4.b`：结构检查通过 — 选择垂直领域创作者,深度合作打造高质量内容,建立专业权威形象
+  - `q4.c`：结构检查通过 — 同时接受两个合作,分别针对不同受众群体,测试不同内容策略效果
+  - `q4.d`：结构检查通过 — 暂缓决定,先研究两个合作方的过往作品和粉丝反应,再做长远规划
+- **q5** 题干：评论区一条留言刺痛了你:'博主你最近的内容越来越商业化,感觉变了。'粉丝的质疑让你重新审视创作方向,你会如何回应？
+  - `q5.a`：结构检查通过 — 公开回应感谢粉丝反馈,解释商业化与内容质量的平衡考量,邀请更多建议
+  - `q5.b`：结构检查通过 — 忽略留言,继续坚持当前创作方向,相信专业内容能吸引真正受众
+  - `q5.c`：结构检查通过 — 私下回复留言,了解具体不满点,考虑调整内容策略但保持商业化路径
+  - `q5.d`：结构检查通过 — 发布一篇解释文章,阐述创作者生存与发展的现实需求,寻求理解
+- **q6** 题干：手机里三张构图完美的随手拍:一张街角咖啡馆的黄昏光影,一张陌生人雨中的背影,一张城市天际线的几何线条。你会如何处理？
+  - `q6.a`：结构检查通过 — 将三张照片分别发布在不同平台,根据平台调性调整文案,最大化利用素材
+  - `q6.b`：结构检查通过 — 选择最符合当前创作主题的一张,深度挖掘背后的故事,发布高质量内容
+  - `q6.c`：结构检查通过 — 制作成一组九宫格,展示不同视角的城市观察,与粉丝分享日常灵感
+  - `q6.d`：结构检查通过 — 保存素材库,等待合适的创作主题再使用,确保内容与视觉的完美契合
+- **q7** 题干：你的视频发布后引发争议,评论区出现大量负面评价,部分内容被指存在事实错误,粉丝情绪激动。面对这场危机,你会怎么做？
+  - `q7.a`：结构检查通过 — 立即发布澄清视频,承认事实错误,详细说明更正内容和数据来源
+  - `q7.b`：结构检查通过 — 删除争议内容,重新核查所有数据,待准确无误后再重新发布
+  - `q7.c`：结构检查通过 — 保持现状,不回应争议,相信优质后续内容能转移注意力
+  - `q7.d`：结构检查通过 — 邀请行业专家共同探讨,将争议转化为深度讨论,展示专业态度
+- **q8** 题干：深夜的工作室里,台灯下只有键盘敲击声和窗外偶尔掠过的车灯,你有完全自由的创作时间,会优先投入哪种创作活动？
+  - `q8.a`：结构检查通过 — 将一天的生活感悟转化为有个人风格的观点文章,不在乎是否符合流行趋势
+  - `q8.b`：结构检查通过 — 整理行业最新数据,制作一份信息全面、条理清晰的知识汇总
+  - `q8.c`：结构检查通过 — 策划一个能引发粉丝讨论的话题,准备互动问答环节
+  - `q8.d`：结构检查通过 — 研究热门视频的套路,模仿成功案例的结构和风格
+- **q9** 题干：直播间的灯光亮起,设备却在关键时刻出现故障,网络测试仪上闪烁的红光让你必须在观众到来前决定应对方案。
+  - `q9.a`：结构检查通过 — 快速调整画面构图,用现有设备创造独特的视觉风格,将问题转化为特色
+  - `q9.b`：结构检查通过 — 立即更换备用设备,确保直播质量不受影响,优先保证内容专业性
+  - `q9.c`：结构检查通过 — 提前通知粉丝设备问题,转为简短互动环节,增加粉丝参与感
+  - `q9.d`：结构检查通过 — 尝试简单修复,如失败则改期直播,避免影响品牌合作声誉
+- **q10** 题干：数据后台显示粉丝留言区的催更频率越来越高,但你的内容草稿还需要深度打磨,工作室的咖啡已经凉了。
+  - `q10.a`：结构检查通过 — 坚持按计划深度打磨内容,解释需要时间保证质量,不迎合催更压力
+  - `q10.b`：结构检查通过 — 先发布一个简短版本回应粉丝,承诺后续会发布更完整内容
+  - `q10.c`：结构检查通过 — 拆分内容为几个部分,先发布最精彩的部分,后续再补充细节
+  - `q10.d`：结构检查通过 — 增加更新频率但缩短每期内容长度,保持稳定输出节奏
+- **q11** 题干：同行在社交平台发布了一条数据至上的动态,手机屏幕的蓝光映在你脸上,你对此有何看法？
+  - `q11.a`：结构检查通过 — 数据确实重要,但内容价值应该兼顾商业效果和独特表达
+  - `q11.b`：结构检查通过 — 完全同意,点击率和转化率才是衡量内容成功的唯一标准
+  - `q11.c`：结构检查通过 — 数据只是参考,真正有价值的内容能引发深度思考和情感共鸣
+  - `q11.d`：结构检查通过 — 关注数据容易迷失创作初心,应该回归内容本身的质量
+- **q12** 题干：品牌合作直播的关键时刻,网络突然中断,直播间弹幕开始刷'不专业'、'退款',你如何应对这场危机？
+  - `q12.a`：结构检查通过 — 立即切换热点话题,用精彩内容转移观众注意力,同时后台紧急修复网络
+  - `q12.b`：结构检查通过 — 坦诚沟通技术问题,承诺补偿并准备后续方案,保持专业态度
+  - `q12.c`：结构检查通过 — 利用等待时间进行粉丝互动,发起投票决定恢复后的内容方向
+  - `q12.d`：结构检查通过 — 暂停直播并重新安排时间,避免在技术不稳定的情况下影响品牌形象
+- **q13** 题干：整理素材库时,发现一段画面抖动但情感真挚的片段,阳光透过百叶窗在屏幕上投下斑驳光影,你决定如何处理？
+  - `q13.a`：结构检查通过 — 保留原片段,用文字和音乐强化情感,不追求画面完美
+  - `q13.b`：结构检查通过 — 重新拍摄这段内容,确保视觉质量符合整体风格要求
+  - `q13.c`：结构检查通过 — 剪辑成花絮或幕后故事,展现真实创作过程拉近与粉丝距离
+  - `q13.d`：结构检查通过 — 舍弃这段素材,只保留高质量内容维护专业形象
+- **q14** 题干：创作过程中,深夜的台灯下,咖啡的香气弥漫,哪个环节让你最兴奋和有成就感？
+  - `q14.a`：结构检查通过 — 将独特的观点转化为有冲击力的文字,突破常规表达方式
+  - `q14.b`：结构检查通过 — 深入研究资料,挖掘出别人忽略的细节或角度
+  - `q14.c`：结构检查通过 — 看到粉丝对内容的积极回应和深度讨论
+  - `q14.d`：结构检查通过 — 构思出能带来实际价值的内容结构或解决方案
+- **q15** 题干：深夜的工作室里,电脑屏幕的蓝光照亮了你疲惫的脸庞。知名平台的合作邀请弹窗闪烁着诱人的曝光数字,但模板风格的条款让你眉头紧锁。你会如何应对这个机会？
+  - `q15.a`：结构检查通过 — 拒绝合作,坚持个人风格,即使这意味着错失曝光机会
+  - `q15.b`：结构检查通过 — 接受合作但保留核心创意自主权,寻找平衡点
+  - `q15.c`：结构检查通过 — 完全按照对方要求调整内容,优先考虑平台曝光率
+  - `q15.d`：结构检查通过 — 暂时搁置决定,先观察其他创作者的合作案例再做选择
+- **q16** 题干：直播间的灯光下,你刚结束一场互动,手机屏幕上亮起一条特别长的粉丝留言。这位粉丝详细描述了你的回复如何让她感到被尊重,甚至影响了她的生活态度。你会如何回应？
+  - `q16.a`：结构检查通过 — 邀请这位粉丝参与后续内容共创,建立更深层次的连接
+  - `q16.b`：结构检查通过 — 公开感谢这位粉丝的反馈,鼓励更多粉丝分享类似体验
+  - `q16.c`：结构检查通过 — 私信回复详细交流,但保持一定的专业距离
+  - `q16.d`：结构检查通过 — 将这条留言作为案例研究,分析如何提升整体互动质量
+- **q17** 题干：数据后台的分析界面显示红色警示,完播率曲线持续下滑,而粉丝增长却异常活跃。咖啡杯旁的笔记本上记满了各种调整方案,会议室里团队成员各执一词,你会优先考虑哪种方向？
+  - `q17.a`：结构检查通过 — 分析完播率低的视频共同点,针对性调整内容结构和节奏
+  - `q17.b`：结构检查通过 — 顺应粉丝增长趋势,增加轻松娱乐内容,保留少量高质量作品
+  - `q17.c`：结构检查通过 — 举办粉丝调研,直接了解受众偏好后再做内容调整
+  - `q17.d`：结构检查通过 — 坚持原有内容风格,相信长期价值会自然带来完播率提升
+- **q18** 题干：咖啡厅角落的笔记本上,邻桌情侣关于'现代孤独'的对话片段突然击中你。香气四溢的拿铁在杯中微微晃动,你迅速记下了这个灵感,接下来你会如何处理它？
+  - `q18.a`：结构检查通过 — 立即深入展开思考,构建完整的内容框架和理论支撑
+  - `q18.b`：结构检查通过 — 将这个灵感融入日常生活分享,用个人经历诠释这个主题
+  - `q18.c`：结构检查通过 — 记录关键点后继续创作当前内容,定期回顾这个灵感
+  - `q18.d`：结构检查通过 — 设计一个视觉化的呈现方式,将抽象概念转化为直观画面
+- **q19** 题干：深夜的工作室里,新系列的视觉设计草稿铺满整个桌面。窗外城市的霓虹灯光透过百叶窗在墙上投下斑驳光影,你需要为这个系列确定核心视觉风格,你会倾向于？
+  - `q19.a`：结构检查通过 — 极简主义风格,强调内容本身,减少视觉干扰
+  - `q19.b`：结构检查通过 — 高饱和度色彩与大胆构图,打造强烈的视觉冲击力
+  - `q19.c`：结构检查通过 — 复古胶片质感,营造温暖怀旧的氛围感
+  - `q19.d`：结构检查通过 — 数据可视化风格,将抽象概念转化为清晰图表
+- **q20** 题干：直播间的灯光下,评论区突然涌现大量争议���言论。你的心跳微微加速,手指在键盘上犹豫不决。是坚持真实表达但承受更多批评,还是调整风格以减少争议？
+  - `q20.a`：结构检查通过 — 直面争议,在后续内容中深入回应质疑,强化观点立场
+  - `q20.b`：结构检查通过 — 暂时调整表达方式,但保留核心观点,寻找更温和的呈现形式
+  - `q20.c`：结构检查通过 — 分析争议焦点,有选择地调整部分内容,同时保持整体风格
+  - `q20.d`：结构检查通过 — 减少争议性话题,专注于中性内容,维持粉丝基数
+
+### 逐结果
+- **r1**（生活分享家）：profile 键与范围检查通过。
+- **r2**（知识搬运工）：profile 键与范围检查通过。
+- **r3**（观点引领者）：profile 键与范围检查通过。
+- **r4**（行业观察家）：profile 键与范围检查通过。
+- **r5**（视觉艺术家）：profile 键与范围检查通过。
+- **r6**（实用工具）：profile 键与范围检查通过。
+
+## 自媒体赛道人格测验
+- **计分**：`weighted-dimension` · 维度数 3 · 题数 20 · 结果数 8
+- **错误（2）**
+  - r7 ↔ r9: profiles too similar (max diff 0.10)
+  - r6 is unreachable — dominated by r5 on all dimensions
+- **警告（2）**
+  - r7 ↔ r9: profiles too similar (max diff 0.10), users may cluster
+  - r6 is unreachable — dominated by r5 on all dimensions
+
+### 逐题 · 逐选项
+- **q1** 题干：当你面对一个全新创作主题时，你的第一反应是
+  - `q1.a`：结构检查通过 — 立即动手，边做边调整，让灵感在实践中流动
+  - `q1.b`：结构检查通过 — 先进行深度研究，收集相关资料，构建知识框架
+  - `q1.c`：结构检查通过 — 思考这个主题能引起什么共鸣，如何与受众建立情感连接
+  - `q1.d`：结构检查通过 — 等待一个完美的灵感时刻，在氛围最佳时才开始创作
+- **q2** 题干：在创作过程中，你更倾向于
+  - `q2.a`：结构检查通过 — 独自完成所有环节，不受外界干扰
+  - `q2.b`：结构检查通过 — 邀请同行或粉丝参与讨论，获取多元视角
+  - `q2.c`：结构检查通过 — 不断研究行业经典作品，汲取前人智慧
+  - `q2.d`：结构检查通过 — 关注平台算法和流行趋势，调整创作方向
+- **q3** 题干：当你创作的内容获得了意想不到的反馈时，你的反应是
+  - `q3.a`：结构检查通过 — 分析数据，找出成功因素，为下次创作做准备
+  - `q3.b`：结构检查通过 — 沉浸在创作的喜悦中，享受与观众的共鸣时刻
+  - `q3.c`：结构检查通过 — 思考如何突破这个成功，探索更创新的表达方式
+  - `q3.d`：结构检查通过 — 担心后续无法维持这个水准，产生创作压力
+- **q4** 题干：在创作瓶颈期，你会选择
+  - `q4.a`：结构检查通过 — 尝试全新的创作形式，打破常规思维
+  - `q4.b`：结构检查通过 — 深入学习相关领域的专业知识，拓宽视野
+  - `q4.c`：结构检查通过 — 与粉丝互动，听取他们的建议和期待
+  - `q4.d`：结构检查通过 — 暂时放下创作，等待灵感自然涌现
+- **q5** 题干：面对批评或负面评论，你的处理方式是
+  - `q5.a`：结构检查通过 — 理性分析，有则改之，无则加勉
+  - `q5.b`：结构检查通过 — 选择性忽略，专注于核心支持者的反馈
+  - `q5.c`：结构检查通过 — 将批评转化为改进动力，调整创作方向
+  - `q5.d`：结构检查通过 — 与批评者展开辩论，捍卫自己的创作理念
+- **q6** 题干：当你需要为创作寻找灵感时，你会
+  - `q6.a`：结构检查通过 — 深入生活，从日常细节中发现独特视角
+  - `q6.b`：结构检查通过 — 阅读跨领域书籍，寻找知识间的连接点
+  - `q6.c`：结构检查通过 — 与不同背景的人交流，了解多元观点
+  - `q6.d`：结构检查通过 — 回顾自己过去的作品，寻找可以突破的方向
+- **q7** 题干：在内容创作中，你最注重的是
+  - `q7.a`：结构检查通过 — 内容的原创性和独特性
+  - `q7.b`：结构检查通过 — 知识的准确性和深度
+  - `q7.c`：结构检查通过 — 与受众的情感共鸣和互动效果
+  - `q7.d`：结构检查通过 — 表达的流畅性和美感
+- **q8** 题干：在编辑间讨论你的作品时，主编指出你的观点缺乏数据支持，你会如何回应？
+  - `q8.a`：结构检查通过 — 立即补充相关研究数据，强化论证
+  - `q8.b`：结构检查通过 — 坚持个人观点，强调创作直觉的价值
+  - `q8.c`：结构检查通过 — 重新组织语言，用更生动的比喻说服对方
+  - `q8.d`：结构检查通过 — 邀请主编共同探讨如何在作品中平衡数据与观点
+- **q9** 题干：你的视频作品在社交媒体获得了意外的高关注度，粉丝评论区出现了大量不同解读，你会如何处理？
+  - `q9.a`：结构检查通过 — 发布补充解析，澄清自己的创作意图
+  - `q9.b`：结构检查通过 — 保持沉默，让观众自由解读，留下开放空间
+  - `q9.c`：结构检查通过 — 精选有趣的评论互动，引发更多讨论
+  - `q9.d`：结构检查通过 — 感谢各种解读，并从中寻找新的创作灵感
+- **q10** 题干：在直播讨论时，嘉宾提出了一个与你的专业领域相关但你不熟悉的观点，你会如何反应？
+  - `q10.a`：结构检查通过 — 坦诚自己的知识盲区，请求嘉宾详细解释
+  - `q10.b`：结构检查通过 — 迅速联想自己熟悉的领域，寻找共通点
+  - `q10.c`：结构检查通过 — 暂停直播，当场查阅相关资料后再回应
+  - `q10.d`：结构检查通过 — 将话题引导到更熟悉的方向，保持对话流畅
+- **q11** 题干：工作室收到一个商业合作邀约，要求你改变一贯的创作风格，你会如何决定？
+  - `q11.a`：结构检查通过 — 深入研究新风格，拓展自己的创作边界
+  - `q11.b`：结构检查通过 — 婉拒合作，坚持保持个人风格的一致性
+  - `q11.c`：结构检查通过 — 与对方协商寻找折中方案，既保留核心特色又满足需求
+  - `q11.d`：结构检查通过 — 尝试将商业元素融入自己的创作体系，而非改变本质
+- **q12** 题干：你的作品被批评为"过于晦涩，缺乏大众共鸣"，你会如何调整？
+  - `q12.a`：结构检查通过 — 增加背景资料和解释，降低理解门槛
+  - `q12.b`：结构检查通过 — 保持作品原貌，相信真正的欣赏者会主动探索
+  - `q12.c`：结构检查通过 — 创作一个简化版，让不同受众各取所需
+  - `q12.d`：结构检查通过 — 举办分享会，亲自解读作品背后的思考过程
+- **q13** 题干：在创作遇到瓶颈时，你更倾向于哪种突破方式？
+  - `q13.a`：结构检查通过 — 系统学习新领域的知识，寻找灵感源泉
+  - `q13.b`：结构检查通过 — 与不同背景的人交流，收集多元视角
+  - `q13.c`：结构检查通过 — 暂时放下创作，沉浸在其他艺术形式中
+  - `q13.d`：结构检查通过 — 尝试将不相关的元素强行组合，制造意外效果
+- **q14** 题干：你的作品被同行借鉴但不注明出处，发现后你会如何处理？
+  - `q14.a`：结构检查通过 — 私下联系对方，委婉提醒尊重原创
+  - `q14.b`：结构检查通过 — 公开讨论原创与借鉴的边界，引发行业思考
+  - `q14.c`：结构检查通过 — 将此视为对自己作品的认可，专注于提升下一作品
+  - `q14.d`：结构检查通过 — 在自己的作品中巧妙回应，形成创意对话
+- **q15** 题干：在深夜的工作室里，你收到了一个创作邀请：需要在三天内完成一篇关于城市边缘文化的深度文章。你会如何着手准备？
+  - `q15.a`：结构检查通过 — 立即前往城市边缘地带，用镜头记录真实场景，与当地居民深入交流
+  - `q15.b`：结构检查通过 — 泡在图书馆和档案馆，查找相关文献资料，构建完整的知识框架
+  - `q15.c`：结构检查通过 — 召集几位志同道合的朋友，头脑风暴创意角度，分工合作完成
+  - `q15.d`：结构检查通过 — 先构思独特的叙事结构，再根据框架寻找匹配的素材和案例
+- **q16** 题干：在一次直播中，你准备分享一个复杂概念，但发现观众反应平平。你会如何调整？
+  - `q16.a`：结构检查通过 — 立即暂停直播，重新构思更直观的表达方式，加入互动环节
+  - `q16.b`：结构检查通过 — 坚持讲解原内容，相信观众需要时间消化，增加更多背景知识
+  - `q16.c`：结构检查通过 — 邀请几位熟悉概念的观众加入讨论，通过对话自然引导理解
+  - `q16.d`：结构检查通过 — 调整讲解节奏，从基础概念开始，逐步构建完整的认知阶梯
+- **q17** 题干：编辑提出了一个与你创作理念相悖的修改意见，你会如何回应？
+  - `q17.a`：结构检查通过 — 提出折中方案，保留核心创意的同时融入编辑的建议
+  - `q17.b`：结构检查通过 — 准备详实的研究数据和案例，证明自己创意的科学性和有效性
+  - `q17.c`：结构检查通过 — 邀请读者或粉丝投票，收集公众意见作为决策参考
+  - `q17.d`：结构检查通过 — 反思自身创意的局限性，主动寻求专业领域人士的意见
+- **q18** 题干：在策划一个跨文化内容系列时，你面临资源有限的挑战，会如何选择切入点？
+  - `q18.a`：结构检查通过 — 聚焦于文化差异中最具视觉冲击力的部分，用创意表达吸引关注
+  - `q18.b`：结构检查通过 — 深入挖掘文化背后的历史脉络和哲学思想，构建知识体系
+  - `q18.c`：结构检查通过 — 寻找不同文化中共通的情感体验，建立共鸣连接点
+  - `q18.d`：结构检查通过 — 选择一个鲜为人知但极具代表性的文化现象，进行专业解读
+- **q19** 题干：当你发现一个有潜力但尚未被广泛关注的创意领域，你会如何行动？
+  - `q19.a`：结构检查通过 — 立即投入创作，用独特的表达方式建立个人风格和辨识度
+  - `q19.b`：结构检查通过 — 系统研究该领域的历史发展、理论体系和实践案例
+  - `q19.c`：结构检查通过 — 组织小型线上讨论会，邀请领域内的先行者分享经验
+  - `q19.d`：结构检查通过 — 分析该领域与其他成熟领域的交叉点，寻找创新融合的可能性
+- **q20** 题干：在创作过程中遇到瓶颈，需要突破现有思维模式，你会如何寻求灵感？
+  - `q20.a`：结构检查通过 — 尝试使用全新的创作工具或媒介，打破常规表达方式
+  - `q20.b`：结构检查通过 — 深入阅读跨学科文献，寻找不同领域的知识连接点
+  - `q20.c`：结构检查通过 — 与不同背景的人交流，收集多元视角和新鲜观点
+  - `q20.d`：结构检查通过 — 回到经典作品，研究大师的创作方法和思维模式
+
+### 逐结果
+- **r1**（灵感捕手）：profile 键与范围检查通过。
+- **r3**（实验先锋）：profile 键与范围检查通过。
+- **r4**（领域专家）：profile 键与范围检查通过。
+- **r5**（知识翻译官）：profile 键与范围检查通过。
+- **r6**（跨界探索者）：profile 键与范围检查通过。
+- **r7**（社区营造者）：profile 键与范围检查通过。
+- **r8**（生活分享家）：profile 键与范围检查通过。
+- **r9**（对话引导者）：profile 键与范围检查通过。
