@@ -167,13 +167,14 @@ jobs:
 
           node "scripts/generate-quiz_副本.js" "${ARGS[@]}"
 
-          generated_list=/tmp/quiz-output/generated-files.txt
+          generated_list=/tmp/generated-quiz-files.txt
           : > "$generated_list"
           if [[ -d scripts/data ]]; then
             while IFS= read -r -d '' file; do
-              cp --parents "$file" /tmp/quiz-output/
-              echo "$file" >> "$generated_list"
-            done < <(find scripts/data -type f -newer /tmp/before_generate -print0)
+              base=$(basename "$file")
+              cp "$file" "/tmp/quiz-output/$base"
+              echo "$base" >> "$generated_list"
+            done < <(find scripts/data -maxdepth 1 -type f -name "*.json" -newer /tmp/before_generate -print0)
             sort -o "$generated_list" "$generated_list"
           fi
 
@@ -213,12 +214,12 @@ jobs:
             echo "| skip_eval | $SKIP_EVAL |"
             echo
 
-            if [[ -f /tmp/quiz-output/generated-files.txt ]] && [[ -s /tmp/quiz-output/generated-files.txt ]]; then
+            if [[ -f /tmp/generated-quiz-files.txt ]] && [[ -s /tmp/generated-quiz-files.txt ]]; then
               echo "### 生成文件"
               echo
               while IFS= read -r file; do
                 [[ -n "$file" ]] && echo "- \`$file\`"
-              done < /tmp/quiz-output/generated-files.txt
+              done < /tmp/generated-quiz-files.txt
             else
               echo "### 生成文件"
               echo
@@ -231,6 +232,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: generated-quiz-${{ github.run_id }}
-          path: /tmp/quiz-output
+          path: /tmp/quiz-output/*.json
           if-no-files-found: ignore
           retention-days: 7

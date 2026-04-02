@@ -163,8 +163,9 @@ jobs:
           eval node quiz-generator/generate.js $ARGS
 
           mkdir -p /tmp/quiz-output
-          find scripts/data -name "*.json" -newer /tmp/before_generate \
-            -exec cp {} /tmp/quiz-output/ \;
+          # 只要最终测验 JSON（quiz-generator 写在 scripts/data 根目录），排除 .checkpoints 与子目录里的其它 json
+          find scripts/data -maxdepth 1 -type f -name "*.json" -newer /tmp/before_generate \
+            -exec cp -t /tmp/quiz-output/ {} +
 
       - name: 保存结果（topic 级别备份）
         if: always()
