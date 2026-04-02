@@ -19,6 +19,7 @@ Page({
     dimensionBars: [],
     borderlineTitle: "",
     hasRadarData: false,
+    hasRadarProfile: false,
     radarReady: false,
     hasCardImage: false,
     cardImageUrl: "",
@@ -79,6 +80,7 @@ Page({
       }));
 
       const levelBandsData = this._buildLevelBands(quiz, resultId);
+      const scoringType = ((quiz || {}).scoring || {}).type || "weighted-dimension";
 
       this.setData({
         quiz,
@@ -86,12 +88,14 @@ Page({
         dimensionBars,
         borderlineTitle,
         hasRadarData: radarData.user.length >= RADAR_MIN_AXES,
+        hasRadarProfile: radarData.hasProfile || false,
         radarReady: false,
         hasVerse: !!(result.verse),
         hasBoldQuote: !!(result.boldQuote),
         hasStrengths: !!(result.strengths && result.strengths.length),
         hasWeaknesses: !!(result.weaknesses && result.weaknesses.length),
         hasBars: dimensionBars.length > 0,
+        isBipolar: scoringType === "bipolar-dimension",
         hasLevelBands: !!(levelBandsData && levelBandsData.bands.length > 0),
         levelBands: levelBandsData ? levelBandsData.bands : [],
         levelProgressPct: levelBandsData ? levelBandsData.progressPct : 0,
@@ -170,11 +174,12 @@ Page({
         };
       }
       return {
-        label,
+        label: axis.highPole || label,
         pct: Math.round(((value || 0) / peakValue) * 100),
         rawPct: Math.round((value || 0) * 100),
         axisLabel: axis.axisLabel || "",
-        insight:   axis.highInsight || axis.insight || "",
+        lowPole: axis.lowPole || "",
+        insight: axis.highInsight || axis.insight || "",
       };
     });
     bars.sort((a, b) => {
@@ -183,9 +188,10 @@ Page({
     });
     if (bars.length > 0) {
       bars[0].dominant = true;
-      // weighted-dimension: only the top bar shows insight
+      // For weighted-dimension bars without pole labels, only the top bar shows insight (reduce clutter).
+      // Bars with lowPole defined are bipolar in nature and always show their insight.
       if (scoringType !== "bipolar-dimension") {
-        bars.forEach((b, i) => { if (i > 0) b.insight = ""; });
+        bars.forEach((b, i) => { if (i > 0 && !b.lowPole) b.insight = ""; });
       }
     }
     return bars;
@@ -322,7 +328,7 @@ Page({
       value: profilePeak > 0 ? r.profileVal / profilePeak : r.userVal / (userPeak || 1),
     }));
 
-    return { user: userPoints, profile: profilePoints };
+    return { user: userPoints, profile: profilePoints, hasProfile: !!(resultProfile && profilePeak > 0) };
   },
 
   // userPoints  — user's actual scores (foreground, accent color)
@@ -330,7 +336,7 @@ Page({
   _renderRadar(ctx, W, H, userPoints, profilePoints, accentHex) {
     const n = userPoints.length;
     const cx = W / 2, cy = H / 2;
-    const R = Math.min(W, H) / 2 - 32;
+    const R = Math.min(W, H) / 2 - 40;
     const TAU = 2 * Math.PI;
     const startAngle = -Math.PI / 2;
     const { r, g, b } = hexToRgb(accentHex);
@@ -403,15 +409,29 @@ Page({
     });
 
     // Axis labels (use userPoints for label text — both arrays share same labels)
-    ctx.setFontSize(11);
+    const FONT_SIZE = 11;
+    const LABEL_PAD = 6;
+    ctx.setFontSize(FONT_SIZE);
     userPoints.forEach(({ label }, i) => {
       const angle = startAngle + (i / n) * TAU;
-      const lx = cx + (R + 20) * Math.cos(angle);
-      const ly = cy + (R + 20) * Math.sin(angle);
-      ctx.setTextAlign(Math.abs(Math.cos(angle)) < 0.15 ? "center"
-        : Math.cos(angle) > 0 ? "left" : "right");
-      ctx.setTextBaseline(Math.sin(angle) > 0.3 ? "top"
-        : Math.sin(angle) < -0.3 ? "bottom" : "middle");
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
+      let lx = cx + (R + 18) * cosA;
+      let ly = cy + (R + 18) * sinA;
+
+      const textAlign = Math.abs(cosA) < 0.15 ? "center" : cosA > 0 ? "left" : "right";
+      const textBaseline = sinA > 0.3 ? "top" : sinA < -0.3 ? "bottom" : "middle";
+
+      // Clamp to keep labels inside canvas bounds
+      const approxW = label.length * FONT_SIZE * 0.95;
+      if (textAlign === "right")       lx = Math.max(lx, approxW + LABEL_PAD);
+      else if (textAlign === "left")   lx = Math.min(lx, W - approxW - LABEL_PAD);
+      else { lx = Math.max(lx, approxW / 2 + LABEL_PAD); lx = Math.min(lx, W - approxW / 2 - LABEL_PAD); }
+      if (textBaseline === "bottom")   ly = Math.max(ly, FONT_SIZE + LABEL_PAD);
+      else if (textBaseline === "top") ly = Math.min(ly, H - FONT_SIZE - LABEL_PAD);
+
+      ctx.setTextAlign(textAlign);
+      ctx.setTextBaseline(textBaseline);
       ctx.setFillStyle(`rgba(${r},${g},${b},0.75)`);
       ctx.fillText(label, lx, ly);
     });

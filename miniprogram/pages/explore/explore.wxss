@@ -20,70 +20,80 @@
 }
 
 .exp-search-shell {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--space-5);
   margin-bottom: var(--space-12);
 }
 
-.exp-search {
-  position: relative;
-  flex: 1;
-  padding: 0 0 18rpx;
-  border-bottom: 1rpx solid rgba(255, 255, 255, 0.08);
+.exp-search-row {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-5);
+  padding-bottom: 18rpx;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.08);
 }
 
-.exp-search-label {
-  flex-shrink: 0;
-  font-size: 24rpx;
-  color: var(--text-secondary);
-  letter-spacing: 0.14em;
+.exp-search-bar {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .exp-search-input {
   flex: 1;
   width: auto;
-  height: auto;
-  padding: 0 56rpx 0 0;
+  height: 44rpx;
+  padding: 0 48rpx 0 0;
   border: none;
-  border-radius: 0;
   background: transparent;
   color: var(--text);
   font-size: 28rpx;
-  line-height: 1.5;
+  line-height: 44rpx;
   box-sizing: border-box;
 }
 
 .exp-search-placeholder {
   color: var(--text-tertiary);
-  line-height: 1.5;
   letter-spacing: 0.06em;
 }
 
 .exp-search-clear {
   position: absolute;
-  top: 50%;
   right: 0;
+  top: 50%;
   transform: translateY(-50%);
-  width: 36rpx;
-  height: 36rpx;
-  font-size: 28rpx;
-  line-height: 1;
+  width: 40rpx;
+  height: 40rpx;
+  font-size: 30rpx;
+  line-height: 40rpx;
+  text-align: center;
   color: var(--text-tertiary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.9;
 }
 
-.exp-search-cancel {
-  font-size: 22rpx;
+.exp-search-cancel-btn {
+  flex-shrink: 0;
+  font-size: 24rpx;
   color: var(--text-secondary);
   letter-spacing: 0.08em;
-  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Zero-size invisible submit — keyboard "搜索" key triggers it via bindconfirm,
+   form submit fires for the tappable cancel area as a fallback */
+.exp-search-submit {
+  position: absolute;
+  width: 0;
+  height: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.exp-search-submit::after {
+  display: none;
 }
 
 .exp-search-empty {

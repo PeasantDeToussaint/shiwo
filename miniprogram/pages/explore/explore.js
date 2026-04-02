@@ -14,6 +14,7 @@ Page({
     comingSoon: [],
     statusBarHeight: 0,
     searchKey: 0,      // Increment on clear to force-recreate the uncontrolled <input>
+    hasSearchText: false,
     lastQuery: "",     // Display copy, written when search runs
     searchResults: [],
     searchDone: false,
@@ -22,6 +23,7 @@ Page({
 
   _allItems: [],
   _searchQuery: "",   // Live input value — never round-tripped through setData
+  _lastSubmittedQuery: "",
 
   onLoad() {
     const { statusBarHeight } = wx.getWindowInfo();
@@ -53,6 +55,11 @@ Page({
       }));
       const comingSoon = allSections.filter((section) => section.isEmpty).map((section) => section.title);
       this.setData({ sections, quickCategories, comingSoon });
+      // Real device can finish cloud/local catalog sync after the user has already started typing.
+      // Re-run the current search once items arrive so results don't stay stale/empty.
+      if (this._searchQuery && this._searchQuery.trim()) {
+        this._runSearch(this._searchQuery);
+      }
       this._resolveCardImages(sections);
     });
   },
@@ -60,12 +67,18 @@ Page({
   onSearchInput(e) {
     const raw = e.detail.value || "";
     this._searchQuery = raw;
-    const isSearching = raw.length > 0;
-    if (!isSearching) {
-      this.setData({ isSearching: false, searchResults: [], searchDone: false });
+    const hasSearchText = raw.trim().length > 0;
+    if (!hasSearchText) {
+      this.setData({
+        hasSearchText: false,
+        isSearching: false,
+        lastQuery: "",
+        searchResults: [],
+        searchDone: false,
+      });
       return;
     }
-    this._runSearch(raw);
+    this.setData({ hasSearchText: true });
   },
 
   _runSearch(raw) {
@@ -84,6 +97,20 @@ Page({
     });
     this.setData({ isSearching: true, searchResults, searchDone: true, lastQuery: raw.trim() });
     this._resolveSearchImages(searchResults);
+  },
+
+  onSearchSubmit(e) {
+    const detailValue = e && e.detail && e.detail.value;
+    const raw = (detailValue && (detailValue.q || detailValue)) || this._searchQuery || "";
+    if (!raw.trim()) {
+      this.onSearchClear();
+      return;
+    }
+    const normalized = raw.trim();
+    if (normalized === this._lastSubmittedQuery && this.data.isSearching) return;
+    this._lastSubmittedQuery = normalized;
+    if (wx.hideKeyboard) wx.hideKeyboard();
+    this._runSearch(raw);
   },
 
   _resolveCardImages(sections) {
@@ -114,15 +141,12 @@ Page({
     return Promise.all(tasks);
   },
 
-  onSearchConfirm() {
-    // Trigger search on keyboard "搜索" button as an extra entry point
-    if (this._searchQuery) this._runSearch(this._searchQuery);
-  },
-
   onSearchClear() {
     this._searchQuery = "";
+    this._lastSubmittedQuery = "";
     this.setData({
       searchKey: this.data.searchKey + 1,   // Recreates the <input> element → clears it
+      hasSearchText: false,
       lastQuery: "",
       searchResults: [],
       searchDone: false,

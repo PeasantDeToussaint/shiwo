@@ -810,11 +810,12 @@ async function generateArchitecture(topic) {
 主题：${topic}
 ${HINT_BLOCK}
 第一步：判断这个测验适合哪种结果类型
-- resultType = "figure"：题目明确涉及某类具体人物（如「民国女性」「宋词词人」「文艺复兴画家」），每个结果对应一个真实存在的代表人物
+- resultType = "figure"：题目涉及某类具体人物，每个结果对应一个有姓名的代表人物。包括两种情形：①真实历史/现实人物（如「民国女性」「宋词词人」「文艺复兴画家」）；②虚构作品（动漫、小说、电影、游戏）中有明确姓名的角色（如《海贼王》中的「路飞」「索隆」，《哈利波特》中的「赫敏」，《咒术回战》中的「虎杖悠仁」）。核心判断标准：结果必须是大众熟知的具体名字，不能是自创的象征性称谓。
 - resultType = "item"：结果是真实存在的具体事物或地点。包括「你适合什么X」类型，也包括主题说明中明确指定了结果类别的情况（如「包含多个国家」「包含多个城市」「包含以下几种食物」）——只要结果是真实存在的具体事物，就选 item
 - resultType = "archetype"：题目是抽象人格映射（如「你是哪种宝石」「你的恋爱风格」），结果是有象征意味的原型名称，侧重人格隐喻而非真实事物特性
 
 【重要】如果主题或约束中明确说明结果应该是某类真实事物（国家、城市、食物、运动等），必须选 item，不能选 archetype。
+【重要】如果主题的格式是「你和《XXX》中的谁最像」「你是《XXX》中的哪个角色/人物」，resultType 必须是 figure，name 必须是该作品中真实存在的角色姓名，绝对禁止自创象征性称谓（如「深渊潜行者」「命运织女」）代替角色名。
 
 第二步：基于领域知识设计维度和原型
 
@@ -883,13 +884,18 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 
 
 scoringFamily 选择规则：
-- 选 bipolar-dimension：每条维度天然有两个对立端，用户在两端之间拉扯，"偏哪边"比"有多少"更有意义。适合立场对立型（理性vs感性、秩序vs自由）、价值观冲突型、人格两极型。bipolar 的结果通常 4-8 个，按象限或对角组合设计。
-- 选 weighted-dimension：每条维度是单向特质积累，高分代表"这类特质更多"，维度之间可以同时都高。适合多元能力型、气质成分型、兴趣偏向型。results 6-9 个。
+
+【概念区分】
+- bipolar-dimension（极性维度）：心理测量意义上的"真维度"——每条轴有两个对立端，用户在两端之间的某一位置。类似 MBTI 的 I-E 轴：既不是"有多少外向"，而是"更偏哪一端"。
+- weighted-dimension（特质权重）：不是维度，而是"特质成分"——每条特质是单向积累，高分=这类特质更突出，多条特质可以同时都高。类似大五人格里的"开放性"——只有多少之分，没有对立端。这里"dimension"是技术字段名，实际概念是「特质」。
+
+- 选 bipolar-dimension：轴两端有对立的极点，用户的回答天然是"偏哪边"的选择。适合价值观冲突型（理性vs感性、秩序vs自由）、人格两极型、立场对立型。结果通常 4-8 个，按象限或对角组合设计。
+- 选 weighted-dimension：每条特质是单向积累，高分代表"这类特质更突出"，特质之间可以同时都高。适合多元能力型、气质成分型（你更像哪朵花、哪种咖啡）、兴趣偏向型。results 6-9 个。
 
 规则：
 -【关键约束】dimensionCount 由你根据主题复杂度决定；dimensions 数量必须与 dimensionCount 严格一致。results 4-9 个（bipolar 可少至4个），与 dimensions 数量无关。多个结果可以共享同一个 primaryDimension。每个 primaryDimension 必须是 dimensions 数组里的某一项。
 - 维度数量不要机械固定；重点是维度彼此独立、可解释，并且足以区分这些结果。简单主题可用2个，复杂主题可到5个。
-- resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
+- resultType=figure 时：name 必须是具体有名字的人物（真实历史人物或虚构作品中的知名角色），绝对不能是自创象征性称谓；领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
 - resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
 - profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异`;
@@ -974,8 +980,8 @@ ${isBipolar ? `      "lowPole": "低分端极点，2-4字，例如「婉约含�
 - results 数量 4-9 个，与 dimensions 数量无关，多个结果可以共享同一个 dimension
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
-- 维度名称简洁，2-4字
-${isBipolar ? `- weighted-dimension：dimensionAxes 只写 axisLabel + insight；bipolar-dimension：必须写 lowPole + highInsight + lowInsight，禁止写 insight` : `- axisLabel 是这条轴的"类别名"；insight 描述高分端特质，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌`}
+- ${isBipolar ? "bipolar-dimension 的轴名（dimension）命名要体现两极对立，2-4字，如「社交取向」「决策方式」" : "weighted-dimension 的特质名（dimension 字段）命名要体现该特质的内容，2-4字，如「创造力」「共情力」「执行力」——不要写成两极对立的形式，因为这是单向特质"}
+${isBipolar ? `- bipolar-dimension：必须写 lowPole + highInsight + lowInsight，禁止写 insight` : `- weighted-dimension：dimensionAxes 只写 axisLabel + insight；axisLabel 是这条特质的"类别名"；insight 描述高分端特质的行为表现，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌`}
 - 结果要有辨识度，用户看到标题就能感知「这说的是我吗」
 
 dimension_profile 规则（这是最重要的部分，直接决定结果准确性）：

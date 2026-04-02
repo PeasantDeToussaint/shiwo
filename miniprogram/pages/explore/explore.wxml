@@ -6,29 +6,32 @@
       <text class="exp-title">探索各种测试</text>
     </view>
 
-    <view class="exp-search-shell motion-enter" style="--stagger: 40ms;">
-      <view class="exp-search">
-        <text class="exp-search-label">搜索测验</text>
-        <input
-          key="si-{{searchKey}}"
-          class="exp-search-input"
-          placeholder="输入关键词"
-          placeholder-class="exp-search-placeholder"
-          bindinput="onSearchInput"
-          bindconfirm="onSearchConfirm"
-          confirm-type="search"
-          adjust-position="{{false}}"
-        />
-        <text wx:if="{{isSearching}}" class="exp-search-clear" bindtap="onSearchClear">×</text>
+    <form class="exp-search-shell motion-enter" style="--stagger: 40ms;" bindsubmit="onSearchSubmit" report-submit="{{false}}">
+      <view class="exp-search-row">
+        <view class="exp-search-bar">
+          <input
+            key="si-{{searchKey}}"
+            class="exp-search-input"
+            name="q"
+            placeholder="搜索测验"
+            placeholder-class="exp-search-placeholder"
+            bindinput="onSearchInput"
+            bindconfirm="onSearchSubmit"
+            confirm-type="search"
+            adjust-position="{{false}}"
+          />
+          <text wx:if="{{hasSearchText}}" class="exp-search-clear" bindtap="onSearchClear">×</text>
+        </view>
+        <text wx:if="{{isSearching}}" class="exp-search-cancel-btn" bindtap="onSearchCancel">取消</text>
       </view>
-      <text wx:if="{{isSearching}}" class="exp-search-cancel" bindtap="onSearchCancel">取消</text>
-    </view>
+      <button class="exp-search-submit" form-type="submit" />
+    </form>
 
     <block wx:if="{{isSearching}}">
       <view wx:if="{{searchDone && searchResults.length === 0}}" class="exp-search-empty motion-enter">
         <text class="exp-search-empty-text">没有找到「{{lastQuery}}」相关的测验</text>
       </view>
-      <view wx:else class="exp-grid exp-search-grid motion-enter">
+      <view wx:elif="{{searchDone}}" class="exp-grid exp-search-grid motion-enter">
         <block wx:for="{{searchResults}}" wx:key="id" wx:for-item="quiz">
           <template
             is="editorialCard"
