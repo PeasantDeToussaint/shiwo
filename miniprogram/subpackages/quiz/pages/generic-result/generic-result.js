@@ -27,6 +27,11 @@ Page({
     hasStrengths: false,
     hasWeaknesses: false,
     hasBars: false,
+    hasLevelBands: false,
+    levelBands: [],
+    levelProgressPct: 0,
+    levelBandsLabel: "",
+    levelLineEdgePct: 10,
     otherResults: [],
     pageThemeStyle: "",
     mounted: false,
@@ -73,6 +78,8 @@ Page({
         isCurrent: r.id === resultId,
       }));
 
+      const levelBandsData = this._buildLevelBands(quiz, resultId);
+
       this.setData({
         quiz,
         result,
@@ -85,6 +92,11 @@ Page({
         hasStrengths: !!(result.strengths && result.strengths.length),
         hasWeaknesses: !!(result.weaknesses && result.weaknesses.length),
         hasBars: dimensionBars.length > 0,
+        hasLevelBands: !!(levelBandsData && levelBandsData.bands.length > 0),
+        levelBands: levelBandsData ? levelBandsData.bands : [],
+        levelProgressPct: levelBandsData ? levelBandsData.progressPct : 0,
+        levelBandsLabel: levelBandsData ? levelBandsData.label : "",
+        levelLineEdgePct: levelBandsData ? levelBandsData.lineEdgePct : 10,
         otherResults,
         pageThemeStyle: toCssVarString(theme),
         loading: false,
@@ -177,6 +189,37 @@ Page({
       }
     }
     return bars;
+  },
+
+  _buildLevelBands(quiz, resultId) {
+    const scoring = quiz.scoring || {};
+    if (scoring.type !== "level-band") return null;
+
+    let results = (quiz.results || []).slice();
+    if (results.some((r) => typeof r.levelRank === "number")) {
+      results.sort((a, b) => (a.levelRank || 0) - (b.levelRank || 0));
+    }
+
+    const total = results.length;
+    if (total === 0) return null;
+
+    const currentIdx = results.findIndex((r) => r.id === resultId);
+    const progressPct = total > 1 && currentIdx >= 0
+      ? Math.round((currentIdx / (total - 1)) * 100)
+      : (currentIdx === 0 ? 0 : 100);
+    const lineEdgePct = Math.round(100 / total / 2);
+
+    return {
+      bands: results.map((r, i) => ({
+        id: r.id,
+        tier: r.tier || r.title || "",
+        isCurrent: i === currentIdx,
+        isPassed: i < currentIdx,
+      })),
+      progressPct,
+      label: scoring.levelLabel || "段位",
+      lineEdgePct,
+    };
   },
 
   _encodeScores(quiz, normalized) {

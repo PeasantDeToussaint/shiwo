@@ -5,6 +5,8 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const _ = db.command;
 
+const ADMIN_TOKEN = "mytype-admin-b7661ef16c97d12f67fff058";
+
 exports.main = async (event) => {
   const { action, data } = event;
 
@@ -21,6 +23,8 @@ exports.main = async (event) => {
       return await deleteQuiz(data);
     case "patchCatalog":
       return await patchCatalog(data);
+    case "patchQuizText":
+      return await patchQuizText(data);
     default:
       return { success: false, error: `Unknown action: ${action}` };
   }
@@ -105,6 +109,76 @@ async function patchCatalog({ id, fields } = {}) {
       await db.collection("quizzes").doc(qRes.data[0]._id).update({ data: { featureId: fields.featureId, _updatedAt: db.serverDate() } });
     }
   }
+  return { success: true, id };
+}
+
+// Safe text-only fields an admin editor may touch on a result object.
+const RESULT_TEXT_KEYS = [
+  "title", "subtitle", "token", "verse", "verseSource",
+  "portrait", "lifeAdvice", "situation", "destiny", "boldQuote",
+];
+
+async function patchQuizText({ id, adminToken, questions, results } = {}) {
+  if (adminToken !== ADMIN_TOKEN) {
+    return { success: false, error: "Unauthorized" };
+  }
+  if (!id) return { success: false, error: "id is required" };
+
+  const res = await db.collection("quizzes").where({ id }).limit(1).get();
+  if (res.data.length === 0) return { success: false, error: `Quiz "${id}" not found` };
+
+  const quiz = res.data[0];
+  const docId = quiz._id;
+
+  // Patch questions — only text fields on questions and options
+  if (Array.isArray(questions)) {
+    const qMap = {};
+    (quiz.questions || []).forEach((q) => { qMap[q.id] = q; });
+    questions.forEach(({ id: qid, text, options }) => {
+      if (!qMap[qid]) return;
+      if (typeof text === "string") qMap[qid].text = text;
+      if (Array.isArray(options)) {
+        const oMap = {};
+        (qMap[qid].options || []).forEach((o) => { oMap[o.id] = o; });
+        options.forEach(({ id: oid, text: otext }) => {
+          if (oMap[oid] && typeof otext === "string") oMap[oid].text = otext;
+        });
+        qMap[qid].options = (qMap[qid].options || []).map((o) => oMap[o.id] || o);
+      }
+    });
+    quiz.questions = (quiz.questions || []).map((q) => qMap[q.id] || q);
+  }
+
+  // Patch results — only whitelisted text keys + strengths/weaknesses label+description
+  if (Array.isArray(results)) {
+    const rMap = {};
+    (quiz.results || []).forEach((r) => { rMap[r.id] = r; });
+    results.forEach((patch) => {
+      const r = rMap[patch.id];
+      if (!r) return;
+      RESULT_TEXT_KEYS.forEach((k) => {
+        if (typeof patch[k] === "string") r[k] = patch[k];
+      });
+      ["strengths", "weaknesses"].forEach((listKey) => {
+        if (!Array.isArray(patch[listKey])) return;
+        const existing = r[listKey] || [];
+        patch[listKey].forEach(({ index, label, description }) => {
+          if (existing[index]) {
+            if (typeof label === "string") existing[index].label = label;
+            if (typeof description === "string") existing[index].description = description;
+          }
+        });
+        r[listKey] = existing;
+      });
+    });
+    quiz.results = (quiz.results || []).map((r) => rMap[r.id] || r);
+  }
+
+  delete quiz._id;
+  delete quiz._openid;
+  await db.collection("quizzes").doc(docId).set({ data: { ...quiz, _updatedAt: db.serverDate() } });
+  await upsertCatalogEntry(quiz);
+
   return { success: true, id };
 }
 

@@ -67,10 +67,13 @@ function inferFeatureId(quiz) {
   const resultTitles = Array.isArray(quiz?.results) ? quiz.results.map(r => r?.title).filter(Boolean).join(" ") : "";
   const corpus = `${text} ${resultTitles}`.toLowerCase();
 
-  if (/mbti|16人格|十六人格|大五|九型|enneagram|career|职业倾向|aptitude/.test(corpus)) return "classics";
+  if (/mbti|16人格|十六人格|大五|九型|enneagram|职业倾向|aptitude/.test(corpus)) return "classics";
+  if (/career|职场|成长|升职|工作/.test(corpus)) return "career";
   if (/审美|艺术|画家|绘画|电影|戏剧|舞蹈|音乐|诗人|词人|作家|文学|香水|perfume|literary/.test(corpus)) return "aesthetics";
-  if (/恋爱|关系|依恋|心理|人格|性格|冲突|友谊|人生哲学|价值观|原型|philosophy|psychology/.test(corpus)) return "psychology";
+  if (/恋爱|关系|依恋|友谊|情感|爱情/.test(corpus)) return "relationship";
+  if (/思维|认知|逻辑|决策|cognition|reasoning/.test(corpus)) return "cognition";
   if (/城市|旅行|宠物|运动|方言|寺庙|厨房|美食|天气|生活方式|sport|pet|city|dialect|temple/.test(corpus)) return "lifestyle";
+  if (/动漫|漫画|游戏|ip|宇宙|角色|人物|character/.test(corpus)) return "ip";
   return "history";
 }
 

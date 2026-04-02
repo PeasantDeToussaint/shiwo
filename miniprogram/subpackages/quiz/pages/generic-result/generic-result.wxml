@@ -65,6 +65,24 @@
         <text class="gr-body gr-body-lead">{{result.portrait}}</text>
       </view>
 
+      <!-- Level band track (level-band quizzes only) -->
+      <view wx:if="{{hasLevelBands}}" class="gr-level-section">
+        <text class="gr-label">{{levelBandsLabel}}</text>
+        <view class="gr-level-track-wrap">
+          <view class="gr-level-bg-line" style="left: {{levelLineEdgePct}}%; right: {{levelLineEdgePct}}%;">
+            <view class="gr-level-bg-fill" style="width: {{levelProgressPct}}%" />
+          </view>
+          <view class="gr-level-nodes">
+            <view wx:for="{{levelBands}}" wx:key="id" class="gr-level-stop">
+              <view class="gr-level-node-wrap">
+                <view class="gr-level-node {{item.isCurrent ? 'gr-level-node-current' : (item.isPassed ? 'gr-level-node-passed' : 'gr-level-node-future')}}" />
+              </view>
+              <text class="gr-level-tier {{item.isCurrent ? 'gr-level-tier-current' : ''}}">{{item.tier}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
       <!-- Radar (conditional) -->
       <view wx:if="{{hasRadarData}}" class="gr-radar-section">
         <text class="gr-label">维度分布</text>

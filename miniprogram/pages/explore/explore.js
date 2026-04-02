@@ -15,6 +15,7 @@ Page({
     statusBarHeight: 0,
     searchQuery: "",
     searchResults: [],
+    searchDone: false,
     isSearching: false,
   },
 
@@ -55,12 +56,13 @@ Page({
   },
 
   onSearchInput(e) {
-    const query = (e.detail.value || "").trim();
-    const isSearching = query.length > 0;
-    this.setData({ searchQuery: query, isSearching, searchResults: [] });
-    if (!isSearching) return;
+    const raw = e.detail.value || "";
+    const q = raw.trim().toLowerCase();
+    const isSearching = raw.length > 0;
+    // Always store the raw value so the controlled input doesn't fight the user's cursor
+    this.setData({ searchQuery: raw, isSearching, searchResults: [], searchDone: false });
+    if (!q) return;
 
-    const q = query.toLowerCase();
     const searchResults = this._allItems.filter((item) => {
       const fields = [
         item.title,
@@ -72,7 +74,7 @@ Page({
       ];
       return fields.some((field) => field && String(field).toLowerCase().includes(q));
     });
-    this.setData({ searchResults });
+    this.setData({ searchResults, searchDone: true });
     this._resolveSearchImages(searchResults);
   },
 
@@ -108,6 +110,7 @@ Page({
     this.setData({
       searchQuery: "",
       searchResults: [],
+      searchDone: false,
       isSearching: false,
     });
   },

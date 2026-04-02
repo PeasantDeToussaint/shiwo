@@ -1,0 +1,13 @@
+{
+  "envId": "cloudbase-4gadl6qo4a9aa95d",
+  "framework": {
+    "name": "hosting",
+    "plugins": {}
+  },
+  "hosting": [
+    {
+      "cloudPath": "/admin",
+      "localPath": "admin"
+    }
+  ]
+}

@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>MYTYPE · 题库管理</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e0e;
+      --surface: #181818;
+      --surface2: #222;
+      --border: #2e2e2e;
+      --accent: #c9a96a;
+      --text: #f0ece4;
+      --text2: #a09a8e;
+      --text3: #5a5650;
+      --danger: #c0392b;
+      --radius: 6px;
+      --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── Screens ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── Login ── */
+    #screen-login {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 360px;
+    }
+    .login-brand {
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .login-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 32px;
+      color: var(--text);
+    }
+    .login-label {
+      display: block;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+    .login-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 16px;
+      font-family: var(--font);
+    }
+    .login-input:focus { border-color: var(--accent); }
+    .login-error {
+      font-size: 13px;
+      color: var(--danger);
+      margin-bottom: 12px;
+      min-height: 20px;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font);
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s;
+    }
+    .btn:disabled { opacity: 0.45; cursor: default; }
+    .btn-primary {
+      background: var(--accent);
+      color: #111;
+      font-weight: 600;
+      width: 100%;
+      padding: 13px;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--text2); }
+    .btn-save {
+      background: var(--accent);
+      color: #111;
+      font-weight: 600;
+      min-width: 100px;
+    }
+    .btn-save:hover:not(:disabled) { opacity: 0.88; }
+
+    /* ── Top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+    .topbar-brand {
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .topbar-sep { color: var(--text3); }
+    .topbar-title {
+      font-size: 14px;
+      color: var(--text2);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── Quiz list ── */
+    .list-header {
+      padding: 24px 20px 12px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .list-heading {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .list-count {
+      font-size: 13px;
+      color: var(--text3);
+    }
+    .quiz-list {
+      display: flex;
+      flex-direction: column;
+      padding: 0 20px 40px;
+      gap: 10px;
+    }
+    .quiz-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .quiz-card:hover { border-color: var(--accent); }
+    .quiz-card-body { flex: 1; min-width: 0; }
+    .quiz-card-title {
+      font-size: 15px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .quiz-card-meta {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 3px;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      background: var(--surface2);
+      color: var(--text2);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .chevron { color: var(--text3); font-size: 18px; flex-shrink: 0; }
+
+    /* ── Editor ── */
+    #screen-editor {
+      padding-bottom: 80px;
+    }
+    .editor-save-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .save-status {
+      font-size: 13px;
+      color: var(--text3);
+      flex: 1;
+    }
+    .save-status.saving { color: var(--accent); }
+    .save-status.ok { color: #5dbe72; }
+    .save-status.err { color: var(--danger); }
+
+    /* Sections */
+    .editor-section {
+      border-bottom: 1px solid var(--border);
+    }
+    .section-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .section-toggle:hover { background: rgba(255,255,255,0.02); }
+    .section-label {
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .section-summary {
+      font-size: 13px;
+      color: var(--text3);
+    }
+    .section-caret {
+      font-size: 16px;
+      color: var(--text3);
+      transition: transform 0.2s;
+    }
+    .section-body {
+      display: none;
+      padding: 0 20px 20px;
+    }
+    .editor-section.open .section-body { display: block; }
+    .editor-section.open .section-caret { transform: rotate(180deg); }
+
+    /* Question / result cards */
+    .item-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .item-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .item-card-head:hover { background: var(--surface2); }
+    .item-num {
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      font-weight: 600;
+      min-width: 28px;
+    }
+    .item-preview {
+      font-size: 13px;
+      color: var(--text2);
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      padding: 0 8px;
+    }
+    .item-caret {
+      font-size: 14px;
+      color: var(--text3);
+      transition: transform 0.2s;
+    }
+    .item-card.open .item-caret { transform: rotate(180deg); }
+    .item-card-body {
+      display: none;
+      padding: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .item-card.open .item-card-body { display: block; }
+
+    /* Fields */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--text3);
+      margin-bottom: 5px;
+    }
+    textarea, input[type=text] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: var(--font);
+      padding: 9px 11px;
+      outline: none;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    textarea:focus, input[type=text]:focus { border-color: var(--accent); }
+    textarea { min-height: 72px; }
+
+    /* Options list */
+    .options-list { margin-top: 10px; }
+    .option-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .option-letter {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+      min-width: 18px;
+      margin-top: 10px;
+    }
+    .option-row textarea { min-height: 46px; }
+
+    /* Trait list (strengths/weaknesses) */
+    .trait-item {
+      background: var(--surface2);
+      border-radius: 4px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .trait-row { display: flex; gap: 8px; align-items: flex-start; }
+    .trait-label-input { width: 120px; flex-shrink: 0; }
+    .trait-desc-input { flex: 1; }
+
+    /* Loading / empty */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: var(--text3);
+      font-size: 14px;
+      letter-spacing: 0.1em;
+    }
+    .loading-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Init error banner (shown if SDK fails to load) ── -->
+<div id="init-error" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#c0392b;color:#fff;font-size:14px;padding:14px 20px;line-height:1.5;"></div>
+
+<!-- ── Screen 1: Login ───────────────────────────────── -->
+<div id="screen-login" class="screen active">
+  <div class="login-box">
+    <div class="login-brand">MYTYPE</div>
+    <div class="login-title">题库管理</div>
+    <label class="login-label">管理密码</label>
+    <input
+      id="login-input"
+      class="login-input"
+      type="password"
+      placeholder="输入密码"
+      autocomplete="current-password"
+    />
+    <div id="login-error" class="login-error"></div>
+    <button id="login-btn" class="btn btn-primary" onclick="doLogin()">进入</button>
+  </div>
+</div>
+
+<!-- ── Screen 2: Quiz list ───────────────────────────── -->
+<div id="screen-list" class="screen">
+  <div class="topbar">
+    <span class="topbar-brand">MYTYPE</span>
+    <span class="topbar-sep">·</span>
+    <span class="topbar-title">题库管理</span>
+    <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;" onclick="doLogout()">退出</button>
+  </div>
+  <div class="list-header">
+    <span class="list-heading">全部题目</span>
+    <span id="list-count" class="list-count"></span>
+  </div>
+  <div id="quiz-list" class="quiz-list">
+    <div class="loading"><span class="loading-dot"></span>加载中...</div>
+  </div>
+</div>
+
+<!-- ── Screen 3: Quiz editor ─────────────────────────── -->
+<div id="screen-editor" class="screen">
+  <div class="topbar">
+    <button class="btn btn-ghost" style="font-size:13px;padding:6px 12px;" onclick="showList()">← 返回</button>
+    <span class="topbar-sep">·</span>
+    <span id="editor-topbar-title" class="topbar-title"></span>
+  </div>
+  <div class="editor-save-bar">
+    <span id="save-status" class="save-status">未改动</span>
+    <button id="save-btn" class="btn btn-save" onclick="doSave()" disabled>保存</button>
+  </div>
+  <div id="editor-body"></div>
+</div>
+
+<!-- ── CloudBase JS SDK ──────────────────────────────── -->
+<script src="https://unpkg.com/@cloudbase/js-sdk@2/web.js"></script>
+
+<script>
+// ── Config ───────────────────────────────────────────
+const ENV_ID = "cloudbase-4gadl6qo4a9aa95d";
+const FEATURE_LABELS = {
+  classics: "经典测试", ip: "IP宇宙", history: "历史人物",
+  archetype: "原型探索", aesthetics: "审美坐标", lifestyle: "生活方式",
+  city: "城市方言", relationship: "情感关系", cognition: "思维认知",
+  career: "职场成长", festival: "节日专题",
+};
+
+// ── State ─────────────────────────────────────────────
+let app, auth;
+let adminToken = "";
+let currentQuiz = null;
+let dirty = false;
+
+// ── CloudBase init ────────────────────────────────────
+async function initCloud() {
+  if (!window.cloudbase) throw new Error("CloudBase SDK 加载失败，请检查网络连接后刷新页面");
+  app = cloudbase.init({ env: ENV_ID });
+  auth = app.auth({ persistence: "local" });
+  const loginState = await auth.getLoginState();
+  if (!loginState) {
+    await auth.anonymousAuthProvider().signIn();
+  }
+}
+
+// ── Cloud function call ───────────────────────────────
+async function callFn(action, data = {}) {
+  const res = await app.callFunction({
+    name: "quizWriter",
+    data: { action, ...data },
+  });
+  const result = res.result;
+  if (!result || !result.success) {
+    throw new Error(result?.error || "Unknown error");
+  }
+  return result;
+}
+
+// ── Screen switching ──────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+// ── Login ─────────────────────────────────────────────
+async function doLogin() {
+  const input = document.getElementById("login-input");
+  const btn   = document.getElementById("login-btn");
+  const err   = document.getElementById("login-error");
+  const token = input.value.trim();
+  if (!token) { err.textContent = "请输入密码"; return; }
+
+  btn.disabled = true;
+  btn.textContent = "验证中...";
+  err.textContent = "";
+
+  try {
+    await initCloudWithFeedback();
+    // Verify token by attempting a privileged call
+    await callFn("patchQuizText", { id: "__probe__", adminToken: token, questions: [], results: [] });
+    // Valid token: probe quiz doesn't exist → "not found", not "Unauthorized"
+    adminToken = token;
+    sessionStorage.setItem("adminToken", token);
+    showScreen("screen-list");
+    loadQuizList();
+  } catch (e) {
+    const msg = e.message || "";
+    if (msg.includes("Unauthorized")) {
+      err.textContent = "密码错误";
+    } else if (msg.includes("not found") || msg.includes("找不到")) {
+      adminToken = token;
+      sessionStorage.setItem("adminToken", token);
+      showScreen("screen-list");
+      loadQuizList();
+    } else {
+      err.textContent = msg || "连接失败，请稍后重试";
+      console.error(e);
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = "进入";
+}
+
+document.getElementById("login-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") doLogin();
+});
+
+function doLogout() {
+  adminToken = "";
+  sessionStorage.removeItem("adminToken");
+  showScreen("screen-login");
+}
+
+// ── Quiz list ─────────────────────────────────────────
+async function loadQuizList() {
+  const container = document.getElementById("quiz-list");
+  container.innerHTML = '<div class="loading"><span class="loading-dot"></span>加载中...</div>';
+  try {
+    const res = await callFn("listCatalog", {});
+    const catalog = (res.catalog || []).sort((a, b) =>
+      (a.title || "").localeCompare(b.title || "", "zh")
+    );
+    document.getElementById("list-count").textContent = `${catalog.length} 套`;
+    if (!catalog.length) {
+      container.innerHTML = '<div class="loading">暂无题目</div>';
+      return;
+    }
+    container.innerHTML = catalog.map(q => `
+      <div class="quiz-card" onclick="openEditor('${q.id}')">
+        <div class="quiz-card-body">
+          <div class="quiz-card-title">${esc(q.title || q.id)}</div>
+          <div class="quiz-card-meta">${q.id} · ${q.questionCount || '?'} 题</div>
+        </div>
+        <span class="badge">${esc(FEATURE_LABELS[q.featureId] || q.featureId || '?')}</span>
+        <span class="chevron">›</span>
+      </div>
+    `).join("");
+  } catch (e) {
+    container.innerHTML = `<div class="loading" style="color:#c0392b;">加载失败：${esc(e.message)}</div>`;
+  }
+}
+
+// ── Editor ────────────────────────────────────────────
+async function openEditor(quizId) {
+  showScreen("screen-editor");
+  document.getElementById("editor-topbar-title").textContent = "加载中...";
+  document.getElementById("editor-body").innerHTML =
+    '<div class="loading"><span class="loading-dot"></span>加载题目...</div>';
+  setSaveStatus("idle");
+
+  try {
+    const res = await callFn("getQuiz", { id: quizId });
+    currentQuiz = res.quiz;
+    renderEditor(currentQuiz);
+    document.getElementById("editor-topbar-title").textContent = currentQuiz.title || quizId;
+    dirty = false;
+    setSaveStatus("idle");
+  } catch (e) {
+    document.getElementById("editor-body").innerHTML =
+      `<div class="loading" style="color:#c0392b;">加载失败：${esc(e.message)}</div>`;
+  }
+}
+
+function showList() {
+  if (dirty && !confirm("有未保存的改动，确认离开？")) return;
+  dirty = false;
+  showScreen("screen-list");
+}
+
+function renderEditor(quiz) {
+  const body = document.getElementById("editor-body");
+  body.innerHTML = "";
+
+  // Questions section
+  const qSection = makeSectionEl("QUESTIONS", `${(quiz.questions || []).length} 题`);
+  const qBody = qSection.querySelector(".section-body");
+  (quiz.questions || []).forEach((q, qi) => {
+    qBody.appendChild(makeQuestionCard(q, qi));
+  });
+  body.appendChild(qSection);
+
+  // Results section
+  const rSection = makeSectionEl("RESULTS", `${(quiz.results || []).length} 个结果`);
+  const rBody = rSection.querySelector(".section-body");
+  (quiz.results || []).forEach((r, ri) => {
+    rBody.appendChild(makeResultCard(r, ri));
+  });
+  body.appendChild(rSection);
+}
+
+function makeSectionEl(label, summary) {
+  const el = document.createElement("div");
+  el.className = "editor-section";
+  el.innerHTML = `
+    <div class="section-toggle" onclick="toggleSection(this)">
+      <span class="section-label">${label}</span>
+      <span class="section-summary">${summary}</span>
+      <span class="section-caret">▾</span>
+    </div>
+    <div class="section-body"></div>
+  `;
+  return el;
+}
+
+function toggleSection(toggle) {
+  toggle.closest(".editor-section").classList.toggle("open");
+}
+
+function makeQuestionCard(q, qi) {
+  const card = document.createElement("div");
+  card.className = "item-card";
+  card.dataset.qid = q.id;
+  const preview = (q.text || "").slice(0, 40);
+  card.innerHTML = `
+    <div class="item-card-head" onclick="toggleCard(this)">
+      <span class="item-num">Q${qi + 1}</span>
+      <span class="item-preview">${esc(preview)}</span>
+      <span class="item-caret">▾</span>
+    </div>
+    <div class="item-card-body">
+      <div class="field">
+        <label class="field-label">题目文字</label>
+        <textarea rows="3" data-field="q-text" data-qid="${esc(q.id)}" oninput="markDirty()">${esc(q.text || "")}</textarea>
+      </div>
+      <div class="options-list">
+        ${(q.options || []).map((opt, oi) => `
+          <div class="option-row">
+            <span class="option-letter">${opt.id.toUpperCase()}</span>
+            <textarea rows="2" data-field="o-text" data-qid="${esc(q.id)}" data-oid="${esc(opt.id)}" oninput="markDirty()">${esc(opt.text || "")}</textarea>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function makeResultCard(r, ri) {
+  const card = document.createElement("div");
+  card.className = "item-card";
+  card.dataset.rid = r.id;
+  card.innerHTML = `
+    <div class="item-card-head" onclick="toggleCard(this)">
+      <span class="item-num">R${ri + 1}</span>
+      <span class="item-preview">${esc(r.title || r.id)}</span>
+      <span class="item-caret">▾</span>
+    </div>
+    <div class="item-card-body">
+      ${makeTextField("标题", "r-title", r.id, "title", r.title, false)}
+      ${makeTextField("副标题", "r-subtitle", r.id, "subtitle", r.subtitle, false)}
+      ${makeTextField("Token", "r-token", r.id, "token", r.token, false)}
+      ${makeTextField("画像", "r-portrait", r.id, "portrait", r.portrait, true)}
+      ${makeTextField("名句", "r-verse", r.id, "verse", r.verse, false)}
+      ${makeTextField("名句来源", "r-versesource", r.id, "verseSource", r.verseSource, false)}
+      ${makeTextField("生活建议", "r-advice", r.id, "lifeAdvice", r.lifeAdvice, true)}
+      <div class="field">
+        <label class="field-label">优势 (STRENGTHS)</label>
+        ${(r.strengths || []).map((s, si) => `
+          <div class="trait-item">
+            <div class="trait-row">
+              <input type="text" class="trait-label-input" placeholder="标签"
+                data-field="s-label" data-rid="${esc(r.id)}" data-idx="${si}"
+                value="${esc(s.label || "")}" oninput="markDirty()" />
+              <textarea class="trait-desc-input" rows="2" placeholder="描述"
+                data-field="s-desc" data-rid="${esc(r.id)}" data-idx="${si}"
+                oninput="markDirty()">${esc(s.description || "")}</textarea>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+      <div class="field">
+        <label class="field-label">短板 (WEAKNESSES)</label>
+        ${(r.weaknesses || []).map((w, wi) => `
+          <div class="trait-item">
+            <div class="trait-row">
+              <input type="text" class="trait-label-input" placeholder="标签"
+                data-field="w-label" data-rid="${esc(r.id)}" data-idx="${wi}"
+                value="${esc(w.label || "")}" oninput="markDirty()" />
+              <textarea class="trait-desc-input" rows="2" placeholder="描述"
+                data-field="w-desc" data-rid="${esc(r.id)}" data-idx="${wi}"
+                oninput="markDirty()">${esc(w.description || "")}</textarea>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function makeTextField(label, fieldKey, rid, key, value, multiline) {
+  const val = value || "";
+  const input = multiline
+    ? `<textarea rows="4" data-field="${fieldKey}" data-rid="${esc(rid)}" data-key="${key}" oninput="markDirty()">${esc(val)}</textarea>`
+    : `<input type="text" data-field="${fieldKey}" data-rid="${esc(rid)}" data-key="${key}" value="${esc(val)}" oninput="markDirty()" />`;
+  return `<div class="field"><label class="field-label">${label}</label>${input}</div>`;
+}
+
+function toggleCard(head) {
+  head.closest(".item-card").classList.toggle("open");
+}
+
+// ── Dirty tracking + save ─────────────────────────────
+function markDirty() {
+  if (!dirty) {
+    dirty = true;
+    setSaveStatus("changed");
+    document.getElementById("save-btn").disabled = false;
+  }
+}
+
+function setSaveStatus(state, msg) {
+  const el = document.getElementById("save-status");
+  el.className = "save-status";
+  if (state === "idle")    { el.textContent = "未改动"; }
+  if (state === "changed") { el.textContent = "有未保存的改动"; }
+  if (state === "saving")  { el.classList.add("saving"); el.textContent = "保存中..."; }
+  if (state === "ok")      { el.classList.add("ok");     el.textContent = msg || "已保存 ✓"; }
+  if (state === "err")     { el.classList.add("err");    el.textContent = msg || "保存失败"; }
+}
+
+async function doSave() {
+  if (!currentQuiz) return;
+  const btn = document.getElementById("save-btn");
+  btn.disabled = true;
+  setSaveStatus("saving");
+
+  try {
+    const { questions, results } = collectEdits();
+    await callFn("patchQuizText", {
+      id: currentQuiz.id,
+      adminToken,
+      questions,
+      results,
+    });
+    dirty = false;
+    setSaveStatus("ok", `已保存 ✓  ${new Date().toLocaleTimeString("zh-CN")}`);
+    btn.disabled = true;
+  } catch (e) {
+    setSaveStatus("err", "保存失败：" + e.message);
+    btn.disabled = false;
+    console.error(e);
+  }
+}
+
+function collectEdits() {
+  const body = document.getElementById("editor-body");
+
+  // Questions
+  const qMap = {};
+  body.querySelectorAll("[data-field='q-text']").forEach(el => {
+    const qid = el.dataset.qid;
+    if (!qMap[qid]) qMap[qid] = { id: qid, options: [] };
+    qMap[qid].text = el.value;
+  });
+  body.querySelectorAll("[data-field='o-text']").forEach(el => {
+    const qid = el.dataset.qid, oid = el.dataset.oid;
+    if (!qMap[qid]) qMap[qid] = { id: qid, options: [] };
+    qMap[qid].options.push({ id: oid, text: el.value });
+  });
+  const questions = Object.values(qMap);
+
+  // Results
+  const rMap = {};
+  const ensureR = (rid) => { if (!rMap[rid]) rMap[rid] = { id: rid, strengths: [], weaknesses: [] }; };
+
+  // Text fields
+  ["r-title","r-subtitle","r-token","r-portrait","r-verse","r-versesource","r-advice"].forEach(f => {
+    body.querySelectorAll(`[data-field='${f}']`).forEach(el => {
+      ensureR(el.dataset.rid);
+      rMap[el.dataset.rid][el.dataset.key] = el.value;
+    });
+  });
+
+  // Strengths
+  const sLabels = {}, sDescs = {};
+  body.querySelectorAll("[data-field='s-label']").forEach(el => {
+    if (!sLabels[el.dataset.rid]) sLabels[el.dataset.rid] = {};
+    sLabels[el.dataset.rid][el.dataset.idx] = el.value;
+  });
+  body.querySelectorAll("[data-field='s-desc']").forEach(el => {
+    if (!sDescs[el.dataset.rid]) sDescs[el.dataset.rid] = {};
+    sDescs[el.dataset.rid][el.dataset.idx] = el.value;
+  });
+  Object.keys(sLabels).forEach(rid => {
+    ensureR(rid);
+    rMap[rid].strengths = Object.keys(sLabels[rid]).map(idx => ({
+      index: parseInt(idx),
+      label: sLabels[rid][idx],
+      description: (sDescs[rid] || {})[idx] || "",
+    }));
+  });
+
+  // Weaknesses
+  const wLabels = {}, wDescs = {};
+  body.querySelectorAll("[data-field='w-label']").forEach(el => {
+    if (!wLabels[el.dataset.rid]) wLabels[el.dataset.rid] = {};
+    wLabels[el.dataset.rid][el.dataset.idx] = el.value;
+  });
+  body.querySelectorAll("[data-field='w-desc']").forEach(el => {
+    if (!wDescs[el.dataset.rid]) wDescs[el.dataset.rid] = {};
+    wDescs[el.dataset.rid][el.dataset.idx] = el.value;
+  });
+  Object.keys(wLabels).forEach(rid => {
+    ensureR(rid);
+    rMap[rid].weaknesses = Object.keys(wLabels[rid]).map(idx => ({
+      index: parseInt(idx),
+      label: wLabels[rid][idx],
+      description: (wDescs[rid] || {})[idx] || "",
+    }));
+  });
+
+  return { questions, results: Object.values(rMap) };
+}
+
+// ── Utilities ─────────────────────────────────────────
+function esc(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ── Auto-login from session storage ───────────────────
+(async () => {
+  // Verify SDK loaded
+  if (!window.cloudbase) {
+    const banner = document.getElementById("init-error");
+    banner.style.display = "block";
+    banner.textContent = "CloudBase SDK 未加载，请检查网络连接后刷新。若在微信内打开，请确认域名已添加至 CloudBase 安全域名白名单。";
+    return;
+  }
+
+  const saved = sessionStorage.getItem("adminToken");
+  if (saved) {
+    try {
+      await initCloud();
+      const res = await callFn("listCatalog", {});
+      adminToken = saved;
+      showScreen("screen-list");
+      loadQuizList();
+    } catch (e) {
+      sessionStorage.removeItem("adminToken");
+      // Show a helpful init error if anonymous auth is disabled
+      if (e.message && (e.message.includes("anonymous") || e.message.includes("未开启") || e.message.includes("AUTH"))) {
+        const banner = document.getElementById("init-error");
+        banner.style.display = "block";
+        banner.textContent = "CloudBase 匿名登录未开启。请在 CloudBase 控制台 → 环境 → 登录授权 → 匿名登录 中启用，然后刷新页面。";
+      }
+    }
+  }
+})();
+
+// Show init errors from login attempt too
+async function initCloudWithFeedback() {
+  try {
+    await initCloud();
+  } catch (e) {
+    const msg = e.message || "";
+    if (msg.includes("anonymous") || msg.includes("未开启") || msg.includes("AUTH")) {
+      throw new Error("CloudBase 匿名登录未开启。请在 CloudBase 控制台 → 环境 → 登录授权 → 匿名登录 中启用，然后刷新页面。");
+    }
+    if (msg.includes("SDK")) throw e;
+    throw new Error("网络连接失败，请检查网络后重试。(" + msg + ")");
+  }
+}
+</script>
+</body>
+</html>
