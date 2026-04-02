@@ -249,11 +249,16 @@ function validateOutlineStructure(outline, architecture) {
     }
   }
 
-  for (const issue of collectProfileSimilarityIssues(
-    results.map(r => ({ id: r.id, dimension_profile: r.dimension_profile })),
-    dimensions
-  )) {
-    errors.push(`${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)})`);
+  // level-band 最终结果由 overallScore + scoring.bands 分档，不靠 profile 与结果做余弦匹配；
+  // 相邻段位在多维上「一起变高」很常见，与 weighted 的「必须靠 profile 拉开」不同。
+  // validateFinalQuiz 已对 level-band 跳过相似度；此处保持一致，避免 outline 阶段误杀。
+  if (scoringFamily !== "level-band") {
+    for (const issue of collectProfileSimilarityIssues(
+      results.map(r => ({ id: r.id, dimension_profile: r.dimension_profile })),
+      dimensions
+    )) {
+      errors.push(`${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)})`);
+    }
   }
 
   return errors;

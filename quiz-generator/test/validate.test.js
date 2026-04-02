@@ -1,5 +1,6 @@
 const {
   validateArchitecture,
+  validateOutlineStructure,
   validateQuestions,
   validateFinalQuiz,
   collectProfileSimilarityIssues,
@@ -38,6 +39,46 @@ describe("validation", () => {
 
     expect(issues).toHaveLength(1);
     expect(issues[0].severe).toBe(true);
+  });
+
+  it("skips outline profile similarity for level-band (tiers share monotonic profiles)", () => {
+    const outline = {
+      title: "测测段位",
+      subtitle: "看看你在哪一档",
+      eyebrow: "段位",
+      dimensions: ["自知", "行动"],
+      dimensionAxes: [
+        { dimension: "自知", axisLabel: "自知", insight: "更清醒" },
+        { dimension: "行动", axisLabel: "行动", insight: "更敢做" },
+      ],
+      results: [
+        { id: "r1", title: "起步", dimension: "自知", dimension_profile: { 自知: 0.2, 行动: 0.2 } },
+        { id: "r2", title: "进阶", dimension: "自知", dimension_profile: { 自知: 0.22, 行动: 0.21 } },
+      ],
+    };
+    const arch = { scoringFamily: "level-band", resultType: "archetype", dimensions: ["自知", "行动"] };
+    const errors = validateOutlineStructure(outline, arch);
+    expect(errors.some((e) => e.includes("profiles too similar"))).toBe(false);
+  });
+
+  it("still enforces outline profile similarity for weighted-dimension", () => {
+    const outline = {
+      title: "测测类型",
+      subtitle: "你更像哪种",
+      eyebrow: "类型",
+      dimensions: ["自知", "行动"],
+      dimensionAxes: [
+        { dimension: "自知", axisLabel: "自知", insight: "更清醒" },
+        { dimension: "行动", axisLabel: "行动", insight: "更敢做" },
+      ],
+      results: [
+        { id: "r1", title: "甲", dimension: "自知", dimension_profile: { 自知: 0.2, 行动: 0.2 } },
+        { id: "r2", title: "乙", dimension: "自知", dimension_profile: { 自知: 0.22, 行动: 0.21 } },
+      ],
+    };
+    const arch = { scoringFamily: "weighted-dimension", resultType: "archetype", dimensions: ["自知", "行动"] };
+    const errors = validateOutlineStructure(outline, arch);
+    expect(errors.some((e) => e.includes("profiles too similar"))).toBe(true);
   });
 
   it("requires dimensionSpecs with valid anchor results", () => {
