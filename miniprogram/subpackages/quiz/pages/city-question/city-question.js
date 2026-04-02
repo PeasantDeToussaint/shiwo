@@ -2,6 +2,7 @@ const { getQuizById }               = require("../../utils/quizStore");
 const { resolveQuiz }               = require("../../utils/cloudQuizLoader");
 const { resolveTheme, toCssVarString } = require("../../../../utils/themePresets");
 const scoreCity     = require("../../../../utils/scoreCity");
+const cityFull      = require("../../data/city-full");
 const cityData      = require("../../data/city-data");
 const { saveQuizRecord }            = require("../../../../utils/userService");
 

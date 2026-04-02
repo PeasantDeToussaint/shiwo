@@ -457,7 +457,7 @@ function extractJSON(raw) {
       "temperament","situation","lifeAdvice","destiny",
       "token","verse","verseSource","boldQuote","title","subtitle",
       "insight","nameContext","coreIdentity","distinctiveFeature",
-      "domainInsight","figureContext","axisLabel","lowPole",
+      "domainInsight","figureContext","axisLabel","lowPole","highPole",
     ];
     for (const f of STRING_FIELDS) {
       const re = new RegExp(`("${f}"\\s*:\\s*)([^"\\s{\\[\\d\\-ntf][^"\\n]*?)(")`, "g");
@@ -591,6 +591,7 @@ function validateOutlineStructure(outline, architecture) {
   const axes = Array.isArray(outline?.dimensionAxes) ? outline.dimensionAxes : [];
   const results = Array.isArray(outline?.results) ? outline.results : [];
   const dimSet = new Set(dimensions);
+  const isBipolar = (architecture?.scoringFamily || "weighted-dimension") === "bipolar-dimension";
 
   if (dimensions.length === 0) errors.push("outline.dimensions missing or empty");
   if (axes.length !== dimensions.length) {
@@ -599,6 +600,15 @@ function validateOutlineStructure(outline, architecture) {
   for (const axis of axes) {
     if (!dimSet.has(axis.dimension)) {
       errors.push(`dimensionAxes has unknown dimension "${axis.dimension}"`);
+    }
+    if (isBipolar) {
+      if (!String(axis.lowPole || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing lowPole`);
+      if (!String(axis.highPole || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing highPole`);
+      if (!String(axis.lowInsight || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing lowInsight`);
+      if (!String(axis.highInsight || axis.insight || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing highInsight`);
+      if (String(axis.lowPole || "").trim() && String(axis.highPole || "").trim() && String(axis.lowPole).trim() === String(axis.highPole).trim()) {
+        errors.push(`dimensionAxes[${axis.dimension}]: lowPole and highPole must be different`);
+      }
     }
   }
   for (const r of results) {
@@ -737,10 +747,20 @@ function collectProfileSimilarityIssues(results, dimensions) {
 function validateFinalQuiz(quiz) {
   const errors = [];
   const warnings = [];
+  const scoringType = quiz?.scoring?.type || "weighted-dimension";
 
   for (const d of (quiz?.scoring?.dimensions || [])) {
     if (!d) errors.push("empty dimension label");
     if (/(更多维度按需补足|更多维度按已确定)/.test(d)) errors.push(`invalid dimension label "${d}"`);
+  }
+
+  if (scoringType === "bipolar-dimension") {
+    for (const axis of (quiz?.scoring?.dimensionAxes || [])) {
+      if (!String(axis.lowPole || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing lowPole`);
+      if (!String(axis.highPole || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing highPole`);
+      if (!String(axis.lowInsight || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing lowInsight`);
+      if (!String(axis.highInsight || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing highInsight`);
+    }
   }
 
   for (const q of (quiz.questions || [])) {
@@ -795,6 +815,19 @@ function validateFinalQuiz(quiz) {
 function formatAestheticContext(aestheticContext) {
   if (!aestheticContext) return "";
   return `\n### 这道测验的氛围与场景要求\n${aestheticContext}\n题目场景必须契合上述氛围，不能写成通用的现代职场或生活题。`;
+}
+
+function formatBipolarAxisTable(outline) {
+  const axes = Array.isArray(outline?.dimensionAxes) ? outline.dimensionAxes : [];
+  if (axes.length === 0) return "";
+  const lines = axes.map((axis) => {
+    const dim = axis.dimension || "";
+    const low = axis.lowPole || "低极";
+    const high = axis.highPole || "高极";
+    const axisLabel = axis.axisLabel ? `（${axis.axisLabel}）` : "";
+    return `- ${dim}${axisLabel}: ${low} ↔ ${high}`;
+  });
+  return `\n### 双极轴定义（正负分必须严格锚定到这组极点）\n${lines.join("\n")}\n`;
 }
 
 // ── Phase 0: Domain Architecture ─────────────────────────────────
@@ -953,6 +986,7 @@ ${HINT_BLOCK}${archContext}
       "dimension": "维度A",
       "axisLabel": "这个轴的分类名，2-4字",
 ${isBipolar ? `      "lowPole": "低分端极点，2-4字，例如「婉约含蓄」",
+      "highPole": "高分端极点，2-4字，例如「直接炽烈」",
       "highInsight": "高分端洞察，30-50字，第二人称，描述偏高分端的行为和内在动因，语气温暖但不失锐度",
       "lowInsight": "低分端洞察，30-50字，第二人称，描述偏低分端的行为和内在动因"` : `      "insight": "描述这个维度高分端特质的一句洞察，30-50字，第二人称，具体描述这种性格倾向的表现和内在动因，语气温暖但不失锐度，禁止空泛夸奖"`}
     }
@@ -980,8 +1014,8 @@ ${isBipolar ? `      "lowPole": "低分端极点，2-4字，例如「婉约含�
 - results 数量 4-9 个，与 dimensions 数量无关，多个结果可以共享同一个 dimension
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
-- ${isBipolar ? "bipolar-dimension 的轴名（dimension）命名要体现两极对立，2-4字，如「社交取向」「决策方式」" : "weighted-dimension 的特质名（dimension 字段）命名要体现该特质的内容，2-4字，如「创造力」「共情力」「执行力」——不要写成两极对立的形式，因为这是单向特质"}
-${isBipolar ? `- bipolar-dimension：必须写 lowPole + highInsight + lowInsight，禁止写 insight` : `- weighted-dimension：dimensionAxes 只写 axisLabel + insight；axisLabel 是这条特质的"类别名"；insight 描述高分端特质的行为表现，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌`}
+- ${isBipolar ? "bipolar-dimension 的 axisLabel 是这条轴的类别名；dimension 只是轴名，不是高分端极点" : "weighted-dimension 的特质名（dimension 字段）命名要体现该特质的内容，2-4字，如「创造力」「共情力」「执行力」——不要写成两极对立的形式，因为这是单向特质"}
+${isBipolar ? `- bipolar-dimension：必须写 lowPole + highPole + highInsight + lowInsight。lowPole / highPole 是 UI 里真正显示的左右极点，禁止偷懒把 highPole 省略成 dimension 名，也禁止写 insight` : `- weighted-dimension：dimensionAxes 只写 axisLabel + insight；axisLabel 是这条特质的"类别名"；insight 描述高分端特质的行为表现，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌`}
 - 结果要有辨识度，用户看到标题就能感知「这说的是我吗」
 
 dimension_profile 规则（这是最重要的部分，直接决定结果准确性）：
@@ -1005,6 +1039,7 @@ async function generateQuestions(outline, startId, endId, batchLabel, total, sco
   const isBipolar = (scoringFamily || "weighted-dimension") === "bipolar-dimension";
   const dimensions = outline.dimensions;
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
+  const bipolarAxisTable = isBipolar ? formatBipolarAxisTable(outline) : "";
   const count = endId - startId + 1;
 
   const system = `你是一位中文人格测验内容专家。你的任务是为微信小程序人格测验生成题目。
@@ -1019,6 +1054,7 @@ ${aestheticContext}
 - 标题：${outline.title}
 - 描述：${outline.description}
 - 评分维度：${dimensions.join("、")}
+${bipolarAxisTable}
 
 请生成 q${startId} 到 q${endId} 共${count}道题目（共${total}道题的第${batchLabel}批）。
 
@@ -1041,9 +1077,10 @@ ${aestheticContext}
 规则：
 1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围,例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等
 2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
-3. ${isBipolar ? "bipolar-dimension：正分=偏高分端，负分=偏低分端。每个选项最多2个维度得分，主维度 ±2，副维度 ±1；同一选项的维度分数正负方向必须一致" : "每个选项最多2个维度得分，主维度≤2分，副维度≤1分"}
+3. ${isBipolar ? "bipolar-dimension：正分=偏 highPole，负分=偏 lowPole。每个选项最多2个维度得分，主维度 ±2，副维度 ±1；同一选项的维度分数正负方向必须一致。给分必须严格根据该轴的 lowPole ↔ highPole 语义来判定，不能只按“勇敢/消极/激烈/保守”这类情绪色彩随意打分" : "每个选项最多2个维度得分，主维度≤2分，副维度≤1分"}
 4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
-5. 遵守 literary guide，禁止句型不能出现`;
+5. ${isBipolar ? "如果某个选项体现的是“观察、退后、记录、保持距离、拒绝介入”这类 lowPole 行为，就不能误打成高分端；如果体现的是“主动投入、深入参与、直接承受风险”这类 highPole 行为，就不能误打成负分" : "遵守 literary guide，禁止句型不能出现"}
+6. 遵守 literary guide，禁止句型不能出现`;
 
   const raw = await callAI(system, user, 6000);
   fs.writeFileSync(path.join(DATA_DIR, `${outline.id}.q${batchLabel}.raw.txt`), raw);
@@ -1308,7 +1345,86 @@ ${buildResultTemplate(resultFields, resultType)}
 }
 
 // ── Validation ────────────────────────────────────────────────────
-function validateQuestions(questions, dimensions, scoringFamily) {
+function collectBipolarCoverageStats(questions, dimensions) {
+  const stats = {};
+  dimensions.forEach((dim) => {
+    stats[dim] = { posCount: 0, negCount: 0, posSum: 0, negSum: 0 };
+  });
+  for (const q of questions) {
+    for (const o of (q.options || [])) {
+      for (const [dim, val] of Object.entries(o.scores || {})) {
+        if (!stats[dim] || typeof val !== "number" || val === 0) continue;
+        if (val > 0) {
+          stats[dim].posCount += 1;
+          stats[dim].posSum += val;
+        } else {
+          stats[dim].negCount += 1;
+          stats[dim].negSum += Math.abs(val);
+        }
+      }
+    }
+  }
+  return stats;
+}
+
+function validateBipolarCoverage(questions, dimensions) {
+  const warnings = [];
+  const stats = collectBipolarCoverageStats(questions, dimensions);
+  for (const [dim, row] of Object.entries(stats)) {
+    if (row.posCount === 0 || row.negCount === 0) {
+      warnings.push(`${dim}: bipolar coverage missing one side (positive ${row.posCount}, negative ${row.negCount})`);
+      continue;
+    }
+    if (row.posCount < 2 || row.negCount < 2) {
+      warnings.push(`${dim}: bipolar coverage too sparse (positive ${row.posCount}, negative ${row.negCount})`);
+    }
+    const total = row.posSum + row.negSum;
+    const weaker = Math.min(row.posSum, row.negSum);
+    if (total >= 8 && weaker / total < 0.15) {
+      warnings.push(`${dim}: bipolar coverage severely imbalanced (+${row.posSum} vs -${row.negSum})`);
+    }
+  }
+  return { warnings, stats };
+}
+
+function printBipolarCoverageStats(stats, dimensionAxes = []) {
+  const labelByDim = {};
+  dimensionAxes.forEach((axis) => {
+    labelByDim[axis.dimension] = `${axis.lowPole || "低极"} ↔ ${axis.highPole || "高极"}`;
+  });
+  console.log("  ℹ️   bipolar coverage:");
+  Object.entries(stats).forEach(([dim, row]) => {
+    console.log(`       • ${dim}${labelByDim[dim] ? ` (${labelByDim[dim]})` : ""}: +${row.posCount}/${row.posSum}  -${row.negCount}/${row.negSum}`);
+  });
+}
+
+function collectBipolarSemanticWarnings(questions, dimensionAxes = []) {
+  const warnings = [];
+  const axisMap = {};
+  dimensionAxes.forEach((axis) => {
+    axisMap[axis.dimension] = axis;
+  });
+  for (const q of questions) {
+    for (const o of (q.options || [])) {
+      const text = `${o.text || ""} ${o.reaction || ""}`;
+      for (const [dim, val] of Object.entries(o.scores || {})) {
+        const axis = axisMap[dim];
+        if (!axis || typeof val !== "number" || val === 0) continue;
+        const lowPole = String(axis.lowPole || "").trim();
+        const highPole = String(axis.highPole || "").trim();
+        if (lowPole && text.includes(lowPole) && val > 0) {
+          warnings.push(`${q.id}.${o.id}: mentions lowPole "${lowPole}" but scores positive on "${dim}"`);
+        }
+        if (highPole && text.includes(highPole) && val < 0) {
+          warnings.push(`${q.id}.${o.id}: mentions highPole "${highPole}" but scores negative on "${dim}"`);
+        }
+      }
+    }
+  }
+  return warnings;
+}
+
+function validateQuestions(questions, dimensions, scoringFamily, dimensionAxes = []) {
   const warnings = [];
   const isBipolar = (scoringFamily || "weighted-dimension") === "bipolar-dimension";
   const dimSet = new Set(dimensions);
@@ -1328,14 +1444,32 @@ function validateQuestions(questions, dimensions, scoringFamily) {
         warnings.push(`${q.id}.${o.id}: no scores`);
         continue;
       }
+      if (isBipolar && Object.keys(o.scores).length > 2) {
+        warnings.push(`${q.id}.${o.id}: bipolar option has ${Object.keys(o.scores).length} scored dimensions (max 2)`);
+      }
+      const nonZeroValues = Object.values(o.scores).filter((v) => typeof v === "number" && v !== 0);
+      if (isBipolar && nonZeroValues.length > 1) {
+        const signSet = new Set(nonZeroValues.map((v) => Math.sign(v)));
+        if (signSet.size > 1) warnings.push(`${q.id}.${o.id}: bipolar option mixes positive and negative scores`);
+      }
       for (const [dim, val] of Object.entries(o.scores)) {
-        // Allow abbreviated dimension names (e.g. "传统" matching "传统与现代")
-        const matched = dimSet.has(dim) || dimensions.some(d => d.startsWith(dim) || dim.startsWith(d.slice(0, 2)));
+        const matched = isBipolar
+          ? dimSet.has(dim)
+          : (dimSet.has(dim) || dimensions.some(d => d.startsWith(dim) || dim.startsWith(d.slice(0, 2))));
         if (!matched) warnings.push(`${q.id}.${o.id}: unknown dimension "${dim}" (valid: ${dimensions.join(", ")})`);
         const minScore = isBipolar ? -3 : 0;
         if (typeof val !== "number" || val < minScore || val > 3) warnings.push(`${q.id}.${o.id}: score ${val} out of range [${minScore},3] for "${dim}"`);
+        if (isBipolar && typeof val === "number" && val !== 0 && ![-2, -1, 1, 2].includes(val)) {
+          warnings.push(`${q.id}.${o.id}: bipolar score ${val} should be one of -2,-1,1,2`);
+        }
       }
     }
+  }
+
+  if (isBipolar) {
+    const { warnings: coverageWarnings } = validateBipolarCoverage(questions, dimensions);
+    warnings.push(...coverageWarnings);
+    warnings.push(...collectBipolarSemanticWarnings(questions, dimensionAxes));
   }
 
   return warnings;
@@ -1709,6 +1843,7 @@ function assembleQuiz(outline, questions, results, architecture) {
         const base = { dimension: dimMap[a.dimension] || a.dimension, axisLabel: a.axisLabel };
         if (isBipolar) {
           base.lowPole    = a.lowPole || "";
+          base.highPole   = a.highPole || "";
           base.highInsight = a.highInsight || "";
           base.lowInsight  = a.lowInsight || "";
         } else {
@@ -1927,7 +2062,11 @@ async function main() {
       console.log(`     ✓  got ${qs.length} questions`);
       if (i < Q_BATCHES.length - 1) await sleep(4000);
     }
-    const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions, architecture?.scoringFamily);
+    const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions, architecture?.scoringFamily, outline.dimensionAxes);
+    if ((architecture?.scoringFamily || "weighted-dimension") === "bipolar-dimension") {
+      const { stats } = validateBipolarCoverage(phaseQuestions, outline.dimensions);
+      printBipolarCoverageStats(stats, outline.dimensionAxes);
+    }
     printWarnings("questions", questionWarnings);
     assertNoCriticalWarnings("questions", questionWarnings);
     return phaseQuestions;

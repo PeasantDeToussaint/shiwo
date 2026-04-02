@@ -240,6 +240,14 @@
   padding-left: var(--space-4);
 }
 
+.gr-subnote {
+  display: block;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-8);
+}
+
 .gr-body {
   display: block;
   font-size: 36rpx;

@@ -322,7 +322,7 @@ function normalizeJSONCandidate(candidate) {
     "temperament","situation","lifeAdvice","destiny",
     "token","verse","verseSource","boldQuote","title","subtitle",
     "insight","nameContext","coreIdentity","distinctiveFeature",
-    "domainInsight","figureContext","axisLabel","lowPole",
+    "domainInsight","figureContext","axisLabel","lowPole","highPole",
     "eyebrow","instruction","dimension","name","resultType","scoringFamily",
     "highDefinition","lowDefinition",
   ];

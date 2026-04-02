@@ -17,6 +17,7 @@ Page({
     quiz: null,
     result: null,
     dimensionBars: [],
+    hasUserScores: false,
     borderlineTitle: "",
     hasRadarData: false,
     hasRadarProfile: false,
@@ -64,6 +65,7 @@ Page({
       }
 
       const normalizedSource = pending.normalized || urlScores || null;
+      const hasUserScores = !!normalizedSource;
       const dimensionBars = this._buildBars(quiz, normalizedSource || result.dimension_profile);
       const borderlineTitle = this._detectBorderline(pending.ranked);
       const radarData = this._buildRadarData(quiz, normalizedSource, pending.ranked, result);
@@ -86,6 +88,7 @@ Page({
         quiz,
         result,
         dimensionBars,
+        hasUserScores,
         borderlineTitle,
         hasRadarData: radarData.user.length >= RADAR_MIN_AXES,
         hasRadarProfile: radarData.hasProfile || false,
@@ -146,7 +149,7 @@ Page({
         const highPct = Math.round(safe * 100);
         const lowPct = 100 - highPct;
         const lowLabel = axis.lowPole || "低极";
-        const highLabel = label;
+        const highLabel = axis.highPole || label;
         const dominantSide = highPct >= lowPct ? "high" : "low";
         const fillPct = Math.round(Math.abs(safe - 0.5) * 100);
         const dominantLabel = dominantSide === "high" ? highLabel : lowLabel;
@@ -291,7 +294,7 @@ Page({
 
   // Returns { user: [...], profile: [...] } — both arrays share the same axis order.
   // "user" = user's actual normalized scores; "profile" = result's dimension_profile.
-  // If no user data available, falls back to profile-only (user === profile).
+  // If no user data is available, render result profile only and omit the ghost comparison layer.
   _buildRadarData(quiz, normalized, ranked, result) {
     const scoringType = ((quiz || {}).scoring || {}).type || "weighted-dimension";
     const dimensions = ((quiz || {}).scoring || {}).dimensions || [];
@@ -328,7 +331,11 @@ Page({
       value: profilePeak > 0 ? r.profileVal / profilePeak : r.userVal / (userPeak || 1),
     }));
 
-    return { user: userPoints, profile: profilePoints, hasProfile: !!(resultProfile && profilePeak > 0) };
+    return {
+      user: userPoints,
+      profile: normalized ? profilePoints : [],
+      hasProfile: !!(normalized && resultProfile && profilePeak > 0),
+    };
   },
 
   // userPoints  — user's actual scores (foreground, accent color)

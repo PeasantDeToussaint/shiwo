@@ -1,0 +1,352 @@
+[
+  {
+    "id": "media-niche-test",
+    "title": "自媒体赛道测验",
+    "dims": 2,
+    "results": 9,
+    "groups": {
+      "<missing>": 9
+    },
+    "max_group": 9,
+    "same_peak_multi": 9,
+    "similarity_issues": 13,
+    "invalid_peak": 0,
+    "question_count": 16
+  },
+  {
+    "id": "spiritual-homeland",
+    "title": "你的精神故乡",
+    "dims": 4,
+    "results": 12,
+    "groups": {
+      "<missing>": 12
+    },
+    "max_group": 12,
+    "same_peak_multi": 12,
+    "similarity_issues": 4,
+    "invalid_peak": 0,
+    "question_count": 18
+  },
+  {
+    "id": "republican-era-business-mindset",
+    "title": "你和民国哪位富商经商思维相同？",
+    "dims": 6,
+    "results": 10,
+    "groups": {
+      "<missing>": 10
+    },
+    "max_group": 10,
+    "same_peak_multi": 10,
+    "similarity_issues": 2,
+    "invalid_peak": 0,
+    "question_count": 22
+  },
+  {
+    "id": "study-abroad-fit-test",
+    "title": "留学适配度测试",
+    "dims": 3,
+    "results": 8,
+    "groups": {
+      "<missing>": 8
+    },
+    "max_group": 8,
+    "same_peak_multi": 8,
+    "similarity_issues": 2,
+    "invalid_peak": 0,
+    "question_count": 18
+  },
+  {
+    "id": "自媒体赛道人格测验",
+    "title": "内容人格",
+    "dims": 3,
+    "results": 8,
+    "groups": {
+      "<missing>": 8
+    },
+    "max_group": 8,
+    "same_peak_multi": 8,
+    "similarity_issues": 2,
+    "invalid_peak": 0,
+    "question_count": 20
+  },
+  {
+    "id": "your-aesthetic-and-which-painter",
+    "title": "你的审美和哪位画家最相似？",
+    "dims": 6,
+    "results": 12,
+    "groups": {
+      "<missing>": 12
+    },
+    "max_group": 12,
+    "same_peak_multi": 12,
+    "similarity_issues": 1,
+    "invalid_peak": 0,
+    "question_count": 22
+  },
+  {
+    "id": "pokemon-personality-match",
+    "title": "你是哪种精灵宝可梦？",
+    "dims": 4,
+    "results": 10,
+    "groups": {
+      "<missing>": 10
+    },
+    "max_group": 10,
+    "same_peak_multi": 10,
+    "similarity_issues": 1,
+    "invalid_peak": 0,
+    "question_count": 20
+  },
+  {
+    "id": "which-tang-poet-lives-in-your-heart",
+    "title": "你内心住着哪位盛唐诗人？",
+    "dims": 6,
+    "results": 10,
+    "groups": {
+      "<missing>": 10
+    },
+    "max_group": 10,
+    "same_peak_multi": 10,
+    "similarity_issues": 1,
+    "invalid_peak": 0,
+    "question_count": 22
+  },
+  {
+    "id": "post-apocalypse-role",
+    "title": "末世角色",
+    "dims": 3,
+    "results": 8,
+    "groups": {
+      "<missing>": 8
+    },
+    "max_group": 8,
+    "same_peak_multi": 8,
+    "similarity_issues": 1,
+    "invalid_peak": 0,
+    "question_count": 18
+  },
+  {
+    "id": "content-creator-type",
+    "title": "你最适合做什么自媒体？",
+    "dims": 4,
+    "results": 8,
+    "groups": {
+      "<missing>": 8
+    },
+    "max_group": 8,
+    "same_peak_multi": 8,
+    "similarity_issues": 1,
+    "invalid_peak": 0,
+    "question_count": 18
+  },
+  {
+    "id": "niche-sport-match",
+    "title": "有哪些适合你的小众运动？",
+    "dims": 4,
+    "results": 8,
+    "groups": {
+      "<missing>": 8
+    },
+    "max_group": 8,
+    "same_peak_multi": 8,
+    "similarity_issues": 1,
+    "invalid_peak": 0,
+    "question_count": 18
+  },
+  {
+    "id": "spiritual-homeland-match",
+    "title": "哪里是你的精神故乡？",
+    "dims": 4,
+    "results": 8,
+    "groups": {
+      "<missing>": 8
+    },
+    "max_group": 8,
+    "same_peak_multi": 8,
+    "similarity_issues": 1,
+    "invalid_peak": 0,
+    "question_count": 18
+  },
+  {
+    "id": "love-level-test",
+    "title": "恋爱等级",
+    "dims": 4,
+    "results": 5,
+    "groups": {
+      "<missing>": 5
+    },
+    "max_group": 5,
+    "same_peak_multi": 5,
+    "similarity_issues": 1,
+    "invalid_peak": 0,
+    "question_count": 20
+  },
+  {
+    "id": "ming-dynasty-persona",
+    "title": "明末乱世,你会是谁",
+    "dims": 5,
+    "results": 10,
+    "groups": {
+      "<missing>": 10
+    },
+    "max_group": 10,
+    "same_peak_multi": 10,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 20
+  },
+  {
+    "id": "ming-dynasty-role-play",
+    "title": "你穿越到明朝会扮演什么样的角色？",
+    "dims": 6,
+    "results": 10,
+    "groups": {
+      "<missing>": 10
+    },
+    "max_group": 10,
+    "same_peak_multi": 10,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 22
+  },
+  {
+    "id": "which-japanese-sengoku-daimyo-are-you",
+    "title": "你和日本战国哪位诸侯性格最近？",
+    "dims": 6,
+    "results": 10,
+    "groups": {
+      "<missing>": 10
+    },
+    "max_group": 10,
+    "same_peak_multi": 10,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 22
+  },
+  {
+    "id": "which-literary-giant-are-you",
+    "title": "你和哪位文学巨匠性格相似？",
+    "dims": 6,
+    "results": 10,
+    "groups": {
+      "<missing>": 10
+    },
+    "max_group": 10,
+    "same_peak_multi": 10,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 22
+  },
+  {
+    "id": "jujutsu-kaisen-character-match",
+    "title": "你和《咒术回战》中的谁最像？",
+    "dims": 5,
+    "results": 9,
+    "groups": {
+      "<missing>": 9
+    },
+    "max_group": 9,
+    "same_peak_multi": 9,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 22
+  },
+  {
+    "id": "literary-soul-resonance",
+    "title": "文心所向,你是谁",
+    "dims": 5,
+    "results": 8,
+    "groups": {
+      "<missing>": 8
+    },
+    "max_group": 8,
+    "same_peak_multi": 8,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 20
+  },
+  {
+    "id": "tang-song-masters",
+    "title": "文心墨韵,你是哪位",
+    "dims": 5,
+    "results": 8,
+    "groups": {
+      "<missing>": 8
+    },
+    "max_group": 8,
+    "same_peak_multi": 8,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 20
+  },
+  {
+    "id": "what-pet-fits-you",
+    "title": "你适合养哪种宠物",
+    "dims": 6,
+    "results": 8,
+    "groups": {
+      "<missing>": 8
+    },
+    "max_group": 8,
+    "same_peak_multi": 8,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 22
+  },
+  {
+    "id": "big-bang-theory-character-match",
+    "title": "你和生活大爆炸中的谁最像？",
+    "dims": 4,
+    "results": 7,
+    "groups": {
+      "<missing>": 7
+    },
+    "max_group": 7,
+    "same_peak_multi": 7,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 20
+  },
+  {
+    "id": "your-perfect-perfume-type",
+    "title": "最符合你气质的香水类型",
+    "dims": 6,
+    "results": 6,
+    "groups": {
+      "<missing>": 6
+    },
+    "max_group": 6,
+    "same_peak_multi": 6,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 22
+  },
+  {
+    "id": "graduate-school-fit",
+    "title": "学术探索者",
+    "dims": 4,
+    "results": 5,
+    "groups": {
+      "<missing>": 5
+    },
+    "max_group": 5,
+    "same_peak_multi": 5,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 20
+  },
+  {
+    "id": "which-sport-fits-your-release",
+    "title": "你适合哪种运动释放自己",
+    "dims": 6,
+    "results": 4,
+    "groups": {
+      "<missing>": 4
+    },
+    "max_group": 4,
+    "same_peak_multi": 4,
+    "similarity_issues": 0,
+    "invalid_peak": 0,
+    "question_count": 22
+  }
+]

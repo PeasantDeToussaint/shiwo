@@ -93,6 +93,32 @@ describe("validation", () => {
     expect(warnings.some(w => w.includes('score -3 out of range'))).toBe(true);
   });
 
+  it("flags bipolar sign-mixing and missing reverse coverage", () => {
+    const warnings = validateQuestions(
+      [
+        {
+          id: "q1",
+          text: "题目",
+          options: [
+            { id: "a", text: "主动投入", reaction: "冲", scores: { "参与方式": 2, "认知取向": -1 } },
+            { id: "b", text: "继续前进", reaction: "上", scores: { "参与方式": 1 } },
+          ],
+        },
+      ],
+      ["参与方式", "认知取向"],
+      {
+        scoringType: "bipolar-dimension",
+        dimensionAxes: [
+          { dimension: "参与方式", lowPole: "观察", highPole: "参与" },
+          { dimension: "认知取向", lowPole: "接受", highPole: "探索" },
+        ],
+      }
+    );
+
+    expect(warnings.some(w => w.includes("mixes positive and negative scores"))).toBe(true);
+    expect(warnings.some(w => w.includes("参与方式: bipolar coverage missing one side"))).toBe(true);
+  });
+
   it("rejects corrupted final output and fake quotes", () => {
     const longPortrait = "没有分段也没有句号的超长画像".repeat(12);
     const result = validateFinalQuiz({
@@ -124,6 +150,22 @@ describe("validation", () => {
     expect(result.errors.some(err => err.includes('invalid dimension label'))).toBe(true);
     expect(result.errors.some(err => err.includes("corrupted reaction text"))).toBe(true);
     expect(result.errors.some(err => err.includes("does not look like a quote"))).toBe(true);
+  });
+
+  it("rejects bipolar final output missing highPole", () => {
+    const result = validateFinalQuiz({
+      scoring: {
+        type: "bipolar-dimension",
+        dimensions: ["参与方式"],
+        dimensionAxes: [
+          { dimension: "参与方式", lowPole: "观察", highInsight: "高端", lowInsight: "低端" },
+        ],
+      },
+      questions: [],
+      results: [],
+    });
+
+    expect(result.errors.some(err => err.includes('missing highPole'))).toBe(true);
   });
 });
 

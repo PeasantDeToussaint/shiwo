@@ -85,16 +85,17 @@
 
       <!-- Radar (conditional) -->
       <view wx:if="{{hasRadarData}}" class="gr-radar-section">
-        <text class="gr-label">{{isBipolar ? '维度分布' : '特质分布'}}</text>
+        <text class="gr-label">{{hasUserScores ? (isBipolar ? '维度分布' : '特质分布') : '结果画像'}}</text>
+        <text wx:if="{{!hasUserScores}}" class="gr-subnote">当前未拿到你的作答分数，这里展示的是该结果的画像，不是实时作答分布。</text>
         <view class="gr-radar-wrap {{radarReady ? 'gr-radar-ready' : ''}}">
           <canvas id="radarCanvas" canvas-id="radarCanvas" class="gr-radar-canvas" style="width:240px;height:240px;" />
         </view>
         <view class="gr-radar-legend">
           <view class="gr-radar-legend-item">
             <view class="gr-radar-legend-swatch gr-radar-legend-swatch-user" />
-            <text class="gr-radar-legend-label">你</text>
+            <text class="gr-radar-legend-label">{{hasUserScores ? '你' : result.title}}</text>
           </view>
-          <view wx:if="{{hasRadarProfile}}" class="gr-radar-legend-item">
+          <view wx:if="{{hasUserScores && hasRadarProfile}}" class="gr-radar-legend-item">
             <view class="gr-radar-legend-swatch gr-radar-legend-swatch-char" />
             <text class="gr-radar-legend-label">{{result.title}}</text>
           </view>
@@ -103,7 +104,8 @@
 
       <!-- Dimension bars (conditional) -->
       <view wx:if="{{hasBars}}" class="gr-bars-section">
-        <text wx:if="{{!hasRadarData}}" class="gr-label">{{isBipolar ? '维度分布' : '特质分布'}}</text>
+        <text wx:if="{{!hasRadarData}}" class="gr-label">{{hasUserScores ? (isBipolar ? '维度分布' : '特质分布') : '结果画像'}}</text>
+        <text wx:if="{{!hasRadarData && !hasUserScores}}" class="gr-subnote">当前未拿到你的作答分数，以下展示的是该结果的画像，不是实时作答分布。</text>
         <view class="gr-bars">
           <view wx:for="{{dimensionBars}}" wx:key="label" class="gr-bar-row">
             <view class="gr-bar-meta">
@@ -111,8 +113,7 @@
                 <text wx:if="{{item.axisLabel}}" class="gr-bar-axis">{{item.axisLabel}}</text>
                 <text class="gr-bar-label {{item.dominant ? 'gr-bar-label-dominant' : ''}}">{{item.label}}</text>
               </view>
-              <text wx:if="{{item.centered}}" class="gr-bar-pct">{{item.dominantSummary}}</text>
-              <text wx:else class="gr-bar-pct">{{item.pct}}%</text>
+              <text wx:if="{{!item.centered}}" class="gr-bar-pct">{{item.pct}}%</text>
             </view>
             <view wx:if="{{item.centered}}" class="gr-bar-track gr-bar-track-centered">
               <view class="gr-bar-center-line" />

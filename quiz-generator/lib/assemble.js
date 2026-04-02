@@ -327,6 +327,7 @@ function assembleQuiz(outline, questions, results) {
       dimension: dimMap[a.dimension] || a.dimension,
       axisLabel: a.axisLabel,
       lowPole:   a.lowPole,
+      highPole:  a.highPole,
       insight:   a.highInsight || a.insight || "",
       highInsight: a.highInsight || a.insight || "",
       lowInsight:  a.lowInsight || "",

@@ -154,6 +154,8 @@ function validateOutlineStructure(outline, architecture) {
   const subtitle = String(outline?.subtitle || "").trim();
   const eyebrow = String(outline?.eyebrow || "").trim();
   const resultType = architecture?.resultType || "archetype";
+  const scoringFamily = architecture?.scoringFamily || "weighted-dimension";
+  const isBipolar = scoringFamily === "bipolar-dimension";
 
   if (dimensions.length === 0) errors.push("outline.dimensions missing or empty");
   if (!title) errors.push("outline.title missing or empty");
@@ -176,6 +178,15 @@ function validateOutlineStructure(outline, architecture) {
   for (const axis of axes) {
     if (!dimSet.has(axis.dimension)) {
       errors.push(`dimensionAxes has unknown dimension "${axis.dimension}"`);
+    }
+    if (isBipolar) {
+      if (!String(axis.lowPole || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing lowPole`);
+      if (!String(axis.highPole || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing highPole`);
+      if (!String(axis.lowInsight || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing lowInsight`);
+      if (!String(axis.highInsight || axis.insight || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing highInsight`);
+      if (String(axis.lowPole || "").trim() && String(axis.highPole || "").trim() && String(axis.lowPole).trim() === String(axis.highPole).trim()) {
+        errors.push(`dimensionAxes[${axis.dimension}]: lowPole and highPole must be different`);
+      }
     }
   }
   for (const r of results) {
@@ -302,11 +313,22 @@ function validateFinalQuiz(quiz) {
     if (/(更多维度按需补足|更多维度按已确定)/.test(d)) errors.push(`invalid dimension label "${d}"`);
   }
 
+  if (scoringType === "bipolar-dimension") {
+    for (const axis of (quiz?.scoring?.dimensionAxes || [])) {
+      if (!String(axis.lowPole || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing lowPole`);
+      if (!String(axis.highPole || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing highPole`);
+      if (!String(axis.lowInsight || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing lowInsight`);
+      if (!String(axis.highInsight || axis.insight || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing highInsight`);
+    }
+  }
+
   for (const q of (quiz.questions || [])) {
     if (findObviousTextCorruption(q.text)) errors.push(`${q.id}: corrupted question text`);
     for (const o of (q.options || [])) {
       const textIssue = findObviousTextCorruption(o.text);
       if (textIssue) errors.push(`${q.id}.${o.id}: corrupted option text (${textIssue})`);
+      const reactionIssue = findObviousTextCorruption(o.reaction);
+      if (reactionIssue) errors.push(`${q.id}.${o.id}: corrupted reaction text (${reactionIssue})`);
     }
   }
 
@@ -354,11 +376,77 @@ function validateFinalQuiz(quiz) {
   return { errors, warnings };
 }
 
+function collectBipolarCoverageStats(questions, dimensions) {
+  const stats = {};
+  dimensions.forEach((dim) => {
+    stats[dim] = { posCount: 0, negCount: 0, posSum: 0, negSum: 0 };
+  });
+  for (const q of questions) {
+    for (const o of (q.options || [])) {
+      for (const [dim, val] of Object.entries(o.scores || {})) {
+        if (!stats[dim] || typeof val !== "number" || val === 0) continue;
+        if (val > 0) {
+          stats[dim].posCount += 1;
+          stats[dim].posSum += val;
+        } else {
+          stats[dim].negCount += 1;
+          stats[dim].negSum += Math.abs(val);
+        }
+      }
+    }
+  }
+  return stats;
+}
+
+function validateBipolarCoverage(questions, dimensions) {
+  const warnings = [];
+  const stats = collectBipolarCoverageStats(questions, dimensions);
+  for (const [dim, row] of Object.entries(stats)) {
+    if (row.posCount === 0 || row.negCount === 0) {
+      warnings.push(`${dim}: bipolar coverage missing one side (positive ${row.posCount}, negative ${row.negCount})`);
+      continue;
+    }
+    if (row.posCount < 2 || row.negCount < 2) {
+      warnings.push(`${dim}: bipolar coverage too sparse (positive ${row.posCount}, negative ${row.negCount})`);
+    }
+    const total = row.posSum + row.negSum;
+    const weaker = Math.min(row.posSum, row.negSum);
+    if (total >= 8 && weaker / total < 0.15) {
+      warnings.push(`${dim}: bipolar coverage severely imbalanced (+${row.posSum} vs -${row.negSum})`);
+    }
+  }
+  return { warnings, stats };
+}
+
+function collectBipolarSemanticWarnings(questions, dimensionAxes = []) {
+  const warnings = [];
+  const axisMap = {};
+  dimensionAxes.forEach((axis) => {
+    axisMap[axis.dimension] = axis;
+  });
+  for (const q of questions) {
+    for (const o of (q.options || [])) {
+      const text = `${o.text || ""} ${o.reaction || ""}`;
+      for (const [dim, val] of Object.entries(o.scores || {})) {
+        const axis = axisMap[dim];
+        if (!axis || typeof val !== "number" || val === 0) continue;
+        const lowPole = String(axis.lowPole || "").trim();
+        const highPole = String(axis.highPole || "").trim();
+        if (lowPole && text.includes(lowPole) && val > 0) warnings.push(`${q.id}.${o.id}: mentions lowPole "${lowPole}" but scores positive on "${dim}"`);
+        if (highPole && text.includes(highPole) && val < 0) warnings.push(`${q.id}.${o.id}: mentions highPole "${highPole}" but scores negative on "${dim}"`);
+      }
+    }
+  }
+  return warnings;
+}
+
 function validateQuestions(questions, dimensions, options = {}) {
   const warnings = [];
   const dimSet = new Set(dimensions);
   const seenIds = new Set();
   const scoringType = options.scoringType || "weighted-dimension";
+  const isBipolar = scoringType === "bipolar-dimension";
+  const dimensionAxes = Array.isArray(options.dimensionAxes) ? options.dimensionAxes : [];
   const minScore = scoringType === "bipolar-dimension" ? -2 : 0;
   const maxScore = 3;
 
@@ -376,15 +464,33 @@ function validateQuestions(questions, dimensions, options = {}) {
         warnings.push(`${q.id}.${o.id}: no scores`);
         continue;
       }
+      if (isBipolar && Object.keys(o.scores).length > 2) {
+        warnings.push(`${q.id}.${o.id}: bipolar option has ${Object.keys(o.scores).length} scored dimensions (max 2)`);
+      }
+      const nonZeroValues = Object.values(o.scores).filter((v) => typeof v === "number" && v !== 0);
+      if (isBipolar && nonZeroValues.length > 1) {
+        const signSet = new Set(nonZeroValues.map((v) => Math.sign(v)));
+        if (signSet.size > 1) warnings.push(`${q.id}.${o.id}: bipolar option mixes positive and negative scores`);
+      }
       for (const [dim, val] of Object.entries(o.scores)) {
-        // Allow abbreviated dimension names (e.g. "传统" matching "传统与现代")
-        const matched = dimSet.has(dim) || dimensions.some(d => d.startsWith(dim) || dim.startsWith(d.slice(0, 2)));
+        const matched = isBipolar
+          ? dimSet.has(dim)
+          : (dimSet.has(dim) || dimensions.some(d => d.startsWith(dim) || dim.startsWith(d.slice(0, 2))));
         if (!matched) warnings.push(`${q.id}.${o.id}: unknown dimension "${dim}" (valid: ${dimensions.join(", ")})`);
         if (typeof val !== "number" || val < minScore || val > maxScore) {
           warnings.push(`${q.id}.${o.id}: score ${val} out of range [${minScore},${maxScore}] for "${dim}"`);
         }
+        if (isBipolar && typeof val === "number" && val !== 0 && ![-2, -1, 1, 2].includes(val)) {
+          warnings.push(`${q.id}.${o.id}: bipolar score ${val} should be one of -2,-1,1,2`);
+        }
       }
     }
+  }
+
+  if (isBipolar) {
+    const { warnings: coverageWarnings } = validateBipolarCoverage(questions, dimensions);
+    warnings.push(...coverageWarnings);
+    warnings.push(...collectBipolarSemanticWarnings(questions, dimensionAxes));
   }
 
   return warnings;

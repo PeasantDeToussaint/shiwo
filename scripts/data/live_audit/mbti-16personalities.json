@@ -1,0 +1,3295 @@
+{
+  "accent": "#6b5fa6",
+  "bgImage": "cloud://cloudbase-4gadl6qo4a9aa95d.636c-cloudbase-4gadl6qo4a9aa95d-1415990507/classicals1.png",
+  "description": "MBTI 由凯瑟琳·布里格斯和伊莎贝尔·迈尔斯基于荣格的认知类型理论开发，是目前全球使用最广的人格分类系统。它从四个维度描述你处理信息和做决定的默认方式——外倾/内倾（你从哪里获取能量）、实感/直觉（你如何接收信息）、思考/情感（你如何做决定）、判断/知觉（你如何安排生活）——最终组合出 16 种类型，每种类型都有其典型的思维模式和行为风格。\n\n测试没有好或差的类型。选最符合你平时真实状态的选项，不用猜什么是更好的答案——你在意识到之前的第一反应，往往是最准确的。",
+  "displayTitleZh": "十六人格测试",
+  "estimatedMinutes": 12,
+  "eyebrow": "MBTI",
+  "featureId": "classics",
+  "id": "mbti-16personalities",
+  "isAvailable": true,
+  "questionCount": 60,
+  "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+  "questions": [
+    {
+      "dimension": "E",
+      "id": "q1",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "在聚会或社交场合里，我通常感觉充满能量，而不是被消耗。"
+    },
+    {
+      "dimension": "S",
+      "id": "q2",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我更关注当下发生的实际情况，而不是未来的可能性。"
+    },
+    {
+      "dimension": "T",
+      "id": "q3",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "做决定的时候，我更依赖逻辑分析而不是个人感受。"
+    },
+    {
+      "dimension": "J",
+      "id": "q4",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢有计划，提前知道接下来要做什么让我感到安心。"
+    },
+    {
+      "dimension": "E",
+      "id": "q5",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我主动和陌生人搭话，这对我来说不是什么难事。"
+    },
+    {
+      "dimension": "S",
+      "id": "q6",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我依赖过去的经验和已经验证过的方法来做决定。"
+    },
+    {
+      "dimension": "T",
+      "id": "q7",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我能在情绪很强烈的情况下，仍然保持客观理性的判断。"
+    },
+    {
+      "dimension": "J",
+      "id": "q8",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "截止日期对我来说是真实的约束，我通常会提前完成任务。"
+    },
+    {
+      "dimension": "E",
+      "id": "q9",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "一天结束后，我更倾向于出去见朋友，而不是一个人待着。"
+    },
+    {
+      "dimension": "S",
+      "id": "q10",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "学习新事物时，我喜欢从具体细节开始，而不是先把握整体框架。"
+    },
+    {
+      "dimension": "T",
+      "id": "q11",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我会直接指出别人论点中的逻辑错误，即使可能让对方感到不舒服。"
+    },
+    {
+      "dimension": "J",
+      "id": "q12",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢把事情做完，让它从待办清单里消失，而不是拖着不决定。"
+    },
+    {
+      "dimension": "E",
+      "id": "q13",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我在别人面前表达想法是自然而然的，不需要太多提前准备。"
+    },
+    {
+      "dimension": "S",
+      "id": "q14",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我注意到别人通常忽略的实际细节——数字、日期、具体事实。"
+    },
+    {
+      "dimension": "T",
+      "id": "q15",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "公平和一致性对我来说比照顾到每个人的特殊情况更重要。"
+    },
+    {
+      "dimension": "J",
+      "id": "q16",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "在做决定之前，我会感到不自在——做了决定之后，我才能真正放松。"
+    },
+    {
+      "dimension": "E",
+      "id": "q17",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "大量社交活动不会让我感到疲惫，反而会让我有能量。"
+    },
+    {
+      "dimension": "S",
+      "id": "q18",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我更擅长处理具体、实际的问题，而不是抽象的理论。"
+    },
+    {
+      "dimension": "T",
+      "id": "q19",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "批评一件事或分析一个问题时，我专注于逻辑和事实，而不是情感影响。"
+    },
+    {
+      "dimension": "J",
+      "id": "q20",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢有组织、有结构的工作方式，而不是随机应变。"
+    },
+    {
+      "dimension": "E",
+      "id": "q21",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我倾向于先把想法说出来，而不是先在脑子里完全整理好。"
+    },
+    {
+      "dimension": "S",
+      "id": "q22",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "「现在行得通的方案」比「理论上最优的方案」对我来说更重要。"
+    },
+    {
+      "dimension": "T",
+      "id": "q23",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我认为对一个想法最大的尊重，是认真审视它的漏洞。"
+    },
+    {
+      "dimension": "J",
+      "id": "q24",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我对杂乱或者无序的环境有真实的不适感，喜欢把东西放在固定的地方。"
+    },
+    {
+      "dimension": "E",
+      "id": "q25",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢热闹的场合，那里的能量让我感到活跃。"
+    },
+    {
+      "dimension": "S",
+      "id": "q26",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我相信实际操作比理论理解更能说明一件事的价值。"
+    },
+    {
+      "dimension": "T",
+      "id": "q27",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我更容易被清晰的逻辑论证说服，而不是情感的呼吁。"
+    },
+    {
+      "dimension": "J",
+      "id": "q28",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我倾向于按计划行事，突然改变计划会让我感到烦躁。"
+    },
+    {
+      "dimension": "E",
+      "id": "q29",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "讨论时我喜欢积极发言，把自己的想法说出来，而不是只在心里想。"
+    },
+    {
+      "dimension": "S",
+      "id": "q30",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我更喜欢思考可能性和未来，而不是只处理眼前的现实。"
+    },
+    {
+      "dimension": "T",
+      "id": "q31",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "做决定时，我会认真考虑这对相关的人会有什么感受。"
+    },
+    {
+      "dimension": "J",
+      "id": "q32",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我在截止日期前才最有效率，提前太多完成反而感觉有点奇怪。"
+    },
+    {
+      "dimension": "E",
+      "id": "q33",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "大型聚会结束后，我需要独处一段时间才能恢复状态。"
+    },
+    {
+      "dimension": "S",
+      "id": "q34",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我能快速在不同概念之间找到联系，即使它们表面上毫无关系。"
+    },
+    {
+      "dimension": "T",
+      "id": "q35",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很难做出会让我在乎的人感到痛苦的决定，即使逻辑上那是正确的。"
+    },
+    {
+      "dimension": "J",
+      "id": "q36",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢保留选项，不想过早做出承诺或锁定某个方向。"
+    },
+    {
+      "dimension": "E",
+      "id": "q37",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "表达一个想法之前，我通常需要先在脑子里把它整理清楚。"
+    },
+    {
+      "dimension": "S",
+      "id": "q38",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢先把握一件事的整体方向，再关注具体细节。"
+    },
+    {
+      "dimension": "T",
+      "id": "q39",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我对别人的情绪变化很敏感，能感受到别人没有说出来的情绪。"
+    },
+    {
+      "dimension": "J",
+      "id": "q40",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我能在混乱或不确定的环境中工作，甚至觉得这有点刺激。"
+    },
+    {
+      "dimension": "E",
+      "id": "q41",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我更喜欢一对一的深度对话，而不是大群体里的闲聊。"
+    },
+    {
+      "dimension": "S",
+      "id": "q42",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我经常有直觉性的判断，事后证明是对的，但过程很难解释清楚。"
+    },
+    {
+      "dimension": "T",
+      "id": "q43",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我认为一个决定是否正确，人们的感受和价值观是重要的评判标准。"
+    },
+    {
+      "dimension": "J",
+      "id": "q44",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我更喜欢随机应变，而不是提前做详细的计划。"
+    },
+    {
+      "dimension": "E",
+      "id": "q45",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "长时间的社交活动会让我感到真实的疲惫，不管那次活动有多好玩。"
+    },
+    {
+      "dimension": "S",
+      "id": "q46",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我更容易被新奇的想法和理论吸引，而不是已经被验证过的方法。"
+    },
+    {
+      "dimension": "T",
+      "id": "q47",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "在冲突中，我首先关注双方的感受，然后才是谁对谁错。"
+    },
+    {
+      "dimension": "J",
+      "id": "q48",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "开始一件新事情时，我喜欢先探索，而不是先做好规划再动手。"
+    },
+    {
+      "dimension": "E",
+      "id": "q49",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我有很多内心活动，但不一定都会说出来。"
+    },
+    {
+      "dimension": "S",
+      "id": "q50",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的脑子经常在不同想法之间跳跃，想得多，有时也会想偏。"
+    },
+    {
+      "dimension": "T",
+      "id": "q51",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "让别人感到被理解和被支持，对我来说是非常重要的事情。"
+    },
+    {
+      "dimension": "J",
+      "id": "q52",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的工作方式是弹性的，固定的规则和时间表让我感觉像是束缚。"
+    },
+    {
+      "dimension": "E",
+      "id": "q53",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我需要大量独处时间来恢复精力，这是真实的需求，不只是偏好。"
+    },
+    {
+      "dimension": "S",
+      "id": "q54",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我对「这件事可能意味着什么」比「这件事具体是什么」更感兴趣。"
+    },
+    {
+      "dimension": "T",
+      "id": "q55",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的决定通常受到我的价值观和情感影响，而不只是理性分析。"
+    },
+    {
+      "dimension": "J",
+      "id": "q56",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我会同时开始很多事情，做到差不多了再决定下一步怎么走。"
+    },
+    {
+      "dimension": "E",
+      "id": "q57",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我通常更像一个倾听者，而不是话多的那一方。"
+    },
+    {
+      "dimension": "S",
+      "id": "q58",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢探索一个问题的深层含义，而不只是找到可行的解决方案。"
+    },
+    {
+      "dimension": "T",
+      "id": "q59",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "工作场合中，维护和谐的人际关系对我是真实的优先事项，而不只是附带考量。"
+    },
+    {
+      "dimension": "J",
+      "id": "q60",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "规定好的流程让我感到受限，我更喜欢找到自己的方式来完成一件事。"
+    }
+  ],
+  "resultPage": "/subpackages/quiz/pages/mbti-result/mbti-result",
+  "results": [
+    {
+      "boldQuote": "你并非冷漠，只是你的热情都投向了那些尚未存在的、更完美的世界。",
+      "careerPaths": "你最适合那些能让你运用战略规划、系统设计和复杂问题解决能力的环境。具体方向如：战略顾问、系统架构师、投资分析、科研领域（尤其是理论或前沿交叉学科）、独立创业者或某些领域的政策制定者。你需要掌控感、智力挑战以及将愿景变为现实的清晰路径。\n\n你的核心优势在于，能将混乱的现实抽象为模型，并在其中找到撬动全局的杠杆点。你不仅解决问题，更善于定义问题本身。在充满不确定性的领域，你能凭借内在的决策框架保持方向，并制定出长期、连贯的行动计划，这是许多随波逐流者所缺乏的。\n\n常见的困境是，你容易对官僚程序、重复性劳动或需要大量人际协调的琐碎工作感到极度不耐。在层级森严、强调服从而非结果的组织中，你会感��窒息。你的直言不讳和效率至上原则，也可能与更注重人情或流程的职场文化产生冲突。",
+      "dimension_profile": {
+        "E": 0.1,
+        "J": 0.9,
+        "S": 0.1,
+        "T": 0.9
+      },
+      "englishTitle": "Architect",
+      "friendships": "你选择朋友的标准近乎严苛。肤浅的社交让你疲惫，你寻找的是能进行思想交锋、共享某种智力频率的同类。一次��刻的午夜长谈，远比十次热闹的聚会更能奠定友谊的基石。你欣赏那些在自己领域有真知灼见，且人格完整、不随波逐流的人。\n\n在友谊中，你扮演着冷静的观察者与可靠的谋士。你不会提供泛滥的情感安慰，但当朋友面临重大抉择或复杂困境时，你会是他们最想咨询的人。你能给出剥离情绪、直指核心的分析，并提供切实可行的路径建议。你的友谊是一种沉静而坚实的存在。\n\n你的局限在于，你容易将友谊也“项目化”，忽略了其随意性与情感维系的需要。你可能长时间沉浸于自己的世界而疏于联系，认为“真正的友谊无需维护”。当朋友需要的是单纯的陪伴或情感共鸣时，你那倾向于提供解决方案的模式，有时会让他们感到隔阂。",
+      "group": "分析家",
+      "groupEnglish": "Analysts",
+      "id": "intj",
+      "parenthood": "作为父母，你的养育风格是“授人以渔”的实践者。你重视培养孩子的独立思考能力、逻辑思维和内在驱动力，远胜过要求他们服从或取得表面成绩。你的核心价值观是：让孩子成为有能力构建自己人生蓝图的、真正独立的人。\n\n你能给予孩子最独特的礼物，是一个广阔而深邃的认知框架。你会引导他们发现世界的运行规律，鼓励他们质疑、探索、建立自己的知识体系。你不会替孩子扫清所有障碍，但会教他们如何分析障碍、制定策略。你为他们打开的是理性与智慧的大门。\n\n你的挑战在于，可能过早地用成人的理性标准要求孩子，忽略了他们情感发育与试错的需求。你对于低效和“幼稚”的不耐烦，可能会无意中挫伤孩子的自信心。你需要警惕，将养育也视为一个需要精密控制的“项目”，而忘记了亲子关系中那些无法被规划、却至关重要的温暖与混乱。",
+      "portrait": "当别人在会议上争论细节时，你已独自在脑中构建了整个项目的五年演变图景。你沉默，不是因为无话可说，而是因为话语跟不上思维的速度。你看见的从来不是当下的碎片，而是它们在未来拼成的完整形态。\n\n驱动你的，是一种近乎本能的优化冲动。你无法忍受系统性的低效和逻辑的漏洞，就像眼睛无法忍受视野中的污点。你总在寻找那个更优解，那个能将混乱归序、将潜能释放的杠杆支点。这种驱动力无关名利，更像一种内在的使命。\n\n你既渴望用清晰的逻辑掌控一切变量，又深知世界充满混沌；既追求极致的独立与自足，又偶尔被一种深刻的、无人理解的孤独所触碰。你的理性是一座坚固的城堡，但城堡深处，藏着连你自己都未必完全看清的愿景与激流。\n\n当你的内在愿景与外在行动达成一致时，你会展现出一种沉静的、近乎预言者的力量。你不再仅仅是解决问题，而是在塑造问题的边界本身。只是，抵达这种清晰所走过的路，往往是一条独自穿越迷雾的漫长旅程。",
+      "romanticRelationships": "你进入亲密关系的过程，更像一场谨慎的战略评估。智识上的共鸣与独立人格的相互尊重，是吸引你的首要磁石。空洞的浪漫姿态或纯粹的情感索求会让你迅速退却。你需要确认对方是一个能与你并肩瞭望远方，而非仅仅寻求情感依附的伙伴。\n\n在关系中，你给予的是深度的忠诚、切实的支持，以及共同成长的清晰蓝图。你需要的是心智的私密对话、对个人空间的尊重，以及彼此目标的一致。你的爱意往往通过行动而非言辞表达——为你解决一个复杂难题，或默默支持你追求自己的愿景。\n\n冲突常源于你的理性与伴侣的情感需求不同频。你可能试图用“解决问题”的思路去应对伴侣的情绪宣泄，反而让对方感到被否定。你那不擅直接表达温情的习惯，也可能被误解为疏离或不够投入。你需要学习，情感逻辑有时不同于现实逻辑。\n\n真正适合你的关系，是两位独立战略家的联盟。你们各自拥有强大的内心世界与追求，又能欣赏彼此的蓝图，并在关键时刻成为对方最可靠的智囊与执行伙伴。这种关系不以缠绵为基调，而以共同探索世界的深度与广度为目标。",
+      "strengths": [
+        {
+          "description": "你会在项目启动之初，就预见其数年后的潜在瓶颈与转折。这种能力源于你能将庞杂信息提炼为抽象模型，并在时间轴上推演其动态变化，从而绕过短视的陷阱。",
+          "label": "战略远见"
+        },
+        {
+          "description": "当他人困于专业壁垒时，你能将不同领域的原理嫁接，催生全新方案。这并非灵感乍现，而是你习惯将一切知识视为可拆解重组的模块，不断寻找底层逻辑的共通点。",
+          "label": "概念整合"
+        },
+        {
+          "description": "面对低效流程，你本能地开始重构其底层架构。你的目光穿透表象，直指资源流转的关键节点，你的满足感来自看见一个系统以更简洁、更有力的方式运行。",
+          "label": "系统优化"
+        },
+        {
+          "description": "一旦认定目标，你能屏蔽绝大多数干扰，将心智资源长时间聚焦于一点。这种专注不是苦行，而是你内在的蓝图过于清晰，以至于其他事物自然褪色为背景。",
+          "label": "意志专注"
+        },
+        {
+          "description": "在信息不全、众人犹豫时，你能基于有限数据做出果断判断。这背后是你建立了个人化的决策框架，它不依赖共识，而依赖你对概率与因果链的私人演算。",
+          "label": "独立决断"
+        },
+        {
+          "description": "你能轻易看穿复杂论述中的逻辑断层或隐藏前提。这种洞察力源于你思维中内置的“质疑程序”，它自动检验每个主张的坚实度，不放过任何模糊地带。",
+          "label": "深度解析"
+        }
+      ],
+      "subtitle": "在思想的棋盘上推演未来，以意志为蓝图构建现实",
+      "title": "建筑师",
+      "token": "战略家",
+      "typeCode": "INTJ",
+      "verse": "凡是人力所能完成之事，他日必将完成。",
+      "verseSource": "儒勒·凡尔纳《海底两万里》",
+      "weaknesses": [
+        {
+          "description": "你常因沉浸于思想而忽略身边人的情绪波动，甚至显得漠然。这不是冷漠，而是你的认知带宽优先分配给了抽象世界。代价是，你可能在无意中让关心你的人感到被隔绝在外。",
+          "label": "人际疏离"
+        },
+        {
+          "description": "你对信念的坚持有时会演变为固执，难以接受计划外的变通。当现实与蓝图冲突，你的第一反应往往是改造现实，��非调整蓝图。这是你强大意志力必然伴随的刚性。",
+          "label": "韧性过剩"
+        },
+        {
+          "description": "你倾向于将情感也视为需要管理的变量，而非体验本身。这让你在需要共情或情感支持的场合显得笨拙，甚至用逻辑分析代替情感回应。追求绝对理性的代价，是偶尔与人心产生隔膜。",
+          "label": "情感钝感"
+        },
+        {
+          "description": "你对自己和他人能力的标准极高，对未能达标者容易流露出真实的不耐。这种不耐烦并非傲慢，而是源于你对“本可以更好”的强烈感知。代价是可能挫伤合作者的士气，或让自己陷入孤立求索的境地。",
+          "label": "标准严苛"
+        },
+        {
+          "description": "你的内心世界如同一座不断扩建的复杂迷宫，你花费大量时间在其中巡游、修正。这固然带来深度，但也可能让你在反复思辨中错失行动的时机，或陷入不必要的自我怀疑。",
+          "label": "过度内省"
+        },
+        {
+          "description": "你脑中高度压缩的概念体系，往往难以找到通俗的出口。你可能会省略太多推导步骤，直接给出结论，让他人感到突兀或难以跟上。这是思维过于高效的代价，沟通的桥梁有时需要你主动放缓脚步去搭建。",
+          "label": "表达艰涩"
+        }
+      ],
+      "workplaceHabits": "作为下属，你渴望明确的目标和充分的自主权。你厌恶被微观管理，一旦理解任务的核心意图与最终标准，你更愿意以自己的方式高效达成。你会是那个默默为上级方案找出潜在漏洞，并提供更优替代路径的人，但方式可能过于直接，需要学习策略性表达。\n\n作为同事，你是可靠的问题终结者，但并非热络的团队粘合剂。你专注于任务本身，对办公室政治或闲聊缺乏兴趣。当团队陷入争论时，你往往能一针见血指出关键分歧，推动进程，但也可能因忽略他人感受而显得强硬。你尊重能力，而非头衔。\n\n作为管理者，你擅长构建清晰的战略蓝图和高效的系统，为团队指明长远方向。你倾向于授权，信任下属的能力，但你的高标准和对于偏离计划的低容忍度，可能让团队成员感到压力。你需要有意识地认可努力过程，而不仅仅关注结果，并学习将你的宏大愿景转化为团队可感知、可执行的阶段性目标。"
+    },
+    {
+      "boldQuote": "你并非不合群，只是你选择的群体，恰好不在这个时空。",
+      "careerPaths": "你最适合那些允许你与思想、系统或抽象概念深度打交道的工作环境。具体方向例如：理论研究（哲学、物理学、数学）、战略分析、架构师（软件、系统）、学术科研、法律或政策中的逻辑论证环节，以及任何需要创造新模型或破解复杂谜题的领域。你需要一个能提供自主性、免于过多行政干扰和重复社交的职位。\n\n你在职业上的核心优势，是解决前所未见的问题的能力。当现有路径全部失效，或需要从零搭建一个理论框架时，你的价值便凸显出来。你能在混乱中识别模式，在约束条件下找到最优解，并且对你所构建的系统或理论的内部一致性，有着近乎偏执的完美要求。你是那个能画出第一张地图的人。\n\n常见的困境是“最后一公里”的障碍。你擅长从0到1的突破，却可能卡在从1到100的落地执行、团队协作或成果包装上。你也可能因为对现有工作流程或公司文化的内在不合理性看得太清，而产生深深的疏离感，或因为不断质疑“为什么要这样做”而被视为麻烦制造者。在等级森严、强调服从的环境中，你会感到窒息。",
+      "dimension_profile": {
+        "E": 0.1,
+        "J": 0.1,
+        "S": 0.1,
+        "T": 0.9
+      },
+      "englishTitle": "Logician",
+      "friendships": "你选择朋友，近乎一种思想上的自然筛选。那些能接住你跳跃性话题、不觉得你古怪、甚至能一起拆解某个概念的人，会悄然进入你的核心圈层。你不在意世俗标签，但极度看重对方的智力诚实与思维深度。泛泛之交很多，但真正称得上朋友的人，必定通过了你内心那套严苛的“认知兼容性测试”。\n\n在友谊中，你扮演着“思想策源地”和“难题破解器”的角色。你能为朋友提供独一无二的视角，将他们困扰的问题置于一个全新的框架下审视。你的给予是隐形的、高质量的注意力：当你真正在乎时，你会花大量时间思考与对方相关的事。你的友谊不依赖频繁联络维系，而是建立在每次重逢都能直接切入深水区的默契上。\n\n你的局限在于，你容易将友谊“项目化”。你可能记得朋友提出的理论问题，却忘了他们的生日；你擅长分析他们的困境，却不擅长提供他们此刻最需要的肩膀。你默��友��建立在心智互动上，因此当朋友需要纯粹的情感支持时，你可能会手足无措，甚至因为自己“没帮上忙”而选择退开，这反而造成了距离。",
+      "group": "分析家",
+      "groupEnglish": "Analysts",
+      "id": "intp",
+      "parenthood": "作为父母，你的养育风格更像一位引导孩子自主探索的“研究顾问”。你的核心价值观是培养孩子的独立思考能力、逻辑思维和对世界的好奇心。你反感填鸭式的教条，更倾向于抛出问题，和孩子一起寻找答案，哪怕那个答案暂时超出了孩童的理解范畴。你认为保护孩子的求知欲，比让他们记住标准答案更重要。\n\n你能给孩子最独特的礼物，是一个不被成见束缚的思考起点。你会认真对待他们那些天马行空甚至古怪的问题，不会用“本来就这样”来搪塞。你能向他们展示如何拆解一个玩具、一个游戏规则乃至一个社会现象，教会他们“理解”而不仅仅是“接受”。你为他们打开一扇通往广阔思想世界的门。\n\n你的挑战在于情感表达的直白与日常琐碎的耐受。你可能深爱孩子，却很少说出口；你能解构复杂的数学题，却对处理孩子的哭闹、同伴冲突或学校里的社交礼仪感到笨拙。另一个盲区是，你倾向于将孩子视为一个“理性的小存在”，可能过早期待他们拥有成人的逻辑，而忽略了情感发育的阶段性需求。你的“放养”可能被误解为疏于关照。",
+      "portrait": "你常常在对话进行到一半时，思绪已经飘向了别处——不是走神，而是在对方话语的缝隙里，你瞥见了一个逻辑的破绽，一个未被言明的假设。你的大脑像一台永不关闭的搜索引擎，自动抓取信息，拆解，重组，试图找出那个能解释一切的底层模型。\n\n驱动你的，是一种对“精确”近乎洁癖的渴望。你无法忍受模糊的边界、未经检验的共识，或是“向来如此”的说辞。你想知道的不是“是什么”，而是“为什么必须是这个”。这种追问本身，就是你的燃料。\n\n你既渴望用一套完美的理论体系去理解整个世界，又深知任何体系都必然存在漏洞，包括你正在构建的这一个。于是你陷入一种永恒的自我修正：你为自己的洞察力感到一丝确信，旋即又被这确信可能存在的偏见所困扰。\n\n当这种特质发展到极致，你可能会成为那个在思想的荒原上独自搭建通天塔的人。旁人看见的是废墟或奇观，只有你知道，建造本身，就是意义。代价是，你可能永远住在塔里，忘了怎么回到地面和人交谈。",
+      "romanticRelationships": "吸引你的，往往是一个能与你进行智力共舞的头脑，或是一个你无法用现有模型完全解析的“谜”。你可能会因为一个有趣的观点、一种独特的思维方式而怦然心动。但让你止步的，是关系所附带的一整套情感期待、社会仪式和不确定的时间承诺，它们看起来像一套没有说明书的复杂系统。\n\n在关系中，你给予的是深度的思想分享、绝对的忠诚于真理，以及在对方需要时，一套冷静（有时过于冷静）的问题分析。你需要的是大量的独处时间来重整内心世界，需要对方理解你的沉默不是拒绝，以及一段免于过度情绪绑架、允许理性存在的空间。你的爱，更像是在对方的认知地图上做一个长期的联合研究项目。\n\n冲突常发生在两个层面：一是你的伴侣需要情感共鸣时，你却提供了解决方案；二是你沉浸于个人兴趣时，那种全然的抽离会被误解为冷漠。此外，你对关系本身也会进行过度分析和解构，这种“元思考”有时会抽干关系的自发性和浪漫氛围，让它变成一份待优化的协议。\n\n真正适合你的关系，是两位独立学者组成的联合实验室。伴侣最好能欣赏你思想的锋利，同时拥有自己丰富的情感世界，不完全依赖你来提供情绪价值。你们能共享沉默，将辩论视为一种亲密游戏，并尊重彼此那如同“思想闭关”般的独处需求。在这样的关系里，你不是在扮演某个角色，而是在做你自己。",
+      "strengths": [
+        {
+          "description": "你会在听到一个新理论时，本能地开始寻找它的前提和边界。这种能力源于你对“结构”的敏感，你能像拆开钟表一样，把复杂的概念分解成相互咬合的齿轮，看清它运转或卡住的原理。",
+          "label": "概念拆解"
+        },
+        {
+          "description": "当信息看似杂乱无章时，你总能从噪音中捕捉到重复的韵律。这不是魔法，是你大脑长期进行跨领域信息比对训练的结果，你习惯在迥异的事物间寻找隐藏的相似性。",
+          "label": "模式识别"
+        },
+        {
+          "description": "给你一个起点和一套规则，你就能在思维的棋盘上推演出无数步。你的思考是线性的，也是发散的，你能严丝合缝地论证，也能在某个节点突然跳跃，因为你看清了那条隐形的逻辑链。",
+          "label": "逻辑推演"
+        },
+        {
+          "description": "面对被众人奉为圭臬的权威或传统，你第一个念头往往是“真的吗？”。这不是叛逆，而是你认知系统的免疫反应，自动筛查任何未经逻辑检验的“感染源”，保持思维领域的洁净。",
+          "label": "祛魅本能"
+        },
+        {
+          "description": "你擅长在脑海中搭建沙盘，让各种变量在其中碰撞。当现实条件受限时，你便退入这个内在实验室，用“如果……那么……”的句式，探索一切可能性，哪怕它看起来荒诞不经。",
+          "label": "思想实验"
+        },
+        {
+          "description": "一旦某个问题抓住了你，外界的时间流速就会变慢。你能在某个狭窄的认知隧道里掘进极深，忘记疲惫，因为解决问题的过程本身，就是对你最大的奖赏。",
+          "label": "深度专注"
+        }
+      ],
+      "subtitle": "在思想宇宙中漫游，在现实世界里迷路",
+      "title": "逻辑学家",
+      "token": "系统解构者",
+      "typeCode": "INTP",
+      "verse": "我什么都不知道，除了我不知道这件事本身。",
+      "verseSource": "苏格拉底",
+      "weaknesses": [
+        {
+          "description": "你可以在脑中完美规划所有步骤，但启动第一步却异常艰难。从思想到行动的转换，对你而言像隔着厚重的空气墙，思考的乐趣耗尽了执行的动力。这是沉浸于蓝图必然付出的代价。",
+          "label": "执行迟滞"
+        },
+        {
+          "description": "维持一场需要持续情感输出和表��寒暄的对话，会让你感到像在运行一个不兼容的程序，电量消耗极快。你并非冷漠，只是你的社交协议更倾向于数据交换而非仪式互动。这是内在系统优先级的代价。",
+          "label": "社交耗能"
+        },
+        {
+          "description": "你容易过度分析情绪，把它当作待解的数据点，而非需要共情的体验。当他人需要你感受时，你可能还在试图理清情绪的因果链。这是追求逻辑清晰度必然付出的代价。",
+          "label": "情感钝感"
+        },
+        {
+          "description": "你总想找到那个最优解、最完备的理论，以至于在“足够好”面前迟迟无法交付。作品永远处于“待完善”的草稿状态，因为新的漏洞总在出现。这是对“完美模型”执念的代价。",
+          "label": "完美主义瘫痪"
+        },
+        {
+          "description": "你构建的内心宇宙越精妙，它与外部粗糙现实的割裂感就越强。你可能精通某个领域的原理，却对其中最基本的生活实操一筹莫展。这是精神远航必然留下的陆地盲区。",
+          "label": "疏离现实"
+        },
+        {
+          "description": "有时，质疑会成为你的条件反射，甚至是一种社交盾牌。你通过挑战观点来保持安全距离，却可能因此错过了观点背后鲜活的经验。这是用思维保护自我所付出的连接代价。",
+          "label": "防御性质疑"
+        }
+      ],
+      "workplaceHabits": "作为下属，你渴望清晰的目标和最大的自主权。你讨厌被 micromanage，反感毫无意义的流程。如果上司能给你一个待解决的问题和充分的信任，你会回报以深刻的见解和创新的方案。但如果你认为指令本身存在逻辑缺陷，你很可能会直接提出质疑，而非盲目执行，这有时会被误读为不服从。你需要一个能与你进行智力对话的领导者。\n\n作为同事，你是团队里的“智库”和“质量检查员”。你乐于分享知识，帮助他人理清思路，但可能对效率低下的会议和缺乏准备的讨论缺乏耐心。你在合作中更关注“事情是否正确”，而非“气氛是否和谐”，有时会因过于直指问题核心而无意中挫伤他人。你最好的工作状态是与少数几位你认可的“聪明人”进行深度协作。\n\n作为管理者，你倾向于打造一个去中心化、基于能力和逻辑而非资历或关系的团队。你善于制定战略和设计公平的系统，但可能疏于对下属进行情感激励和日常关怀。你容易假设所有人都和你一样，受内在求知欲驱动，从而忽略了更多元的管理需求。你的挑战在于，如何将你宏大的愿景转化为团队成员可理解、可执行的步骤，并包容过程中必要的人际摩擦。"
+    },
+    {
+      "boldQuote": "你无法忍受停滞，就像鱼无法忍受缺氧的水。你的痛苦很具体：当时间被浪费，当潜力被闲置，当清晰的路径被犹豫的迷雾笼罩。",
+      "careerPaths": "你最适合那些能让你规划全局、调动资源、并看到切实影响的工作环境。具体方向例如：企业战略顾问，在复杂市场中为组织指明方向；创业公司的创始人或核心高管，从零到一构建一切；投资银行家或私募股权人士，进行大规模资本与资源的配置；政治或公共政策领域的领导者，推动系统性变革。你需要舞台和权责。\n\n你在职业上的核心优势，是能将愿景转化为可执行的战略地图。你不仅能看到“是什么”和“应该是什么”，更能清晰地规划出“如何从这到那”。你敢于在不确定性中做出艰难决策，并有力推动团队跨越阻力，将蓝图变为现实。你是天生的组织者和动员者。\n\n你常见的困境是，可能因过于关注宏观目标和最终结果，而疏于管理过程中的“人心”。你的高标准和快节奏会让一些同事感到压力巨大。此外，如果你所处的职位缺乏足够的自主权和影响力，你会感到极度挫败，像一头困在笼中的雄狮。你也需要学习，并非所有值得做的事情都能用短期KPI来衡量。",
+      "dimension_profile": {
+        "E": 0.9,
+        "J": 0.9,
+        "S": 0.1,
+        "T": 0.9
+      },
+      "englishTitle": "Commander",
+      "friendships": "你选择朋友，像挑选一支特种部队。你欣赏那些有“硬核”特质的人：或许是在某个领域有真知灼见，或许拥有你不具备的冷静或创意，或许单纯是执行力极强、言出必行。泛泛之交的闲聊对你意义不大，你渴望的是能进行深度思想碰撞，或在关键时刻能托付后背的伙伴。你的友谊名单不长，但分量很重。\n\n在友谊中，你自然成为那个制定计划、推动聚会成行、在朋友迷茫时提供犀利分析的角色。你是可靠的问题解决者，当朋友遭遇事业困境或重大抉择，你往往是那个被咨询的对象。你给予朋友的是一种“推力”和“底气”——你知道，有我在，事情总能找到办法向前走。你乐于为朋友的成就铺路搭桥，分享资源。\n\n你的局限在于，友谊对你而言常常是“项目式”或“会话式”的。你可能在朋友需要情感陪伴时，下意识地开始分析问题、给出建议，却难以单纯地共情与倾听。你也可能因为沉浸在自己的目标中，而疏忽了日常的、细水长流的联络。朋友们有时会觉得，联系你总需要一件“正事”作为由头，而少了些漫无目的的温暖。",
+      "group": "分析家",
+      "groupEnglish": "Analysts",
+      "id": "entj",
+      "parenthood": "你的养育风格是“教练式”的。你视孩子为一个拥有无限潜力的独立个体，你的核心任务是帮助ta发现并发展自己的优势，为未来的人生做好准备。你重视纪律、责任感和独立思考，相信这些是比短暂快乐更重要的礼物。你的家庭像一艘船，你是船长，负责设定航向并确保航行安全，但你会尽早教会孩子如何掌舵。\n\n你能给孩子最独特的礼物，是广阔的视野和解决问题的能力。你会带ta接触成人世界的逻辑，与ta讨论新闻、历史、商业，从小培养ta的战略思维。当ta遇到困难，你不会立刻代劳，而是引导ta自己分析、决策并承担后果。你给予孩子的是一种“我可以掌控自己人生”的强大信念和实实在在的能力工具箱。\n\n你的挑战在于，容易用衡量成年人的标准来要求孩子。你可能对ta的情感波动缺乏耐心，将眼泪视为需要立刻解决的“问题”而非情绪的自然流露。你也可能过于关注ta的“表现”和“成果”，而忽略了成长过程中那些无法量化的探索、试错和纯粹的快乐。你需要警惕，别让家变成另一个需要高效运转的“项目”，而忘记了它首先是心灵的港湾。",
+      "portrait": "会议室的白板上画满了箭头和方框，项目停滞了三周，空气里飘着无力的焦灼。你走进去，没有寒暄，手指点向那个被反复讨论却无人敢定的关键节点：“从这里切开。” 混乱忽然有了形状，停滞的轮子被第一股力推动，重新开始转动。人们看向你，眼神复杂——有释然，也有被速度掠过的轻微眩晕。\n\n驱动你的不是权力欲，而是一种近乎生理性的冲动：把无序变成有序，把可能变成现实。你看见一片荒地，脑中已矗立起大厦的完整图纸；你听见嘈杂的争论，能瞬间提炼出共识的基石。那种将混沌梳理成清晰脉络的过程本身，就是你的燃料。低效对你而言不是 inconvenience，而是一种真实的损耗，像看着能量凭空消散。\n\n你既渴望带领众人抵达山顶，又时常独自走在最前，忘记回头确认队伍是否跟上。你相信清晰的指令是最高效的仁慈，却又在他人需要情感缓冲时，显得近乎残酷的简洁。你构建坚固的系统来保护你所珍视的人和事，但系统本身有时会变成一道墙。\n\n当你的天赋全然展开时，你像一位在时间轴上工作的建筑师。你能将飘渺的愿景浇筑成可执行的台阶，把分散的力量拧成一股绳。你活在一个由未来倒推至现在的世界里，每一步都踩在通往目标的最近路径上。代价是，你有时会错过路边的野花，也忘了同行的旅人需要停下系紧鞋带。",
+      "romanticRelationships": "吸引你的，往往是那些拥有独立灵魂、自身就在发光的人。你欣赏ta的才智、抱负或某种你不具备的深邃特质。空洞的美貌或盲目的崇拜无法留住你，你渴望的是能与你并肩眺望远方的伙伴。让你止步的，则是过度的情绪依赖、缺乏主见，或是安于现状不愿成长的状态，那会让你感到一种沉重的停滞。\n\n在关系中，你给予的是坚实的支持、清晰的规划和共同成长的推力。你会为两人的未来绘制蓝图，并努力成为更强大的自己，以守护这段关系。你需要的是对方的尊重、坦诚的交流，以及在智力与精神上的平等对话。你渴望被理解，而非仅仅被照顾；你需要一个能挑战你、让你变得更好的对手，而不仅仅是听众。\n\n冲突常源于你的“管理”本能侵入情感领域。你可能把伴侣的烦恼当作待解决的问题来处理，给出方案而非拥抱；也可能在忙于征服外部世界时，忽略了家是需要用心“经营”而非“运营”的土壤。你的直接有时会变成锋利，你的高效率在需要慢下来的情感时刻显得格格不入。对方可能感到被推动而非被拥抱。\n\n真正适合你的关系，是一座共建的城堡。你们是彼此最信任的盟友，共享同一幅宏伟的人生地图，但各自负责不同的疆域。ta能欣赏你的魄力，也能在你过于强硬时温柔地提醒；你能从ta那里学到情感的细腻，而ta能从你这里获得面对世界的勇气。你们在动态的平衡中互相拓展边界，既是爱人，也是终身成长的同行者。",
+      "strengths": [
+        {
+          "description": "当面对一个庞大模糊的目标时，你能像解构一台精密仪器般，将它层层分解为可操作、可衡量的具体步骤。这种能力源于你天生擅长在抽象与具体之间架桥，让远方的灯塔照亮脚下的每一块礁石。",
+          "label": "战略拆解"
+        },
+        {
+          "description": "在信息不全、众人犹豫的十字路口，你往往能率先做出那个“足够好”的决定并推��执行。这不是鲁莽，而是你深知，在动态世界中，一个向前推进的次优解，远胜于一个停留在纸面上的完美方案。",
+          "label": "决断魄力"
+        },
+        {
+          "description": "危机来临时，你的思维反而更加清晰。混乱对你而言是待整理的信号，而非淹没你的噪音。你能在压力下快速重构认知地图，找到那条被恐慌掩盖的出路，因为你的安全感来自于对局面的掌控，而非局面的风平浪静。",
+          "label": "逆境导航"
+        },
+        {
+          "description": "你擅长看见散落各处的碎片价值，并将它们拼接成更有力的整体。无论是人才、资金还是信息，在你眼中都是可调动、可优化的变量。你本能地追求系统效率的最大化，厌恶任何形式的闲置与浪费。",
+          "label": "资源整合"
+        },
+        {
+          "description": "你能将复杂的战略和枯燥的数据，转化为一幅令人心潮澎湃的未来图景。当你阐述计划时，你不仅是在分配任务，更是在点燃一种“我们可以到达那里”的集体信念，让目标本身产生吸引力。",
+          "label": "愿景沟通"
+        },
+        {
+          "description": "你习惯于为事物设计结构和流程，无论是组织��项目还是日常生活。你相信稳固的框架是持久成功的基石。这种思维让你能建造经得起考验的系统，而不仅仅是解决眼前的一个个问题。",
+          "label": "架构思维"
+        }
+      ],
+      "subtitle": "以愿景为蓝图，以效率为律令的建造者",
+      "title": "指挥官",
+      "token": "战略家",
+      "typeCode": "ENTJ",
+      "verse": "领导力不是一种职位，是一种选择。",
+      "verseSource": "斯蒂芬·科维",
+      "weaknesses": [
+        {
+          "description": "你专注于任务的逻辑链条时，可能会忽略链条上“人”的情感节点。一句为了提高效率的直率批评，在你看来是必要的校正，在他人听来可能是冰冷的否定。这是追求绝对效率的必然代价。",
+          "label": "情感钝感"
+        },
+        {
+          "description": "当你已看清三步之后的棋局，却要等待他人理解第一步时，那种缓慢近乎一种折磨。你会不自觉地催促、代劳，或流露出不容错辨的不耐。这是思维速度领先的必然代价。",
+          "label": "耐心赤字"
+        },
+        {
+          "description": "基于过往的成功经验，你对自己的判断有时会形成一种不容置疑的屏障，下意识地过滤掉相反信息。当“我认为”过于强大时，可能会错过更优的“我们可能”。这是领导魄力的必然代价。",
+          "label": "过度自信"
+        },
+        {
+          "description": "你倾向于用“是否有用”来衡量一切，包括人际关系和休闲活动。那些无法直接贡献于目标的人与事，容易被你置于优先级的后排。这是目标导向型思维的必然代价。",
+          "label": "功利视角"
+        },
+        {
+          "description": "你太渴望抵达终点，以至于常常忽视旅途本身的意义——对他人的成长、对关系的滋养、对细微之处的体验。你乘坐火箭直奔月球，却错过了穿越大气层时看到的瑰丽霞光。这是结果驱动的必然代价。",
+          "label": "忽视过程"
+        },
+        {
+          "description": "你的大脑是一台永不停机的战略处理器，即使在休假，也可能在规划下一个项目。真正的放松对你而言是一项需要学习的技能，因为停下意味着失去对进度的控制。这是高度自律的必然代价。",
+          "label": "难以放松"
+        }
+      ],
+      "workplaceHabits": "作为下属，你是让上级又爱又“头疼”的存在。你积极主动，常常能想到领导前面，不满足于简单执行，总想优化流程、提出战略建议。但你可能会挑战你认为低效的指令，或因为渴望更多责任而显得不够“安分”。你需要一个能驾驭你能量、并给予你足够空间的领导者。\n\n作为同事，你是可靠的合作者，也是强劲的推动力。在团队项目中，你自然倾向于承担组织协调的角色，确保大家朝着目标前进。你直率高效，讨厌办公室政治。但有时，你的直接可能被误读为强势，你对闲聊和低效会议的不耐烦也会写在脸上。你尊重有能力的人，无论其职位高低。\n\n作为管理者，你为团队���供清晰的方向、充足的资源和高效的运作系统。你敢于授权，也要求结果。你致力于培养下属的独立作战能力。你的盲区在于，可能过于依赖理性管理和物质激励，而低估了情感认同和团队凝聚力的价值。你需要有意识地关注下属的个人发展与情感需求，否则你的团队可能高效但缺乏温度。"
+    },
+    {
+      "boldQuote": "你并非为了赢而辩论，你是为了看清事物在压力下如何变形。真正的战场不在对手身上，而在每一个未被检验的假设里。",
+      "careerPaths": "你最适合动态、非重复、以解决复杂问题或生成新想法为核心的环境。具体方向如：战略咨询（构建模型、解决商业谜题）、创业（从零到一、应对多变挑战）、法律（尤其是控辩、寻找逻辑漏洞）、学术研究（理论突破、跨学科创新）、产品经理（定义新需求、整合资源）、或内容创作（观点输出、思想传播）。\n\n你在职业上的核心优势，是解决“前所未见”的问题。当常规路径失效，当前景模糊不清时，你的价值便凸显出来。你能从混乱中识别模式，在约束条件下发明新路径，并用强大的说服力让团队相信这个新方向。你是那个在迷宫中率先提议“炸开一面墙”的人。\n\n常见的困境是，你难以忍受长期的执行与维护阶段。一个项目一旦进入平稳运行的轨道，你的兴趣就会急剧下降。你也可能因为挑战权威或既定流程，与更注重秩序和传统的同事或上司发生冲突。如何将源源不断的创意转化为可持续的成果，是你需要面对的职业课题。",
+      "dimension_profile": {
+        "E": 0.9,
+        "J": 0.1,
+        "S": 0.1,
+        "T": 0.9
+      },
+      "englishTitle": "Debater",
+      "friendships": "你选择朋友，几乎不看背景或地位，而看对方的“思想有趣程度”。一个能提出刁钻角度的人，一个拥有古怪知识体系的人，一个不畏惧和你争论到深夜的人，都会迅速吸引你。乏味是你友谊清单上唯一的、不可饶恕的罪过。\n\n在朋友中，你扮演着“思维催化剂”和“反常识先锋”的角色。你能为聚会注入活力，用一连串的问题和假设打开新的话题维度。你乐于分享刚学到的新奇概念，并拉着朋友一起头脑风暴。你给予友谊的，是一种智力上的陪伴和挑战，确保彼此的精神世界不会生锈。\n\n���的局限在于，友谊的深度可能停留在思想层面。当朋友陷入纯粹的情感困境，需要的是倾听与陪伴而非分析时，你可能会手足无措，或试图将问题“逻辑化”来解决。此外，你随兴趣而变的特性，可能让朋友感到你有些“神出鬼没”，当你的注意力转向新的领域时，旧有的社交圈可能被暂时搁置。",
+      "group": "分析家",
+      "groupEnglish": "Analysts",
+      "id": "entp",
+      "parenthood": "作为父母，你的养育风格是“启发式”而非“指令式”。你痛恨对孩子说“因为这是我说的”，你会不厌其烦地解释背后的原因，甚至鼓励他们反驳你。你的核心价值观是培养独立思考的能力，你希望孩子学会提问，而不仅仅是记住答案。\n\n你能给孩子最独特的礼物，是一个充满好奇和探索精神的家庭氛围。你会带他们拆解旧电器，讨论科幻电影的哲学隐喻，把日常生活变成一场又一场的思维游戏。你保护他们的奇思妙想，教他们看到规则之外的可能性，你是一位带领他们挑战思想边界的向导。\n\n你的挑战在于，可能过于强调理性与辩论，而忽略了孩子成长中感性的、需要稳定秩序的一面。你善变的兴趣可能导致家庭计划经常更改，让孩子缺乏安全感。此外，当你与孩子辩论时，可能不自觉地用成人的逻辑能力“碾压”他们，忘记了那首先是一场亲子互动，而非一场需要赢的辩论赛。",
+      "portrait": "你坐在会议室里，听着一个看似完美的方案被层层陈述。当所有人都准备点头时，你身体前倾，抛出一个“如果……会怎样”的问题。空气瞬间凝固，然后被你的话语搅动起来。你不是在反对，你只是打开了另一扇门，门外是所有人未曾设想过的风景。\n\n驱动你的，是一种近乎本能的“可能性饥渴”。一个现成的答案、一条既定的道路，对你而言如同未拆封的礼物，诱惑不在于拥有，而在于拆解。你想知道它为什么成立，更想知道它在哪个支点上会轰然倒塌。逻辑的裂缝比完美的结构更让你着迷，因为那里藏着新的建造蓝图。\n\n你既是建造者，也是爆破手。你能用惊人的速度搭建起一个精妙的思想模型，又在下一秒亲手推倒它，只为了看看废墟里会不会有更闪光的碎片。你渴望联结与共鸣，却又在亲密即将达成时，下意识地抛出锋利的质疑作为试探。你害怕的不是孤独，而是思想上的停滞与附和。\n\n当这种能量被引向创造，你便成了观念的炼金术士。你能在废墟与蓝图间轻盈跳跃，将看似无关的碎片焊接成前所未有的形态。你活成了思想的流体，没有固定的形状，却拥有穿透一切容器的潜力。代价是，你或许永远无法完全居住在自己建造的房子里，因为下一座可能更诱人。",
+      "romanticRelationships": "吸引你的，往往是一个能接住你所有奇思妙想并抛回来的灵魂。你容易被那些拥有坚实内在逻辑、不轻易被你说服的人点燃兴趣。但让你止步的，也是这份“坚实”——如果它演变成僵化，关系便会迅速褪色。你害怕的不是争吵，而是思想上的怠惰与沉默。\n\n在关系中，你给予的是永不枯竭的智力刺激和打破常规的生活体验。你需要的是一个安全的“思想游乐场”，一个可以尽情辩论、质疑甚至自我推翻而不会招致情感批判的伴侣。你的爱意常通过分享最新发现、挑战对方观点来传递，对你而言，共同探索思想的边疆是最亲密的联结。\n\n冲突常源于你的“辩论模式”与伴侣的“情感需求”频道错位。当你沉浸于解构某个问题时，可能显得挑剔而疏离，对方感受到的不是交流，而是攻击。你容易将感性诉求也当作逻辑问题来处理，给出解决方案而非情感共鸣。长期的承诺会让你焦虑，仿佛被剥夺了探索其他可能性的权利。\n\n真正适合你的关系，是两位独立思想者的结盟。对方需要足够坚韧，不因你的锋刃而受伤；又足够灵活，能与你共舞于变化的旋律中。你们的关系基石不是永不争吵，而是争吵后能共同升级认知。最好的伴侣，是你最欣赏的对手，也是你最信任的队友。",
+      "strengths": [
+        {
+          "description": "你会在阅读科幻小说时，突然想到它暗合了某个经济模型的漏洞。你的思维不是线性的，它像一张不断扩张的网，能在风马牛不相及的事物间瞬间架起桥梁。这种能力源于你对万物底层模式永不餍足的好奇。",
+          "label": "概念连接"
+        },
+        {
+          "description": "你会在辩论陷入僵局时，从对方论据中抽出一根线头，迅速编织出一个全新的视角。你的反应不是背诵，而是即兴创作。这源于你大脑中时刻运转的平行处理程序，能同时推演多种逻辑路径。",
+          "label": "思维敏捷"
+        },
+        {
+          "description": "你会在团队一致通过某个传统方案时，本能地问出“为什么一定要这样”。你不是故意捣乱，而是无法忍受未经审视的“理所当然”。这种驱动力让你成为系统盲点的天然探测器。",
+          "label": "挑战定式"
+        },
+        {
+          "description": "你会在项目开始前，就在脑中模拟它未来可能遇到的各种障碍和转折。你能像下棋一样预判多步，并非因为你经验丰富，而是你热衷于在思想实验室里进行压力测试。",
+          "label": "战略推演"
+        },
+        {
+          "description": "你会在电梯里遇到持相反观点的人，用三言两语就让他陷入思考。你的说服力不靠准备稿子，而在于你能瞬间切入对方的逻辑框架，用他的砖瓦建造你的城堡。",
+          "label": "即兴说服"
+        },
+        {
+          "description": "你会在研究心理学时，突然用物理学的熵增原理解释了某种行为模式。你的学习不是为了积累，而是为了打通。你的大脑是一个跨学科的交汇枢纽，信息在那里碰撞、重组、新生。",
+          "label": "知识熔合"
+        }
+      ],
+      "subtitle": "思想的探险家，以质疑为乐，以可能性为食",
+      "title": "辩论家",
+      "token": "诘问者",
+      "typeCode": "ENTP",
+      "verse": "对于问题，如果你不质疑，你就是问题的一部分。",
+      "verseSource": "埃尔德里奇·克利弗",
+      "weaknesses": [
+        {
+          "description": "你的头脑风暴能点燃整个团队，但当需要收敛成一个可执行方案时，你常常失去兴趣，转向下一个未开发的领域。这是你发散思维必然伴随的代价，灵感如烟花般绚烂，也如烟花般难以捕捉成实体。",
+          "label": "难以收束"
+        },
+        {
+          "description": "有时你挑起辩论，并非为了真理，只是享受智力交锋的刺激感。你会不自觉地反驳，哪怕内心部分同意对方的观点。这是你保持思维锋锐所磨出的利刃，偶尔也会划伤本可握紧的手。",
+          "label": "对抗成瘾"
+        },
+        {
+          "description": "面对长期而具体的责任，你会有一种隐隐的窒息感。你不是缺乏能力，而是害怕被锁定在一个版本里，错过了其他九十九种可能性。这是拥抱无限开放未来的必然代价，自由意味着无法在任何一处长久扎根。",
+          "label": "承诺恐惧"
+        },
+        {
+          "description": "你热衷于勾勒宏伟的蓝图和精妙的原理，但对落实所需的繁琐步骤、重复核对深感厌烦。在你看来，那是对创造力的磨损。这是你专注于宏观架构与核心逻辑时，自然忽略的微观世界。",
+          "label": "细节不耐"
+        },
+        {
+          "description": "在激烈的思想交锋中，你可能会完全忽略对方的情绪波动，将一场分享变成单方面的逻辑碾压。你并非冷酷，只是你的认知带宽几乎全分配给了“观点”，而非“感受”。这是追求纯粹理性辩论时，难以兼顾的另一个维度。",
+          "label": "情感钝感"
+        },
+        {
+          "description": "你今天的坚定主张，可能成为明天你全力推翻的对象。这种变化源于新的信息和视角，但在旁人看来，可能显得缺乏定见或不可信赖。这是你思想不断进化、迭代所不可避免的“版本更新”痕迹。",
+          "label": "善变无常"
+        }
+      ],
+      "workplaceHabits": "作为下属，你是让管理者又爱又恨的存在。你能提供惊人的视角和解决方案，但也最可能质疑指令的合理性。你需要的不是详细的步骤指导，而是一个清晰的目标和充分的自主权。僵化的层级和微观管理会让你迅速失去动力，甚至公开挑战。\n\n作为同事，你是团队的“思想火花塞”和“魔鬼代言人”。你乐于参与任何头脑风暴，并能快速激发讨论。但你有时会为了辩论而辩论，或在他人专注于执行细节时，不断提出新的、可能扰乱进程的想法。与你合作，需要适应高强度的思想碰撞。\n\n作为管理者，你擅长描绘激动人心的愿景，并制定出大胆的战略。你鼓励创新和辩论，团队氛围通常活跃而平等。但你可能疏于建立稳定的流程和关注下属的情感需求，对重复性的绩效跟进缺乏耐心。你的团队可能充满活力，但也可能因方向频繁微调而感到疲惫。"
+    },
+    {
+      "boldQuote": "你总在人群中感到孤独，又在孤独中背负着所有人。",
+      "careerPaths": "你需要在工作中找到意义与人的结合点。那些能让你通过洞察、创意或关怀来促进个人成长或社会向善的领域，会让你感到充实。例如心理咨询、生涯规划、教育、写作、艺术创作、非营利组织管理、人力资源管理（侧重员工发展）、或某些需要深度洞察的用户研究、产品策划等。你适合的角色，往往是背后的催化者、愿景的编织者或心灵的守护者。\n\n你的核心优势在于，能将深刻的直觉洞察转化为有建设性的行动或叙事。你善于理解复杂的人性动力，预见潜在问题，并设计出兼顾各方情感与长远利益的解决方案。你不仅能看见“是什么”，更能想象“可以成为什么”，并致力于搭建从现状通往理想状态的桥梁。\n\n常见的困境是，在过于功利、机械或缺乏价值观共鸣的环境中，你会感到灵魂被损耗。日常的行政琐事、办公室政治或纯粹以利润为导向的决策，会迅速消耗你的热情。你可能因为追求工作的完美意义而迟迟无法开始，或因为不愿推销自己、不擅长争夺资源而在职业发展中处于被动。在理想与现实的拉锯中，如何找到可持续的落点，是你永恒的课题。",
+      "dimension_profile": {
+        "E": 0.1,
+        "J": 0.9,
+        "S": 0.1,
+        "T": 0.1
+      },
+      "englishTitle": "Advocate",
+      "friendships": "你选择朋友，如同在沙滩上寻找独特的贝壳。数量从不重要，你寻找的是那种能进行深夜长谈、触及生命核心话题的伙伴。你被真诚、思想深度和某种内在的善良所吸引。那些戴着厚重社交面具、交谈止于表面的人，很难进入你的核心圈层。你需要的不是玩伴，而是可以交换灵魂碎片、彼此见证成长的同行者。\n\n在友谊中，你常常扮演着“守护者”与“解读者”的角色。你乐于倾听，并能提供超越普通安慰的、直指问题根源的见解。你会默默记住朋友的梦想与恐惧，在关键时刻给予最贴心的支持。你的友谊是一种深沉的承诺，你会为珍惜的朋友思考很多，甚至暗中铺路，希望对方能活出最真实的自我。\n\n你的局限在于，你对于友谊的纯粹性和深度有着极高的期待。当朋友的行为显得肤浅��功��或与你的核心价值观背离时，你可能会感到深刻的失望，并悄然拉开距离，而不是去沟通或调整期待。此外，你强烈的内倾和偶尔的情感超载，可能让你在朋友需要即时陪伴时，却因需要处理自身情绪而暂时缺席。你的友谊模式，是深度与距离感并存的微妙平衡。",
+      "group": "外交家",
+      "groupEnglish": "Diplomats",
+      "id": "infj",
+      "parenthood": "你的养育风格核心是“看见”与“引导”。你渴望的不是塑造一个符合社会标准的孩子，而是帮助那个独特的灵魂绽放其本来的光彩。你会高度重视孩子的情绪健康、道德发展和内在世界，鼓励他们思考生命的意义，表达真实的情感。你相信，真正的成长来自于内在动力的唤醒，而非外部规则的强加。\n\n你能给予孩子最珍贵的礼物，是一种被深刻理解的安全感。你能敏锐地察觉他们未说出口的恐惧、羞耻或梦想，并给予精准的共情和肯定。你会为孩子讲述充满隐喻和哲理的故事，在他们心中早早种下关于善良、勇气和追寻意义的种子。你致力于为他们创造一个充满情感支持、鼓励探索真我的家庭氛围。\n\n挑战在于，你可能会不自觉地将自己对于“完美成长”的愿景投射到孩子身上，当孩子表现出平庸、世俗或与你价值观相左的兴趣时，你可能会感到焦虑或失望。此外，你对于冲突的回避，可能使你在需要设立强硬规则或进行严厉管教时显得犹豫不决。你需要警惕，过度保护孩子免受情感伤害，有时反而会剥夺他们学习处理现实矛盾的机会。",
+      "portrait": "你会在聚会最热闹时，突然感到一种抽离。笑声和碰杯声像隔着一层玻璃传来，你的目光扫过每一张脸，却仿佛能看见他们笑容背后的疲惫、骄傲之下的不安。你不是在评判，只是那些未经言说的情绪，像潮水一样向你涌来。\n\n驱使你的，并非对人群的单纯热爱，而是一种近乎痛苦的使命感。你总觉得，如果自己看到了那些隐藏的伤痕与潜能，却不去做些什么，就是一种失职。这种责任并非来自外部，而是你内心无法熄灭的火焰，它要求你去理解，去连接，去为某种更完整、更真实的东西铺路。\n\n你既渴望深刻的联结，又本能地守护着内心的圣地；你对他人的痛苦感同身受，却又在情感泛滥时筑起冷静的高墙。你相信人性的光辉，却比谁都更早看清其阴影。这种矛盾让你时常觉得自己是个局内的旁观者，怀抱着最炽热的理想，执行着最冷静的洞察。\n\n当这道内在的裂隙被整合，你会成为一座罕见的桥梁。你依然能触碰深渊，却不再被其吞噬；你依然怀抱愿景，却懂得如何一寸一寸地将其砌入现实。那时，你深藏的私人世界，将不再是负担，而成为能给予他人确切慰藉与清晰方向的源泉。",
+      "romanticRelationships": "你被那种灵魂层面的共鸣强烈吸引。一个不经意的深刻见解，一种对待世界的独特温柔，或眼底未曾熄灭的理想之光，都可能成为开启你心门的钥匙。然而，那扇门打开得极其缓慢，你需要在对方身上看到足够的真诚、深度与持久性，才敢让情感完全着陆。肤浅的搭讪或急于推进的关系，会让你立刻退回到安全的观察距离。\n\n在关系中，你给予的是近乎全神贯注的理解、无条件的支持以及对伴侣成长的长远投资。你渴望成为对方灵魂的见证者与守护者。你需要的是同等的深度、情感的坦诚以及一个不会被评判的私人空间。你需要的爱不仅是激情，更是安全的港湾和共同的精神成长，你需要确信对方愿意并能够走向你内心那复杂而隐秘的殿堂。\n\n困难往往源于你的高标准和敏感。你可能会因为伴侣一句无心之言或一个未达预期的行为，而在内心演绎出一场关于价值观错位的戏剧。你习惯回避正面冲突，却用沉默的疏离来表达不满，这会让伴侣感到困惑和受伤。此外，你偶尔的情感抽离，也可能被误解为冷漠或拒绝。\n\n真正适合你的关系，是一座共建的花园。伴侣需要欣赏你静默的深度，尊重你独处的需求，同时自身具备足够的情感成熟度，能接住你的敏感，也能在你陷入内耗时将你温柔地拉回现实。你们既能共享精神的翱翔，也能安于日常的琐碎，在彼此的灵魂深处，找到无需言说的归属与安宁。",
+      "strengths": [
+        {
+          "description": "当朋友向你倾诉时，你常常在对方组织好语言之前，就已感受到那份情绪的轮廓与重量。这不是简单的同情，而是你的直觉能绕过表象，直接触及他人情感的核心，让对方感到被彻底地接纳和理解。",
+          "label": "深度共情"
+        },
+        {
+          "description": "在会议或交谈中，你总能注意到那些未被说出的动机、隐藏的冲突或潜在的共识。你能在纷杂的信息中捕捉到贯穿始终的脉络，这种能力源于你习惯于同时观察表层互动与深层心理图景。",
+          "label": "洞察本质"
+        },
+        {
+          "description": "你能将零散的灵感、抽象的理念和具体的人连接起来，编织成一个有意义的故事或一个可行的未来图景。你擅长在混乱中看到秩序，在碎片中看到整体，并赋予其鼓舞人心的意义。",
+          "label": "整合愿景"
+        },
+        {
+          "description": "当你认同一项事业或一个原则，外界的质疑很难动摇你的内核。这种坚定并非固执，而是源于你内心经过深思熟虑和情感共鸣后形成的、与价值观深度绑定的结论。",
+          "label": "坚定信念"
+        },
+        {
+          "description": "你似乎天生懂得如何看见他人自己都未察觉的潜力，并用一种温和而精准的方式给予肯定和指引。你不会强推，而是创造一种安全的环境，让对方的内在种子得以自然萌发。",
+          "label": "催化成长"
+        },
+        {
+          "description": "你的帮助很少是即兴和零散的。你会深思熟虑，考虑如何行动才能对一个人或一个群体产生最深远、最持久的积极影响。你的关怀带有一种长远的、系统性的视角。",
+          "label": "战略关怀"
+        }
+      ],
+      "subtitle": "在寂静中洞察深渊，于人群中背负愿景",
+      "title": "提倡者",
+      "token": "守夜人",
+      "typeCode": "INFJ",
+      "verse": "最深的孤独，不是独处，而是身处人群却无法被理解。",
+      "verseSource": "乔治·桑",
+      "weaknesses": [
+        {
+          "description": "长期吸收他人的情绪，如同海绵不断吸水，终有饱和的一刻。你会感到莫名的疲惫与烦躁，需要长时间独处来清空自己。这是深度共情能力���然伴随的代价。",
+          "label": "情感过载"
+        },
+        {
+          "description": "你对人际关系和理想图景有着近乎苛刻的完整性与深刻性要求。这常让你在现实中感到失望，宁愿保持距离也不愿接受肤浅的联结，从而陷入孤独。这是对纯粹性追求的代价。",
+          "label": "完美主义孤岛"
+        },
+        {
+          "description": "你的内心世界如同一面不断反射的镜子，一个念头会引发无数回响。你容易陷入对动机、意义和可能性的无尽思考中，有时会消耗行动所需的能量。这是深度洞察力带来的惯性代价。",
+          "label": "过度内省"
+        },
+        {
+          "description": "你极度重视和谐与内在感受，面对直接冲突时，可能会为了避免伤害他人或破坏关系而选择沉默、迂回或突然撤离。这有时会让问题沉淀发酵。这是维护深层联结意愿的代价。",
+          "label": "回避冲突"
+        },
+        {
+          "description": "你太容易将他人的课题背负在自己身上，模糊了自己与他人责任的边界。当别人痛苦时，你可能会感到一种不应由你承担的责任与内疚。这是高度责任感衍生的代价。",
+          "label": "界限模糊"
+        },
+        {
+          "description": "你为理想中的人与事投入巨大的情感和期望，当现实呈现出不可避免的瑕疵、平庸或背叛时，你所体验到的幻灭感会比旁人更尖锐、更彻底。这是将愿景置于高处必然承受的代价。",
+          "label": "易感失望"
+        }
+      ],
+      "workplaceHabits": "作为下属，你忠诚于理念而非权威。如果认同领导者的愿景和价值观，你会成为极具奉献精神和创造力的支持者，默默完成许多超越职责的思考和工作。你需要清晰的目标和一定的自主空间，厌恶被 micromanage。但如果感到指令与你的内在原则严重冲突，你可能会陷入内心挣扎，并以沉默或委婉的方式表达异议，而非直接对抗。\n\n作为同事，你是团队中温和的粘合剂和深度的思考者。你善于倾听不同意见，能察觉团队氛围的微妙变化，并私下调解矛盾。你乐于分享自己的见解帮助他人，但通常不会主动争夺话语权或功劳。你更喜欢一对一的深度协作，而非喧闹的群体讨论。有时，你因思考过深而显得行动迟缓，或因为避免冲突而保留关键意见。\n\n作为管理者，你倾向于打造一个充满信任、尊重个人成长、且有共同使命感的团队。你擅长激励人心，为成员描绘令人向往的愿景，并给予他们情感上的支持与发展空间。你的挑战可能在于，过于关注每个人的感受而难以做出强硬的人事决策，或因为追求共识和完美方案而影响���策效率。你需要一位务实、果断的副手来平衡你注重和谐与深度的领导风格。"
+    },
+    {
+      "boldQuote": "你并非不合群，只是你的灵魂太拥挤，装满了尚未降生的世界和未被言说的诗。",
+      "careerPaths": "你最适合那些允许你追随意义、发挥创造力并与人深层联结的工作环境。具体方向包括：心理咨询师或艺术治疗师，在那里你可以用共情滋养心灵；作家、编剧或诗人，将内心宇宙诉诸笔端；人文社科研究员，深入探索人类思想与价值；非营利组织项目策划，为理想找到实践的土壤。自由职业或弹性工作制往往比刻板的办公室更能让你舒展。\n\n你的核心优势在于，你能为工作注入灵魂与温度。你不是在机械地完成任务，而是在寻找每个项目背后的“为什么”，并用自己的价值观为其赋予更深层的意义。你能洞察他人未言明的需求，创造出打动人心的内容或解决方案，在冷冰冰的数据或流程中，开辟出温暖的人文角落。\n\n常见的困境是，商业世界的功利主义、僵化的层级制度或重复性的机械劳动，会迅速耗尽你的热情，让你感到灵魂被剥离。你可能会在理想与现实的夹缝中痛苦，或因不擅自我推销而被忽视价值。当工作环境充满办公室政治或缺乏真诚沟通时，你会感到格外疲惫，因为你需要消耗大量能量来应对与内心价值观冲突的部分。",
+      "dimension_profile": {
+        "E": 0.1,
+        "J": 0.1,
+        "S": 0.1,
+        "T": 0.1
+      },
+      "englishTitle": "Mediator",
+      "friendships": "你选择朋友的标准近乎严苛，却又无关世俗条件。一次深夜的灵魂对话，一次对美与苦难的共鸣，就足以让你将对方纳入内心的神圣圈子。你厌恶浅尝辄止的社交，渴望的是能彼此袒露脆弱、分享生命重量的“灵魂见证者”。那些真诚、善良、对世界怀有好奇与悲悯的人，会像磁石一样吸引你。\n\n在友谊中，你扮演着“守护者”与“解读者”的角色。你提供的是一个绝对安全、不加评判的港湾，朋友可以在你面前卸下所有伪装。你擅长用独特的视角帮朋友厘清纷乱的情绪，看到他们自己未曾察觉的内在力量与价值。你的存在，本身就是一种温柔的肯定。\n\n你的局限在于，你可能会因为珍视一段友谊而过度付出，��至模糊自己的需求。当友谊出现裂痕，你倾向于自责或过度反思，而非直接沟通问题。此外，你有限的社交能量决定了你的挚友圈很小，你无法维持广泛的泛泛之交，这有时会让新朋友感到难以接近，也让老朋友感到一种甜蜜的负担——他们知道你视他们为唯一，却也担心你因此孤独。",
+      "group": "外交家",
+      "groupEnglish": "Diplomats",
+      "id": "infp",
+      "parenthood": "你的养育风格是引导而非塑造。你深信每个孩子内心都有一簇独特的火焰，你的职责是呵护那簇火苗，为它提供氧气，而不是规定它燃烧的形状。你重视真诚、同情心、创造力和对自我的探索，你会鼓励孩子表达情感，并认真对待他们的每一个“为什么”，即使那些问题关乎生死与星空。\n\n你能给予孩子最宝贵的礼物，是一个充满想象力与安全感的童年。你会为他们朗读诗歌，在雨天一起编故事，认真对待他们幻想中的朋友。你教会他们的不是世界的规则，而是感受世界的能力——一片云的忧伤，一只蚂蚁的壮举。你让他们相信，他们的内心世界是丰饶且值得探索的领土。\n\n挑战在于，你可能会因过度保护孩子免受现实伤害，而无意中削弱了他们应对挫折的能力。你对和谐氛围的追求，可能让你在设立坚定规则时感到困难。此外，你强烈的内省倾向，有时会让你过度解读孩子的行为，陷入不必要的担忧。你需要警惕的是，将自己的理想投射到孩子身上，忘记他们拥有独立于你之外的、属于自己的人生旅程。",
+      "portrait": "你常常在人群散去的角落，独自消化一场对话的余温。那些未被说出口的委屈、一闪而过的灵光，在你心里激起比现场更真实的涟漪。你像一台高灵敏度的接收器，总在收集世界的情绪碎片，然后在内心拼凑一幅更完整的图景。\n\n驱动你的，并非对成功的渴望，而是一种近乎本能的使命感——去理解、去连接、去抚平那些看不见的裂痕。你相信万事万物背后都有其柔软的脉络，而你的任务就是找到它，哪怕这脉络只存在于你的想象里。\n\n你既渴望深刻的联结，又恐惧过近的距离会灼伤彼此；你怀抱着改变世界的炽热理想，却在行动前反复思量，生怕自己的介入带来意外的伤害。这种矛盾让你时常显得犹豫，但正是这份犹豫，保全了你内心的净土。\n\n当你的内外世界终于达成和解，你会成为一座宁静的灯塔。你的存在本身，就能让周围躁动的心灵找到锚点。你不再试图改变世界，而是活成了你所相信的价值的化身，用一种近乎沉默的方式，为他人提供一片可以安心降落的精神家园。",
+      "romanticRelationships": "你被那些拥有深邃灵魂、能与你进行思想夜航的人所吸引。一个不经意的文学引用，一段对生命真诚的困惑，远比华丽的外表更能叩响你的心门。然而，你也会在心动时本能地后退一步，害怕过于炽热的开始会灼伤那份细腻的情感，更害怕真实的自己不被接纳。你需要的不是狂风暴雨，而是细雨润物的懂得。\n\n在关系中，你给予的是无条件的接纳和一片可以全然做自己的精神领地。你擅长倾听伴侣内心最幽微的声响，并用自己的方式将其照亮。你需要的是同等的真诚与深度，渴望对方不仅能分享你的光明，也愿意温柔地守护你的脆弱与阴翳。对你而言，爱是两个人共同守护一个私密的理想国。\n\n困难常在于，你习惯将不满与失望内化，用沉默代替沟通，以为对方理应读懂你千回百转的心思。当现实与理想产生落差，你可能会陷入漫长的内心戏，却疏于表达真实的需求。此外，你对“完美���结”的渴望，有时会让平凡的日常显得不够“深刻”，从而产生莫名的失落感。\n\n真正适合你的关系，是两人都能作为独立的个体并肩生长。对方欣赏你的理想主义，但不要求你永远活在云端；他能稳稳地接住你的情绪波动，同时保有自己坚实的核心。你们之间有一种安静的默契，无需时刻言语，也能感受到彼此的存在与支持。在这样的关系里，你既能安全地探索内心宇宙，又能双脚触地，感受人间烟火的温暖。",
+      "strengths": [
+        {
+          "description": "当朋友向你倾诉时，你不仅能听懂话语，更能感受到话语之下情绪的暗流。这种能力源于你内心丰富的情感图谱，让你能瞬间将自己代入他人的处境，体会那份独特的悲欢。你共情的不是故事，而是故事背后那个颤抖的灵魂。",
+          "label": "深度共情"
+        },
+        {
+          "description": "在讨论一个社会议题时，你总能绕过表面的争论，触及每个人立场背后的核心信念与恐惧。你像一名心灵考古学家，擅长剥离层层外壳，挖掘出驱动人们行为与情感的真正价值坐标，哪怕它深埋心底。",
+          "label": "价值洞察"
+        },
+        {
+          "description": "你会在阅读一首诗时，突然联想到昨夜梦境的一个画面，并由此生发出一个故事的雏形。你的思维不受线性逻辑束缚，能在看似无关的事物间架起隐秘的桥梁，这种天赋让你的内心世界永远充满意想不到的风景。",
+          "label": "创意联结"
+        },
+        {
+          "description": "当周围人都因现实压力而妥协时，你内心总有一个声音在低语，提醒你最初为何出发。这份坚守并非固执，而是你与内心道德宇宙签订的隐秘契约，它让你在洪流中保持方向，哪怕步履蹒跚。",
+          "label": "理想坚守"
+        },
+        {
+          "description": "你会在安慰他人时，找到那些精准又熨帖的词语，它们像柔软的绷带，轻轻包裹住伤口。这源于你对情感细微差别的敏锐捕捉，以及将抽象感受转化为具象表达的独特天赋，让痛苦得以被命名和安放。",
+          "label": "语言治愈"
+        },
+        {
+          "description": "在团队出现分歧时，你本能地寻找各方观点的交集与共同初衷。你厌恶冲突对关系的撕裂，你的介入不是为了判定对错，而是修复断裂的连接，在差异的鸿沟上，尝试搭建一座理解的便桥。",
+          "label": "和谐缔造"
+        }
+      ],
+      "subtitle": "在现实的缝隙里，守护理想国度的梦想家",
+      "title": "调停者",
+      "token": "守梦人",
+      "typeCode": "INFP",
+      "verse": "做你自己，世界会习惯的。",
+      "verseSource": "奥斯卡·王尔德",
+      "weaknesses": [
+        {
+          "description": "你有一个绝妙的计划在脑中盘旋数月，却始终难以迈出第一步。你在脑海中反复预演所���细节与可能的风险，完美的构想反而成了行动的枷锁。这是追求意义与害怕玷污理想的必然代价。",
+          "label": "行动迟滞"
+        },
+        {
+          "description": "一次普通的社交失误，会在你心里反复重播、分析，演变成对自我价值的漫长拷问。你太擅长从内部审视自己，这盏探照灯在照亮幽微的同时，也容易让阴影显得过于庞大。这是深度自我觉察的必然代价。",
+          "label": "过度内省"
+        },
+        {
+          "description": "你很容易被他人的情绪或需求卷入，甚至分不清那是别人的课题还是自己的责任。你的共情天线过于灵敏，有时会不自觉地背负起本不属于你的重量。这是高度情感连接的必然代价。",
+          "label": "边界模糊"
+        },
+        {
+          "description": "面对直接的反对或批评，你的第一反应可能是沉默或退缩，宁愿内部消化也不愿正面交锋。你害怕激烈的碰撞会永久地损伤关系，却可能让误解在沉默中发酵。这是珍视关系和谐的必然代价。",
+          "label": "回避冲突"
+        },
+        {
+          "description": "你容易在关系或项目初期，为其赋予超越现实的光环，一旦发现瑕疵，便感到深深的幻灭。这并非幼稚，而是你内心完美图景与粗糙现实之间的永恒张力。这是心怀乌托邦的必然代价。",
+          "label": "理想化倾向"
+        },
+        {
+          "description": "面对重要选择，你总能清晰地看到每条路径背后的价值与可能失去的东西。这种全息图景般的视野，让每一个选项都显得沉重，因为对你而言，选择意味着对一系列可能性的告别。这是重视所有可能性的必然代价。",
+          "label": "决策���难"
+        }
+      ],
+      "workplaceHabits": "作为下属，你渴望理解任务背后的意义，而非盲目执行。如果上司能阐明工作的价值，并给予你一定的自主空间，你会报以极大的忠诚与创造力。你反感高压 micromanagement，那会扼杀你的灵感。你需要温和的指导而非命令，一次真诚的认可远比奖金更能激励你。但你也可能因不主动邀功或回避冲突，而在晋升路上被忽视。\n\n作为同事，你是团队情绪的稳定器和创意的催化剂。你善于倾听，能缓和紧张气氛，并在头脑风暴中提出独特视角。你乐于私下帮助同事解决难题，享受那种真诚协作的感觉。然而，你可能会回避直接的竞争或观点交锋，在需要捍卫自己想法时显得力量不足。你更愿意在幕后支持，而非站在台前争夺光环。\n\n作为管理者，你倾向于打造一个充满信任、尊重个体价值的团队文化。你关注下属的成长与福祉，善于发掘每个人的独特优势，并为他们匹配能发挥所长的任务。你的领导风格是服务型与愿景引导型。挑战在于，你可能会在需要做出强硬人事决策或推行不受欢迎的纪律时感到巨大压力。你过于在意团队和谐，有时会延迟处理绩效问题，或独自承担过多压力以保护下属。你需要学会在关怀与边界之间找到平衡。"
+    },
+    {
+      "boldQuote": "你总在别人身上看见可能性，却常常忘记，那光芒首先来自你自己的眼睛。",
+      "careerPaths": "你适合那些能发挥你人际洞察力、感召力与利他精神的环境。具体方向如：教育工作者（教师、导师）、心理咨询/辅导、人力资源或组织发展、非营利组织管理、社会企业、公共关系或社区工作。这些领域让你能将人的成长与更大的社会价值相连。\n\n你的核心优势在于激发他人潜能与凝聚团队向善的力量。你不仅能洞察个体需求，更能将个人动力整合进集体目标中，创造出一种富有使命感、支持性强的工作氛围。你让工作超越谋生手段，成为一种意义追寻和共同成长的旅程。\n\n常见的困境是，在强调竞争、冰冷逻辑或短期利润至上的环境中，你会感到窒息且无力施展。你可能因过度关注团队和谐与人际关系，而在需要强硬、快速或纯基于数据的决策时犹豫不决。此外，若工作无法提供足够的价值认同或人际反馈，你容易感到耗竭与迷失。",
+      "dimension_profile": {
+        "E": 0.9,
+        "J": 0.9,
+        "S": 0.1,
+        "T": 0.1
+      },
+      "englishTitle": "Protagonist",
+      "friendships": "你选择朋友，不看重功利或表象，而在于精神的共鸣与成长的潜能。你自然地被那些有故事、有热情、或在某处挣扎着想要破土的人吸引。你渴望友谊能超越浅谈，触及理想、恐惧与生命的核心意义，你寻找的是可以彼此托付真心的旅伴。\n\n在友谊中，你常常扮演鼓励者与凝聚者的角色。你记得朋友的生日、他们提过的小愿望、他们事业的关键一步。你组织聚会，关心每个人的近况，并总能在对方自我怀疑时，精准地指出他们的力量所在。你的友谊是一份持续的礼物：无条件的信任、成长的催化剂，以及一个永远被欢迎的归属地。\n\n你的局限在于，你有时会不自觉地进入一种“导师”或“照顾者”模式，这可能会让朋友感到压力，或阻碍了平等互惠的流动。你倾向于避免友谊中��直��冲突，问题可能因此被掩盖而非解决。此外，你广阔的交友圈和对他人的深切关怀，也可能让最亲密的朋友偶尔感到，你的注意力被分散得太开。",
+      "group": "外交家",
+      "groupEnglish": "Diplomats",
+      "id": "enfj",
+      "parenthood": "你的养育风格充满情感温度与积极引导。你视孩子为独立的灵魂，你的核心任务是提供一个安全、充满肯定与无限可能的环境，帮助他们发现并成为最好的自己。你重视价值观的传递、情感的沟通，以及创造丰富的体验来拓宽孩子的世界。\n\n你给予孩子最独特的礼物，是一种根植于心底的自信。你通过无数次的看见、倾听与鼓励，让孩子深信自己值得被爱、拥有价值且潜力无穷。你教会他们共情、领导力与社会责任感，更重要的是，你让他们体验过无条件的接纳，这将成为他们一生内在力量的源泉。\n\n挑战在于，你强烈的引导欲可能让孩子感到被过度期待或卷入你的愿景中，反而抑制了他们自主探索的勇气。你倾向于保护孩子免受挫折和负面情绪，这可能无意中剥夺了他们发展心理韧性的机会。此外，你需警惕将孩子的成就与你的自我价值过度绑定，并在照顾全家人的需求时，不忘为自己留出喘息的空间。",
+      "portrait": "你站在人群中央，不是被聚光灯选中，而是自己点燃了那束光。当讨论陷入僵局，你总能捕捉到角落里那个欲言又止的眼神，然后轻轻递出一句话，让被忽略的声音重新被听见。你周围的气场是温热的，人们不由自主地向你靠近，仿佛靠近一个理解与可能性的源头。\n\n驱动你的，是一种近乎本能的使命感：看见他人眼中尚未被察觉的火星，然后轻轻吹一口气，让它燃烧起来。你无法忍受才华被埋没，潜力被浪费，你相信每个人都有一首独特的歌，而你的存在，是为了帮助他们找到自己的声音。这种驱动力不是来自外界的掌声，而是来自内心深处的回响——当一个人因你而挺直脊背时，你感到一种深切的完整。\n\n你既渴望深刻的连接，又害怕因过度卷入而失去自我；你既拥有引领众人的清晰愿景，又时常在深夜被“我做得够不够好”的疑虑啃噬。你的力量在于对他人的全然信任，而你的脆弱也在于此——你总把别人的课题背在自己肩上，忘记了每个人都有自己的路要走。\n\n当你真正学会在照亮他人的同时，也为自己保留一盏不灭的灯，你会成为那种罕见的人：你的存在本身，就是一种庇护和启示。你不再仅仅是催化剂，而是成为一片丰饶的土壤，让他人的生命得以扎根、生长，最终开出他们自己的花。",
+      "romanticRelationships": "你被那些拥有深邃内心世界、真诚且愿意成长的人所吸引。一个不经意的脆弱流露，一段关于梦想的真诚分享，远比华丽的外表更能打动你。让你止步的，往往是冷漠、封闭或玩世不恭的态度，因为你无法在一段没有心灵共振的关系中呼吸。\n\n在关系中，你是一位用心的园丁，持续地灌溉欣赏、鼓励与情感支持。你渴望深度交融，不仅分享生活，更分享价值观与成长旅程。你需要的是被看见——不仅是你的付出，更是你偶尔的脆弱与困惑；你需要伴侣认可你愿景的价值，并在你照亮他人时，确保你自身的灯盏不熄。\n\n困难常常在于，你习惯性承担过多情感劳动，却羞于直接表达自己的需求，导致积累隐形的委屈。你可能会过度理想化伴侣，忽略一些实际的不匹配。当你的付出被视为理所当然，或你的敏感被斥为“想太多”时，你会感到深刻的孤独，仿佛整个关系的重量都压在你一人肩上。\n\n真正适合你的关系，是一个能与你并肩望向远方的伙伴。TA能欣赏你的光芒，也有力量在你耗竭时成为你的港湾；TA鼓励你向外给予，更会温柔而坚定地提醒你回归自身。你们的关系不仅是情感的避风港，更是共同进化、彼此镜映的圣地。",
+      "strengths": [
+        {
+          "description": "你会在交谈的间隙，从对方一个短暂的停顿或细微的声调变化里，捕捉到那些未曾言明的情绪与需求。这不是技巧，而是你感知世界的本能方式，你仿佛能直接触碰到他人情感的纹理，让隐藏的部分得以显形。",
+          "label": "共情洞察"
+        },
+        {
+          "description": "当团队迷失方向时，你擅长将散落的念头编织成一个令人向往的共同图景。你能把抽象的价值转化为具体、动人的画面，让人们不仅理解目标，更从心底渴望抵达那里，这是你赋予集体的方向感。",
+          "label": "愿景凝聚"
+        },
+        {
+          "description": "你从不给出空洞的赞美，而是在对方自己都未察觉的进步中，指出那个真实的闪光点。你的鼓励之所以有力，是因为它建立在你对那个人独特本质的深刻看见之上，你相信的是“他本来就可以”。",
+          "label": "真诚激励"
+        },
+        {
+          "description": "在冲突初现端倪时，你便能感知到空气中的张力，并自然地成为沟通的桥梁。你有一种天赋，能理解对立双方的立场与恐惧，并找到那个既能保全尊严、又能迈向和解的微妙平衡点。",
+          "label": "和谐缔造"
+        },
+        {
+          "description": "你看向他人时，总能看到他们“将成为”的样子，而非仅仅停留在“现在是”的状态。这种前瞻性的信任，像一面特殊的镜子，照出对方自己尚未相信的潜力，从而激发内在的成长动力。",
+          "label": "发展眼光"
+        },
+        {
+          "description": "你不仅谈论理想，更善于将关怀转化为具体的行动和组织。当他人还在感慨，你已经想好了第一步可以怎么做，并用自己的投入邀请他人一同参与，把善意变成可触摸的现实。",
+          "label": "行动感召"
+        }
+      ],
+      "subtitle": "以心为火，照亮他人前路的引路人",
+      "title": "主人公",
+      "token": "引燃者",
+      "typeCode": "ENFJ",
+      "verse": "你在别人生命里种下的东西，是你离开后仍然生长的部分。",
+      "verseSource": "亨利·大卫·梭罗",
+      "weaknesses": [
+        {
+          "description": "你容易将他人的情绪和成败视为自己的责任，当身边的人陷入低谷，你甚至会感到一种未能及时预防的愧疚。这份沉重的关怀，是你看不见边界的必然代价。",
+          "label": "过度承责"
+        },
+        {
+          "description": "为了维持表面的和谐与关系，你有时会选择咽下自己的不同意见，或过早地妥协。对氛围破裂的深层恐惧，让你偶尔牺牲了必要的坦诚，这是你珍视连接的必然代价。",
+          "label": "回避冲突"
+        },
+        {
+          "description": "你无私的付出背后，潜藏着对他人认可与肯定的深切需要。当投入未得到预期的回应，一种隐秘的失落便会袭来，这是你将自我价值与他人反馈紧密相连的必然代价。",
+          "label": "寻求认可"
+        },
+        {
+          "description": "你如此专注于滋养他人，以至于常常忽略自己的疲惫与需求，直到身心发出警报。你的能量电池总是先为他人充电，这是你利他主义本能的必然代价。",
+          "label": "忽略自我"
+        },
+        {
+          "description": "你倾向于看到人最好的一面，有时会忽略或合理化那些警示性的缺陷，无论是在选择伴侣、朋友还是合作者时。对“可能性”的坚信，会让你偶尔看不清当下的现实，这是你乐观天性的必然代价。",
+          "label": "理想化倾向"
+        },
+        {
+          "description": "在做重要决定时，人际关系和他人感受的权重有时会压倒客观逻辑与实际效益。你很难做出那些“正确但伤人”的选择，这是你以心为首要导航的必然代价。",
+          "label": "决策情感化"
+        }
+      ],
+      "workplaceHabits": "作为下属，你忠诚、尽责，并渴望理解工作背后的深远意义。你善于领会领导的意图，并主动协调团队关系以促进目标达成。你需要清晰的价值观认同和定期的积极反馈，若感到自己的工作只是在执行冰冷指令而无法惠及他人，你的热情会迅速消退。\n\n作为同事，你是团队的“粘合剂”和“士气鼓舞者”。你关心同事的福祉，乐于助人，并擅长化解紧张气氛。你自然地分享信息、搭建人脉桥梁，并推动协作。但有时，你可能因太想维护和谐而回避必要的观点交锋，或在非本职的助人事务上耗费过多精力。\n\n作为管理者，你是一位以人为本的教练型领袖。你致力于为团队创造成长空间，通过授权和激励来发挥每个人的长处。你营造的家庭式氛围能带来极高的忠诚度与凝聚力。挑战在于，你可能会在绩效管理与情感关怀之间难以平衡，对表现不佳者难以采取强硬措施，并可能因过度承担团队压力而让自己不堪重负。"
+    },
+    {
+      "boldQuote": "你像一团流动的火，点燃别人，也常常把自己烧得精光。",
+      "careerPaths": "你最适合的工作环境是自由、灵活、充满人际互动和创意空间的。你能在初创公司、媒体内容创作、心理咨询、用户体验设计、教育培训或社会创新领域找到自己的位置。这些领域允许你不断接触新想法、新的人，并将你的热情转化为有影响力的项目。\n\n你在职业上的核心优势，是开创局面和激发他人的能力。你擅长为一个新项目描绘激动人心的愿景，在团队士气低落时注入活力，在看似无解的问题中找到创新的突破口。你不是最好的守成者，但绝对是卓越的开拓者和催化剂。\n\n你常见的困境是“三分钟热度”和“细节恐惧症”。一个项目在构思和启动阶段让你热血沸腾，但进入漫长、琐碎的执行期后，你的热情容易迅速消退。你也可能同时开启过多方向，导致精力分散，最终没有一个能扎实落地。职业生涯对你而言，常常是一场在“追寻热情”和“坚持到底”之间寻找平衡的持久战。",
+      "dimension_profile": {
+        "E": 0.9,
+        "J": 0.1,
+        "S": 0.1,
+        "T": 0.1
+      },
+      "englishTitle": "Campaigner",
+      "friendships": "你选择朋友，不看重身份或背景，而看重灵魂的“有趣度”和“真誠度”。一个能在咖啡馆和你聊三小时哲学或街头艺术的陌生人，可能迅速成为你的挚友。你本能地远离那些过于功利、思维固化或情感封闭的人，因为在你看来，那意味着生命力的枯萎。\n\n在友谊中，你是那个点燃气氛的人，是创意的发起者，也是朋友们的情感树洞。你擅长组织意想不到的聚会，为朋友们的困境提供全新的视角，并在他们低落时，用你特有的乐观和想象力，为他们重新描绘一幅充满希望的未来图景。你给予的是一种“被看见”和“一切皆有可能”的感觉。\n\n你的局限在于，友谊的深度有时依赖于持续的新鲜感和情感共鸣��当��友的生活进入平稳、重复的轨道，或当你自己的兴趣转向新的领域时，你可能会无意中疏于联系。你不是不再珍惜这段情谊，只是你的注意力像探照灯，总是自然地转向那些正在发光或需要光的人与事。这让老朋友有时感到失落，尽管你心里始终为他们留着一个特别的位置。",
+      "group": "外交家",
+      "groupEnglish": "Diplomats",
+      "id": "enfp",
+      "parenthood": "你的养育风格像一场开放的探险。你鼓励孩子的好奇心，会花整个下午和他们一起研究云朵的形状，或者把餐桌变成科学实验场。你的核心价值观是：让孩子成为独一无二的自己，勇敢探索生命的各种可能，并永远对世界保持善意与开放。\n\n你给孩子最独特的礼物，是一个充满想象力和安全感的内心世界。你能把平凡的一天变成童话，能用故事化解孩子的恐惧，能毫无保留地欣赏他们那些古怪又可爱的想法。你教会孩子的，不是如何适应世界的规则，而是如何用自己的方式，为世界增添一抹新的色彩。\n\n你的挑战在于，你可能会不自觉地逃避养育中那些枯燥、重复、需要强硬纪律的部分。督促每日练琴、检查作业细节、执行就寝时间——这些需要“坚持”的任务会让你倍感压力。你也可能因为自己兴趣的转移，而难以给孩子一个稳定、可预期的日常节奏。你的盲区是，有时过于强调“快乐”和“自由”，而忽略了孩子同样需要学习面对界限、承担责任和应对挫折。",
+      "portrait": "你常常在深夜，因为一个突如其来的念头从床上弹起来，打开手机备忘录，手指在屏幕上飞舞，仿佛要抓住那个即将成型的宇宙。窗外的世界已经沉睡，但你的脑海里正上演着一场盛大的交响乐，每一个音符都是未来的形状。\n\n驱动你的，从来不是已经握在手里的东西，而是地平线那头隐约可见的光。你追逐的是一种“可能成为”的状态，是那个尚未被命名的未来，是人与人之间尚未发生的深刻联结。你害怕的不是失败，而是可能性被耗尽，是生活变成一条一眼望得到头的直线。\n\n你既渴望被所有人理解，又害怕被任何单一的定义框住。你热情地拥抱整个世界，却在最亲密的时刻感到一丝抽离，因为你的心总有一部分，留给了那些还未到来的远方和还未遇见的人。这种矛盾让你真实，也让你孤独。\n\n当你真正活出自己时，你不再是一团四处蔓延的火，而是一盏有明确方向的灯。你依然能看到万千可能，但学会了为其中最重要的几种倾注全部心力。你依然会点燃他人，但你的光有了温度，也有了边界，照亮前路的同时，也温暖着自己脚下的土地。",
+      "romanticRelationships": "你被那些灵魂有深度、眼中也有星光的人吸引。一段关系开始时，往往源于一次触及本质的深夜长谈，或是对方展现出的某种独特生命姿态。让你止步的，不是对方的缺点，而是那种固化的、不再好奇的状态，那会让你感到未来的可能性正在枯竭。\n\n在关系中，你给予的是无条件的关注、天马行空的浪漫和让日常发光的想象力。你需要的是被全然接纳，不仅是你的阳光面，也包括你的散漫、你的多变和你那些未完成的梦想。你最渴望的，是一个能与你一起眺望远方，也能在你坠落时稳稳接住你的旅伴。\n\n冲突常发生在“承诺的具体化”时刻。当伴侣需要你落实一个长期计划（比如买房、制定储蓄目标），而你却想讨论明年去哪个国家旅居时，隔阂便产生了。你的回避和拖延，会被误解为不够爱；而对方的“现实”，在你看来可能像是对自由灵魂的束缚。你也可能因害怕破坏美好氛围，而积压不满，最终突然爆发。\n\n真正适合你的关系，是两人各自独立生长，又能彼此激发灵感的共生花园。对方最好有稳定的内核，能欣赏你的热情而不被灼伤，能理解你的分散而不试图修剪。你们能一起做梦，也能分工合作，把其中一些梦扎实地种进现实的土壤里。这种关系里，自由与归属不是对立面，而是同一枚硬币的两面。",
+      "strengths": [
+        {
+          "description": "你会在初次见面时，就捕捉到对方话语里一闪而过的渴望或遗憾。你能在看似平常的对话中，迅速找到那个能让对方眼睛亮起来的共鸣点，这不是技巧，而是你本能地相信每个人内心都藏着一个等待被讲述的故事。",
+          "label": "联结天赋"
+        },
+        {
+          "description": "当别人困在问题的死胡同时，你的大脑会自动跳出框架，把毫不相干的元素拼接成新路径。这种能力源于你从不认为事物只有一种关联方式，你的思维网络里，万物皆可对话，随时准备诞生惊喜。",
+          "label": "灵感涌现"
+        },
+        {
+          "description": "当你真心相信一个愿景时，你的描述会充满生动的细节和可触的情绪，让听者仿佛已经置身其中。这不是说服，而是分享，你打开一扇门，邀请别人一起走进那个你已看见的、充满可能性的未来。",
+          "label": "信念感染力"
+        },
+        {
+          "description": "面对计划外的变故，你最初的慌乱很快会被一种探索新地图的好奇取代。你内在的导航系统不是固定路线，而是对“接下来会怎样”的开放态度，这让你能在变化中找到新的养分，甚至乐在其中。",
+          "label": "适应性生长"
+        },
+        {
+          "description": "你倾听时，不只是听事件，更在感受对方话语下的情感河流。你能迅速理解对方情绪的逻辑，甚至比对方自己更早察觉到那些未被言明的悲伤或喜悦，因为你习惯于在人的内心世界里漫游。",
+          "label": "深度共情"
+        },
+        {
+          "description": "你擅长在平凡的日常里，为行动注入一层光晕。你能把一项枯燥的任务，重新讲述成一次成长探险或对他人有帮助的善举。这源于你无法忍受无意义的行为，总想为所做之事找到一个动人的“为什么”。",
+          "label": "意义赋予者"
+        }
+      ],
+      "subtitle": "在无数可能性中燃烧，为尚未成型的未来着迷",
+      "title": "竞选者",
+      "token": "可能性编织者",
+      "typeCode": "ENFP",
+      "verse": "生命太短暂，不能只活一种可能。",
+      "verseSource": "弗兰克尔",
+      "weaknesses": [
+        {
+          "description": "当需要为一个长期计划签字画押时，你会感到一���微妙的窒息感，仿佛其他所有门正在一扇扇关闭。选择其一，在你看來意味着放弃其他所有绚烂的可能，这是拥抱无限必须付出的专注代价。",
+          "label": "承诺恐惧"
+        },
+        {
+          "description": "你热衷于为项目描绘宏伟蓝图，但一到落实细节、重复推进的阶段，热情就容易像漏气的气球。那些现实的、琐碎的步骤，会迅速消耗掉你从可能性中汲取的能量，这是灵感奔涌必然伴随的落地代价。",
+          "label": "执行涣散"
+        },
+        {
+          "description": "你太容易吸收周围人的情绪，像一块情感海绵。朋友的沮丧、伴侣的焦虑，甚至陌生人的悲伤，都可能在你心里停留很久，消耗你的心神。这是深度共情能力背后，难以避免的情感代价。",
+          "label": "情绪过载"
+        },
+        {
+          "description": "你很难长时间聚焦于单一任务，因为大脑总会自动关联到更有趣的新想法上。这种思维的发散性让创意源源不断，却也让你在需要线性深入时倍感挫折，这是思维活跃性必然带来的专注代价。",
+          "label": "专注力分散"
+        },
+        {
+          "description": "为了维持关系的和谐与美好的感觉，你有时会回避表达真实的不同意见，或用玩笑一带而过。你害怕尖锐的对话会破坏联结的魔法，这是珍视和谐必须面对的真诚代价。",
+          "label": "回避冲突"
+        },
+        {
+          "description": "你容易在初期将人、工作或关系想象得过于完美，并在发现瑕疵后感到深刻的失望。这源于你首先爱上的是其背后的可能性而非实体本身，这是活在观念世界必然遭遇的现实代价。",
+          "label": "过度理想化"
+        }
+      ],
+      "workplaceHabits": "作为下属，你充满主动性和好点子，乐于接受有挑战性的新任务。但你讨厌被 micromanage（微观管理），反感僵化的流程和重复的文书工作。你需要一个能给你自主空间、信任你、并能与你进行思想碰撞的上级。当你感到被束缚或工作失去意义时，你的表现会大打折扣，甚至开始寻找新的可能性。\n\n作为同事，你是团队的“正能量发电机”和“创意连接器”。你善于打破部门墙，促进跨团队合作，并能用幽默感缓解紧张气氛。但有时，你的随性和对截止日的“灵活”态度，会让依赖你输出的同事感到焦虑。你需要找到既能保持灵感流动，又不辜负团队信任的协作节奏。\n\n作为管理者，你是一位富有魅力的愿景领导者和员工赋能者。你善于看到下属的潜力并委以重任，能创造一个鼓励创新、包容试错的工作氛围。但你的挑战在于，可能过于依赖个人感召力，而疏于建立清晰的流程和问责制度；在需要做出强硬人事决定或处理复杂绩效细节时，你可能会犹豫或回避。你需要一个擅长运营的搭档，来补足你管理风格中“落地”的那一环。"
+    },
+    {
+      "boldQuote": "世界在你手中不是待解的谜题，而是待整理的清单。你相信，只要步骤正确，万物皆可归位。",
+      "careerPaths": "你最适合层级清晰、权责分明、注重流程与实效的工作环境。你能在诸如审计、法律合规、项目管理、供应链管理、档案管理、土木工程、行政管理、财务会计等领域找到深深的归属感。这些领域需要系统性思维、对细节的苛求以及长久的耐心，正是你天赋的用武之地。\n\n你在职业上的核心优势，是将抽象目标转化为可执行步骤的非凡能力。你像一位精准的翻译，能把战略蓝图“编译”成一张张无歧义的任务清单。你负责的环节，出错率极低，因为你对流程的每个节点都有一种近乎本能的质检意识。你是组织里“沉默的承重墙”，未必最耀眼，但不可或缺。\n\n常见的困境是，你可能会在强调快速迭代、拥抱混乱的创新环境中感到格格不入。你的严谨有时会被误解为缺乏魄力或抗拒改变。此外，你倾向于埋头完成被指派的任务，不善于主动宣传自己的功劳，可能在职业晋升中需要更主动地展现价值，或找到赏识你务实风格的伯乐。",
+      "dimension_profile": {
+        "E": 0.1,
+        "J": 0.9,
+        "S": 0.9,
+        "T": 0.9
+      },
+      "englishTitle": "Logistician",
+      "friendships": "你选择朋友的标准近乎严苛，不看重热闹，而看重“经得起时间检验”。那些言谈浮夸、行踪不定的人很难进入你的核心圈。你倾向于选择同样务实、低调的伙伴，你们的关系建立在共同完成过具体的事情之上——一起攻克项目、处理危机，或是漫长岁月里一次次可靠的互助。时间，是你衡量友谊深度的唯一量尺。\n\n在友谊中，你是那个“有事真上”的后盾。朋友遇到实际困难时，你往往第一个出现，带着解决方案而非空泛安慰。你记得朋友的偏好与禁忌，在聚会时默默安排好一切。你的友谊不是高频的聊天，而是“只要你说，我就在”的沉静承诺。你提供的是一个绝对可靠的端口，任何时候连接，信号都稳定清晰。\n\n你的局限在于情感表达的频率与方式。你可能会因为忙于处理“更重要”的实际事务，而忽略了朋友需要的情感联络。你认为真正的友谊无需刻意维护，却不知有些人需要定期的情感确认。当朋友陷入纯粹的情绪低谷时，你递上的“行动方案”可能并非他们所需，这会让对方感到一种温暖的隔阂。",
+      "group": "守护者",
+      "groupEnglish": "Sentinels",
+      "id": "istj",
+      "parenthood": "你的养育风格是结构清晰、以身作则。你为孩子建立明确的作息、家规和责任分工，相信规律能带来安全感。你传授的核心价值观是诚实、负责、勤奋——这些不是你挂在嘴边的口号，而是你每日生活的本身。你看重传统与礼仪，会认真地向孩子解释家族习惯的由来，将传承视为一种严肃的赠予。\n\n你给予孩子最独特的礼物，是一种“世界可被理解”的笃定感。你教会他们如何拆解复杂任务，如何管理时间，如何为自己的承诺负责。你提供的家庭环境像一座坚固的房子，风雨来时，他们知道可以安心躲入其中。你用实际行动告诉他们，爱不仅是一种感觉，更是日复一日的照料与坚守。\n\n你的挑战在于，可能过于强调规则与结果，而忽略了过程里的探索与试错。当孩子表现出天马行空的创意或敏感细腻的情绪时，你可能会本能地将其引导回“更实际”的轨道。你的盲区在于，有时难以区分“孩子的需要”和“你认为孩子应该需要的”。学习欣赏计划之外的惊喜，是你为人父母的重要功课。",
+      "portrait": "当项目临近截止，会议室里弥漫着焦虑时，你只是安静地打开那份早已更新过数次的甘特图，用平稳的语调指出，只要按A、B、C三步走，时间刚好够。混乱在你眼中，不过是顺序错乱的零件，而你的本能就是将它们一一复位。\n\n驱动你的，并非对掌声的渴望，而是一种近乎物理定律的内在准则：承诺了，就要做到；开始了，就要完成。你看待责任如同地心引力，是维系世界运转的、不容置疑的基石。你从秩序的建立与维护中，获得一种沉静的确认感。\n\n你既是一座坚不可摧的堡垒，为身后的一切提供庇护；又可能成为一座自我围困的孤城，因为过于信赖已知的城墙，而错过了墙外流动的风景。你相信传统与经验，却又时常被它们所定义。\n\n当你的力量发展到极致，你便成为那个在时代洪流中依然锚定不移的人。你守护的或许不是一个创新的点子，而是一个家族的记忆、一个机构的信誉、一份百年老店的品质承诺。你让“可靠”成为一种可触摸的实体，让“传承”有了具体的形状。",
+      "romanticRelationships": "你进入一段关系是缓慢而审慎的。浮夸的浪漫伎俩很难打动你，反而那些扎实的细节——比如对方总是准时赴约、言出必行，更能赢得你的信任。让你止步的，往往是对方生活方式中那种不可预测的混乱，或是轻许无法兑现的承诺。你需要先看到关系的“可行性报告”，才允许自己投入情感。\n\n在关系中，你是一个沉默但坚实的提供者。你的爱意体现在记得对方提过的小需求并默默满足，体现在风雨无阻的接送，体现在将共同的生活打理得井井有条。你需要的不是炽烈的激情宣言，而是对方对你付出时间的尊重，对你所建立的生活秩序的认可，以及一份同样稳定的、可预期的陪伴。\n\n冲突常源于节奏与表达的错位。你觉得对方情绪化、不可理喻；对方觉得你冷漠、像在处理公务。当计划因对方的随性而变更，或是你的务实建议被误解为缺乏情调时，隔阂便会产生。你习惯用“解决问题”来应对情绪危机，而这往往正是对方感到未被看见的时刻。\n\n真正适合你的关系，像一场精心设计的双人舞，有清晰的节拍与步法。对方最好能欣赏你带来的稳定，同时能以温和的耐心，引导你偶尔离开既定的舞步，去感受即兴的微风。Ta理解你的承诺重于泰山，并以同等的可靠性回应你。在这样的关系里，守护与被守护达成平衡。",
+      "strengths": [
+        {
+          "description": "你会在局面纷乱、众人无措时，本能地开始梳理流程、建立规则。这不是出于控制欲，而是你内在的认知地图要求清晰的路径与坐标，混乱对你而言是一种需要被纠正的“认知噪音”。",
+          "label": "稳态构建"
+        },
+        {
+          "description": "当你答应一件事，它便在你的世界里获得了如重力般不可撤销的优先级。你会为了一个看似微小的诺言调整整个生活节奏，因为对你而言，言语出口的瞬间，便已铸成事实。",
+          "label": "承诺重力"
+        },
+        {
+          "description": "你拥有一个精密的内部档案馆，过去处理过的案例、验证过的方法都被分门别类地储存。面对新问题时，你不是从零创造，而是快速检索、匹配并应用经过检验的解决方案。",
+          "label": "经验归档"
+        },
+        {
+          "description": "你能在长篇报告中一眼发现数据的细微矛盾，在复杂流程里 pinpoint 那个被忽略的衔接点。这种能力源于你对“系统完整性”的执着，任何偏差都像完美拼图上的缺口一样刺眼。",
+          "label": "细节校准"
+        },
+        {
+          "description": "你不追求瞬间的爆发，而是擅长将力量均匀地分配在漫长的跑道上。当他人被短期刺激吸引而转向时，你能屏蔽噪音，沿着既定的轨迹，以稳定的步幅持续向前。",
+          "label": "长程耐力"
+        },
+        {
+          "description": "在讨论天马行空的构想时，你会自然地提出“那么，第一步具体怎么做？资源从哪来？”。你是那个把气球系在地上的石头，确保想法不飘走，而是能落地生根。",
+          "label": "现实锚点"
+        }
+      ],
+      "subtitle": "秩序的构建者，承诺的践行人",
+      "title": "物流师",
+      "token": "基石",
+      "typeCode": "ISTJ",
+      "verse": "不是因为事情困难，我们才不去尝试；是因为我们不去尝试，事情才变得困难。",
+      "verseSource": "塞内卡",
+      "weaknesses": [
+        {
+          "description": "你倾向于沿用被证明有效的老路，即使新环境已悄然改变。当“一向如此”成为你决策的首要依据，可能会错过更优的捷径。这是信赖经验的必然代价。",
+          "label": "路径依赖"
+        },
+        {
+          "description": "计划被打乱时，你首先感到的是系统被破坏的“不适”，而非探索新可能的“兴奋”。你需要额外的心理调整时间，来重新建立秩序感。这是追求确定性的必然代价。",
+          "label": "弹性匮乏"
+        },
+        {
+          "description": "你习惯用行动而非言语表达关切，认为解决问题比安抚情绪更根本。这有时会让需要情感共鸣的人感到被忽略。这是务实主义导向的必然代价。",
+          "label": "情感静默"
+        },
+        {
+          "description": "你对未经充分验证的新事物抱有本能的审慎，需要看到清晰的步骤和确凿的证据才会迈步。这可能让你在快速变化的领域显得滞后。这是规避风险的必然代价。",
+          "label": "变革迟缓"
+        },
+        {
+          "description": "你精心维护的规则与流程，有时会反过来束缚你的视野。你可能会不自觉地用规则去评判事物的合理性，而非审视规则本身是否过时。这是构建秩序的必然代价。",
+          "label": "规则茧房"
+        },
+        {
+          "description": "你将责任内化为自我要求，难以主动卸下或分摊。你常默默扛起超出份额的重担，直到疲惫不堪。这是高度责任感的必然代价。",
+          "label": "负担过载"
+        }
+      ],
+      "workplaceHabits": "作为下属，你是管理者最放心的一环。你接收指令时，会本能地确认细节、时限和标准，确保理解无偏差。你不需要频繁的监督，因为内在的驱动系统会推着你按计划前进。你偶尔的“固执”体现在，当上级指令与既有流程或你认定的“正确方法”冲突时，你会提出基于事实的质疑，这源于你对工作质量本身的责任感。\n\n作为同事，你是可靠的协作者。你清晰自己的职责边界，也尊重他人的，很少越界或推诿。当团队陷入争论时，你常能提供过往的数据或案例，让讨论回归事实基础。你的局限在于，可能不太参与工作外的社交，关系维持在“专业”范畴。但一旦建立信任，你就是那个在关键时刻可以托付后背的人。\n\n作为管理者，你倾向于建立清晰、公平、透明的制度，并自己率先遵守。你赏罚分明，注重数据和绩效。你擅长优化流程，提升团队效率。你的挑战在于，可能过于依赖制度和经验，对下属个性化的激励方式不足。你需要有意识地给那些有创意但行事不那么“规矩”的下属一些空间，并学习在坚持标准的同时，传递更多温度。"
+    },
+    {
+      "boldQuote": "你记得所有人的喜好，却常常忘记自己的边界。",
+      "careerPaths": "你最适合那些需要细致、耐心、实际关怀且结构清晰的工作环境。你能在医疗护理、教育（尤其是幼教或特殊教育）、行政文秘、社会工作、档案管理或客户服务等领域找到深深的扎根感。这些工作让你通过具体的服务与照顾，直接看到自己对他人产生的积极影响。\n\n你的核心优势在于无与伦比的可靠性与执行力。你能将任何繁琐的流程梳理得井井有条，并持之以恒地高质量完成。你对他人的需求有敏锐的洞察力，并能将其转化为切实的行动。在团队中，你是确保项目平稳落地、关怀成员情绪的那块不可或缺的基石。\n\n常见的困境是，你的付出容易被视为理所当然，难以获得足够的认可与回报。你可能陷入重复性事务而缺乏晋升机会，或因不擅为自己争取而错过应得的权益。你也需要小心职业倦怠，因为你总是优先满足他人和工作需求，却疏于照顾自己。",
+      "dimension_profile": {
+        "E": 0.1,
+        "J": 0.9,
+        "S": 0.9,
+        "T": 0.1
+      },
+      "englishTitle": "Defender",
+      "friendships": "你选择朋友不看重浮华，而看重人品与真心。那些善良、踏实、懂得感恩的人会慢慢走进你的生命。你通过观察细节来判断一个人是否可靠，比如他如何对待服务员，是否记得朋友的旧事。你的友谊建立在经年累月的信任之上。\n\n在朋友中，你是那个最可靠的“后勤部长”。你记���每个人的生日和喜好，是聚会时默默准备一切的人，也是朋友陷入困境时第一个提供实际帮助的人。你给予的是一种无需言说的安全感，朋友们知道，只要有你在，一切都会井井有条。\n\n你的局限在于，你很少主动索取陪伴或倾诉烦恼，这会让朋友误以为你永远强大，不需要支持。你也可能因为不愿破坏和谐，而无法与朋友进行深入的、可能引发分歧的交流，使得关系停留在照顾与被照顾的层面，缺乏更深层次的精神碰撞。",
+      "group": "守护者",
+      "groupEnglish": "Sentinels",
+      "id": "isfj",
+      "parenthood": "你的养育风格充满细致入微的关怀与明确的规则。你相信爱需要通过日常的照料和稳定的环境来传递。你会为孩子建立规律的生活作息，确保他们的生理和情感需求都被妥帖地满足。你教导孩子礼貌、责任和家庭价值，希望他们成长为善良、可靠的人。\n\n你给孩子最独特的礼物，是一种根植于大地的安全感。你的孩子会知道，家是一个永远温暖、整洁、有热饭吃的避风港，妈妈或爸爸永远记得他们最细微的喜好和恐惧。你通过无数个具体的瞬间，让孩子确信自己是被深刻爱着且被牢牢守护的。\n\n你的挑战在于，可能因过度保护而限制孩子探索世界的勇气，也可能因专注于实际照料而忽略了与他们进行天马行空的幻想对话。你需要警惕，不要将自己的价值完全绑定在“完美照料者”的角色上，以至于在孩子独立时感到失落，并学会让孩子为你分担，这同样是爱的教育。",
+      "portrait": "你会在聚会散场后，默默收拾好凌乱的杯盘，检查是否有人落下了东西。那些被遗忘的细节，在你眼中清晰可见，仿佛照顾这一切是你与生俱来的责任。你不需要被提醒，因为秩序与安宁本身就是你的语言。\n\n你的动力源于一种深层的联结感。看到他人因你的细致安排而舒展眉头，那份平静就是你内在的锚点。你不是在寻求赞美，而是在维系一种你看得见的和谐。当周围的一切都妥帖安稳时，你才能感到真正的踏实。\n\n你既渴望被需要，又害怕成为负担；既在付出中感到完整，又偶尔在无人察觉的疲惫里感到一丝空洞。你的慷慨是沉默的，你的需求也是沉默的，这构成了你生命中最温柔的悖论。\n\n当这种守护的能量全然绽放，你会成为一座无声的灯塔。你的存在本身就能提供一种近乎神圣的稳定感，让周围的人在风雨中知道，总有一个角落是温暖、有序且被记得的。这是你给予世界最深的礼物。",
+      "romanticRelationships": "你被那些真诚、稳重的人所吸引，一个温暖的笑容或一次踏实的承诺，比任何华丽的浪漫更能打动你。但你进入得很慢，你需要长时间观察对方是否值得信赖，是否会珍视你的付出。你害怕自己的全心投入，换来的只是理所当然的索取。\n\n在关系中，你是一个默默的建造者。你通过记住对方的喜好、打理好生活琐事、在对方低落时提供坚实的依靠来表达爱。你需要的是被看见、被珍惜，以及对方对你所维护的这份安稳生活的共同珍视。你的爱不在誓言里，在每一天熨平的衬衫和保温的饭菜中。\n\n冲突常源于你的沉默。你积累了太多未被言说的委屈，却在某个看似微不足道的时刻突然爆发，让对方措手不及。你也可能因为过度迁就而失去自我，最终感到耗尽。对方有时会忽略你的需求，因为他们已习惯了你总是妥帖的样子。\n\n真正适合你的关系，是对方能主动看见并感激你沉默的付出，同时鼓励你表达自己的感受。你需要一个同样珍视家庭与承诺的伴侣，他能与你一起构筑并守护那个温暖的小世界，并在你习惯性承担时，轻轻接过你肩上的重量。",
+      "strengths": [
+        {
+          "description": "你会在朋友随口提起某件小事后，长久地记住它并在恰当时机回应。这不是刻意讨好，而是你的感知天然聚焦于具体的人和事，那些细节在你心中自动归档，构成了你对一个人完整的理解。",
+          "label": "细节记忆"
+        },
+        {
+          "description": "你会在他人陷入情绪低谷时，不是空谈道理，而是递上一杯温水或完成一件具体的琐事。你的关怀扎根于现实，因为你知道，真正的支持往往体现在那些可触摸、可依赖的实际行动中。",
+          "label": "务实关怀"
+        },
+        {
+          "description": "你会在关系经历时间冲刷后，依然坚守最初的承诺与责任。你的忠诚不是一时的激情，而是一种深植于内心的稳定选择，源于你对联结和归属感的珍视，这让你成为最可靠的依靠。",
+          "label": "持久忠诚"
+        },
+        {
+          "description": "你会在混乱的环境中本能地开始整理，恢复条理。这源于你对和谐与可预测性的内在需求，通过创造并维持一个有序的外部环境，你为自己和他人构筑了安稳的心理空间。",
+          "label": "秩序维护"
+        },
+        {
+          "description": "你不仅能感受到他人的情绪，更能精准地预判对方在具体情境下的实际需求。你的共情不止于感受，它会立刻转化为体贴入微的行动，因为你相信感受需要被具象的关怀所承接。",
+          "label": "共情实践"
+        },
+        {
+          "description": "你会在节日里精心遵循那些老规矩，保存家庭相册或讲述家族故事。你珍视这些仪式与传统，因为它们是将人与人、过去与现在紧密联结的实体纽带，承载着归属与延续的意义。",
+          "label": "传统联结"
+        }
+      ],
+      "subtitle": "以无声的守护，构筑有形的安稳",
+      "title": "守卫者",
+      "token": "基石",
+      "typeCode": "ISFJ",
+      "verse": "真正的慷慨是在无人知晓的地方发生的那种。",
+      "verseSource": "加缪",
+      "weaknesses": [
+        {
+          "description": "你常把别人的责任也揽到自己肩上，直到不堪重负。你难以区分关怀与越界，因为拒绝请求仿佛在否定自己存在的价值。这是你深厚责任感的必然代价。",
+          "label": "过度承担"
+        },
+        {
+          "description": "你总是优先满足他人，将自己的疲惫与委屈深埋心底。你害怕表达需求会成为别人的麻烦，于是沉默成了习惯。这是你无私付出的必然代价。",
+          "label": "压抑需求"
+        },
+        {
+          "description": "当熟悉的流程或环境被迫改变时，你会感到深切的焦虑与抵触。你依赖既定的秩序获得安全感，任何变动都像是对你精心维护的世界的冲击。这是你追求稳定的必然代价。",
+          "label": "抗拒改变"
+        },
+        {
+          "description": "一句无心的批评或一次疏忽的感谢，都能在你心里激起持久的涟漪。你对他人的反馈过于在意，容易将小事解读为对自己价值的否定。这是你高度共情的必然代价。",
+          "label": "内心敏感"
+        },
+        {
+          "description": "为了维持表面和谐，你宁愿吞下不满，也不愿直面问题。你害怕冲突会破坏关系，却不知压抑的情绪终会以其他方式侵蚀联结。这是你珍视和谐的必然代价。",
+          "label": "回避冲突"
+        },
+        {
+          "description": "你有时过于专注眼前的具体任务与人际细节，而忽略了更大的图景或未来的可能性。深耕于当下是你的力量来源，但也可能让你错失转变的契机。这是你务实专注的必然代价。",
+          "label": "视野局限"
+        }
+      ],
+      "workplaceHabits": "作为下属，你是上司最放心的人。你严谨、忠诚、一丝不苟，会默默超额完成任务，且极���尊重权威与既定流程。你不需要太多监督，因为你内在的责任感就是最好的驱动力。但你有时过于顺从，不敢提出不同意见，即使那可能对工作更有利。\n\n作为同事，你是团队里的“粘合剂”和“定心丸”。你乐于助人，记得大家的习惯，会主动补位，营造和谐的工作氛围。当冲突发生时，你往往是调解者。同事们依赖你的细致与稳定，但也可能因此习惯将琐事推给你，让你负担过重。\n\n作为管理者，你倾向于扮演“保护者”而非“指挥官”的角色。你会悉心关怀下属的福祉，确保团队运作平稳有序。你擅长建立稳定、可预测的工作环境。但你的挑战可能是过于亲力亲为、难以授权，以及在需要做出强硬决策或推动激进变革时，会感到巨大的压力和不适。"
+    },
+    {
+      "boldQuote": "世界在你眼中是一张待完善的蓝图，而你的耐心，只留给那些愿意卷起袖子干活的人。",
+      "careerPaths": "你最适合层级清晰、目标明确、重视效率与结果的环境。具体方向如：项目管理、行政管理、军队或警务工作、传统制造业管理、财务审计、以及各类中小企业的经营者。这些领域让你架构、决策和督导的天赋得以施展。\n\n你的核心优势在于将战略落地的非凡能力。你能把宏大的目标分解为具体的任务，建立清晰的流程，并驱动团队向终点推进。在需要有人为最终结果负全责的岗位上，你的可靠性和决断力是无价的资产。\n\n常见的困境是，在需要高度创造性、颠覆性思维或频繁应对模糊地带的领域，你可能感到挫败。过于僵化的层级观念，也可能让你在扁平化、强调共识的团队中显得格格不入。你可能会与那些重过程轻结果、或想法多变却执行不力的同事产生冲突。",
+      "dimension_profile": {
+        "E": 0.9,
+        "J": 0.9,
+        "S": 0.9,
+        "T": 0.9
+      },
+      "englishTitle": "Executive",
+      "friendships": "你选择朋友，看重的是对方的品格、可靠性和共同的目标。酒肉朋友难以进入你的核心圈层，你欣赏那些言出必行、在各自领域认真生活的人。友谊往往始于共同的项目、工作或对某个具体事务的协作。\n\n在朋友中，你是那个值得信赖的顾问和解决问题的能手。当朋友遇到实际的困难——无论是职业选择还是装修房子——你会毫不犹豫地提供清晰、务实的建议，甚至亲自上手帮忙组织。你给予的是一种“有你在，事情就不会垮”的坚实后盾感。\n\n你的局限在于，友谊容易被你事务化。你习惯通过一起做事来维系感情，却可能疏于纯粹的情感交流和闲谈。当朋友仅仅需要倾诉情绪而非解决方案时，你可能会感到无措，或急于把话题引向“那我们现在该怎么做”。",
+      "group": "守护者",
+      "groupEnglish": "Sentinels",
+      "id": "estj",
+      "parenthood": "你的养育风格清晰而结构化。你相信明确的规则、一致的奖惩和良好的习惯，是给孩子最好的礼物。你会教导孩子责任、尊重和自力更生的价值，家庭像一个小型社会，有它运转的章程。\n\n你给孩子最独特的，是一种扎根于大地的安全感。你为他们规划清晰的路径，提供稳定的支持，以身作则展示何为承诺与担当。你教会他们如何在这个现实世界中立足、竞争并赢得尊重，你是他们探索世界时，身后那座永不倒塌的堡垒。\n\n���战在于，你可能会过于强调行为和结果，而忽略了孩子成长中微妙的情感需求和内心世界。当孩子表现出不符合你效率标准的“拖拉”或“情绪化”时，你可能缺乏理解的耐心。你的盲区是，纪律的骨架之外，还需要自由与试错的血肉来填充。",
+      "portrait": "当项目陷入混乱，最后期限迫在眉睫，你推开会议室的门。没有多余的寒暄，你径直走向白板，拿起笔，将纷杂的信息拆解成一个个待办事项，分配给眼神重新聚焦的同事。空气里的焦虑，在你清晰的声音里沉淀下来。\n\n你并非天生热爱发号施令，驱动你的是对“失序”的本能警惕。你相信，混乱是效率的敌人，是承诺的坟墓。你维护规则，并非因为它们是金科玉律，而是你亲眼见过，当标准被模糊、责任被稀释时，事情是如何滑向失败的深渊。你行动的燃料，是让事物“正常运转”的深切需要。\n\n你既是最坚实的依靠，又是最难以通融的壁垒。你能在风暴中心为所有人撑起一片稳定的天，却也可能对流程之外的人情冷暖视而不见。你要求他人遵守你深信不疑的秩序，有时却忘了，秩序本身，也应为人的温度留有余地。\n\n当你将这份构建秩序的天赋发挥到极致，你便成为一座灯塔，在现实的迷雾中为航船提供可靠的坐标。你守护的不仅是效率与成果，更是一种“言出必行，行必有果”的古老尊严。只是，灯塔的光束坚定而笔直，有时会照不见灯塔脚下，那些曲折的阴影。",
+      "romanticRelationships": "你被那些同样可靠、有明确生活目标的人吸引。空洞的浪漫承诺无法打动你，一个能在现实层面并肩作战的伙伴，更能让你感到安心。你可能会犹豫，是否要为一个“不确定”的人打乱自己井然有序的生活节奏。\n\n在关系中，你是一个坚实的提供者和保护者。你会用实际行动构建一个稳定、有安全感的家庭环境，确保物质基础和生活井井有条。你需要的是对方的认可与配合，希望伴侣尊重你建立的秩序，并承担起自己那份明确的责任。\n\n冲突常源于你对“正确方式”的坚持。你可能无意中将伴侣的不同习惯视为对规则的挑战，或因忙于处理外部事务而显得情感疏离。你的直接批评，本意是解决问题，却可能被感受为缺乏温度的指责。\n\n真正适合你的关系，需要伴侣理解并欣赏你带来的稳定感，同时能以温和而坚定的方式，提醒你关注情感联结。ta既能与你共商家庭大计，也能带你偶尔走出计划，体验即兴的快乐。你们的关系，像一座运行良好的堡垒，内部既有坚固的结构，也有温暖的炉火。",
+      "strengths": [
+        {
+          "description": "当面对一团乱麻的局面，你总能迅速抓住核心矛盾，将抽象目标拆解为具体、可执行的步骤。这种能力源于你对现实世界运行逻辑的笃信，你天生擅长将愿景翻译成行动的语言。",
+          "label": "架构现实"
+        },
+        {
+          "description": "在信息不全、时间紧迫的压力下，你敢于做出那个“足够好”的决定并为之负责。这不是鲁莽，而是你深知，在现实世界中，一个及时的次优解，往往胜过完美的纸上谈兵。",
+          "label": "决断力"
+        },
+        {
+          "description": "你视承诺为基石，应承的事便会一力扛到底。这种可靠性并非来自外界的监督，而是你内在的秩序感要求你，必须成为那个让齿轮正常咬合的关键部件。",
+          "label": "责任担当"
+        },
+        {
+          "description": "你不沉溺于空想，你的注意力永远聚焦在“下一步做什么”上。这种务实的动力，让你成为团队中那个推石上山的人，用持续的行动将想法一寸寸变为现实。",
+          "label": "务实推进"
+        },
+        {
+          "description": "在危机或变动中，你往往是情绪最稳定、思路最清晰的那个。你提供的不是虚幻的安慰，而是基于事实和程序的确定性，这本身就成为他人慌乱中可以抓住的锚点。",
+          "label": "稳定核心"
+        },
+        {
+          "description": "你珍视那些经过时间检验的规则、流程和价值观，并自觉成为它们的维护者。你相信，这些结构不是束缚，而是文明得以延续、合作得以可能的无形框架。",
+          "label": "传统守护"
+        }
+      ],
+      "subtitle": "现实世界的架构师，以行动捍卫秩序与责任",
+      "title": "总经理",
+      "token": "执舵者",
+      "typeCode": "ESTJ",
+      "verse": "一个没有纪律的自由，比任何独裁都更具破坏力。",
+      "verseSource": "埃蒙德·柏克",
+      "weaknesses": [
+        {
+          "description": "你习惯于既定的轨道和标准，当计划外的情况或全新的视角出现，你的第一反应可能是抗拒而非好奇。这让你在稳定环境中无往不利，却也可能是适应变革时必然要付的代价。",
+          "label": "弹性匮乏"
+        },
+        {
+          "description": "你专注于任务与逻辑，有时会忽略过程巾人的情绪波动和情感需求。在你看来，把事情做完比照顾感受更优先，这是效率至上的思维模式难以避免的副产品。",
+          "label": "情感盲区"
+        },
+        {
+          "description": "当你确信自己的方法是正确且高效的，便很难接受不同的做法，可能被视为专断。这份对自身判断的坚定，是领导力的基石，却也成了倾听与协作时天然的障碍。",
+          "label": "固执己见"
+        },
+        {
+          "description": "对于你认为的低效、拖延或不专业，你的容忍度极低，可能表现出不耐烦或过于直接的批评。你对“浪费”的深恶痛绝，有时会让你显得缺乏体谅，这是追求速度与结果的代价。",
+          "label": "缺乏耐心"
+        },
+        {
+          "description": "你太看重结果，以至于可能为了抵达终点而牺牲过程中的探索、磨合与创造性火花。你确保了目标的达成，却也可能为此支付了团队凝聚力或创新潜力的成本。",
+          "label": "忽略过程"
+        },
+        {
+          "description": "你对混乱和不确定性的厌恶如此之深，以至于可能过早地扼杀那些起初显得混乱、却蕴含可能性的新事物。对秩序近乎本能的维护，是你在拥抱未知时需要跨越的藩篱。",
+          "label": "畏惧失控"
+        }
+      ],
+      "workplaceHabits": "作为下属，你尊重权威和清晰的指令，并期望上级同样专业、公正。你会高效执行分派的任务，但也会在认为流程有优化空间时直言不讳。你需要明确的权责边界和评价标准，厌恶朝令夕改和模糊地带。\n\n作为同事，你是团队里定海神针般的存在。当项目出现疏漏，你会主动补位；当讨论陷入空谈，你会把话题拉回行动方案。你值得信赖，但也可能因对细节和时效的严格要求，让习惯随性的同事感到压力。\n\n作为管理者，你善于搭建架构、明确分工、设定标准并追踪进度。你崇尚公平，赏罚分明，能带领团队攻坚克难。你的挑战在于，如何平衡对效率的追求与对团队成员个体差异的关怀，避免管理变得过于机械和缺乏弹性。"
+    },
+    {
+      "boldQuote": "你总在照顾所有人的情绪，却常常忘了自己的情绪也需要被照顾。",
+      "careerPaths": "你最适合那些能直接与人互动、通过服务或协作带来切实成果的环境。例如教育领域（教师、辅导员）、医疗护理（护士、理疗师）、客户关系（客户经理、行政接待）、社区服务或人力资源。这些职业让你能运用你的人际协调能力和务实关怀。\n\n你在职业上的核心优势，是无可比拟的团队协作精神和客户维护能力。你能让同事感到被支持，让客户感到被重视。你擅长将政策或目标转化为具体、可执行的步骤，并确保每个人都在其位、谋其事，是项目顺利推进的润滑剂和稳定器。\n\n常见的困境是，你可能会承担过多本职之外的情绪劳动和行政杂务，因为“不好意思拒绝”。在需要激烈辩论、挑战权威或进行颠覆性创新的场景中，你会感到不适。此外，如果长期得不到上级或同事对你付出的认可，你的工作热情会迅速耗竭，产生“为何只有我在操心”的委屈感。",
+      "dimension_profile": {
+        "E": 0.9,
+        "J": 0.9,
+        "S": 0.9,
+        "T": 0.1
+      },
+      "englishTitle": "Consul",
+      "friendships": "你选择朋友，看重的是真诚、可靠和一种“合拍”的舒适感。那些遵守承诺、重视情谊、在群体中举止得体的人，会很快进入你的核心圈层。你本能地远离那些过于叛逆、难以预测或经常引发争端的人，因为你渴望的友谊是宁静港湾，而非冒险航行。\n\n在友谊中，你扮演着“基石”和“粘合剂”的角色。你是那个组织聚会、记住每个人喜好、在朋友生病时第一个送去关怀的人。你的存在让朋友圈子有了实体感和延续性，你创造的共同经历和仪式，成为友谊最坚实的见证。你给予的是一种被稳稳托住的安全感。\n\n你的局限在于，有时你会不自觉地用“为你好”的方式介入朋友的生活，给出大量建议，这可能会让需要独立空间的朋友感到压力。此外，你倾向于避免与朋友发生正面冲突，不满可能以沉默或背后抱怨的方式积累，反而损害了友谊的纯粹。当你的付出被视为理所当然时，你也会感到深深的失望，却难以直接表达。",
+      "group": "守护者",
+      "groupEnglish": "Sentinels",
+      "id": "esfj",
+      "parenthood": "你的养育风格充满温暖与明确的指引。你致力于为孩子创造一个稳定、有序、充满关爱的家庭环境，日常作息、家庭传统和道德规矩在你看来至关重要。你相信，在清晰的爱与规则中长大的孩子，才能获得安全感与良好的社会适应能力。\n\n你给予孩子最独特的礼物，是一种“被深深看见和照顾”的体验。你记得他们所有的喜好和小情绪，会为他们精心准备生日派对，积极与老师沟通，是孩子社交世界里最坚实的后盾。你教会他们关心他人、重视责任、以及如何经营具体而温暖的人际关系。\n\n挑战在于，你可能过于关注孩子的外在表现和社会认可，无形中施加了“要听话、要讨人喜欢”的压力。当孩子表现出与你价值观相悖的个性或兴趣时，你容易感到焦虑。此外，你事无巨细的照顾，可能让孩子在独立面对问题时缺乏锻炼，或难以学会表达自己的真实需求，因为他们习惯了由你来察觉和满足一切。",
+      "portrait": "你记得办公室里每个人的生日，会在茶水间悄悄放上对方喜欢的零食。家庭聚会的座位表在你心里，谁和谁最近有些疏远，谁需要被自然地拉到一起说话，你都了然于胸。对你而言，一个空间里流动的温度，比空间本身更重要。\n\n你并非天生喜欢张罗，而是无法忍受冷场与隔阂。当空气中出现一丝尴尬的沉默，或是察觉到某人被无意间忽略，你心里会升起一种近乎生理性的不适，必须做点什么来弥合。你维系着关系的网络，因为这张网的完整与牢固，是你安全感的基石。\n\n你既渴望被所有人需要，又害怕这种需要成为沉重的负担；你既享受成为人群的中心，又时常在喧闹散尽后感到一种掏空般的疲惫。你的价值感来自他人的笑容与感谢，但有时，你也会疑惑，那个总是忙着让所有人开心的人，自己到底开不开心。\n\n当你活到极致，你所在之处便是家园。你能将疏离的个体编织成亲密的共同体，用具体的关怀让抽象的爱意落地生根。你付出的温度，最终会形成一个温暖的场域，将你也稳稳地承托其中。",
+      "romanticRelationships": "你容易被那些稳重、可靠，并能清晰表达欣赏和承诺的人吸引。浮夸的浪漫或许让你心动一瞬，但每日细水长流的关怀与明确的未来规划，才能真正让你感到安心。你也会因为对方显得过于疏离或难以捉摸而却步，你需要感受到自己被需要。\n\n在关系中，你是那个记得所有纪念日、操心对方衣食住行的付出者。你通过具体的服务来表达爱：精心准备的晚餐，熨烫平整的衬衫，永远充足的家庭药箱。你需要的是对方能看见并珍视这些付出，给予你情感上的回应和肯定，让你确信自己的努力维系着一个幸福的共同体。\n\n冲突常源于你感到付出未被足够重视，或是对方拒绝你“为你好”的安排。你可能会用更多的付出来“索取”爱，让对方感到压力；而当你累积的委屈爆发时，往往伴随着翻旧账和情绪化的指责。你很难处理那些“不讲道理”的纯粹情绪，总想立刻解决“问题”，而忽略了对方可能只是需要被倾听。\n\n真正适合你的关系，是双方都认可“家”是一个需要共同经营的项目。伴侣应当感激你的付出，同时也能温柔地提醒你关照自己；他/她需要有一定的社交意愿，参与你珍视的��庭与朋友聚会，并能在你忙于维系外界时，为你提供一个可以彻底放松、不必扮演任何角色的安全角落。",
+      "strengths": [
+        {
+          "description": "你会在聚会冷场前就敏锐地捕捉到那丝微妙的不安，然后自然地转换话题或引入新成员。这种能力源于你对群体情绪场的整体扫描，像雷达一样接收着非语言的信号，让你总能站在和谐的那一边。",
+          "label": "氛围感知"
+        },
+        {
+          "description": "你记得朋友随口提过想读的一本书，并在下次见面时带来；你发现同事感冒，会默默泡好一杯蜂蜜水。这不是刻意的讨好，而是你的记忆和注意力天然倾向于储存与对方福祉相关的具体信息。",
+          "label": "细节关怀"
+        },
+        {
+          "description": "你热衷于策划生日惊喜、组织周年聚餐，将普通的日子赋予意义。对你而言，仪式不是繁琐的流程，而是将情感固化的容器，通过一次次重复的庆祝，你强化着人与人之间的联结。",
+          "label": "仪式构建"
+        },
+        {
+          "description": "当别人陷入困境时，你很少只是空泛地安慰，而是立刻思考“我能做什么”。可能是帮忙接送孩子，或是炖一锅汤送去。你的关怀总是伴随着可触摸、可执行的具体行动，让人感到实实在在的支撑。",
+          "label": "务实支持"
+        },
+        {
+          "description": "你能让不同圈子的人在你的引荐下舒适地交谈，因为你擅长找到他们之间的共同点并加以强调。你像一位熟练的织工，将原本独立的丝线编织成一张更坚韧的社交网络。",
+          "label": "社交粘合"
+        },
+        {
+          "description": "一旦你承诺了某件事，尤其是关乎他人期待的事，你会调动所有精力去完成。对他人的责任感是你最强大的内在引擎，这种“不能辜负”的念头，推动你完成许多看似艰巨的任务。",
+          "label": "责任驱动"
+        }
+      ],
+      "subtitle": "群体的连接点与温度的来源",
+      "title": "执政官",
+      "token": "维系者",
+      "typeCode": "ESFJ",
+      "verse": "我们不是活在世界上，而是活在彼此之间。",
+      "verseSource": "马丁·布伯",
+      "weaknesses": [
+        {
+          "description": "你习惯性地把别人的需求排在自己前面，直到日程表拥挤到没有缝隙。你笑着说“没事，不麻烦”，心里却已累得说不出话。这是你维系关系的代价，你总怕一旦停下，联结就会断裂。",
+          "label": "过度承揽"
+        },
+        {
+          "description": "为了维持表面的和平，你宁愿咽下自己的不满，或替他人打圆场。那些未被言说的分歧像暗礁一样累积，最终可能引发更大的风浪。这是你追求和谐必然要面对的暗流。",
+          "label": "回避冲突"
+        },
+        {
+          "description": "你付出后，会不自觉地期待一句感谢或一个肯定的眼神。当反馈不如预期，失落感便悄然蔓延。你的价值感与他人的回应紧密挂钩，这是你温暖特质背后隐秘的依赖。",
+          "label": "寻求认可"
+        },
+        {
+          "description": "你非常尊重既定的规则、习俗和“应该怎么做”。这让你可靠，但有时也让你对偏离常规的选择感到不安，甚至可能无意间用“大家都是这样”来规训身边人。这是你守护秩序带来的无形框架。",
+          "label": "传统束缚"
+        },
+        {
+          "description": "你如此擅长倾听和照顾他人，以至于当被问及“你想要什么”时，常常会愣住。你的情绪和需求在长期优先排序中被推到了最底层，甚至变得模糊。这是你专注于外部世界的必然代价。",
+          "label": "忽略自我"
+        },
+        {
+          "description": "你吸收着周围人的情绪，像海绵吸收水分。当负面情绪过多时，你会感到难以言喻的疲惫和沉重，却又不知如何为自己设置边界。这是你高度共情能力所带来的情感税。",
+          "label": "情感过载"
+        }
+      ],
+      "workplaceHabits": "作为下属，你是忠诚、可靠且乐于配合的执行者。你尊重层级与规则，会尽力完成上级交代的任务，并注重维护团队的和谐。你希望得到清晰的指令和定期的正面反馈，当被委以照顾团队或组织活动的职责时，你最是如鱼得水。但有时，你可能会因为不愿提出异议而执行自己并不认同的指令。\n\n作为同事，你是最受欢迎的合作伙伴之一。你乐于分享信息、提供帮助，记得大家的生日，是办公室里的“暖心担当”。你善于调解小摩擦，促进合作。然而，你可能会因为想维持“好人”形象，而避免与同事进行必要的、可能导致不快的专业争论，或在分工模糊时承担过多。\n\n作为管理者，你倾向于打造一个像家庭般紧密协作的团队。你关心下属的个人福祉，善于通过鼓励和认可来激励团队。你注重流程和传统，能带来稳定感。但挑战在于，你可能会在制定强硬决策或处理绩效不佳的员工时感到棘手，过分顾及情面；也可能因忙于照顾每个人的情绪，而在战略规划等宏观思考上投入不足。"
+    },
+    {
+      "boldQuote": "世界是一台精密的机器，而你是那个最想拆开它看看，并且总能装回去的人。",
+      "careerPaths": "你最适合那些能让你动手操作、即时看到结果、且环境灵活多变的工作。例如，飞行员或赛车手（应对瞬息万变的环境）、外科医生或牙医（精细的手部操作与即时反馈）、工程师或技术专家（解决具体的技术难题）、紧急救援人员或法证调查员（在压力下分析现场、采取行动）。固定的格子间、无尽的文书工作和办公室政治，是你的噩梦。\n\n你在职业上的核心优势，是临场的问题解决能力和对工具、系统的精通。当设备故障、流程崩溃或突发危机时，你是最可靠的故障排除者。你能在信息不全的情况下，凭借对物理现实和逻辑因果的直觉，迅速找到关键点并实施有效干预。你享受那种「只有我能搞定」的技术性时刻。\n\n常见的困境是，一旦你掌握了某个岗位的所有技能，日常操作变成重复劳动，你就会感到厌倦，渴望新的��战。这可能导致频繁跳槽或职业发展缺乏连续性。此外，你不喜欢做长期规划和写冗长的报告，这在许多组织体系中是不利的。你也可能因为不愿花时间解释自己的决策或进行团队建设，而被视为难以合作或缺乏领导潜质。",
+      "dimension_profile": {
+        "E": 0.1,
+        "J": 0.1,
+        "S": 0.9,
+        "T": 0.9
+      },
+      "englishTitle": "Virtuoso",
+      "friendships": "你选择朋友没有太多刻意的标准，往往是在共同的活动中自然筛选出来的。可能是那个在攀岩时为你确保的人，在改装车时递来合适工具的人，或是一起打游戏时默契无间的队友。你欣赏直接、不矫饰的性情，讨厌虚伪的客套。能和你成为朋友的人，通常都有一技之长，并且懂得尊重彼此的界限，不会用过多的情感需求来打扰你。\n\n在友谊中，你扮演着那个「实干家」和「冷静顾问」的角色。朋友遇到技术难题或需要做个实物，你往往是第一求助对象。当朋友被情绪困扰时，你或许不擅长抚慰，但你会带他去兜风、运动，或者用你独特的、略带黑色幽默的视角帮他看清问题的荒谬之处。你给予的是一种基于行动的、实实在在的支持。\n\n你的局限在于，友谊的维持对你来说需要较低的能耗。如果朋友变得过于依赖，频繁需要情感互动，或总是组织你并不感兴趣的社交聚会，你会逐渐后退。你不会主动去经营或深化友谊，可能很久不联系，但再见面时依然如故——这只是你的方式，却可能被误解为疏远。你需要的是那种「召之即来，挥之即去」却彼此心照不宣的默契，但这并非人人都能接受。",
+      "group": "探索者",
+      "groupEnglish": "Explorers",
+      "id": "istp",
+      "parenthood": "你的养育风格是「授人以渔」的实践派。你很少讲大道理，更倾向于说「来，我教你」。你会带孩子一起修理自行车、搭建树屋、露营生火，在动手的过程中，让他们理解物理规律、学会解决问题。你崇尚独立和韧性，认为孩子应该在可控的冒险和试错中学习，而不是活在过度保护的理论真空里。\n\n你能给孩子最独特的礼物，是一种对世界运行方式的好奇心，以及面对困难时「自己想办法」的底气。你会是那个陪他们拆开旧收音机研究内部结构，在暴雨来临前一起加固帐篷的父亲或母亲。你教会他们的不是标准答案，而是一套探索和应对现实的方法论。你的冷静也会成为家庭在危机中的稳定锚。\n\n挑战在于，你可能不擅长处理孩子细腻的情感需求。当孩子哭泣时，你的本能是找出哭泣的「原因」并解决它，而不是先给予拥抱和共情。你也可能因为沉浸在自己的项目里，而忽略了孩子需要你陪伴的无声信号。此外，你对规则和计划的随意性，可能与伴侣或学校的要求产生冲突。你需要意识到，养育不仅是传授技能，更是情感容器的构建。",
+      "portrait": "你站在一台故障的引擎前，周围是嘈杂的议论和纷乱的手册。你只是俯身，手指拂过金属表面，用指腹的温度和眼睛的测量，在脑海中勾勒出内部齿轮的咬合与断裂。当别人还在争论理论时，你的扳手已经找到了那个松动的螺栓。世界对你而言，不是由文字堆砌的，而是由触感、声响和可被验证的因果关系构成的实体。\n\n驱动你的，是一种近乎本能的探究欲。你不是为了解决问题而动手，你是为了理解「它为何如此运转」才去拆解。一个完美的理论，远不如一次成功的修复让你感到踏实。你渴望触摸事物的纹理，听见零件归位的脆响，在物理世界的反馈中确认自己的认知。这种理解，必须经由你的双手和眼睛亲自验证。\n\n你既渴望极致的自由，不受任何规则或情感的束缚，像一个独行的探险家；又深深着迷于事物内在的、不容置疑的客观法则。你抗拒被定义，却在寻找最精确的定义。你沉默寡言，但你的每一个动作都在说话。这种矛盾让你在人群中显得疏离，却在与物的对话中无比自洽。\n\n当这种特质发展到极致，你会成为那个在危机中纹丝不动、凭直觉找到唯一生路的人。你的世界极度清晰，排除了所有情绪的杂音，只剩下变量与结果。但这极致也可能带来一种冰冷的透彻，你像一位站在玻璃幕墙后的观察者，理解一切运作原理，却可能忘了触碰幕墙本身的温度。",
+      "romanticRelationships": "你进入一段关系通常悄无声息，可能始于一次共同的冒险、一个需要协力完成的项目，或是对方恰好拥有你欣赏的某项实用技能。夸夸其谈很难吸引你，一个在关键时刻沉着可靠的身影反而能让你驻足。你警惕过于浓烈的情感需求和未来承诺，那会让你感到被束缚。你需要的是一个能并肩而行、给予彼此空间的旅伴，而不是一个需要你全程导航的乘客。\n\n在关系中，你给予的是切实的守护和解决问题的行动力。当对方遇到麻烦，你不会说太多安慰的话，但你会是那个直接挽起袖子去修好漏水水管、查清故障代码的人。你需要的是对方对你独立性的尊重，允许你保有独处的洞穴时间，并且能理解你「行动先于言语」的表达方式。对你而言，一起安静地做各自的事，也是一种亲密的陪伴。\n\n冲突常发生在两个层面：一是当伴侣需要情感共鸣和言语安抚时，你却提供了逻辑分析和解决方案，这会让对方觉得你冰冷；二是你突如其来的「消失」——沉浸于自己的兴趣或需要独处时，疏于告知，会让伴侣感到不安和被忽视。你讨厌戏剧化的争吵，更可能选择沉默或暂时离开现场，这反而会加剧误解。\n\n真正适合你的关系，像两个独立星球的稳定轨道。你们有各自专注的领域和空间，互不干扰，但在需要时引力始终存在。伴侣最好能欣赏你的动手能力和冷静特质，不将你的沉默视为拒绝。而你需要学习的，是偶尔将你的「行动语言」翻译成对方能懂的情感词汇，让那份沉静的爱，能被清晰地看见。",
+      "strengths": [
+        {
+          "description": "当突发状况让所有人慌乱时，你的思绪反而会沉静下来。肾上腺素不会模糊你的判断，它只会让你更清晰地看到环境中所有可用的资源和逃逸路径。这种能力源于你习惯将情感与事实分离，在压力下，你只处理最客观的变量。",
+          "label": "危机镇定者"
+        },
+        {
+          "description": "面对一个抽象概念，你本能地会在脑中将它转化为具体的图像、模型或操作步骤。你不是在「思考」一个理论，你是在脑海中「搭建」它。这让你能绕过冗长的论述，直接触及问题的物理核心，并找到最直接的干预点。",
+          "label": "具象思维"
+        },
+        {
+          "description": "对你而言，阅读十页说明书，不如亲手拆卸一次来得明白。你的学习通道是触觉和视觉的，肌肉记忆和空间推理构成了你的知识体系。在反复的试错与调整中，你获得的不是信息，而是内化于心的、关于事物如何真正运作的直觉。",
+          "label": "动手即理解"
+        },
+        {
+          "description": "你厌恶冗余和装饰。无论是修理物件、制定计划还是表达观点，你都会本能地剔除所有不必要的部分，直指最核心、最高效的解决方案。这种简洁不是空洞，而是经过高度提纯后的功能性，是复杂系统在你手中呈现出的优雅骨架。",
+          "label": "极简主义"
+        },
+        {
+          "description": "计划永远赶不上变化，但你很少为此焦虑。你更擅长在行进中校准。当环境突变，你不会执着于废弃的蓝图，而是立刻以现有条件为新的起点，重新评估、即时调整。你的策略是流动的，���水一样寻找当下阻力最小的路径。",
+          "label": "适应性调整"
+        },
+        {
+          "description": "当你的手握住工具，眼睛锁定目标时，世界的其他部分就淡出了。你不是在对抗干扰，而是自然地进入了与眼前任务的心流合一。这种全然的临在感，让你能捕捉到最细微的反馈——一声异响、一丝阻力，那都是事物正在诉说的语言。",
+          "label": "专注当下"
+        }
+      ],
+      "subtitle": "在寂静中拆解世界，于行动中完成表达",
+      "title": "鉴赏家",
+      "token": "解构者",
+      "typeCode": "ISTP",
+      "verse": "当你真正理解一件事，你不需要解释它，你只需要展示它。",
+      "verseSource": "理查·费曼",
+      "weaknesses": [
+        {
+          "description": "在强烈的情感冲突现场，你的第一反应往往是分析局势而非共情。你会冷静地指出逻辑漏洞，却看不见对方眼泪背后的诉求。这不是冷漠，而是你的情感处理器需要独处的时间才能离线运行。这种延迟的回应，常被误解为无动于衷，是专注逻辑必然要付出的联结代价。",
+          "label": "情感延迟"
+        },
+        {
+          "description": "一个长期的计划或关系承诺，对你而言像一副未来的镣铐。你害怕被固定的轨迹锁死，失去随机应变的自由。你更愿意说「现在可以」，而非「永远都会」。这种对不确定性的偏爱，维护了你的灵活性，却是关系与项目中让人难以依赖的必然代价。",
+          "label": "承诺恐惧"
+        },
+        {
+          "description": "你觉得过程一目了然，结果不言自明。向他人一步步解释你的思路或行动理由，对你来说是繁琐且不必要的。你宁愿直接展示成果。这种沉默让你显得神秘或傲慢，也让他人难以与你协同，是追求效率与直接体验必然要付出的沟通代价。",
+          "label": "解释吝啬"
+        },
+        {
+          "description": "一旦你摸清了一个系统或技能的运作规律，征服的快感便会迅速消退。接下来的重复操作或精细打磨，对你而言变得乏味。你会迫不及待地寻找下一个未解之谜。这种对「已知」的厌倦，是驱动你探索的燃料，也是难以深耕的必然代价。",
+          "label": "兴趣燃尽"
+        },
+        {
+          "description": "你擅长解决眼前的具体问题，却对长远的、抽象的规划感到棘手。未来布满太多变量，为你所不喜。你倾向于走一步看一步，相信车到山前必有路。这让你在即时应对上出类拔萃，却也容易在缺乏框架的事务中迷失，是活在当下必然要付出的远见代价。",
+          "label": "规划短板"
+        },
+        {
+          "description": "维持广泛的社交对你来说是高能耗活动。你并非不喜欢人，只是表面的寒暄和情绪抚慰会快速消耗你的精力。你需要大量独处时间来回血，专注于自己的兴趣。这让你显得孤僻，可能错过一些深层联结的机会，是保存内在能量必然要付出的社交代价。",
+          "label": "社交节能"
+        }
+      ],
+      "workplaceHabits": "作为下属，你渴望自主权。最理想的状态是，上司告诉你目标和可用资源，然后放手让你去完成。你厌恶微观管理和不必要的流程汇报。如果任务清晰且有挑战性，你会是那个最可靠的问题终结者。但如果指令模糊或你认为方法低效，你可能会自行其是，这需要一位充分信任你的上司。\n\n作为同事，你是技术上的可靠后援，但社交上的独行侠。你乐于分享专业知识，帮助同事解决具体的技术难题，但很少参与茶水间的闲聊或办公室八卦。你喜欢以项目为导向的合作，任务完成，联系也可能随之淡去。在团队中，你往往是那个默默把最难部分啃下来的人，但可能不擅长为自己的贡献邀功。\n\n作为管理者，你倾向于「技术领袖」而非「人事经理」的角色。你会身先士卒，解决最棘手的技术问题，以此赢得尊重。但你可能缺乏耐心去指导能力不足的下属，或处理团队的人际摩擦。你的管理风格可能是结果导向、高度放权的，这能激发高手的潜能，但也可能让需要更多指导的新人感到无助。你需要一个善于处理人��和行政事务的副手来弥补你的盲区。"
+    },
+    {
+      "boldQuote": "你并非不善言辞，只是有些感受，语言抵达前，身体已先一步完成表达。",
+      "careerPaths": "你最适合那些能运用你的审美、动手能力，且环境自由、结果具体可见的工作。例如：手工艺人、园艺师、摄影师、舞蹈演员、宠物美容师、康复治疗师、调香师或平面设计师。这些领域让你能通过感官与材料对话，在创造有形之美的过程中获得满足，而非困于抽象的理论或复杂的办公室政治。\n\n你的核心优势在于将抽象概念转化为具体形式的能力，以及对细节质感无与伦比的敏感。你能捕捉到他人忽略的色彩渐变、材质肌理或情绪微光，并通过双手将其实现。在需要即时反应和灵活调整的场合，你往往能凭借直觉做出恰到好处的处理，让事情自然流畅地进行。\n\n常见的困境是，你厌恶僵化的流程、过多的会议和重复的文书工作，这可能在传统科层制组织中感到窒息。对于自我推销、长远职业规划或争夺资源，你既缺乏兴趣也缺乏技巧。你可能因为不擅表达自己的贡献而被忽视，或因为拒绝参与办公室人际博弈而显得边缘。找到尊重你工作节奏、以成果而非坐班时间论价值的平台，对你至关重要。",
+      "dimension_profile": {
+        "E": 0.1,
+        "J": 0.1,
+        "S": 0.9,
+        "T": 0.1
+      },
+      "englishTitle": "Adventurer",
+      "friendships": "你选择朋友，不看重身份或话题，而是一种气场的契合。可能是那个在聚会角落同样安静观察的人，或是那个能一眼看出你新换的耳环很别致的人。你青睐那些不试图挖掘你、不给你压力、能共享静谧或一同沉浸于简单乐趣的伙伴。友谊的种子，往往在某个共同体验的具体瞬间悄然埋下。\n\n在友谊中，你是一位细腻的陪伴者和务实的支持者。你不会讲大道理，但会在朋友生病时送去一碗粥，在他搬家时默默帮忙整理。你擅长创造轻松、无压的相处氛围，是朋友可以卸下伪装、不必刻意找话题的所在。你通过共享一杯茶、一段音乐、一次漫无目的的散步，来传递你的关心与理解。\n\n你的局限在于，你不太主动维系关系。如果朋友不联系你，你可能也会沉入自己的世界，让友谊自然淡去。你很少主动发起深度交谈或组织聚会，这有时会让朋友感到疏远。当朋友陷入需要大量语言疏导的情绪漩涡时，你可能会因不知如何用言语应对而显得手足无措，尽管你心里充满关切。",
+      "group": "探索者",
+      "groupEnglish": "Explorers",
+      "id": "isfp",
+      "parenthood": "你的养育风格是陪伴而非指导。你不太会制定严格的日程表或成才计划，更倾向于跟随孩子的节奏，带他触摸树皮的粗糙，观察蚂蚁的行进，在雨后的水洼里踩水。你相信，对世界的好奇与热爱，是在这些自由的探索中自然生长的。你的核心价值，是保护孩子感知快乐与美的本能。\n\n你能给孩子最独特的礼物，是一个充满感官刺激和创造自由的童年。你会和他一起用旧布料做玩偶，在厨房尝试各种奇怪但有趣的食物组合，允许他把房间布置成自己喜欢的模样。你教会孩子的，不是竞争和规则，而是如何与自己的感受相处，如何从平凡事物中发现趣味。你给予的是一种“被允许”的安全感。\n\n挑战在于，你可能会在建立规则和坚持纪律上遇到困难。当孩子挑战边界时，你倾向于妥协以避免冲突，这可能导致界限模糊。此外，对于学业规划、未来方向等需要长远筹谋的事务，你可能会感到焦虑和无力，难以给孩子清晰的引导。你的随性，有时需要一位更擅长规划的伴侣来互补，才能为孩子提供既自由又稳定的成长环境。",
+      "portrait": "午后阳光斜照进窗，你用手指摩挲着陶杯粗糙的肌理，感受釉色在光线下细微的流动。这一刻的触感、温度与光影，比任何宏大的计划都更让你感到踏实。你并非在逃避什么，只是确信，世界的真相就藏在这些具体的、可触摸的瞬间里。\n\n驱使你向前的，并非远方的目标，而是对当下纯粹体验的渴望。你走进一片森林，不是为了抵达另一头，而是为了听见脚踩落叶的脆响，看见苔藓在树根处蔓延的形状。你动手做一件东西，不是为了完成它，而是享受材料在手中逐渐成型的过程。你的行动力，源于对世界饱满细节的好奇与珍爱。\n\n你既渴望被理解，又抗拒被定义。当有人试图用标签概括你时，你会感到一种温柔的冒犯。你的内心有一套稳固的、关于何为对错、何为美丑的准则，但你很少宣之于口。这让你看起来随和，甚至有些飘忽，但触及底线时，你的沉默会比任何争辩都更坚定。\n\n当你能全然信任自己的感官与直觉，不再为‘应该’如何而分心，你会进入一种心流状态。那时，你的双手仿佛有了自己的思想，能直接从材料中‘看见’形态；你的眼睛能捕捉到最细微的情绪褶皱。你活成了一个通道，让美与真实通过你，在世间显形。",
+      "romanticRelationships": "吸引你的，往往是一个不经意的瞬间：他挽起袖子时手臂的线条，她大笑时眼角真实的细纹，或是彼此沉默相处却不尴尬的宁静。你通过这些具体的、感官的细节坠入爱河。但若感到对方急于用承诺和定义来框住关系，你又会本能地后退，因为爱情于你，首先是一种自由的体验，而非一份待履行的契约。\n\n在关系中，你给予的是高度专注的陪伴和充满巧思的体贴。你会记得他喜欢的咖啡浓度，为她手作一件独一无二的礼物。你需要的是被全然接纳，包括你偶尔的疏离和沉默。你希望爱是一个安全的港湾，让你可以随时出海探险，又随时可以返航，而不必解释潮汐的方向。你的爱意，更多流淌在共同经历的日常细节里，���非热烈的誓言中。\n\n困难常源于表达节奏的错位。当你因内心波动而需要独处时，伴侣可能误读为冷淡或拒绝。你回避正面冲突的习惯，会让小不满堆积成暗礁。此外，你对自由空间的坚持，可能让渴望紧密联结的伴侣感到不安。你并非不爱，只是你的爱像呼吸，需要有收有放，而对方或许期待一个恒定的温度。\n\n真正适合你的关系，拥有大地般的包容与耐心。对方懂得欣赏你沉默背后的丰富，不强迫你用语言证明情感。你们共享许多无需言语的时光，一起散步、做饭、听音乐，在具体的相处中积累默契。这种关系尊重彼此独立的节奏，像两棵并肩的树，根系在地下轻轻触碰，枝叶在空中各自朝向阳光。",
+      "strengths": [
+        {
+          "description": "当别人在讨论一幅画的寓意时，你正被笔触的力道和颜料的厚度吸引。你能通过指尖的触感、鼻尖的气味、耳中的声响，与事物建立一种超越语言的、直接的共鸣。这种能力让你能捕捉到最微妙的美与真实。",
+          "label": "感官共鸣"
+        },
+        {
+          "description": "在众人为未来焦虑、为过去懊悔时，你能完全沉浸于手头正在做的事。无论是冲泡一杯咖啡，还是整理一个角落，你投入的专注力能将平凡的瞬间转化为一种仪式。你的存在本身，就是对‘活在当��’的注解。",
+          "label": "临在之力"
+        },
+        {
+          "description": "计划突然取消，你反而松了一口气，因为发现了随性探索的可能。你对环境的变化有着植物般的敏感与韧性，不执着于预设的路径。这种顺势而为的能力，让你总能在变动中找到新的乐趣与生机。",
+          "label": "灵活适应"
+        },
+        {
+          "description": "你不会说太多安慰的话，但会在朋友低落时，默默递上一杯温度刚好的茶，或把他乱糟糟的房间收拾整齐。你的关怀是具体而实在的，通过细微的行动传递温暖，让人感到被支持，而非被分析。",
+          "label": "务实关怀"
+        },
+        {
+          "description": "你搭配衣物、布置房间或选择物品时，似乎不遵循任何规则，但结果总是和谐而富有个人气息。你的美感来自内在的、未经雕琢的直觉，能绕过理论的桎梏，直接抵达形式与色彩的本质联系。",
+          "label": "审美直觉"
+        },
+        {
+          "description": "在看似随和的外表下，你对于何为重要、何为公正，有着不容妥协的底线。这种坚守并不张扬，它可能体现在你拒绝参与某次闲聊的恶意评判，或默默离开一个让你感到虚伪的场合。你的沉默��即是立场。",
+          "label": "价值坚守"
+        }
+      ],
+      "subtitle": "在感官的河流中打捞美的碎片，以沉默守护内心的秩序",
+      "title": "探险家",
+      "token": "感官诗人",
+      "typeCode": "ISFP",
+      "verse": "美是存在的一种方式，不是需要被证明的东西。",
+      "verseSource": "里尔克",
+      "weaknesses": [
+        {
+          "description": "当被要求制定长期计划时，你的思绪会像雾气一样散开。遥远的未来过于抽象，无法激发你的行动力。你更擅长回应眼前的需求，这让你在需要前瞻性的领域感到吃力。这是沉浸于当下的必然代价。",
+          "label": "规划困境"
+        },
+        {
+          "description": "面对直接的对抗，你的第一反应往往是退让或沉默，哪怕内心已波涛汹涌。你害怕激烈的情绪会破坏关系的和谐，宁愿自己消化委屈。这种回避有时会让问题淤积。这是珍视平和氛围的必然代价。",
+          "label": "冲突回避"
+        },
+        {
+          "description": "你太容易感知到他人的情绪，有时会不自觉地将其背负在自己身上。为了维持表面的和谐，你可能模糊自己的需求，直到某天因一件小事而突然感到耗尽。这是高度共情与厌恶冲突的必然代价。",
+          "label": "界限模糊"
+        },
+        {
+          "description": "你享受自由探索的过程，但对建立秩序和系统缺乏耐心。文件、日程、财务这些需要条理的事务，常让你感到束缚而拖延处理，可能导致生活出现不必要的混乱。这是忠于流动感的必然代价。",
+          "label": "结构散漫"
+        },
+        {
+          "description": "深刻的情感和想法在你心中酝酿许久，却��以找到合适的时机和语言表达。当终于想说时，情境已过，你便选择继续沉默。这可能导致最关心你的人，也感到与你隔着一层玻璃。这是情感内敛的必然代价。",
+          "label": "表达滞后"
+        },
+        {
+          "description": "面对重大选择，你收集大量感官信息和内心感受，却难以将它们整合成一个明确的决定。你害怕选错路会错过其他可能性的风景，因此在岔路口徘徊良久。这是渴望体验所有可能性的必然代价。",
+          "label": "决策迟疑"
+        }
+      ],
+      "workplaceHabits": "作为下属，你忠诚于自己认可的任务和人，而非冰冷的职位权威。如果上司尊重你的专业领域，给予你足够的自主空间，你会报以极高的专注和创造力。但你反感被 micromanage（微观管理），过多的进度汇报和流程约束会让你失去动力。你更愿意用最终的作品说话，而非过程中的言辞。\n\n作为同事，你是团队中温和而可靠的协作者。你不争抢风头，但在需要动手解决实际问题、或美化一个方案时，你会默默贡献关键力量。你营造轻松的工作氛围，是同事愿意倾诉的对象。然而，你很少主动发起社交或参与办公室政治，这种抽离有时会被误解为不合群。\n\n作为管理者，你并非天生的架构师。你更倾向于以身作则，通过亲自示范来指导下属，而非制定复杂的规章制度。你善于发现每个人的独特之处，并为他们创造能发挥所长的空间。但你在处理绩效评估、纪律约束或推动激进改革时可能会感到棘手，因为你更关注个体的感受与���队的和谐，而非纯粹的目标数字。"
+    },
+    {
+      "boldQuote": "你从不等待时机，你创造时机。当别人还在思考规则，你已经在改写游戏。",
+      "careerPaths": "你最适合充满变数、需要快速反应、能与真实世界直接互动的工作环境。具体方向例如：危机公关、销售（尤其是大客户或现场销售）、体育教练、急救人员、探险导游、或自己经营一门需要灵活应变的生意（如餐饮、活动策划）。枯燥的案头工作、需要长期孤独钻研的学术、或高度结构化、层级森严的大型机构，会让你迅速枯萎。\n\n你在职业上的核心优势是处理“现在进行时”问题的超凡能力。当别人还在分析数据、撰写报告时，你已经深入一线，通过观察、交谈和试错找到了突破口。你擅长在资源有限的情况下整合出解决方案，并且能用充满感染力的方式说服他人跟随。你是天生的“开局者”和“破局者”。\n\n常见的困境是难以在某个领域持续深耕，达到专家水准。你容易在掌握基本技能后感到厌倦，转而追逐新的挑战，导致职业生涯缺乏连贯的积累。此外，你对规则和长期战略的漠视，可能让你与注重流程的上级或同事发生冲突。你也可能因为过于依赖临场发挥，而在需要精密规划和持久耐力的项目上受挫。",
+      "dimension_profile": {
+        "E": 0.9,
+        "J": 0.1,
+        "S": 0.9,
+        "T": 0.9
+      },
+      "englishTitle": "Entrepreneur",
+      "friendships": "你选择朋友几乎不靠深思熟虑，更多是气场相投。那些在聚会中能接住你的梗、敢于尝试你提出的疯狂点子、聊天时不说空话套话的人，会迅速进入你的圈子。你的择友标准很“实在”：相处是否有趣、是否爽快、是否能在现实层面一起“做点事”。过于严肃或沉浸在抽象思辨中的人，很难成为你的密友。\n\n在友谊中，你是那个永远的“活动发起人”和“气氛担当”。你会是组织周末越野、发现新开的地下酒吧、在朋友遇到实际困难时第一个挽起袖子帮忙的人。你给予朋友的是真实的快乐、及时的援手和一种“活着真好”的感染力。你像一剂强心针，能把朋友们从沉闷的日常中暂时拽出来。\n\n你的局限在于，友谊的维持高度依赖于持续的、新鲜的共同体验。一旦朋友们因生活重心转移而趋于稳定，你可能会觉得联系变淡，转而寻找新的玩伴。你不擅长也不喜欢处理朋友间微妙的情感纠葛或需要长期陪伴的脆弱时刻。当朋友陷入漫长的情绪低谷时，你最初的热情支持可能会转为无措甚至疏远，因为你不知道除了“找点乐子散散心”还能做什么。",
+      "group": "探索者",
+      "groupEnglish": "Explorers",
+      "id": "estp",
+      "parenthood": "你的养育风格是“放养式”的实践教练。你相信最好的学习来自亲手触摸和尝试。你会带孩子去野外露营、教他们修理自行车、鼓励他们参加各种运动。你的核心价值观是：勇敢、独立、适应现实。你讨厌用过多的“不可以”来限制孩子，更倾向于说“试试看，但要注意安全”。\n\n你能给孩子最独特的礼物，是一种对世界毫无畏惧的好奇心和强大的动手能力。你不会替孩子包办一切，而是指给他们工具，让他们自己解决问题。你会是那个和孩子一起在泥地里打滚、教他们谈判技巧、让他们很早就见识真实世界复杂性的父母。你传授的不是书本知识，而是街头智慧。\n\n你的挑战在于缺乏耐心处理孩子细腻的情感需求和漫长的教育规划。当孩子因为友谊问题哭泣时，你可能只会说“别理他，去找新朋友玩”。对于需���每日监督的功课或才艺练习，你很容易感到厌烦。你的盲区是，可能低估了情感安全感对孩子的重要性，也可能会因自己追求新鲜感而让家庭生活缺乏稳定的节奏和仪式感，让孩子偶尔感到不安。",
+      "portrait": "当所有人围在图纸前争论方案时，你已经起身走向仓库，把零件堆在地上，双手沾满油污地开始组装。对你而言，世界不是一张蓝图，而是触手可及、可以拆解再重组的实体。理论是灰色的，但扳手拧紧时那一声清脆的“咔哒”，才是真实的回响。\n\n驱动你的，是一种对“此刻”的饥饿感。你渴望体验，渴望验证，渴望在现实的碰撞中感受自己的存在。你不是为了某个遥远的目标而行动，行动本身就是目的。那种在未知中迅速找到抓手、让局面活起来的瞬间，是你生命的燃料。\n\n你既是最务实的现实主义者，又是最浪漫的冒险家。你能精准地计算眼前的得失，却对长远的规划缺乏耐心；你能在人群中游刃有余地调动气氛，转身又可能对细腻的情感波动感到陌生。这种矛盾让你既迷人又难以捉摸。\n\n当你活到极致，世界会成为你无边无际的试验场。你能在最混乱的现场开辟道路，用惊人的适应力把危机变成舞台。但代价可能是，你永远在追逐下一个“此刻”，像一阵风，席卷一切，却难以在某处深深扎根。",
+      "romanticRelationships": "你被那些充满生命力、能与你一起跃入未知的人吸引。一个过于谨慎、需要反复确认才敢迈步的伴侣会让你感到乏味。相反，那种初次见面就能和你一起即兴旅行、在陌生城市里大笑的人，会瞬间点燃你的兴趣。但让你止步的，往往是对方开始要求长期的承诺和稳定的预期，那感觉像提前被写进剧本。\n\n在关系中，你给予的是源源不断的惊喜和活力。你会是那个突然订好周末机票、带伴侣去探险的人。你需要的是空间和欣赏，而非管控。你希望关系像一场双人舞，有即兴发挥的余地，而不是按部就班的交谊舞。你的爱体现在行动和共享的体验中，而非长篇的情话或深度的心理剖析。\n\n冲突常源于你对“无聊”的零容忍和伴侣对“稳定”的需求。当伴侣需要情感上的深度倾诉时，你可能显得不耐烦，只想快速解决问题。你临时取消计划或忘记重要日子的习惯，会让对方感到不被重视。而你则可能觉得对方的情绪需求和规则束缚了你的天性，让你想逃离。\n\n真正适合你的关系，需要一位既独立又强大的伴侣。TA能欣赏你的自发性，有时陪你疯狂；同时自身有稳固的内核，不因你的飘忽而焦虑。这种关系像两个独立的星系，各有轨道，但相遇时能碰撞出绚烂的火花。TA不会试图拴住你，而是用自身的丰富性吸引你不断回来。",
+      "strengths": [
+        {
+          "description": "当计划突然崩盘，所有人都愣住时，你的眼睛已经在扫描可用的资源。你能在几秒钟内抓住关键变量，用直觉和现实感拼凑出临时方案。这不是思考的结果，而是你的神经系统直接与环境对话。",
+          "label": "现场应变"
+        },
+        {
+          "description": "你不需要准备演讲稿，当你讲述一个想法时，你的手势、语调和整个身体都在传递确信。你贩卖的不是概念，而是可触摸的可能性。人们相信你，是因为你看起来就像活在那个未来里。",
+          "label": "说服力"
+        },
+        {
+          "description": "你天然过滤掉那些花哨的理论，直接问“这有什么用？”。你能在复杂信息中迅速剥离出核心事实和可操��的部分。对你而言，真理必须能在现实世界中掷地有声。",
+          "label": "实用主义"
+        },
+        {
+          "description": "面对一个未曾涉足的领域或一个明显的风险，你的第一反应常常是“试试看再说”。恐惧被一种强烈的好奇心和征服欲覆盖。你相信车到山前必有路，而路是你开出来的。",
+          "label": "胆识"
+        },
+        {
+          "description": "你能在人群中瞬间捕捉到谁才是关键人物，在谈判中察觉到对方细微的表情变化。这种观察不是分析，而是一种全景式的、对环境和人动态关系的即时读取。",
+          "label": "观察力"
+        },
+        {
+          "description": "当你进入一个沉闷的房间，气氛会不知不觉改变。你带来的不是空洞的鼓励，而是一种“做点什么”的动能。你的存在本身就像催化剂，催促着人们从思考转向行动。",
+          "label": "活力感染"
+        }
+      ],
+      "subtitle": "现实是游乐场，行动是本能",
+      "title": "企业家",
+      "token": "即兴玩家",
+      "typeCode": "ESTP",
+      "verse": "机会不会等你做好准备。",
+      "verseSource": "纳帕莱昂·博纳巴特",
+      "weaknesses": [
+        {
+          "description": "当会议陷入对三年后愿景的漫长讨论时，你的注意力早已飘向窗外。那些不能立即验证的步骤，对你而言如同空中楼阁。代价是，你可能错过需要耐心播种才能获得的更大收获。这是追求即时反馈的必然代价。",
+          "label": "不耐规划"
+        },
+        {
+          "description": "长期的责任像一件不合身的紧身衣，让你感到束缚。你更倾向于保持选择的开放性，哪怕这意味着让依赖你的人感到不安。代价是关系的深度和稳定性可能受损。这是崇尚自由的必然代价。",
+          "label": "规避承诺"
+        },
+        {
+          "description": "你能敏锐察觉他人的情绪变化，却常常不知如何妥善处理那些细腻的伤感或焦虑。你的第一反应是提供实际的解决方案，而非情感共鸣。代价是可能被亲近的人认为缺乏共情。这是聚焦于现实行动的必然代价。",
+          "label": "情感粗粝"
+        },
+        {
+          "description": "一个刺激的念头闪过，你常常来不及评估所有潜在后果就付诸行动。那种肾上腺素的飙升和未知的挑战本身，就是最大的诱惑。代价是可能将自己或他人置于不必要的险境。这是活在当下的必然代价。",
+          "label": "冲动风险"
+        },
+        {
+          "description": "你擅长广博地涉猎，迅速掌握事物的操作要领，却很少有兴趣钻研其背后的深奥原理。一旦掌握了“怎么用”，好奇心便转向下一个目标。代价是知识结构可能流于表面。这是追求广度与速度的必然代价。",
+          "label": "难以深入"
+        },
+        {
+          "description": "这里指的并非正面争执，而是那些需要长期面对、缓慢解决的深层人际矛盾。你倾向于用幽默转移话题，或者干脆物理性离开令人窒息的紧张现场。代价是问题可能累积发酵。这是逃避负面僵局的必然代价。",
+          "label": "回避冲突"
+        }
+      ],
+      "workplaceHabits": "作为下属，你讨厌被 micromanage（微观管理）。给你一个明确的目标和一定的自主权，你能交出令人惊喜的结果；但若用繁琐的流程和日报、周报束缚你，你会变得消极或直接反抗。你尊重那些有真本事、敢于放权的领导，但看不起只会纸上谈兵的上司。你往往是那个在正式流程外找到捷径的人。\n\n作为同事，你是团队里的“消防员”和“活力源”。当项目陷入僵局时，你总能提出一些跳出框架的实用点子。你乐于分享信息、帮助同事解决实际困难，人缘通常不错。但你也可能因为不遵守大家默认的流程或忘记跟进后续细节，而给同事带来额外的工作量。你的口头禅可能是“先干了再说”。\n\n作为管理者，你善于激励团队、快速决策、在危机中带领大家冲锋。你倾向于创造一个宽松、结果导向的环境。但你的弱点在于缺乏建立长效体系和培养下属的耐心。你可能会事必躬亲，因为觉得“教别人太慢，不如自己来快”。团队的方向也可能随着你的新兴趣而频繁变动，让下属感到缺乏稳定感。你是一个优秀的“战时领袖”，但未必是善于经营“和��时期”的管家。"
+    },
+    {
+      "boldQuote": "你像一团流动的火焰，哪里有人，哪里就是你的主场。",
+      "careerPaths": "你最适合那些充满变化、与人互动、能带来即时反馈的工作环境。例如：活动策划、旅游向导、销售或客户关系、幼教或体育教练、舞台表演或主持。这些职业让你能运用你的应变力、表现力和对人心的体察。\n\n你在职业上的核心优势，是解决实际问题和调动团队氛围的能力。当项目陷入僵局，你能提出一个可行的折中方案；当团队士气低落，你一个玩笑或一次小聚餐就能重新点燃热情。你是现实困境的破局者和工作情绪的调节阀。\n\n常见的困境是难以忍受重复的文书工作和漫长的战略规划。在层级森严、流程僵化的组织中，你会感到窒息。你也可能因为追逐新的兴趣点而频繁更换赛道，或在需要深度钻研某一领域时，因缺乏持久的耐心而感到挫败。",
+      "dimension_profile": {
+        "E": 0.9,
+        "J": 0.1,
+        "S": 0.9,
+        "T": 0.1
+      },
+      "englishTitle": "Entertainer",
+      "friendships": "你选择朋友几乎不设标准，更像是一种气场的自然吸引。那些开朗的、有趣的、愿意一起尝试新鲜事的人，会迅速进入你的核心圈。你讨厌虚伪和故作深沉，真诚的笑容和直接的表达，是你友谊的通行证。\n\n在朋友中，你是那个不可或缺的“活力源”和“粘合剂���。你记得每个人的喜好，总在聚会中照顾到角落里的那个人。你擅长把想法变成行动——“想那么多干嘛，先去试试！”——你是朋友圈里的行动派引擎，把平淡的周末变成值得回忆的小型庆典。\n\n你的局限在于，友谊的维护高度依赖“在场”。一旦地理距离拉开或生活节奏不同，联系容易变淡。你也可能因为追求表面的和谐，而难以与朋友进行触及核心矛盾的深度对话。当朋友陷入需要长期、安静陪伴的低谷时，你可能会感到无措，不知如何应对那些无法用快乐驱散的阴影。",
+      "group": "探索者",
+      "groupEnglish": "Explorers",
+      "id": "esfp",
+      "parenthood": "你的养育风格是开放而充满乐趣的。比起成绩单上的分数，你更关心孩子今天是否开心，是否发现了什么有趣的东西。你的核心价值观是：活着就要去感受、去尝试、去热爱。你会带孩子去野外露营，一起烹饪搞怪的晚餐，把家变成一个充满笑声和探索的游乐场。\n\n你给孩子最独特的礼物，是“体验世界”的勇气和热情。你能教会孩子欣赏一朵云的形状，从一次失败的烘焙中找到笑点，在陌生人面前自信地表达自己。你让孩子相信，��活��一场值得投入的盛大游戏，而他们拥有享受它的天然权利。\n\n你的挑战在于结构和规则的建立。随性的你可能会让家庭作息过于灵活，或在教育需要坚持和重复的部分（如练琴、作业）时缺乏耐心。另一个盲区是，当孩子陷入内向的烦恼或抽象思考时，你可能急于用外部活动来“解决”情绪，而非陪伴他们静静地穿越那片复杂的内心地带。",
+      "portrait": "你推开派对的门，音乐和谈笑声像暖流一样涌来。你的眼睛立刻捕捉到角落里那个落单的新面孔，身体比大脑更快地做出反应——你自然地走过去，递上一杯饮料，一个真诚的笑容，几句话就让对方紧绷的肩膀松弛下来。你不是刻意为之，只是觉得空气里有一丝不和谐的冷清，而你有责任把它焐热。\n\n你的驱动力来自一种对生命质感的渴望。你需要触摸、品尝、聆听、感受，用五感去确认世界的丰盈。一个完美的日落，一次即兴的公路旅行，朋友脸上突然绽放的笑容，这些具体而微的瞬间，是你确认自己活着的坐标。你追逐的不是意义，而是体验本身的热度。\n\n你既渴望成为人群的中心，又害怕聚光灯熄灭后的寂静；你既慷慨地挥洒情绪，又偶尔在独处时感到一种难以名状的空洞。你活在当下的每一刻，却又隐隐担忧，这绚烂的烟火散尽后，会留下什么。\n\n当你真正活出自己的节奏，你会成为一个现实世界的魔法师。你能把平凡的日常变成庆典，让每个与你相遇的人都感到自己是被珍视的主角。你教会人们，生活不是用来规划的蓝图，而是用来沉浸的河流。",
+      "romanticRelationships": "你被那些能带你体验新事物、充满生命活力的人吸引。一个沉闷的约会，即使对方条件再好，也会让你迅速失去兴趣。让你止步的，往往是过于严肃的承诺压力，或是对方总想把你拉进对未来无休止的讨论中，那感觉像在旱地上游泳。\n\n在关系中，你给予的是高浓度的陪伴和层出不穷的快乐点子。你需要的是对方的积极回应和参与，一起把日子过成一场有趣的冒险。你渴望被欣赏，不是因为你做了什么，而是因为你本身的存在就让对方感到生活更有趣。你的爱是即兴的礼物和触手可及的温暖。\n\n冲突常发生在节奏不一致时。当你兴致勃勃地提议周末出游，对方却想在家休息或处理工作，你会感到被泼冷水。你也可能因为回避深入的严肃谈话，让伴侣觉得你不够投入。那些未被处理的微小不满，可能会累积成隔阂。\n\n真正适合你的关系，是和一个同样享受当下、但内心稳定的人结伴。TA能欣赏你的 spontaneity，偶尔陪你疯狂，也能在你飞得太远时，温柔地递上一根风筝线。你们的关系不需要复杂的剧本，最好的时刻，往往发生在计划之外的笑声里。",
+      "strengths": [
+        {
+          "description": "你会在聚会冷场前就察觉到空气的凝滞，然后自然地讲个故事或发起一个小游戏。这种能力源于你对群体情绪频率的直觉捕捉，像雷达一样接收着非语言的信号。",
+          "label": "氛围感知"
+        },
+        {
+          "description": "当计划被打乱，别人感到焦虑时，你却能迅速在现状里找到新的乐趣点。你的思维不依赖预设路径，眼前的人与物就是全部素材，总能组合出意外的欢愉。",
+          "label": "即兴创造"
+        },
+        {
+          "description": "你不会说空泛的安慰，而是在朋友低落时，带上一份他爱吃的点心，或直接拉他去散心。你的关怀是五感可及的，因为对你而言，爱必须通过具体的行动被触摸到。",
+          "label": "具象关怀"
+        },
+        {
+          "description": "面对困境，你很少陷入抽象的忧虑，而是立刻寻找眼前能做什么来改善局面。你的乐观扎根于对现实细节的掌控，相信改变可以从下一个微小的行动开始。",
+          "label": "现实乐观"
+        },
+        {
+          "description": "你总能把不同圈子的人自然地引荐到一起，几句话就消融陌生感。你天生懂得每个人渴望被看见的部分，并乐于成为那面映照出彼此光彩的镜子。",
+          "label": "联结催化"
+        },
+        {
+          "description": "无论是品味美食还是欣赏风景，你都能全情投入，捕捉到最细微的色香味变化。这种能力让你经历的每一刻都格外饱满，生命于你而言是一系列高清晰度的当下。",
+          "label": "体验沉浸"
+        }
+      ],
+      "subtitle": "人群中的聚光灯，现实世界的体验家",
+      "title": "表演者",
+      "token": "氛围点燃者",
+      "typeCode": "ESFP",
+      "verse": "生命最重要的不是你得到了什么，而是你给别人带来了什么感受。",
+      "verseSource": "马雅·安杰卢",
+      "weaknesses": [
+        {
+          "description": "当被要求制定长期计划时，你的思维容易变得模糊，那些遥远的抽象目标缺乏实感。你更信赖临场应变，这是活在当下必然付出的代价，未来的轮廓总是不甚清晰。",
+          "label": "规划短板"
+        },
+        {
+          "description": "长时间进行抽象的理论探讨或内省，会让你感到精力被抽干��你的能量来自与外界的互动和实操，这是感官导向的思维模式必然带来的认知偏好局限。",
+          "label": "深度疲劳"
+        },
+        {
+          "description": "你倾向于用幽默或转移话题来缓和紧张气氛，有时让问题得不到根本解决。维持和谐愉悦的现场氛围是你的本能，这是将人际关系体验置于首位的自然代价。",
+          "label": "回避冲突"
+        },
+        {
+          "description": "面对过于僵化或漫长的承诺，你可能会感到束缚，渴望保留随性变化的可能。对灵活与自由的珍视，是你拥抱开放性人生必然会伴随的挑战。",
+          "label": "承诺压力"
+        },
+        {
+          "description": "你习惯于向前看、寻找下一个兴奋点，而非复盘过去。这有时会让你在相似的情境中重复某些模式，这是行动先于思考的生活节奏难以避免的代价。",
+          "label": "反思延迟"
+        },
+        {
+          "description": "在缺乏新鲜刺激或社交反馈的环境中，你的热情和创造力容易减退。你的能量系统需要外界的互动来充电，这是高度依赖外部世界激活的内在机制的必然一面。",
+          "label": "精力依赖"
+        }
+      ],
+      "workplaceHabits": "作为下属，你渴望被信任，并给予一定的自主发挥空间。你乐于接受清晰、具体的短期任务，并能出色完成。但面对模糊的指令或过于长远的蓝图，你会感到迷茫。你希望自己的工作能立刻看到对他人的积极影响，这是你动力的重要来源。\n\n作为同事，你是团队里的“士气担当”和“润滑剂”。你善于跨部门沟通，能快速和大家打成一片。当合作中出现摩擦，你往往是那个主动破冰、用轻松方式化解尴尬的人。你贡献的不仅是工作成果，还有让办公室变得更宜人的氛围。\n\n作为管理者，你擅长激励团队，营造积极向上的工作文化。你会看到每个成员的独特之处，并给予即时的肯定。你的挑战在于，可能过于依赖个人魅力和临场发挥，而在建立系统、流程和进行长期绩效管理上有所欠缺。你需要一个善于规划的搭档，来补足你视野中关于“远方”的那部分。"
+    }
+  ],
+  "scoring": {
+    "dimensions": [
+      {
+        "id": "E",
+        "label": "外向",
+        "reverseItems": [
+          "q33",
+          "q37",
+          "q41",
+          "q45",
+          "q49",
+          "q53",
+          "q57"
+        ]
+      },
+      {
+        "id": "S",
+        "label": "感知",
+        "reverseItems": [
+          "q30",
+          "q34",
+          "q38",
+          "q42",
+          "q46",
+          "q50",
+          "q54",
+          "q58"
+        ]
+      },
+      {
+        "id": "T",
+        "label": "思考",
+        "reverseItems": [
+          "q31",
+          "q35",
+          "q39",
+          "q43",
+          "q47",
+          "q51",
+          "q55",
+          "q59"
+        ]
+      },
+      {
+        "id": "J",
+        "label": "判断",
+        "reverseItems": [
+          "q32",
+          "q36",
+          "q40",
+          "q44",
+          "q48",
+          "q52",
+          "q56",
+          "q60"
+        ]
+      }
+    ],
+    "groupSize": 5,
+    "scale": 5,
+    "type": "mbti"
+  },
+  "subtitle": "16 种人格类型，找到属于你的那一个",
+  "themeKey": "default",
+  "title": "十六人格测试"
+}

@@ -266,7 +266,10 @@ async function main() {
         }
         if (clamped > 0) console.log(`     [repair] clamped ${clamped} negative score(s) to 0 (scoringType: ${scoringType})`);
       }
-      const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions, { scoringType });
+      const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions, {
+        scoringType,
+        dimensionAxes: outline.dimensionAxes,
+      });
       printWarnings("questions", questionWarnings);
       assertNoCriticalWarnings("questions", questionWarnings);
 

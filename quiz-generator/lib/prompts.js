@@ -538,6 +538,7 @@ ${hintBlock}${archContext}
       "insight": "描述这个维度高分端特质的一句洞察，30-50字，第二人称，具体描述这种性格倾向的表现和内在动因，语气温暖但不失锐度，禁止空泛夸奖",
       "【仅 bipolar-dimension 填写以下字段，weighted-dimension 和 level-band 禁止输出】": "",
       "lowPole": "仅 bipolar-dimension：维度A的对立面，2-4字，代表低分端极点，例如「婉约含蓄」",
+      "highPole": "仅 bipolar-dimension：维度A的高分端极点，2-4字，例如「直接炽烈」",
       "highInsight": "仅 bipolar-dimension：高分端洞察，替代 insight",
       "lowInsight": "仅 bipolar-dimension：低分端洞察"
     }
@@ -566,8 +567,9 @@ ${hintBlock}${archContext}
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
 - 维度名称简洁，2-4字
 - axisLabel 是这条轴的“类别名”，2-4字；insight 描述高分端特质行为
-- weighted-dimension 和 level-band 的 dimensionAxes 只输出 dimension / axisLabel / insight，禁止出现 lowPole / highInsight / lowInsight
-- bipolar-dimension 的 dimensionAxes 必须输出 lowPole / highInsight / lowInsight，不用输出 insight
+- weighted-dimension 和 level-band 的 dimensionAxes 只输出 dimension / axisLabel / insight，禁止出现 lowPole / highPole / highInsight / lowInsight
+- bipolar-dimension 的 dimensionAxes 必须输出 lowPole / highPole / highInsight / lowInsight，不用输出 insight
+- bipolar-dimension 中，dimension 只是轴名；真正显示在结果页左右两端的是 lowPole / highPole，禁止把 highPole 省略成 dimension 名
 - insight / highInsight 应是具体的、有画面感的描述，避免套话如“你是个…的人”开头，也避免空洞形容词堆砌
 - writingVoice 应该真的可执行，像给写作者的语气说明，不要只写“有古风感”“更现代”这种空话
 - 若 Phase 0 提供了 dimensionSpecs，dimensionAxes 的语义必须与之严格一致，不能把某个维度偷偷改写成别的意思
@@ -749,10 +751,10 @@ async function generateQuestions(outline, startId, endId, batchLabel, total, dat
     : "";
   const scoringGuideBlock = `\n### 当前评分框架\n- scoringFamily: ${scoringFamily}\n- guidance: ${scoringFamilyGuide}\n`;
   const optionTemplateA = scoringFamily === "bipolar-dimension"
-    ? `        { "id": "a", "text": "选项文本", "scores": { "维度": 2, "另一个维度": -1 } },`
+    ? `        { "id": "a", "text": "选项文本", "scores": { "维度": 2, "另一个维度": 1 } },`
     : `        { "id": "a", "text": "选项文本", "scores": { "维度": 2 } },`;
   const scoreRule = scoringFamily === "bipolar-dimension"
-    ? "每个选项最多2个维度得分；允许负分，单维度范围 -2 到 2。只有在表达“朝 lowDefinition 一侧移动”时才使用负分，不能把负分当作惩罚项乱扣"
+    ? "每个选项最多2个维度得分；允许负分，单维度范围 -2 到 2。只有在表达“朝 lowDefinition 一侧移动”时才使用负分，不能把负分当作惩罚项乱扣；同一选项里的非零分必须同号，不能一边往 highDefinition 走一边又往另一个维度的 lowDefinition 走"
     : scoringFamily === "level-band"
       ? "每个选项最多2个维度得分，全部使用非负分。单维度范围 0 到 3；更成熟/更适配当前主题的选项，应拿到更高总分"
       : "每个选项最多2个维度得分，主维度≤2分，副维度≤1分，禁止负分";
@@ -811,13 +813,14 @@ ${optionTemplateA}
 1. id 严格从 q${startId} 到 q${endId}，不能多也不能少
 2. ${scoreRule}
 3. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
-4. 维度覆盖：本批 ${count} 道题，每个维度大致均匀出现（共 ${dimensions.length} 个维度，每维度约 ${Math.round(count / dimensions.length * 10) / 10} 道信号量）
-5. 每道题的高分选项应尽量贴合维度语义锚点，避免偷换概念
-6. 如果 scoringFamily = level-band，四个选项总分梯度必须明显拉开
-7. 如果 scoringFamily = bipolar-dimension，负分只能表示朝 lowDefinition 一侧移动
-8. 遵守 literary guide，尽量避免出现已列明的 AI 腔句型
-9. 不要为了“有氛围”而堆砌光线、气味、眼神、月色等细节；删掉一句若题意不变，就不要那句
-10. 简单冲突题可以很短，诗意/特殊题材题可以稍长，但都必须信息有效，不能凑字数
+4. 若 scoringFamily = bipolar-dimension，打分方向必须严格遵守 dimensionSpecs 的 highDefinition / lowDefinition，不能只按“更勇敢”“更激烈”“更消极”这类情绪色彩随意判正负
+5. 维度覆盖：本批 ${count} 道题，每个维度大致均匀出现（共 ${dimensions.length} 个维度，每维度约 ${Math.round(count / dimensions.length * 10) / 10} 道信号量）
+6. 每道题的高分选项应尽量贴合维度语义锚点，避免偷换概念
+7. 如果 scoringFamily = level-band，四个选项总分梯度必须明显拉开
+8. 如果 scoringFamily = bipolar-dimension，负分只能表示朝 lowDefinition 一侧移动
+9. 遵守 literary guide，尽量避免出现已列明的 AI 腔句型
+10. 不要为了“有氛围”而堆砌光线、气味、眼神、月色等细节；删掉一句若题意不变，就不要那句
+11. 简单冲突题可以很短，诗意/特殊题材题可以稍长，但都必须信息有效，不能凑字数
 12. 每道题的主测维度（计划已标注）：最好让至少 2 个选项给该维度打正分（≥1分），否则这题对主测维度的区分会偏弱`;
 
   const raw = await callAIImpl(system, user, 6000);

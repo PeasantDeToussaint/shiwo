@@ -51,8 +51,8 @@ describe("assemble helpers", () => {
       description: "Description",
       dimensions: ["理想主义", "现实主义"],
       dimensionAxes: [
-        { dimension: "理想主义", axisLabel: "驱动", lowPole: "现实", insight: "..." },
-        { dimension: "现实主义", axisLabel: "落点", lowPole: "理想", insight: "..." },
+        { dimension: "理想主义", axisLabel: "驱动", lowPole: "现实", highPole: "理想", insight: "..." },
+        { dimension: "现实主义", axisLabel: "落点", lowPole: "理想", highPole: "现实", insight: "..." },
       ],
       results: [
         {
@@ -93,6 +93,7 @@ describe("assemble helpers", () => {
     const quiz = assembleQuiz(outline, questions, results);
 
     expect(quiz.scoring.dimensions).toEqual(["理想", "现实"]);
+    expect(quiz.scoring.dimensionAxes[0].highPole).toBe("理想");
     expect(quiz.questions[0].options[0].scores).toEqual({ "理想": 2, "现实": 1 });
     expect(quiz.results[0].portrait).toBe("第一段\n\n第二段");
     expect(quiz.results[0].lifeAdvice).toBe("先落地；再放大");

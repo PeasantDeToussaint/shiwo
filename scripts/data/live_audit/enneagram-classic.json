@@ -1,0 +1,3115 @@
+{
+  "accent": "#8b7355",
+  "bgImage": "cloud://cloudbase-4gadl6qo4a9aa95d.636c-cloudbase-4gadl6qo4a9aa95d-1415990507/classicals3.png",
+  "description": "九型人格（Enneagram）与大多数人格测试最大的不同，在于它描述的不是你表现出来的行为，而是驱动这些行为的深层动机——你最根本的恐惧是什么，你最渴望得到的是什么。九种类型各有核心主题：追求完美、渴望被爱、渴望成功、寻找独特性、追求知识、寻求安全感、追求快乐、渴望掌控、寻求和谐。了解自己的类型，往往能解释很多长期困惑自己的行为模式和人际关系。\n\n作答时，选我通常是这样的，而不是我在某些情况下偶尔会这样。",
+  "displayTitleZh": "九型人格",
+  "estimatedMinutes": 15,
+  "eyebrow": "Enneagram",
+  "featureId": "classics",
+  "id": "enneagram-classic",
+  "isAvailable": true,
+  "questionCount": 81,
+  "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+  "questions": [
+    {
+      "dimension": "T1",
+      "id": "q1",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "事情不做到位，我很难停下来。"
+    },
+    {
+      "dimension": "T2",
+      "id": "q2",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很容易感受到别人需要什么，并且会主动去满足。"
+    },
+    {
+      "dimension": "T3",
+      "id": "q3",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我有强烈的动力去实现目标，而且通常能做到。"
+    },
+    {
+      "dimension": "T4",
+      "id": "q4",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我觉得自己和大多数人不太一样，这种感觉从小就有。"
+    },
+    {
+      "dimension": "T5",
+      "id": "q5",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我对事物的运作机制有强烈的好奇心，想彻底弄懂它。"
+    },
+    {
+      "dimension": "T6",
+      "id": "q6",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我会提前想到事情可能出错的地方，并提前做好准备。"
+    },
+    {
+      "dimension": "T7",
+      "id": "q7",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我比大多数人更快感到无聊，总在寻找新的体验。"
+    },
+    {
+      "dimension": "T8",
+      "id": "q8",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我习惯直接说出自己的想法，不喜欢绕弯子。"
+    },
+    {
+      "dimension": "T9",
+      "id": "q9",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很难理解为什么有些人喜欢争论，那只会让所有人都难受。"
+    },
+    {
+      "dimension": "T1",
+      "id": "q10",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我对自己的要求比对别人还要严格。"
+    },
+    {
+      "dimension": "T2",
+      "id": "q11",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "帮助别人让我感到有真实的价值和满足感。"
+    },
+    {
+      "dimension": "T3",
+      "id": "q12",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "在社交场合里，我知道怎样表现才能留下好印象。"
+    },
+    {
+      "dimension": "T4",
+      "id": "q13",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "拥有独特的身份认同对我来说非常重要，我不想成为任何模板。"
+    },
+    {
+      "dimension": "T5",
+      "id": "q14",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我需要大量独处时间来处理信息和恢复精力。"
+    },
+    {
+      "dimension": "T6",
+      "id": "q15",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "安全感和可靠性对我来说比冒险和刺激更重要。"
+    },
+    {
+      "dimension": "T7",
+      "id": "q16",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的计划表通常是满的，同时进行多件令人兴奋的事情。"
+    },
+    {
+      "dimension": "T8",
+      "id": "q17",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "在需要做决定的时候，我通常是那个站出来主导的人。"
+    },
+    {
+      "dimension": "T9",
+      "id": "q18",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我习惯看每一方的立场，很难只站到某一边。"
+    },
+    {
+      "dimension": "T1",
+      "id": "q19",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "看到别人违反规则或走捷径，我会感到真实的不舒服。"
+    },
+    {
+      "dimension": "T2",
+      "id": "q20",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我通常把别人的需要放在自己的前面，这是自然发生的。"
+    },
+    {
+      "dimension": "T3",
+      "id": "q21",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "成功和被认可对我来说是真实的驱动力，不只是附带收获。"
+    },
+    {
+      "dimension": "T4",
+      "id": "q22",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的情绪生活比别人更丰富、更复杂，起伏幅度也更大。"
+    },
+    {
+      "dimension": "T5",
+      "id": "q23",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "做决定之前，我会深入研究，不喜欢仓促行动。"
+    },
+    {
+      "dimension": "T6",
+      "id": "q24",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我非常忠诚，一旦信任了某人，会长期维护这段关系。"
+    },
+    {
+      "dimension": "T7",
+      "id": "q25",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的精力在有趣、新鲜的事情上会自动爆发出来。"
+    },
+    {
+      "dimension": "T8",
+      "id": "q26",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "当我被质疑或被压制时，我会坚定地反击，不会退让。"
+    },
+    {
+      "dimension": "T9",
+      "id": "q27",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "和谐的环境对我来说非常重要，冲突让我感到真实的不适。"
+    },
+    {
+      "dimension": "T1",
+      "id": "q28",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的生活空间和工作方式通常很有条理。"
+    },
+    {
+      "dimension": "T2",
+      "id": "q29",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "当别人来找我寻求帮助时，我很少会直接拒绝。"
+    },
+    {
+      "dimension": "T3",
+      "id": "q30",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很在意别人对我能力和价值的评价。"
+    },
+    {
+      "dimension": "T4",
+      "id": "q31",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "对我来说，艺术、美感和真实的自我表达有很高的优先级。"
+    },
+    {
+      "dimension": "T5",
+      "id": "q32",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我更依赖理性分析而不是情感或直觉做决定。"
+    },
+    {
+      "dimension": "T6",
+      "id": "q33",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "不确定性让我感到紧张，我喜欢知道接下来会发生什么。"
+    },
+    {
+      "dimension": "T7",
+      "id": "q34",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "当事情变得重复或无聊的时候，我很难坚持下去。"
+    },
+    {
+      "dimension": "T8",
+      "id": "q35",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我不喜欢依赖别人，更愿意靠自己的力量解决问题。"
+    },
+    {
+      "dimension": "T9",
+      "id": "q36",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很容易和别人相处，很少让别人感到被冒犯或不舒服。"
+    },
+    {
+      "dimension": "T1",
+      "id": "q37",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我在完成一件事之前很难真正放松下来。"
+    },
+    {
+      "dimension": "T2",
+      "id": "q38",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很在乎自己是否受到别人的喜爱和感激。"
+    },
+    {
+      "dimension": "T3",
+      "id": "q39",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我设定了清晰的目标，并且会认真追踪进度。"
+    },
+    {
+      "dimension": "T4",
+      "id": "q40",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "平庸对我来说是一种真实的威胁，按部就班的生活感觉像是背叛。"
+    },
+    {
+      "dimension": "T5",
+      "id": "q41",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢在某一个领域深入下去，成为这方面的专家。"
+    },
+    {
+      "dimension": "T6",
+      "id": "q42",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "在做重要决定之前，我需要反复确认，不喜欢没有把握就行动。"
+    },
+    {
+      "dimension": "T7",
+      "id": "q43",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢在短时间内尝试多种可能，不想过早锁定某一条路。"
+    },
+    {
+      "dimension": "T8",
+      "id": "q44",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的存在感很强，别人通常能感受到我进入一个空间。"
+    },
+    {
+      "dimension": "T9",
+      "id": "q45",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "做了一个让别人不满意的决定，会让我很长时间感到不舒服。"
+    },
+    {
+      "dimension": "T1",
+      "id": "q46",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我能注意到别人忽略的小错误，对细节很敏感。"
+    },
+    {
+      "dimension": "T2",
+      "id": "q47",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我有时候给出的关注和照顾比我自己意识到的要多得多。"
+    },
+    {
+      "dimension": "T3",
+      "id": "q48",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的外表和形象是我日常关注的一部分，不只是附带的事。"
+    },
+    {
+      "dimension": "T4",
+      "id": "q49",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很难满足于表面的对话，渴望深度的连接和真实的理解。"
+    },
+    {
+      "dimension": "T5",
+      "id": "q50",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我需要先理解一件事，才能真正接受它，别人的结论进不来。"
+    },
+    {
+      "dimension": "T6",
+      "id": "q51",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我会怀疑那些看起来太好或太容易的事情，总觉得有什么没看到。"
+    },
+    {
+      "dimension": "T7",
+      "id": "q52",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "未来充满可能性的感觉让我兴奋，我很难只盯着一个选项。"
+    },
+    {
+      "dimension": "T8",
+      "id": "q53",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "公平和保护弱者对我来说是一种真实的内驱力，不只是道德要求。"
+    },
+    {
+      "dimension": "T9",
+      "id": "q54",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我有一种自然的倾向，把自己的需求排在最后。"
+    },
+    {
+      "dimension": "T1",
+      "id": "q55",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我有一条内在的标准线，事情没达到那个标准就不算做好。"
+    },
+    {
+      "dimension": "T2",
+      "id": "q56",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "当我帮不上忙的时候，我会感到内疚或者失落。"
+    },
+    {
+      "dimension": "T3",
+      "id": "q57",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "被看见和被肯定会给我带来真实的满足感。"
+    },
+    {
+      "dimension": "T4",
+      "id": "q58",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我的感受是我理解自己和世界的主要方式，情绪对我来说是信息。"
+    },
+    {
+      "dimension": "T5",
+      "id": "q59",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "过多的社交活动让我感到耗竭，需要独处来恢复状态。"
+    },
+    {
+      "dimension": "T6",
+      "id": "q60",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很在意所在团队或组织的稳定性，变动太快会让我感到不安。"
+    },
+    {
+      "dimension": "T7",
+      "id": "q61",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我擅长让一个场合变得好玩，或者让沮丧的人重新有精神。"
+    },
+    {
+      "dimension": "T8",
+      "id": "q62",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我可以接受冲突，甚至觉得直接摊牌比拐弯抹角更舒服。"
+    },
+    {
+      "dimension": "T9",
+      "id": "q63",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很少会因为一件事非常激动，通常能保持比较平稳的状态。"
+    },
+    {
+      "dimension": "T1",
+      "id": "q64",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "即使时间有限，我也会尽量把事情做得正确，而不只是完成它。"
+    },
+    {
+      "dimension": "T2",
+      "id": "q65",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "维持重要的关系对我来说非常重要，我会主动投入时间和精力。"
+    },
+    {
+      "dimension": "T3",
+      "id": "q66",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我能在短时间内建立别人对我的信任感和信心。"
+    },
+    {
+      "dimension": "T4",
+      "id": "q67",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "做真实的自己，哪怕不被理解，也比迎合别人的期待更重要。"
+    },
+    {
+      "dimension": "T5",
+      "id": "q68",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "知识和理解力给我带来安全感，我不喜欢在没弄懂的情况下行动。"
+    },
+    {
+      "dimension": "T6",
+      "id": "q69",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我需要很长时间才能真正信任一个新认识的人。"
+    },
+    {
+      "dimension": "T7",
+      "id": "q70",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我对享乐和乐趣有很强的感受力，知道什么能让人开心。"
+    },
+    {
+      "dimension": "T8",
+      "id": "q71",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "对虚伪和软弱我有明显的厌恶感，更欣赏真实和力量。"
+    },
+    {
+      "dimension": "T9",
+      "id": "q72",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我能让不同意见的人聚到一起，找到共同点，这让我感到有价值。"
+    },
+    {
+      "dimension": "T1",
+      "id": "q73",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我有很强的是非感，知道什么是对的、什么是不可接受的。"
+    },
+    {
+      "dimension": "T2",
+      "id": "q74",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我擅长发现别人还没有说出口的需求，并提前想到解决方案。"
+    },
+    {
+      "dimension": "T3",
+      "id": "q75",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我很清楚每个场合需要什么样的表现，并能相应地切换状态。"
+    },
+    {
+      "dimension": "T4",
+      "id": "q76",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我有时会羡慕别人拥有而自己没有的东西，这种感觉很真实。"
+    },
+    {
+      "dimension": "T5",
+      "id": "q77",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我喜欢精确，对模糊不清或含糊其辞的表达感到不舒服。"
+    },
+    {
+      "dimension": "T6",
+      "id": "q78",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "提前计划让我感到安心，完全即兴发挥对我来说有点让人不安。"
+    },
+    {
+      "dimension": "T7",
+      "id": "q79",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我习惯性地关注事情积极的一面，很难在负面情绪上待太久。"
+    },
+    {
+      "dimension": "T8",
+      "id": "q80",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "对于需要我保护或支持的人，我会非常慷慨和全力投入。"
+    },
+    {
+      "dimension": "T9",
+      "id": "q81",
+      "interaction": "options",
+      "options": [
+        {
+          "id": "1",
+          "text": "完全不符合",
+          "value": 0
+        },
+        {
+          "id": "2",
+          "text": "不太符合",
+          "value": 25
+        },
+        {
+          "id": "3",
+          "text": "说不准",
+          "value": 50
+        },
+        {
+          "id": "4",
+          "text": "比较符合",
+          "value": 75
+        },
+        {
+          "id": "5",
+          "text": "完全符合",
+          "value": 100
+        }
+      ],
+      "text": "我享受生活里平静、不紧不慢的部分，节奏慢对我来说是好事。"
+    }
+  ],
+  "resultPage": "/subpackages/quiz/pages/generic-result/generic-result",
+  "results": [
+    {
+      "boldQuote": "你不是在挑剔，你只是无法假装那件事做得足够好。",
+      "destiny": "你会在某件事上做到你认为该做到的程度，然后继续找下一件。这条路很长，但你知道自己在走。",
+      "dimension_profile": {
+        "T1": 1
+      },
+      "id": "type1",
+      "lifeAdvice": "选一件事，决定「够了」的时间点，然后停下来，看看世界有没有因此崩掉。",
+      "portrait": "你对细节的注意力是持续开着的，不需要刻意打开。在别人已经说「差不多了」的地方，你能看到还差一步。这不是强迫症，是你对正确和错误之间的分界线非常敏感。\n\n你对自己的要求比对别人更高。别人犯了错，你可以理解；自己犯了错，处理起来要难得多。这让你的输出质量稳定，但也让你在别人早就休息的时候，还在修最后一处细节。\n\n你有一条内在的标准线，它不会因为你累了或者时间不够就放低。问题在于这条线的位置是你自己设的，也是你自己撑着的。有时候，放松一次不等于放弃了那个标准。",
+      "strengths": [
+        {
+          "description": "你在完成一件事之前不会放手。这让你负责的工作有一个稳定的下限，很少出现重大失误。",
+          "label": "把控输出质量"
+        },
+        {
+          "description": "你能看到流程里别人没注意到的问题。在需要建立规范或改进系统的场合，你提出的问题往往最有价值。",
+          "label": "识别系统漏洞"
+        },
+        {
+          "description": "在有外部压力的情况下，你不容易妥协那些你认为重要的标准。需要有人守住底线的时候，你会在。",
+          "label": "压力下守住原则"
+        }
+      ],
+      "subtitle": "内心的标准从不休假",
+      "temperament": "你像一把精密的卡尺，随时可以测量，随时知道差了多少。",
+      "title": "改革者",
+      "weaknesses": [
+        {
+          "description": "把任务交给别人之后，你会担心他们做不到你的标准。这让你的工作经常止于自己这一层，很难扩大规模。",
+          "label": "难以授权"
+        },
+        {
+          "description": "你看到问题就想纠正，但这在别人还处于尝试阶段时，可能让他们选择停下来，而不是继续推进。",
+          "label": "批评反应快"
+        },
+        {
+          "description": "「够好了」不是你的语言。即使多花的时间带来的改善已经很小，你还是很难停手。",
+          "label": "停不下来"
+        }
+      ]
+    },
+    {
+      "boldQuote": "别人还没开口，你已经想到了解决方案。",
+      "destiny": "你帮助过很多人，那些人记得你的方式，和你自己记得自己的方式，不太一样。",
+      "dimension_profile": {
+        "T2": 1
+      },
+      "id": "type2",
+      "lifeAdvice": "这周找一件只为自己做的事，不需要任何人受益，不需要解释理由。",
+      "portrait": "你对别人状态的感受力很强。谁今天心情不好，谁需要一点支持，你通常比他们自己先察觉。这让你在任何群体里都快速成为被依赖的人，而且不是因为你主动争取，是自然发生的。\n\n你给出的照顾和关注，往往超出你实际核算的量。不是你不在乎，是你没在计算。时间久了，你会发现自己付出的和得到的开始失衡，但你通常不知道这是什么时候开始发生的。\n\n你自己的需求不是不存在，只是在你的内心清单上排名比较靠后。偶尔你会感到一种说不清来源的疲惫——那往往是你很久没有被认真问过「你怎么样」的迹象。",
+      "strengths": [
+        {
+          "description": "不需要对方明说，你就能感受到他们需要什么，并且找到合适的方式回应。这种感知力很难训练出来。",
+          "label": "感知他人需求"
+        },
+        {
+          "description": "你主动投入的方式让别人感到被在乎。你建立的关系有真实的深度，不是表面来往。",
+          "label": "建立深度关系"
+        },
+        {
+          "description": "在新的环境或团队里，你能很快找到谁需要被照顾，并主动填补那个空缺，让整体运转顺畅。",
+          "label": "填补团队空缺"
+        }
+      ],
+      "subtitle": "你随时知道别人需要什么",
+      "temperament": "你像一个永远开着的接待台，等你自己也需要被接待的那天。",
+      "title": "给予者",
+      "weaknesses": [
+        {
+          "description": "你习惯把自己的需要排到最后，时间长了，这种积压会变成一种难以定位来源的疲惫感。",
+          "label": "自身需求被积压"
+        },
+        {
+          "description": "拒绝别人的请求对你来说很难，即使你已经满了还是会接。这会让你的边界比实际需要的薄很多。",
+          "label": "拒绝的成本高"
+        },
+        {
+          "description": "你付出很多，但往往没有表达过你期待什么回报。当没有得到预期的感激时，你会受伤，但对方甚至不知道你有期待。",
+          "label": "期待没有说出口"
+        }
+      ]
+    },
+    {
+      "boldQuote": "你的执行力和你的形象管理，同时都在线。",
+      "destiny": "你会赢得很多，也会在某一天停下来想：这些是我当时真正想要的吗？那一天很重要。",
+      "dimension_profile": {
+        "T3": 1
+      },
+      "id": "type3",
+      "lifeAdvice": "找一件没人知道你在做、也没有任何成果可以展示的事，做完了，感受一下那是什么感觉。",
+      "portrait": "你清楚形象是如何运作的。你知道什么样的表现会被看见、什么样的话会被记住，也知道怎么把这些呈现出来。这不是表演，是你的社交操作系统一直在运行这部分功能。\n\n你有执行力，有方向感，能快速建立别人对你的信任。你不只在意结果，也在意结果看起来怎么样——这两件事你同时管理，而且通常都不差。\n\n你很少停下来问自己真正想要什么。因为「真正想要」是个模糊的问题，而目标是清晰的。什么时候这两件事开始分开，是一个值得注意的时间节点。",
+      "strengths": [
+        {
+          "description": "你能在短时间内让别人对你产生信心。在需要快速推进的场合里，这比什么都有用。",
+          "label": "快速建立信任"
+        },
+        {
+          "description": "你设定目标，然后认真完成它。这不是天赋，是一种稳定的工作方式，可以被依赖。",
+          "label": "目标执行力"
+        },
+        {
+          "description": "你知道每个场合需要什么样的表现，并能切换过去。这让你在不同环境里的适应速度都快。",
+          "label": "读懂场合"
+        }
+      ],
+      "subtitle": "你知道怎么让自己被看见",
+      "temperament": "你像一台一直开着的机器，知道怎么运转，但需要有人问一句今天燃料够不够。",
+      "title": "成就者",
+      "weaknesses": [
+        {
+          "description": "你很擅长管理外部任务，但情绪这个东西经常被推到「稍后处理」的位置，而稍后可能会等很久。",
+          "label": "情绪处理被推后"
+        },
+        {
+          "description": "当没有目标或任务的时候，你会感到一种难以解释的空白感。停下来不做事，对你来说比做事更难。",
+          "label": "难以慢下来"
+        },
+        {
+          "description": "你呈现出来的版本和内心真实的状态，有时候有距离。外人看不出来，但你知道那个距离在哪里。",
+          "label": "形象与真实的距离"
+        }
+      ]
+    },
+    {
+      "boldQuote": "你能感受到别人感受不到的细腻，也承受着别人不需要承受的重量。",
+      "destiny": "你一生都在寻找一种语言，能说出你真正的样子。找到的那一刻，你会知道。",
+      "dimension_profile": {
+        "T4": 1
+      },
+      "id": "type4",
+      "lifeAdvice": "选一件让你感受到真实的事，做到它能被别人看见的程度，看看被理解是什么感觉。",
+      "portrait": "你对「普通」有一种真实的排斥——不是刻意的，是当你看到千人一面的东西时，会有一种内在的不适。你需要你的存在是有辨识度的，是你自己的，不是哪个模板复制出来的。\n\n你的情绪是你理解自己和世界的主要工具。状态好的时候，你能感受到别人感知不到的层次；状态差的时候，那种差是真实的，不是矫情，也很难被「振作起来」三个字解决。\n\n身边真正理解你的人可能不多，你对这件事的处理还算可以——孤独对你来说有时候甚至是一种主动的选择。但渴望被深度理解和实际上很难被理解，这两件事同时存在，没有消失。",
+      "strengths": [
+        {
+          "description": "你能捕捉到别人略过的细节——一句话背后的情绪，一件作品里的质地。这是你的感知优势，不是别人轻易能有的。",
+          "label": "感受细腻"
+        },
+        {
+          "description": "你不擅长表演你不相信的东西。你呈现出来的东西有真实的重量，别人能感受到这种重量。",
+          "label": "真实表达"
+        },
+        {
+          "description": "你产出的东西有辨识度，不容易被归类到某个已有的框架里。这在需要差异化的场合里有稀缺价值。",
+          "label": "产出原创内容"
+        }
+      ],
+      "subtitle": "你不愿意成为任何一个模板",
+      "temperament": "你像一块能折射不常见光谱的棱镜，有些颜色只有你能发出来。",
+      "title": "个人主义者",
+      "weaknesses": [
+        {
+          "description": "你的状态对工作和社交的影响比大多数人都大。状态差的时候，恢复周期可能比你预计的长很多。",
+          "label": "情绪波动的代价"
+        },
+        {
+          "description": "你的表达方式不是所有人都能接收到。沟通成本比你希望的要高，反复解释自己会让你感到疲惫。",
+          "label": "被误解的概率高"
+        },
+        {
+          "description": "你对起点很敏感，能在有感觉的时候投入很多；到了项目的中段，新鲜感消退之后，难度成倍上升。",
+          "label": "完成比开始难"
+        }
+      ]
+    },
+    {
+      "boldQuote": "你对事物运作机制的兴趣，不需要任何实用理由。",
+      "destiny": "你会成为某个领域里少数几个真正搞懂了的人，而且你自己会知道那种「搞懂了」是什么感觉。",
+      "dimension_profile": {
+        "T5": 1
+      },
+      "id": "type5",
+      "lifeAdvice": "选一件你已经研究够了的事，设一个截止时间，这周开始做第一步，不管它够不够完美。",
+      "portrait": "你对搞清楚事情有一种内在的驱动力——不是为了什么实际的用途，是弄明白这件事本身就让你满足。你能在一个领域里待很久，越深越有劲，而不是越深越累。\n\n你需要先理解一件事才能接受它。别人的结论进不来，你要看推导过程。这让你的判断非常扎实，也让你在需要快速决策的节奏里有点跟不上。\n\n你不需要大量的社交互动，但你需要少数的、信息密度高的对话。这种对话很难遇到，遇到了你心里清楚。遇不到，你也能自己待着——但有时候会想，能真正说上话的人，实在太少了。",
+      "strengths": [
+        {
+          "description": "你能在单一问题上持续投入，直到真正弄清楚。这种专注产出的深度，不是浅尝辄止的人能达到的。",
+          "label": "深度专注"
+        },
+        {
+          "description": "你理解的东西有清晰的内部结构。当需要解释复杂问题时，你能把它分解得逻辑清晰，别人容易理解。",
+          "label": "建立精准模型"
+        },
+        {
+          "description": "你不需要外部驱动就能自主工作。在需要自主研究和独立推进的任务上，你很可靠。",
+          "label": "独立运作"
+        }
+      ],
+      "subtitle": "你需要先弄懂，才能往前走",
+      "temperament": "你像一台一直在后台运行的处理器，大多数时候别人不知道你在想什么，但输出很扎实。",
+      "title": "调查者",
+      "weaknesses": [
+        {
+          "description": "在需要更多信息之前你不愿意发表意见，但别人等不了。这让你在快速讨论里的参与度低。",
+          "label": "快节奏场合参与低"
+        },
+        {
+          "description": "你的精力是有限的资源，你管得很紧。太多人或太多事同时进来，你会关闭，而不是应对。",
+          "label": "能量边界很紧"
+        },
+        {
+          "description": "你的研究周期可能比决策需要的时间还长。「还没研究够」是你推迟行动最常见的理由。",
+          "label": "行动延迟"
+        }
+      ]
+    },
+    {
+      "boldQuote": "你不是悲观，你只是一直在检查安全出口在哪里。",
+      "destiny": "你建立的东西会比你想象的更稳，因为你从一开始就把所有的裂缝都检查了一遍。",
+      "dimension_profile": {
+        "T6": 1
+      },
+      "id": "type6",
+      "lifeAdvice": "列一件你担心了超过一个月但还没发生的事，问自己：如果它发生了，最坏的结果是什么？我能应对吗？",
+      "portrait": "你的注意力会自动扫描潜在的风险点。一件事进来，你不是先想它会多好，是先想它可能哪里出问题。有你在的地方，漏洞通常比别人更快被发现。\n\n你对承诺和可靠性有高于平均的需求。一旦信任了某个人或某个系统，你会认真维护那段关系；一旦信任被动摇，恢复起来需要很长时间，不是你不想，是重新建立确实很慢。\n\n你的预防本能让你很稳，但有时候也让你在什么都还没发生的时候，就已经消耗了很多能量。担心是一种真实的劳动，哪怕被担心的事最后一件都没发生。",
+      "strengths": [
+        {
+          "description": "你能在问题暴露之前就发现它的苗头。在需要预防错误的场合里，你的视角比大多数人超前。",
+          "label": "提前识别风险"
+        },
+        {
+          "description": "你对信任关系有很强的维护意识，一旦认定了就很少放弃。你能构建的关系有真实的长期稳定性。",
+          "label": "维护关系稳定"
+        },
+        {
+          "description": "当有清晰的规则和边界时，你能认真遵守并把它贯彻下去。这让你在需要可靠执行的任务上很稳定。",
+          "label": "执行纪律强"
+        }
+      ],
+      "subtitle": "你比谁都早想到事情可能出错",
+      "temperament": "你像一套烟雾报警系统，大多数时候发出的是假警报，但那一次真警报你会第一个发现。",
+      "title": "忠诚者",
+      "weaknesses": [
+        {
+          "description": "面对重要决定，你反复权衡的时间可能超过决定本身需要的时间。分析循环不容易主动关掉。",
+          "label": "决策分析循环"
+        },
+        {
+          "description": "你不会快速信任新认识的人。在需要迅速建立合作的场合，你进入节奏的速度比别人慢。",
+          "label": "信任建立慢"
+        },
+        {
+          "description": "你会为还没发生的事担心，而且担心时候的真实感和事情真的发生了差不多。这是一种持续的隐性消耗。",
+          "label": "预防性能量消耗"
+        }
+      ]
+    },
+    {
+      "boldQuote": "你需要持续有新的东西进来，这不是喜好，是操作条件。",
+      "destiny": "你的人生会是一张密密麻麻的轨迹图，每一条线都走得真实，只是方向各不相同。",
+      "dimension_profile": {
+        "T7": 1
+      },
+      "id": "type7",
+      "lifeAdvice": "现在手头的事，选一件，做完它，在开始下一件之前，先感受一下完成是什么感觉。",
+      "portrait": "你的精力在新鲜的事情上会自动翻倍。新体验、新想法、新的可能性——这些让你有真实的能量。在一件无聊的事上待太久，不只是「提不起劲」，是真的消耗。\n\n你擅长让一个场合变得值得来，让一个没劲的计划重新有了理由。你的能量是真实的，不是表演。但它需要持续有新鲜感来维持——旧的、重复的、固定的，对你来说是一种真实的消耗。\n\n你不太擅长在事情变得困难或无聊之后继续留下来。这一点你清楚。你已经发展出了一套跳跃的节奏，但那些需要你坐住、熬过去的中间段，总是比开始更难。",
+      "strengths": [
+        {
+          "description": "你进入一个场合，能量会升。你是那个让气氛从「还行」变成「今天值得来」的人。",
+          "label": "点燃场合气氛"
+        },
+        {
+          "description": "你能在短时间内看到一件事可以通向哪些方向，并且让别人也感受到那种可能性。",
+          "label": "快速连接可能性"
+        },
+        {
+          "description": "新规则、新计划、新环境——你进入节奏的速度快，不需要太长的磨合期。",
+          "label": "适应变化快"
+        }
+      ],
+      "subtitle": "你的精力在可能性上会自动翻倍",
+      "temperament": "你像一颗在轨道外运行的彗星，能量很足，方向随时可以改。",
+      "title": "热情者",
+      "weaknesses": [
+        {
+          "description": "开始一件事的能量很足，但到了中段，新鲜感消退之后，继续下去的难度成倍上升。很多项目停在了中间。",
+          "label": "项目中段流失"
+        },
+        {
+          "description": "手头同时进行的事经常太多，每一件都做了一半。新的刺激进来，旧的任务容易被搁置。",
+          "label": "同时推进太多"
+        },
+        {
+          "description": "你有一种自动转向积极的倾向，这让你很少被情绪卡住，但也让一些需要认真处理的感受被跳过了。",
+          "label": "回避困难情绪"
+        }
+      ]
+    },
+    {
+      "boldQuote": "你不是想控制别人，你只是不愿意让重要的事情没人负责。",
+      "destiny": "你推动过很多事往前走。有一天你会回头看，发现一路上你保护过的人比你记得的多。",
+      "dimension_profile": {
+        "T8": 1
+      },
+      "id": "type8",
+      "lifeAdvice": "找一个你信任的人，告诉他一件你最近真的不确定的事，看看说出来是什么感觉。",
+      "portrait": "你习惯直接说，习惯直接做，也习惯直接面对。绕弯子让你不耐烦，话不说到位让你觉得这件事没被认真对待。这不是攻击性，是你信息传递的方式就是这样的。\n\n你在意实质性的掌控力——不是表面上的，是能真正影响结果的那种。在你感到话语权充分的地方，你会全力投入；在你感到被架空或边缘化的地方，你会快速失去兴趣。\n\n你的外部形象很容易让人觉得你不需要任何保护。但你也有需要被保护的地方，只是你非常习惯不让别人看到那一面。这两个状态同时存在，你管得很紧，但不一定能一直管下去。",
+      "strengths": [
+        {
+          "description": "需要拍板的时候，你能站出来。这让需要快速决断的场合有了一个愿意承担后果的人。",
+          "label": "直接推进决策"
+        },
+        {
+          "description": "在不公平的场合里，你愿意站出来，哪怕那不是你的事。这种真实的强度让你值得被信任。",
+          "label": "保护弱势方"
+        },
+        {
+          "description": "你的想法通常不只停在计划上。你会直接进入执行，验证行不行再说。",
+          "label": "落地执行"
+        }
+      ],
+      "subtitle": "你进入一个空间，别人会感受到",
+      "temperament": "你像一台推土机，清场速度很快，但要小心一起工作的人还在不在原地。",
+      "title": "挑战者",
+      "weaknesses": [
+        {
+          "description": "你的主导方式有时候让别人很难插进来。你没有意识到，但别人已经停止发表意见了。",
+          "label": "给别人的空间少"
+        },
+        {
+          "description": "在需要等待或迂回的场合，你的耐心不够用。你会直接切入，但那个时机不总是对的。",
+          "label": "耐心很短"
+        },
+        {
+          "description": "你很少让别人看到你的不确定或脆弱。这让你的关系有一层隔离，别人进不去，你也出不来。",
+          "label": "示弱的代价"
+        }
+      ]
+    },
+    {
+      "boldQuote": "你不是没意见，只是你的意见总是最后一个被放上桌。",
+      "destiny": "你让很多人在你身边感到被接受，那是一件很少见的事，哪怕你自己没意识到。",
+      "dimension_profile": {
+        "T9": 1
+      },
+      "id": "type9",
+      "lifeAdvice": "下次有人问你「你想去哪吃」或「你觉得怎么样」，给一个真实的答案，不是「都行」。",
+      "portrait": "你对冲突有一种真实的排斥。不是胆小，是你切实感受到冲突会破坏重要的东西。保持和平不是你的妥协，是你认为这是正确的做法——在你眼里，大多数争吵都不值得。\n\n你能感受到每一方的立场，这让你在需要协调的场合里有真实的价值。但这也意味着，当你需要表明自己的立场时，你很难说清楚你真正想要什么——因为你已经看了太多角度了。\n\n你的需求和偏好，往往是最后才被放上桌的。有时候是你主动往后让，有时候是别人习惯性地以为你没有意见。这两件事加起来，是一种很安静的消耗。",
+      "strengths": [
+        {
+          "description": "你的存在让人放松。在你周围，不同立场的人更容易停止攻击，开始听对方说话。",
+          "label": "创造安全感"
+        },
+        {
+          "description": "你能同时理解多方的逻辑，在需要达成共识的场合，你是让讨论不崩溃的那个人。",
+          "label": "整合不同观点"
+        },
+        {
+          "description": "当事情变得混乱或紧张，你不会加剧它。你的平静是真实的，不是表演，而且它会传递给周围的人。",
+          "label": "稳定场合节奏"
+        }
+      ],
+      "subtitle": "你让所有人都感到被接纳",
+      "temperament": "你像一个让所有频道都能共存的调频器，但有时候没有人记得问你的频道是多少。",
+      "title": "调停者",
+      "weaknesses": [
+        {
+          "description": "你把自己的需要排在最后太久，当你的需要终于出现的时候，你已经不知道怎么说出口了。",
+          "label": "自身需求被忽略"
+        },
+        {
+          "description": "在需要你做选择的场合，你会习惯性地「都行」。合作者有时候很难真正了解你想要什么。",
+          "label": "决策习惯被动"
+        },
+        {
+          "description": "你需要更长的时间才能进入一件事。当任务是你自己不太有激情的时候，启动的成本很高。",
+          "label": "行动启动难"
+        }
+      ]
+    }
+  ],
+  "scoring": {
+    "dimensions": [
+      {
+        "id": "T1",
+        "label": "1号",
+        "reverseItems": []
+      },
+      {
+        "id": "T2",
+        "label": "2号",
+        "reverseItems": []
+      },
+      {
+        "id": "T3",
+        "label": "3号",
+        "reverseItems": []
+      },
+      {
+        "id": "T4",
+        "label": "4号",
+        "reverseItems": []
+      },
+      {
+        "id": "T5",
+        "label": "5号",
+        "reverseItems": []
+      },
+      {
+        "id": "T6",
+        "label": "6号",
+        "reverseItems": []
+      },
+      {
+        "id": "T7",
+        "label": "7号",
+        "reverseItems": []
+      },
+      {
+        "id": "T8",
+        "label": "8号",
+        "reverseItems": []
+      },
+      {
+        "id": "T9",
+        "label": "9号",
+        "reverseItems": []
+      }
+    ],
+    "groupSize": 5,
+    "scale": 5,
+    "type": "big-five"
+  },
+  "subtitle": "Enneagram · 找到你真正的驱动核心",
+  "themeKey": "default",
+  "title": "九型人格"
+}
