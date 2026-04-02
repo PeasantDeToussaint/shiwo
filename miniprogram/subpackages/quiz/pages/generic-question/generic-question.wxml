@@ -12,7 +12,7 @@
     <view class="gq-progress-wrap" style="padding-top: {{statusBarHeight}}px;">
       <view class="gq-progress-head">
         <view class="gq-exit-btn" bindtap="onExit">
-          <text class="gq-exit-label">← 返回主页</text>
+          <text class="gq-exit-label">退出</text>
         </view>
         <text class="gq-progress-label">{{groupIndex + 1}} / {{groupCount}}</text>
       </view>
@@ -23,15 +23,15 @@
 
     <!-- Scale header -->
     <view class="gq-scale-header">
-      <text class="gq-scale-end-text">不符合</text>
-      <view class="gq-scale-header-dots">
+      <text class="gq-scale-end-text gq-scale-col-left">不符合</text>
+      <view class="gq-scale-header-dots gq-scale-col-center">
         <view class="gq-scale-header-dot" />
         <view class="gq-scale-header-dot" />
         <view class="gq-scale-header-dot" />
         <view class="gq-scale-header-dot" />
         <view class="gq-scale-header-dot" />
       </view>
-      <text class="gq-scale-end-text gq-scale-end-right">符合</text>
+      <text class="gq-scale-end-text gq-scale-end-right gq-scale-col-right">符合</text>
     </view>
 
     <!-- Question rows -->
@@ -48,15 +48,19 @@
           <text class="gq-group-qtext">{{q.text}}</text>
         </view>
         <view class="gq-group-circles">
-          <view
-            wx:for="{{q.options}}"
-            wx:key="id"
-            wx:for-item="opt"
-            class="gq-circle {{q.selectedOptionId === opt.id ? 'gq-circle-sel' : ''}}"
-            data-qid="{{q.id}}"
-            data-oid="{{opt.id}}"
-            bindtap="onGroupSelect"
-          />
+          <view class="gq-scale-col-left" />
+          <view class="gq-group-circles-center">
+            <view
+              wx:for="{{q.options}}"
+              wx:key="id"
+              wx:for-item="opt"
+              class="gq-circle {{q.selectedOptionId === opt.id ? 'gq-circle-sel' : ''}}"
+              data-qid="{{q.id}}"
+              data-oid="{{opt.id}}"
+              bindtap="onGroupSelect"
+            />
+          </view>
+          <view class="gq-scale-col-right" />
         </view>
       </view>
     </view>
@@ -80,7 +84,7 @@
     <view class="gq-progress-wrap" style="padding-top: {{statusBarHeight}}px;">
       <view class="gq-progress-head">
         <view class="gq-exit-btn" bindtap="onExit">
-          <text class="gq-exit-label">← 返回主页</text>
+          <text class="gq-exit-label">退出</text>
         </view>
         <text class="gq-progress-label">{{currentIndex + 1}} / {{totalCount}}</text>
       </view>
@@ -119,15 +123,14 @@
           max="100"
           step="1"
           value="{{sliderValue}}"
-          activeColor="#8ab0c8"
+          activeColor="{{chapterAccentHex}}"
           backgroundColor="rgba(255,255,255,0.2)"
-          block-color="#8ab0c8"
+          block-color="{{chapterAccentHex}}"
           bindchanging="onSliderChanging"
           bindchange="onSliderChange"
         />
         <view class="gq-slider-foot">
           <text class="gq-slider-hint">{{sliderHint}}</text>
-          <text class="gq-slider-value">{{sliderValue}}</text>
         </view>
       </view>
     </view>

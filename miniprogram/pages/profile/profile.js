@@ -2,6 +2,7 @@ const { getQuizRecords } = require("../../utils/userService");
 const { resolveTheme, toCssVarString } = require("../../utils/themePresets");
 
 const PAGE_SIZE = 20;
+const INITIAL_VISIBLE_COUNT = 4;
 
 Page({
   data: {
@@ -9,14 +10,15 @@ Page({
     quizCount: 0,
     joinDate: "",
     cards: [],
-    cardIndex: 0,
-    cardTotal: 0,
+    visibleCards: [],
     hasCards: false,
     emptyState: false,
     loading: true,
+    archiveOpened: false,
+    showAllRecords: false,
   },
 
-  _allRecords: [],
+  _allCards: [],
 
   onLoad() {
     const { statusBarHeight } = wx.getWindowInfo();
@@ -39,16 +41,17 @@ Page({
         return;
       }
       const records = res.records || [];
-      this._allRecords = records;
       const cards = records.map((r) => this._toCard(r));
+      this._allCards = cards;
       this.setData({
         cards,
-        cardTotal: cards.length,
-        cardIndex: 0,
         hasCards: cards.length > 0,
         emptyState: cards.length === 0,
         loading: false,
+        archiveOpened: false,
+        showAllRecords: false,
       });
+      this._syncVisibleCards();
     });
   },
 
@@ -61,13 +64,18 @@ Page({
       resultTitle: record.resultTitle || "",
       resultPage: record.resultPage || "",
       date: this._formatDate(record.completedAt),
-      duration: record.duration ? `${Math.ceil(record.duration / 60)} 分钟` : "",
-      flipped: false,
       accent: theme.accent,
       gradStart: theme.chapterGradientStart,
       gradEnd: theme.chapterGradientEnd,
       themeStyle: toCssVarString(theme),
     };
+  },
+
+  _syncVisibleCards() {
+    const visibleCards = this.data.showAllRecords
+      ? this._allCards.slice()
+      : this._allCards.slice(0, INITIAL_VISIBLE_COUNT);
+    this.setData({ visibleCards });
   },
 
   _formatDate(val) {
@@ -80,21 +88,19 @@ Page({
     return `${y}.${m}.${day}`;
   },
 
-  onSwiperChange(e) {
-    this.setData({ cardIndex: e.detail.current });
+  onOpenArchive() {
+    if (this.data.archiveOpened) return;
+    this.setData({ archiveOpened: true });
+    this._syncVisibleCards();
   },
 
-  onTapCard(e) {
-    const idx = e.currentTarget.dataset.idx;
-    const card = this.data.cards[idx];
-    if (!card) return;
-    const key = `cards[${idx}].flipped`;
-    this.setData({ [key]: !card.flipped });
+  onToggleAllRecords() {
+    this.setData({ showAllRecords: !this.data.showAllRecords }, () => this._syncVisibleCards());
   },
 
   onViewResult(e) {
     const idx = e.currentTarget.dataset.idx;
-    const card = this.data.cards[idx];
+    const card = this.data.visibleCards[idx];
     if (!card) return;
     const resultPage = card.resultPage || "/subpackages/quiz/pages/generic-result/generic-result";
     wx.navigateTo({
@@ -104,7 +110,7 @@ Page({
 
   onRetake(e) {
     const idx = e.currentTarget.dataset.idx;
-    const card = this.data.cards[idx];
+    const card = this.data.visibleCards[idx];
     if (!card) return;
     wx.navigateTo({
       url: `/subpackages/quiz/pages/quiz-intro/quiz-intro?quizId=${card.quizId}`,

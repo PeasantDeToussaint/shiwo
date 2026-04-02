@@ -42,7 +42,6 @@ const DRY_RUN   = ARGS.includes("--dry-run");
 const ESTIMATE  = ARGS.includes("--estimate");
 const SKIP_EVAL = ARGS.includes("--skip-eval");
 const TOPIC_ARG = (ARGS.find(a => a.startsWith("--topic=")) || "").replace("--topic=", "").replace(/^["']|["']$/g, "");
-const TITLE_ARG = (ARGS.find(a => a.startsWith("--title=")) || "").replace("--title=", "").replace(/^["']|["']$/g, "");
 const HINT_ARGS = ARGS.filter(a => a.startsWith("--hint=")).map(a => a.replace("--hint=", "").replace(/^["']|["']$/g, ""));
 const PROVIDER_ARG = (ARGS.find(a => a.startsWith("--provider=")) || "").replace("--provider=", "").replace(/^["']|["']$/g, "").toLowerCase();
 const MODEL_ARG = (ARGS.find(a => a.startsWith("--model=")) || "").replace("--model=", "").replace(/^["']|["']$/g, "");
@@ -55,7 +54,6 @@ function parseIntArg(name) {
 }
 const OVERRIDE_SCORING     = (ARGS.find(a => a.startsWith("--scoring=")) || "").replace("--scoring=", "").replace(/^["']|["']$/g, "") || null;
 const OVERRIDE_ID          = (ARGS.find(a => a.startsWith("--id=")) || "").replace("--id=", "").replace(/^["']|["']$/g, "") || null;
-const OVERRIDE_TITLE       = TITLE_ARG || null;
 const OVERRIDE_RESULTS     = parseIntArg("results");
 const OVERRIDE_DIMENSIONS  = parseIntArg("dimensions");
 const OVERRIDE_QUESTIONS   = parseIntArg("questions");
@@ -1690,7 +1688,7 @@ function assembleQuiz(outline, questions, results, architecture) {
   const assembled = {
     id:               outline.id,
     featureId:        inferFeatureId(outline),
-    title:            OVERRIDE_TITLE || outline.title,
+    title:            outline.title,
     subtitle:         outline.subtitle,
     eyebrow:          outline.eyebrow,
     description:      outline.description,
@@ -1787,7 +1785,6 @@ async function main() {
   const overrides = [
     OVERRIDE_SCORING    && `scoring=${OVERRIDE_SCORING}`,
     OVERRIDE_ID         && `id=${OVERRIDE_ID}`,
-    OVERRIDE_TITLE      && `title=${OVERRIDE_TITLE}`,
     OVERRIDE_RESULTS    && `results=${OVERRIDE_RESULTS}`,
     OVERRIDE_DIMENSIONS && `dimensions=${OVERRIDE_DIMENSIONS}`,
     OVERRIDE_QUESTIONS  && `questions=${OVERRIDE_QUESTIONS}`,
@@ -1856,10 +1853,6 @@ async function main() {
   let outline;
   try {
     outline = await withRetry("outline", () => generateOutline(TOPIC_ARG, architecture), 4, 5000);
-    if (OVERRIDE_TITLE && outline.title !== OVERRIDE_TITLE) {
-      console.log(`     ⚡  title override: ${outline.title || "(none)"} → ${OVERRIDE_TITLE}`);
-      outline.title = OVERRIDE_TITLE;
-    }
     const origDims = [...outline.dimensions];
     outline.dimensions = simplifyDimensions(outline.dimensions);
     const dimSimplifyMap = {};

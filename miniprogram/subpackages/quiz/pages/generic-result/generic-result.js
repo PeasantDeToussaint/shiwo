@@ -129,22 +129,32 @@ Page({
         const safe = typeof value === "number" ? Math.max(0, Math.min(1, value)) : 0.5;
         const highPct = Math.round(safe * 100);
         const lowPct = 100 - highPct;
+        const lowLabel = axis.lowPole || "低极";
+        const highLabel = label;
         const dominantSide = highPct >= lowPct ? "high" : "low";
         const fillPct = Math.round(Math.abs(safe - 0.5) * 100);
+        const dominantLabel = dominantSide === "high" ? highLabel : lowLabel;
+        const dominantPct = dominantSide === "high" ? highPct : lowPct;
         return {
           centered: true,
           label,
-          pct: dominantSide === "high" ? highPct : lowPct,
-          dominantLabel: dominantSide === "high" ? label : (axis.lowPole || "低极"),
-          dominantPct: dominantSide === "high" ? highPct : lowPct,
+          pct: dominantPct,
+          dominantLabel,
+          dominantPct,
+          dominantSummary: `${dominantLabel} ${dominantPct}%`,
           dominantSide,
           fillPct,
           fillLeft: dominantSide === "high" ? 50 : Math.max(0, 50 - fillPct),
+          markerLeft: Math.round(safe * 100),
           axisLabel: axis.axisLabel || "",
-          lowPole: axis.lowPole || "",
+          lowLabel,
+          lowPct,
+          highLabel,
+          highPct,
+          lowPole: lowLabel,
           insight: dominantSide === "high"
             ? (axis.highInsight || axis.insight || "")
-            : (axis.lowInsight || axis.lowPole || ""),
+            : (axis.lowInsight || lowLabel || ""),
         };
       }
       return {

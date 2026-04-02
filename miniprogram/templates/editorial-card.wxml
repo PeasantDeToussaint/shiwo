@@ -21,7 +21,6 @@
     <view wx:if="{{item.hasImage}}" class="ed-card-scrim" />
     <view wx:else class="ed-card-texture" />
     <view class="ed-card-glow" />
-    <view class="ed-card-accent" />
 
     <view class="ed-card-top">
       <text wx:if="{{eyebrow}}" class="ed-card-eyebrow">{{eyebrow}}</text>

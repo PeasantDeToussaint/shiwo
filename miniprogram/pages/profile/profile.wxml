@@ -19,71 +19,39 @@
         <text class="pf-section-kicker">最近结果</text>
         <text class="pf-section-title">翻一翻你测过的题</text>
       </view>
-      <text class="pf-counter">{{cardIndex + 1}} / {{cardTotal}}</text>
+      <text wx:if="{{archiveOpened}}" class="pf-counter">{{visibleCards.length}} / {{cards.length}}</text>
     </view>
 
-    <swiper
-      class="pf-swiper"
-      previous-margin="56rpx"
-      next-margin="56rpx"
-      current="{{cardIndex}}"
-      bindchange="onSwiperChange"
-    >
-      <swiper-item
-        wx:for="{{cards}}"
-        wx:key="quizId"
-        class="pf-swiper-item"
-      >
+    <view wx:if="{{!archiveOpened}}" class="pf-archive-gate">
+      <text class="pf-archive-copy">先展开你的结果存档，再慢慢回看。</text>
+      <view class="pf-archive-action" bindtap="onOpenArchive">打开档案</view>
+    </view>
+
+    <scroll-view wx:else scroll-y class="pf-scroll" show-scrollbar="{{false}}">
+      <view class="pf-list">
         <view
-          class="pf-card-outer {{cardIndex === index ? '' : 'pf-card-inactive'}}"
-          bindtap="onTapCard"
-          data-idx="{{index}}"
+          wx:for="{{visibleCards}}"
+          wx:key="quizId"
+          class="pf-item"
+          style="{{item.themeStyle}} background: linear-gradient(160deg, {{item.gradStart}} 0%, {{item.gradEnd}} 100%); border-color: {{item.accent}}22;"
         >
-          <view class="pf-card-inner {{item.flipped ? 'pf-card-flipped' : ''}}">
-
-            <view
-              class="pf-card-face pf-card-front"
-              style="background: linear-gradient(160deg, {{item.gradStart}} 0%, {{item.gradEnd}} 100%); border-color: {{item.accent}}22;"
-            >
-              <view class="pf-card-topline">
-                <text class="pf-card-chip">结果存档</text>
-                <text class="pf-card-date">{{item.date}}</text>
-              </view>
-
-              <view class="pf-card-center">
-                <text class="pf-card-result" style="color: {{item.accent}};">{{item.resultTitle}}</text>
-              </view>
-
-              <view class="pf-card-foot">
-                <text class="pf-card-quiz">{{item.quizTitle}}</text>
-                <text class="pf-card-hint">点按翻面</text>
-              </view>
-            </view>
-
-            <view
-              class="pf-card-face pf-card-back"
-              style="background: linear-gradient(160deg, {{item.gradStart}} 0%, {{item.gradEnd}} 100%); border-color: {{item.accent}}22;"
-            >
-              <view class="pf-card-back-top">
-                <text class="pf-card-chip">结果卡片</text>
-                <text class="pf-card-back-result" style="color: {{item.accent}};">{{item.resultTitle}}</text>
-                <text class="pf-card-back-quiz">{{item.quizTitle}}</text>
-              </view>
-
-              <view class="pf-card-back-actions" catchtap="">
-                <view class="pf-card-back-btn" catchtap="onViewResult" data-idx="{{index}}">
-                  查看完整报告
-                </view>
-                <view class="pf-card-back-btn pf-card-back-btn-dim" catchtap="onRetake" data-idx="{{index}}">
-                  再测一次
-                </view>
-              </view>
-            </view>
-
+          <view class="pf-item-top">
+            <text class="pf-item-chip">结果存档</text>
+            <text class="pf-item-date">{{item.date}}</text>
+          </view>
+          <text class="pf-item-result" style="color: {{item.accent}};">{{item.resultTitle}}</text>
+          <text class="pf-item-quiz">{{item.quizTitle}}</text>
+          <view class="pf-item-actions">
+            <view class="pf-item-btn" bindtap="onViewResult" data-idx="{{index}}">查看完整报告</view>
+            <view class="pf-item-btn pf-item-btn-dim" bindtap="onRetake" data-idx="{{index}}">再测一次</view>
           </view>
         </view>
-      </swiper-item>
-    </swiper>
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{archiveOpened && cards.length > visibleCards.length}}" class="pf-more" bindtap="onToggleAllRecords">
+      {{showAllRecords ? '收起部分结果' : '查看全部结果'}}
+    </view>
   </view>
 
   <view wx:elif="{{emptyState}}" class="pf-empty motion-enter motion-stagger card" style="--stagger: 80ms;">

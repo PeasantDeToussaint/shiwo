@@ -102,66 +102,60 @@
   letter-spacing: 0.04em;
 }
 
-.pf-swiper {
-  width: 100%;
-  height: 520rpx;
+.pf-counter {
+  font-size: 22rpx;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
-.pf-swiper-item {
-  padding: 0 10rpx;
+.pf-archive-gate {
+  padding: var(--space-10);
+  border: 1rpx solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.pf-card-outer {
-  width: 100%;
-  height: 100%;
-  perspective: 1400rpx;
-  transition: transform 0.35s ease, opacity 0.35s ease;
+.pf-archive-copy {
+  display: block;
+  font-size: 26rpx;
+  line-height: 1.8;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
 }
 
-.pf-card-inactive {
-  transform: scale(0.92);
-  opacity: 0.5;
+.pf-archive-action {
+  margin-top: var(--space-7);
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  letter-spacing: 0.12em;
 }
 
-.pf-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+.pf-scroll {
+  max-height: 980rpx;
 }
 
-.pf-card-flipped {
-  transform: rotateY(180deg);
+.pf-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
-.pf-card-face {
-  position: absolute;
-  inset: 0;
+.pf-item {
   border-radius: var(--radius-lg);
-  border: 1px solid transparent;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  overflow: hidden;
+  border: 1rpx solid transparent;
+  padding: var(--space-8);
   box-shadow:
     var(--shadow-inset-hairline),
     0 18rpx 40rpx rgba(0, 0, 0, 0.2);
 }
 
-.pf-card-front {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 42rpx;
-}
-
-.pf-card-topline {
+.pf-item-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.pf-card-chip {
+.pf-item-chip {
   font-size: 18rpx;
   color: rgba(255,255,255,0.68);
   letter-spacing: 0.12em;
@@ -171,100 +165,54 @@
   background: rgba(9,9,10,0.18);
 }
 
-.pf-card-center {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pf-card-result {
-  font-size: 56rpx;
-  font-weight: 700;
-  letter-spacing: -1rpx;
-  text-align: center;
-  line-height: 1.2;
-}
-
-.pf-card-foot {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.pf-card-quiz {
-  font-size: 22rpx;
-  color: rgba(255,255,255,0.54);
-  letter-spacing: 0.04em;
-  max-width: 60%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.pf-card-date {
+.pf-item-date {
   font-size: 22rpx;
   color: rgba(255,255,255,0.34);
   letter-spacing: 0.06em;
 }
 
-.pf-card-hint {
-  font-size: 20rpx;
-  color: rgba(255,255,255,0.34);
-  letter-spacing: 0.12em;
-}
-
-.pf-card-back {
-  transform: rotateY(180deg);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 48rpx 42rpx 44rpx;
-}
-
-.pf-card-back-top {
-  display: flex;
-  flex-direction: column;
-  gap: 14rpx;
-}
-
-.pf-card-back-result {
+.pf-item-result {
+  display: block;
+  margin-top: var(--space-8);
   font-size: 44rpx;
   font-weight: 700;
   letter-spacing: -1rpx;
   line-height: 1.2;
 }
 
-.pf-card-back-quiz {
+.pf-item-quiz {
+  display: block;
+  margin-top: var(--space-4);
   font-size: 24rpx;
   color: rgba(255,255,255,0.46);
   letter-spacing: 0.06em;
 }
 
-.pf-card-back-actions {
+.pf-item-actions {
   display: flex;
-  flex-direction: column;
-  gap: 10rpx;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
 }
 
-.pf-card-back-btn {
+.pf-item-btn {
+  flex: 1;
   font-size: 26rpx;
   color: rgba(255,255,255,0.85);
   letter-spacing: 0.08em;
   padding: 18rpx 0;
+  text-align: center;
   border-top: 1px solid rgba(255,255,255,0.1);
 }
 
-.pf-card-back-btn-dim {
+.pf-item-btn-dim {
   color: rgba(255,255,255,0.4);
 }
 
-.pf-counter {
-  font-size: 22rpx;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-  white-space: nowrap;
+.pf-more {
+  margin-top: var(--space-6);
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  letter-spacing: 0.12em;
 }
 
 .pf-empty {

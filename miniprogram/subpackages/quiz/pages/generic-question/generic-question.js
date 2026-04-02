@@ -20,6 +20,7 @@ Page({
     confirming: false,
     cardEntering: false,
     pageThemeStyle: "",
+    chapterAccentHex: "#8ab0c8",
     statusBarHeight: 0,
     loading: true,
     showExitModal: false,
@@ -112,6 +113,7 @@ Page({
           groupAnswers: {}, groupComplete: false,
           progress: (1 / groupCount) * 100,
           pageThemeStyle: toCssVarString(theme),
+          chapterAccentHex: theme.accent || "#8ab0c8",
           loading: false,
         });
       } else {
@@ -120,6 +122,7 @@ Page({
           currentIndex: 0, currentQuestion: questions[0] || null,
           progress: questions.length > 0 ? (1 / questions.length) * 100 : 0,
           pageThemeStyle: toCssVarString(theme),
+          chapterAccentHex: theme.accent || "#8ab0c8",
           cardEntering: true, loading: false,
         });
         this._resetInputForQuestion(questions[0] || null);

@@ -17,7 +17,7 @@
       <block wx:for="{{catalog}}" wx:key="id" wx:for-item="item">
         <template
           is="editorialCard"
-          data="{{ item: item, variant: 'grid', showTags: true, meta: item.primaryTag || item.displayQuestionCount, caption: item.displayMinutes || item.displayQuestionCount, stagger: 80 + index * 40 }}"
+          data="{{ item: item, variant: 'grid', showTags: true, meta: item.primaryTag, stagger: 80 + index * 40 }}"
         />
       </block>
     </view>

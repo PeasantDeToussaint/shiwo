@@ -13,7 +13,12 @@ Page({
     quickCategories: [],
     comingSoon: [],
     statusBarHeight: 0,
+    searchQuery: "",
+    searchResults: [],
+    isSearching: false,
   },
+
+  _allItems: [],
 
   onLoad() {
     const { statusBarHeight } = wx.getWindowInfo();
@@ -30,6 +35,7 @@ Page({
       const merged = cloudItems.length
         ? mergeLocalAndCloud(local, cloudItems, decorateCatalogItem)
         : local.map((item) => decorateCatalogItem(item));
+      this._allItems = merged;
       const allSections = computeExploreSections(merged);
       const sections = allSections
         .filter((section) => !section.isEmpty)
@@ -48,6 +54,28 @@ Page({
     });
   },
 
+  onSearchInput(e) {
+    const query = (e.detail.value || "").trim();
+    const isSearching = query.length > 0;
+    this.setData({ searchQuery: query, isSearching, searchResults: [] });
+    if (!isSearching) return;
+
+    const q = query.toLowerCase();
+    const searchResults = this._allItems.filter((item) => {
+      const fields = [
+        item.title,
+        item.displayTitleZh,
+        item.subtitle,
+        item.eyebrow,
+        item.primaryTag,
+        ...(item.tags || []),
+      ];
+      return fields.some((field) => field && String(field).toLowerCase().includes(q));
+    });
+    this.setData({ searchResults });
+    this._resolveSearchImages(searchResults);
+  },
+
   _resolveCardImages(sections) {
     const tasks = [];
     sections.forEach((section, si) => {
@@ -62,6 +90,30 @@ Page({
       });
     });
     return Promise.all(tasks);
+  },
+
+  _resolveSearchImages(items) {
+    const tasks = items.map((item, index) =>
+      resolveCatalogCardHero(item).then((patch) => {
+        if (!patch.hasImage) return;
+        const current = this.data.searchResults[index];
+        if (!current) return;
+        this.setData({ [`searchResults[${index}]`]: { ...current, ...patch } });
+      })
+    );
+    return Promise.all(tasks);
+  },
+
+  onSearchClear() {
+    this.setData({
+      searchQuery: "",
+      searchResults: [],
+      isSearching: false,
+    });
+  },
+
+  onSearchCancel() {
+    this.onSearchClear();
   },
 
   onTapCard(e) {

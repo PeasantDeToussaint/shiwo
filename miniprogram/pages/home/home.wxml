@@ -19,7 +19,7 @@
       </view>
       <template
         is="editorialCard"
-        data="{{ item: featured, variant: 'feature', eyebrow: '本期推荐', meta: featured.primaryTag || '最新上线', caption: featured.displayMinutes || featured.displayQuestionCount, stagger: 40 }}"
+        data="{{ item: featured, variant: 'feature', eyebrow: '本期推荐', meta: featured.primaryTag || '最新上线', stagger: 40 }}"
       />
     </view>
 
@@ -34,7 +34,7 @@
         <block wx:for="{{spotlight}}" wx:key="id" wx:for-item="quiz">
           <template
             is="editorialCard"
-            data="{{ item: quiz, variant: 'support', meta: quiz.displayQuestionCount || quiz.primaryTag, caption: quiz.displayMinutes, stagger: 100 + index * 60 }}"
+            data="{{ item: quiz, variant: 'support', meta: quiz.primaryTag, stagger: 100 + index * 60 }}"
           />
         </block>
       </view>
@@ -54,7 +54,7 @@
           <block wx:for="{{sec.items}}" wx:key="id" wx:for-item="quiz">
             <template
               is="editorialCard"
-              data="{{ item: quiz, variant: sec.variant, meta: quiz.primaryTag || quiz.displayQuestionCount, caption: quiz.displayMinutes, stagger: 160 + index * 50 }}"
+              data="{{ item: quiz, variant: sec.variant, meta: quiz.primaryTag, stagger: 160 + index * 50 }}"
             />
           </block>
         </view>
@@ -64,14 +64,12 @@
         <block wx:for="{{sec.items}}" wx:key="id" wx:for-item="quiz">
           <template
             is="editorialCard"
-            data="{{ item: quiz, variant: sec.variant, meta: quiz.primaryTag || quiz.displayQuestionCount, caption: quiz.displayMinutes || quiz.displayQuestionCount, stagger: 180 + index * 50 }}"
+            data="{{ item: quiz, variant: sec.variant, meta: quiz.primaryTag, stagger: 180 + index * 50 }}"
           />
         </block>
       </view>
     </view>
 
-    <view class="home-footer-note">
-    </view>
     <view class="home-scroll-pad" />
   </view>
 </scroll-view>

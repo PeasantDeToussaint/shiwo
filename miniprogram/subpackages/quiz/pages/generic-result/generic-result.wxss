@@ -342,7 +342,7 @@
 }
 
 .gr-bar-track-centered {
-  height: 10rpx;
+  height: 12rpx;
 }
 
 .gr-bar-center-line {
@@ -354,6 +354,19 @@
   margin-left: -1rpx;
   background: rgba(255,255,255,0.18);
   z-index: 1;
+}
+
+.gr-bar-marker {
+  position: absolute;
+  top: 50%;
+  width: 12rpx;
+  height: 12rpx;
+  margin-left: -6rpx;
+  margin-top: -6rpx;
+  border-radius: 50%;
+  background: var(--chapter-accent);
+  box-shadow: 0 0 0 3rpx rgba(255, 255, 255, 0.08);
+  z-index: 3;
 }
 
 .gr-bar-fill {
