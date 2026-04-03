@@ -75,7 +75,9 @@ const LITERARY_GUIDE = `
 function formatAestheticContext(aestheticContext, writingVoice) {
   const blocks = [];
   if (aestheticContext) {
-    blocks.push(`### 这道测验的氛围与场景要求\n${aestheticContext}\n题目场景必须契合上述氛围，不能写成通用的现代职场或生活题。`);
+    blocks.push(
+      `### 这道测验的场景原则（大纲）\n${aestheticContext}\n题目应服从上述原则与边界；不要把本段当成固定场景或情节清单逐条照抄。具体情境应多样展开，避免整卷重复使用同一类戏剧梗。`,
+    );
   }
   if (writingVoice) {
     blocks.push(`### 这道测验的语言语气\n${writingVoice}\n文风要跟着这个语气走，不要默认套用统一的现代心理测评腔。`);

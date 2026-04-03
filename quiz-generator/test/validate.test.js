@@ -15,8 +15,8 @@ describe("validation", () => {
           id: "q1",
           text: "题目",
           options: [
-            { id: "a", scores: { "传统": 2 } },
-            { id: "b", scores: { "未知": 5 } },
+            { id: "a", scores: { "传统": 2, "表达": 1 } },
+            { id: "b", scores: { "未知": 5, "表达": 0 } },
           ],
         },
       ],
@@ -158,6 +158,90 @@ describe("validation", () => {
 
     expect(warnings.some(w => w.includes("mixes positive and negative scores"))).toBe(true);
     expect(warnings.some(w => w.includes("参与方式: bipolar coverage missing one side"))).toBe(true);
+  });
+
+  it("flags duplicate option score vectors (weighted-dimension)", () => {
+    const warnings = validateQuestions(
+      [
+        {
+          id: "q1",
+          text: "题目",
+          options: [
+            { id: "a", scores: { A: 2, B: 1 } },
+            { id: "b", scores: { A: 1, B: 2 } },
+            { id: "c", scores: { A: 0, B: 0 } },
+            { id: "d", scores: { A: 0, B: 0 } },
+          ],
+        },
+      ],
+      ["A", "B"],
+      { scoringType: "weighted-dimension" }
+    );
+
+    expect(warnings.some((w) => w.includes("duplicate score vectors"))).toBe(true);
+  });
+
+  it("flags lockstep same values on both dimensions (weighted-dimension)", () => {
+    const warnings = validateQuestions(
+      [
+        {
+          id: "q1",
+          text: "题目",
+          options: [
+            { id: "a", scores: { A: 2, B: 2 } },
+            { id: "b", scores: { A: 1, B: 1 } },
+            { id: "c", scores: { A: 0, B: 0 } },
+            { id: "d", scores: { A: 3, B: 3 } },
+          ],
+        },
+      ],
+      ["A", "B"],
+      { scoringType: "weighted-dimension" }
+    );
+
+    expect(warnings.some((w) => w.includes("do not differentiate dimensions"))).toBe(true);
+  });
+
+  it("allows weighted options when one option splits dimensions", () => {
+    const warnings = validateQuestions(
+      [
+        {
+          id: "q1",
+          text: "题目",
+          options: [
+            { id: "a", scores: { A: 2, B: 1 } },
+            { id: "b", scores: { A: 1, B: 2 } },
+            { id: "c", scores: { A: 0, B: 0 } },
+            { id: "d", scores: { A: 0, B: 1 } },
+          ],
+        },
+      ],
+      ["A", "B"],
+      { scoringType: "weighted-dimension" }
+    );
+
+    expect(warnings.filter((w) => /duplicate score vectors|do not differentiate dimensions/.test(w))).toHaveLength(0);
+  });
+
+  it("skips dimensional-spread rule for bipolar-dimension", () => {
+    const warnings = validateQuestions(
+      [
+        {
+          id: "q1",
+          text: "题目",
+          options: [
+            { id: "a", scores: { 参与方式: 2, 认知取向: 2 } },
+            { id: "b", scores: { 参与方式: -2, 认知取向: -2 } },
+            { id: "c", scores: { 参与方式: 1, 认知取向: 1 } },
+            { id: "d", scores: { 参与方式: -1, 认知取向: -1 } },
+          ],
+        },
+      ],
+      ["参与方式", "认知取向"],
+      { scoringType: "bipolar-dimension" }
+    );
+
+    expect(warnings.some((w) => w.includes("do not differentiate dimensions"))).toBe(false);
   });
 
   it("rejects corrupted final output and fake quotes", () => {

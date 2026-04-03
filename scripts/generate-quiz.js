@@ -19,6 +19,7 @@
 const https = require("https");
 const fs    = require("fs");
 const path  = require("path");
+const { collectQuestionScoreDiscriminationWarnings } = require("../quiz-generator/lib/validate");
 
 // ── Load .env ────────────────────────────────────────────────────
 const envPath = path.resolve(__dirname, "../.env");
@@ -776,7 +777,7 @@ function validateFinalQuiz(quiz) {
 // ── Format aesthetic context from outline ─────────────────────────
 function formatAestheticContext(aestheticContext) {
   if (!aestheticContext) return "";
-  return `\n### 这道测验的氛围与场景要求\n${aestheticContext}\n题目场景必须契合上述氛围，不能写成通用的现代职场或生活题。`;
+  return `\n### 这道测验的场景原则（大纲）\n${aestheticContext}\n题目应服从上述原则；勿把本段当成固定场景清单照抄，情境应多样展开，避免整卷重复同一类桥段。`;
 }
 
 // ── Phase 0: Domain Architecture ─────────────────────────────────
@@ -915,7 +916,7 @@ ${HINT_BLOCK}${archContext}
   "subtitle": "副标题，口语感，15字以内",
   "eyebrow": "短标签，3-8字，英文或中文",
   "description": "测验介绍，80-120字，说清楚这个测验测什么、为什么有意义",
-  "aestheticContext": "2-4句，描述题目应具备的氛围、场景感、意象来源。例如：「题目应发生在宋代文人的生活场景中：书房、酒楼、送别渡口、月夜独处。选项语言可带有词牌意象，但不能脱离真实人格选择。」后续题目和结果生成会直接使用这段描述约束场景风格。",
+  "aestheticContext": "2-4句，只写原则与边界（冲突类型、抉择感、语气、是否避免道德评判、时代/意象气质等）。禁止枚举具体地点或情节梗清单。具体场景由出题阶段自由发挥。",
   "dimensions": ["维度A", "维度B", "维度C", "维度D"],
   "dimensionAxes": [
     {
@@ -951,6 +952,7 @@ ${HINT_BLOCK}${archContext}
 - 维度名称简洁，2-4字
 - axisLabel 是这条轴的"类别名"，lowPole 是该维度的反面特质
 - insight 必须是具体的、有画面感的描述，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌
+- aestheticContext 只写原则与边界，禁止场景条目罗列；现代题材允许现代生活，勿为去通用化硬套古风
 - 结果要有辨识度，用户看到标题就能感知「这说的是我吗」
 
 dimension_profile 规则（这是最重要的部分，直接决定结果准确性）：
@@ -1302,6 +1304,8 @@ function validateQuestions(questions, dimensions) {
       }
     }
   }
+
+  warnings.push(...collectQuestionScoreDiscriminationWarnings(questions, dimensions, { scoringType: "weighted-dimension" }));
 
   return warnings;
 }

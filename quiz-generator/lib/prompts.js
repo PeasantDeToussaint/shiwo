@@ -541,7 +541,7 @@ ${hintBlock}${archContext}
   "subtitle": "副标题，15字以内。必须点出测验的价值主张或用户会发现的洞察。",
   "eyebrow": "短标签，3-8字，英文或中文。要有世界观气质",
   "description": "测验介绍，80-120字，说清楚这个测验测什么、为什么有意义",
-  "aestheticContext": "2-4句，描述题目应具备的氛围、场景感、意象来源。例如：「题目应发生在宋代文人的生活场景中：书房、酒楼、送别渡口、月夜独处。选项语言可带有词牌意象，但不能脱离真实人格选择。」后续题目和结果生成会直接使用这段描述约束场景风格。",
+  "aestheticContext": "2-4句，只写原则与边界：测验应有的冲突类型、抉择感、语气尺度、是否避免道德评判、意象或时代气质等。禁止枚举具体地点或情节梗清单（不要写「咖啡馆/团建/前任」这种罗列）。具体场景由后续出题自由发挥。",
   "writingVoice": "2-3句，自由描述这套题的语言语气和叙述人格。不要用枚举标签，而要直接写出：像谁在说话、句子应该多利落/多诗意/多口语、哪些腔调要避免。后续题目和结果生成会直接使用这段描述控制文风。",
   "dimensions": ["维度A", "维度B", "维度C", "维度D"],
   "dimensionAxes": [
@@ -584,6 +584,7 @@ ${hintBlock}${archContext}
 - bipolar-dimension 的 dimensionAxes 必须输出 lowPole / highPole / highInsight / lowInsight，不用输出 insight
 - bipolar-dimension 中，dimension 只是轴名；真正显示在结果页左右两端的是 lowPole / highPole，禁止把 highPole 省略成 dimension 名
 - insight / highInsight 应是具体的、有画面感的描述，避免套话如“你是个…的人”开头，也避免空洞形容词堆砌
+- aestheticContext 只写原则，不写场景菜单：禁止用地点/事件条目堆成清单；若主题是现代亲密关系，允许现代生活，不要为了「去通用化」而硬套古风
 - writingVoice 应该真的可执行，像给写作者的语气说明，不要只写“有古风感”“更现代”这种空话
 - 若 Phase 0 提供了 dimensionSpecs，dimensionAxes 的语义必须与之严格一致，不能把某个维度偷偷改写成别的意思
 - 不得违背 Phase 0 的高低定义、锚点人物和 forbiddenInterpretations；若某维度高分锚点是靖王、低分锚点是誉王，就不能在后续结构里把誉王写成该维度高分代表
@@ -795,6 +796,11 @@ ${literaryGuideBlock()}${aestheticContext}
     ? `将以下 ${count} 个出题计划扩写为完整题目（共${total}道题的第${batchLabel}批，id q${startId}~q${endId}）：`
     : `请生成 q${startId} 到 q${endId} 共${count}道全新场景题目（共${total}道题的第${batchLabel}批）：`;
 
+  const discriminationRule =
+    dimensions.length >= 2 && scoringFamily !== "bipolar-dimension"
+      ? "\n13. 非 bipolar 且多维度：同一题四个选项的 scores 向量必须两两不同；至少有一个选项在两个已打分维度上的数值不完全相同——禁止整题只有「两维同分」的档位（例如全是 2,2 / 1,1 / 0,0）。"
+      : "";
+
   const user = `测验信息：
 - 标题：${outline.title}
 - 描述：${outline.description}
@@ -832,7 +838,7 @@ ${optionTemplateA}
 9. ${skipLiteraryGuide ? "文案追求具体、有画面与选择张力，避免空洞套话与说教口吻" : "遵守 literary guide，尽量避免出现已列明的 AI 腔句型"}
 10. 不要为了“有氛围”而堆砌光线、气味、眼神、月色等细节；删掉一句若题意不变，就不要那句
 11. 简单冲突题可以很短，诗意/特殊题材题可以稍长，但都必须信息有效，不能凑字数
-12. 每道题的主测维度（计划已标注）：最好让至少 2 个选项给该维度打正分（≥1分），否则这题对主测维度的区分会偏弱`;
+12. 每道题的主测维度（计划已标注）：最好让至少 2 个选项给该维度打正分（≥1分），否则这题对主测维度的区分会偏弱${discriminationRule}`;
 
   const raw = await callAIImpl(system, user, 6000);
   fs.writeFileSync(path.join(dataDir, `${outline.id}.q${batchLabel}.raw.txt`), raw);

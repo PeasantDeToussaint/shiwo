@@ -19,6 +19,7 @@
 const https = require("https");
 const fs    = require("fs");
 const path  = require("path");
+const { collectQuestionScoreDiscriminationWarnings } = require("../quiz-generator/lib/validate");
 
 // ── Load .env ────────────────────────────────────────────────────
 const envPath = path.resolve(__dirname, "../.env");
@@ -857,7 +858,7 @@ function validateFinalQuiz(quiz) {
 // ── Format aesthetic context from outline ─────────────────────────
 function formatAestheticContext(aestheticContext) {
   if (!aestheticContext) return "";
-  return `\n### 这道测验的氛围与场景要求\n${aestheticContext}\n题目场景必须契合上述氛围，不能写成通用的现代职场或生活题。`;
+  return `\n### 这道测验的场景原则（大纲）\n${aestheticContext}\n题目应服从上述原则；勿把本段当成固定场景清单照抄，情境应多样展开，避免整卷重复同一类桥段。`;
 }
 
 function formatBipolarAxisTable(outline) {
@@ -1026,7 +1027,7 @@ ${HINT_BLOCK}${archContext}
   "subtitle": "副标题，口语感，15字以内",
   "eyebrow": "短标签，3-8字，英文或中文",
   "description": "测验介绍，80-120字，说清楚这个测验测什么、为什么有意义",
-  "aestheticContext": "2-4句，描述题目应具备的氛围、场景感、意象来源。例如：「题目应发生在宋代文人的生活场景中：书房、酒楼、送别渡口、月夜独处。选项语言可带有词牌意象，但不能脱离真实人格选择。」后续题目和结果生成会直接使用这段描述约束场景风格。",
+  "aestheticContext": "2-4句，只写原则与边界（冲突类型、抉择感、语气、是否避免道德评判、时代/意象气质等）。禁止枚举具体地点或情节梗清单。具体场景由出题阶段自由发挥。",
   "dimensions": ["维度A", "维度B", "维度C", "维度D"],
   "dimensionAxes": [
     {
@@ -1063,6 +1064,7 @@ ${isBipolar ? `      "lowPole": "低分端极点，2-4字，例如「婉约含�
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
 - ${isBipolar ? "bipolar-dimension 的 axisLabel 是这条轴的类别名；dimension 只是轴名，不是高分端极点" : "weighted-dimension 的特质名（dimension 字段）命名要体现该特质的内容，2-4字，如「创造力」「共情力」「执行力」——不要写成两极对立的形式，因为这是单向特质"}
 ${isBipolar ? `- bipolar-dimension：必须写 lowPole + highPole + highInsight + lowInsight。lowPole / highPole 是 UI 里真正显示的左右极点，禁止偷懒把 highPole 省略成 dimension 名，也禁止写 insight` : `- weighted-dimension：dimensionAxes 只写 axisLabel + insight；axisLabel 是这条特质的"类别名"；insight 描述高分端特质的行为表现，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌`}
+- aestheticContext 只写原则与边界，禁止用「咖啡馆/团建/前任」式场景条目罗列；现代题材允许现代生活，不要为了去通用化而硬套古风
 - 结果要有辨识度，用户看到标题就能感知「这说的是我吗」
 
 dimension_profile 规则（这是最重要的部分，直接决定结果准确性）：
@@ -1134,7 +1136,7 @@ ${bipolarAxisTable}
 3. ${isBipolar ? "bipolar-dimension：正分=偏 highPole，负分=偏 lowPole。每个选项最多2个维度得分，主维度 ±2，副维度 ±1；同一选项的维度分数正负方向必须一致。给分必须严格根据该轴的 lowPole ↔ highPole 语义来判定，不能只按“勇敢/消极/激烈/保守”这类情绪色彩随意打分" : nonBipolarScoreRule}
 4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
 5. ${isBipolar ? "如果某个选项体现的是“观察、退后、记录、保持距离、拒绝介入”这类 lowPole 行为，就不能误打成高分端；如果体现的是“主动投入、深入参与、直接承受风险”这类 highPole 行为，就不能误打成负分" : "遵守 literary guide，禁止句型不能出现"}
-6. 遵守 literary guide，禁止句型不能出现`;
+6. 遵守 literary guide，禁止句型不能出现${!isBipolar && dimensions.length >= 2 ? "\n7. 多维度且非 bipolar：同一题四个选项的 scores 向量必须两两不同；至少有一个选项在两个已打分维度上的数值不完全相同——禁止整题只有「两维同分」的档位（例如全是 2,2 / 1,1 / 0,0）。" : ""}`;
 
   const raw = await callAI(system, user, 6000);
   fs.writeFileSync(path.join(DATA_DIR, `${outline.id}.q${batchLabel}.raw.txt`), raw);
@@ -1519,6 +1521,12 @@ function validateQuestions(questions, dimensions, scoringFamily, dimensionAxes =
       }
     }
   }
+
+  warnings.push(
+    ...collectQuestionScoreDiscriminationWarnings(questions, dimensions, {
+      scoringType: scoringFamily || "weighted-dimension",
+    }),
+  );
 
   if (isBipolar) {
     const { warnings: coverageWarnings } = validateBipolarCoverage(questions, dimensions);

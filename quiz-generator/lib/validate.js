@@ -445,6 +445,87 @@ function collectBipolarSemanticWarnings(questions, dimensionAxes = []) {
   return warnings;
 }
 
+/** Aligns with validateQuestions non-bipolar dimension matching (abbrev keys on outline names). */
+function abbrevMatchesScoreKey(canonicalDim, key, dimensions) {
+  if (key === canonicalDim) return true;
+  const dimSet = new Set(dimensions);
+  if (dimSet.has(key)) return key === canonicalDim;
+  return canonicalDim.startsWith(key) || key.startsWith(canonicalDim.slice(0, 2));
+}
+
+function scoreValueForCanonicalDim(scores, d, dimensions) {
+  if (!scores || typeof scores !== "object") return 0;
+  if (typeof scores[d] === "number") return scores[d];
+  const dimSet = new Set(dimensions);
+  for (const [k, val] of Object.entries(scores)) {
+    if (typeof val !== "number") continue;
+    const keyOk =
+      dimSet.has(k) || dimensions.some((du) => du.startsWith(k) || k.startsWith(du.slice(0, 2)));
+    if (!keyOk) continue;
+    if (abbrevMatchesScoreKey(d, k, dimensions)) return val;
+  }
+  return 0;
+}
+
+/** Full vector over quiz `dimensions`; missing / unmapped keys count as 0. */
+function scoreVectorFingerprint(scores, dimensions) {
+  if (!scores || typeof scores !== "object") return dimensions.map(() => 0).join(",");
+  return dimensions.map((d) => scoreValueForCanonicalDim(scores, d, dimensions)).join(",");
+}
+
+function canonicalDimsWithNumericScores(scores, dimensions) {
+  if (!scores || typeof scores !== "object") return [];
+  return dimensions.filter((d) =>
+    Object.keys(scores).some(
+      (k) => typeof scores[k] === "number" && abbrevMatchesScoreKey(d, k, dimensions),
+    ),
+  );
+}
+
+/** Some option scores ≥2 outline dimensions with not all equal — blocks 2,2 / 1,1 / 0,0 lockstep templates. */
+function questionHasDimensionalSpread(q, dimensions) {
+  for (const o of (q.options || [])) {
+    if (!o.scores) continue;
+    const scored = canonicalDimsWithNumericScores(o.scores, dimensions);
+    if (scored.length < 2) continue;
+    const vals = scored.map((d) => scoreValueForCanonicalDim(o.scores, d, dimensions));
+    if (new Set(vals).size > 1) return true;
+  }
+  return false;
+}
+
+/**
+ * Per-question discrimination: distinct option vectors; for weighted/level-band with ≥2 dims,
+ * at least one option must split weight across dimensions (not same number on every scored dim).
+ */
+function collectQuestionScoreDiscriminationWarnings(questions, dimensions, options = {}) {
+  const warnings = [];
+  const scoringType = options.scoringType || "weighted-dimension";
+  const isBipolar = scoringType === "bipolar-dimension";
+  const wantSpread =
+    !isBipolar &&
+    dimensions.length >= 2 &&
+    (scoringType === "weighted-dimension" || scoringType === "level-band");
+
+  for (const q of questions) {
+    const opts = q.options || [];
+    if (opts.length >= 2) {
+      const fps = opts.map((o) => scoreVectorFingerprint(o.scores, dimensions));
+      if (new Set(fps).size !== fps.length) {
+        warnings.push(
+          `${q.id}: duplicate score vectors across options (each option needs a distinct signature over [${dimensions.join(", ")}])`,
+        );
+      }
+    }
+    if (wantSpread && !questionHasDimensionalSpread(q, dimensions)) {
+      warnings.push(
+        `${q.id}: options do not differentiate dimensions (need ≥1 option that scores two dimensions with different values)`,
+      );
+    }
+  }
+  return warnings;
+}
+
 function validateQuestions(questions, dimensions, options = {}) {
   const warnings = [];
   const dimSet = new Set(dimensions);
@@ -491,6 +572,8 @@ function validateQuestions(questions, dimensions, options = {}) {
       }
     }
   }
+
+  warnings.push(...collectQuestionScoreDiscriminationWarnings(questions, dimensions, { scoringType }));
 
   if (isBipolar) {
     const { warnings: coverageWarnings } = validateBipolarCoverage(questions, dimensions);
@@ -695,6 +778,7 @@ module.exports = {
   collectProfileSimilarityIssues, validateFinalQuiz,
   validateQuestions, validateResults, validateDimensionProfiles,
   validateQuestionPlan, validateScoreMap, validateResultsPlan,
+  collectQuestionScoreDiscriminationWarnings,
   printWarnings, assertNoCriticalWarnings,
   STANDARD_FIELD_KEYS,
 };
