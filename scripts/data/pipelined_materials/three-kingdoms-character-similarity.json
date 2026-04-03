@@ -1,8 +1,8 @@
 {
   "id": "three-kingdoms-character-similarity",
   "featureId": "history",
-  "title": "权谋之心,你是哪种",
-  "subtitle": "在乱世中,你会如何选择自己的道路",
+  "title": "三国群雄里，你更像谁？",
+  "subtitle": "结合战略观、领导方式、情义取舍与危机反应，对齐曹操、关羽、诸葛亮等人物，测你更接近三国群英中的哪一款气质",
   "eyebrow": "三国心法",
   "description": "通过战略思维、处世态度、领导风格、价值观取向和危机应对五个维度,揭示你在三国乱世中可能扮演的角色类型,探索你内在的处世哲学。",
   "isAvailable": true,

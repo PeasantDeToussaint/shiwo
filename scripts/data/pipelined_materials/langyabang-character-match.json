@@ -1,9 +1,9 @@
 {
   "id": "langyabang-character-match",
   "featureId": "ip",
-  "title": "权谋之心,你是哪种",
-  "subtitle": "每一个选择都在暴露你的底色",
-  "eyebrow": "江湖心法测",
+  "title": "《琅琊榜》里，你更像哪位角色？",
+  "subtitle": "在理想、权谋与情义之间做选择，看梅长苏、靖王、霓凰、谢玉等琅琊榜人物里谁最贴近你的处世底色",
+  "eyebrow": "琅琊榜",
   "description": "琅琊榜中的每个人都有自己的处世哲学,在理想与现实、情义与权谋之间做出不同的选择。你的选择将揭示你最接近哪位角色。",
   "isAvailable": true,
   "estimatedMinutes": 8,

@@ -1,8 +1,8 @@
 {
   "id": "sherlock-character-match",
   "featureId": "ip",
-  "title": "推理之心,你是哪种",
-  "subtitle": "真相与人性之间,你如何抉择",
+  "title": "《神探夏洛克》里，你更像谁？",
+  "subtitle": "测推理习惯、人际距离与规则观，对应夏洛克、华生、莫里亚蒂、艾德勒等伦敦角色原型",
   "eyebrow": "伦敦迷雾中的你",
   "description": "在理性与感性、独立与协作、细节与宏观、传统与创新、行动与思考之间,探寻你最接近的福尔摩斯角色原型。",
   "isAvailable": true,

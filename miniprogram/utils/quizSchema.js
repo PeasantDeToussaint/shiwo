@@ -71,4 +71,18 @@
  * @property {QuizResult[]} results
  */
 
+/**
+ * Cloud / generic-question / scoreGeneric 计分族（与 quiz-generator、validate 一致）：
+ * - weighted-dimension：累加 raw → 归一化 → 与 dimension_profile **余弦**定结果。
+ * - archetype-argmax：累加 raw → 按 results[].primaryDimension 的 **raw 最大**定结果（互斥原型）；非余弦。
+ * - bipolar-dimension / level-band：专用计分（见 scoreGeneric 分支）。
+ * - two-phase-archetype（仅小程序保留）：须同时有 phase===1 题（scores 键为 A组/B组/C组）与 phase===2 题（branch + 大师维度分）。
+ *   无 phase 结构、且要「冠军维度」而非 profile 形状的，标 **archetype-argmax**；要形状匹配才用 weighted-dimension。
+ *
+ * @typedef {Object} QuizScoring
+ * @property {"weighted-dimension"|"archetype-argmax"|"bipolar-dimension"|"level-band"|"two-phase-archetype"|"big-five"|"mbti"} type
+ * @property {string[]=} dimensions  — 须与 options[].scores 键一致
+ * @property {Object<string,string[]>=} groups — 仅 structured two-phase：branch → 维度名列表
+ */
+
 module.exports = {};

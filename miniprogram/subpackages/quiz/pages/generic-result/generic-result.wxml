@@ -100,6 +100,7 @@
             <text class="gr-radar-legend-label">{{result.title}}</text>
           </view>
         </view>
+        <text wx:if="{{hasUserScores}}" class="gr-subnote gr-subnote-tight">雷达图：蓝线为本次作答在各特质上的相对形状（仅展示分数较高的若干轴，未必含全部维度）；浅色区域为当前结果人物的参考画像，便于对照。</text>
       </view>
 
       <!-- Dimension bars (conditional) -->
@@ -138,7 +139,10 @@
               wx:if="{{item.insight}}"
               class="gr-bar-insight {{item.centered ? 'gr-bar-insight-bipolar' : (item.dominant ? 'gr-bar-insight-dominant' : '')}}"
             >{{item.insight}}</text>
+            
           </view>
+                  <text wx:if="{{hasUserScores && !isBipolar}}" class="gr-subnote gr-subnote-tight">条形百分比：按你的作答汇总后做的相对比较，最高一项会拉满为 100%，其余按比例缩短；表示各特质的强弱对比。</text>
+
         </view>
       </view>
 

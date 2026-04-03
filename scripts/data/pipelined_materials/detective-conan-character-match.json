@@ -1,8 +1,8 @@
 {
   "id": "detective-conan-character-match",
   "featureId": "ip",
-  "title": "推理之心,你是谁？",
-  "subtitle": "在真相与正义之间,你的选择决定你是谁",
+  "title": "《名侦探柯南》里，你像哪位角色？",
+  "subtitle": "从逻辑力、正义感、行动力与社交方式，对齐工藤新一、服部平次、毛利兰、灰原哀等柯南世界角色",
   "eyebrow": "侦探之心",
   "description": "探索你在推理方式、正义理念、社交倾向、处事态度和情感表达五个维度上的特质,揭示你在名侦探柯南世界中最匹配的角色原型。",
   "isAvailable": true,

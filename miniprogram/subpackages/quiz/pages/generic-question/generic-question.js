@@ -94,12 +94,16 @@ Page({
       const allQuestions = quiz.questions || [];
 
       // Two-phase quizzes: start with only phase-1 questions.
-      const isTwoPhase = quiz.scoring && quiz.scoring.type === "two-phase-archetype";
+      // If type says two-phase but no item has phase === 1 (mis-tagged data), show all questions.
+      const wantsTwoPhase = quiz.scoring && quiz.scoring.type === "two-phase-archetype";
+      const hasPhase1 = allQuestions.some((q) => q.phase === 1);
+      const isTwoPhase = wantsTwoPhase && hasPhase1;
       const questions = isTwoPhase
         ? allQuestions.filter((q) => q.phase === 1)
         : allQuestions;
 
-      if (isTwoPhase) this._allQuestions = allQuestions;
+      this._structuredTwoPhase = isTwoPhase;
+      this._allQuestions = isTwoPhase ? allQuestions : null;
 
       const isGroup = this._isGroupMode(quiz);
 
@@ -230,8 +234,7 @@ Page({
 
     if (nextIndex >= questions.length) {
       // Two-phase: after phase 1 ends, inject the winning branch's phase-2 questions
-      const isTwoPhase = quiz.scoring && quiz.scoring.type === "two-phase-archetype";
-      if (isTwoPhase && this._allQuestions && !this._phase2Injected) {
+      if (this._structuredTwoPhase && this._allQuestions && !this._phase2Injected) {
         this._phase2Injected = true;
         const phase1Answers = this._answers.filter((a) =>
           questions.some((q) => q.id === a.questionId)

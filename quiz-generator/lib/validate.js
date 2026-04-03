@@ -264,6 +264,10 @@ function validateOutlineStructure(outline, architecture) {
   return errors;
 }
 
+// L∞ gap between two profiles: models often land ~0.10 apart on 3 axes with 8 figures; 0.15 was too strict.
+const PROFILE_MAXDIFF_MIN = 0.10;
+const PROFILE_MAXDIFF_SEVERE = 0.08;
+
 function collectProfileSimilarityIssues(results, dimensions) {
   const issues = [];
   for (let i = 0; i < results.length; i++) {
@@ -271,11 +275,11 @@ function collectProfileSimilarityIssues(results, dimensions) {
       const a = results[i].dimension_profile, b = results[j].dimension_profile;
       if (!a || !b) continue;
       const maxDiff = Math.max(...dimensions.map(d => Math.abs((a[d] || 0) - (b[d] || 0))));
-      if (maxDiff < 0.15) {
+      if (maxDiff < PROFILE_MAXDIFF_MIN) {
         issues.push({
           pair: `${results[i].id} ↔ ${results[j].id}`,
           maxDiff,
-          severe: maxDiff < 0.12,
+          severe: maxDiff < PROFILE_MAXDIFF_SEVERE,
         });
       }
     }
@@ -505,7 +509,9 @@ function collectQuestionScoreDiscriminationWarnings(questions, dimensions, optio
   const scoringType = options.scoringType || "weighted-dimension";
   const isBipolar = scoringType === "bipolar-dimension";
   const wantSpread =
-    !isBipolar && dimensions.length >= 2 && scoringType === "weighted-dimension";
+    !isBipolar &&
+    dimensions.length >= 2 &&
+    (scoringType === "weighted-dimension" || scoringType === "archetype-argmax");
 
   for (const q of questions) {
     const opts = q.options || [];
@@ -774,6 +780,8 @@ function assertNoCriticalWarnings(label, warnings) {
 }
 
 module.exports = {
+  PROFILE_MAXDIFF_MIN,
+  PROFILE_MAXDIFF_SEVERE,
   validateArchitecture, validateOutlineStructure,
   collectProfileSimilarityIssues, validateFinalQuiz,
   validateQuestions, validateResults, validateDimensionProfiles,

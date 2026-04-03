@@ -1,19 +1,14 @@
 /**
- * scoreGeneric.js
- * Weighted-dimension scoring engine for AI-generated cloud quizzes.
+ * Generic quiz scoring (cloud archetype / scale quizzes).
  *
- * Quiz schema expected:
- *   scoring.type === "weighted-dimension"
- *   scoring.dimensions: string[]
- *   questions[].options[].scores: { [dimension]: number }
- *   results[].dimension_profile: { [dimension]: number }  (0–1 weights)
+ * scoring.type === "weighted-dimension"
+ *   dimensions[] + options[].scores → raw sums → normalize → cosine match vs results[].dimension_profile
  *
- * Algorithm:
- *   1. Sum raw scores per dimension from user's answers
- *   2. Normalize to [0,1] range across all dimensions
- *   3. Find result whose dimension_profile has highest cosine similarity with normalized scores
- *      (cosine similarity removes magnitude bias — results with uniformly high profiles
- *       no longer have a structural advantage over results with a single strong peak)
+ * scoring.type === "archetype-argmax"  （互斥原型：谁的主维度 raw 分最高）
+ *   Same raw + normalize for UI；胜者 = max raw[result.primaryDimension]，平局按 results[] 顺序。
+ *   不用 dimension_profile 定输赢；profile 仍可给结果页条形/雷达作展示锚点。
+ *
+ * Other types: two-phase-archetype, big-five, mbti, bipolar-dimension, level-band.
  */
 
 const { scoreTwoPhaseArchetype } = require("./scoreTwoPhaseArchetype");
@@ -25,32 +20,10 @@ const { scoreLevelBand } = require("./scoreLevelBand");
 /**
  * @param {Object} quiz
  * @param {Array<{questionId: string, optionId?: string, sliderValue?: number}>} answers
- * @returns {{ resultId: string, scores: Object, normalized: Object }}
+ * @returns {Object<string, number>}
  */
-function scoreGeneric(quiz, answers) {
-  if (quiz.scoring && quiz.scoring.type === "two-phase-archetype") {
-    return scoreTwoPhaseArchetype(quiz, answers);
-  }
-
-  if (quiz.scoring && quiz.scoring.type === "big-five") {
-    return scoreBigFive(quiz, answers);
-  }
-
-  if (quiz.scoring && quiz.scoring.type === "mbti") {
-    return scoreMBTI(quiz, answers);
-  }
-
-  if (quiz.scoring && quiz.scoring.type === "bipolar-dimension") {
-    return scoreBipolarDimension(quiz, answers);
-  }
-
-  if (quiz.scoring && quiz.scoring.type === "level-band") {
-    return scoreLevelBand(quiz, answers);
-  }
-
-  const dimensions = quiz.scoring.dimensions || [];
-
-  // 1. Accumulate raw scores
+function accumulateDimensionRaw(quiz, answers) {
+  const dimensions = (quiz.scoring && quiz.scoring.dimensions) || [];
   const raw = {};
   dimensions.forEach((d) => (raw[d] = 0));
 
@@ -59,8 +32,6 @@ function scoreGeneric(quiz, answers) {
     if (!question) return;
     const qType = question.type || question.interaction;
 
-    // Likert slider question:
-    // value 0..100 -> factor 0..1, multiplied by sliderScores baseline weights.
     if (qType === "likert-slider" || qType === "slider-likert" || qType === "slider") {
       if (typeof sliderValue !== "number") return;
       const clamped = Math.max(0, Math.min(100, sliderValue));
@@ -72,7 +43,6 @@ function scoreGeneric(quiz, answers) {
       return;
     }
 
-    // Default single-choice / binary question
     const option = (question.options || []).find((o) => o.id === optionId);
     if (!option || !option.scores) return;
     Object.entries(option.scores).forEach(([dim, val]) => {
@@ -80,18 +50,45 @@ function scoreGeneric(quiz, answers) {
     });
   });
 
-  // 2. Normalize
+  return raw;
+}
+
+function scoreArchetypeArgmax(quiz, answers) {
+  const dimensions = (quiz.scoring && quiz.scoring.dimensions) || [];
+  const raw = accumulateDimensionRaw(quiz, answers);
   const total = Object.values(raw).reduce((a, b) => a + b, 0) || 1;
   const normalized = {};
   dimensions.forEach((d) => (normalized[d] = raw[d] / total));
 
-  // 3. Rank results by cosine similarity between normalized user scores and each dimension_profile.
-  //    Cosine similarity = dot(user, profile) / (|user| * |profile|)
-  //    This removes magnitude bias: a profile with uniformly high values no longer
-  //    beats a sharply-peaked profile just because its sum is larger.
+  const results = quiz.results || [];
+  const ranked = results
+    .map((result, idx) => {
+      const dim = result.primaryDimension;
+      const score = dim && raw[dim] !== undefined ? raw[dim] : 0;
+      return { resultId: result.id, title: result.title, score, _idx: idx };
+    })
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return a._idx - b._idx;
+    })
+    .map(({ _idx, ...rest }) => rest);
+
+  const bestResult = ranked[0] || null;
+  const resultId = bestResult ? bestResult.resultId : (results[0] || {}).id;
+  return { resultId, raw, normalized, ranked };
+}
+
+function scoreWeightedDimensionCosine(quiz, answers) {
+  const dimensions = (quiz.scoring && quiz.scoring.dimensions) || [];
+  const raw = accumulateDimensionRaw(quiz, answers);
+  const total = Object.values(raw).reduce((a, b) => a + b, 0) || 1;
+  const normalized = {};
+  dimensions.forEach((d) => (normalized[d] = raw[d] / total));
+
+  const results = quiz.results || [];
   const userMag = Math.sqrt(dimensions.reduce((s, d) => s + (normalized[d] || 0) ** 2, 0)) || 1;
 
-  const ranked = (quiz.results || [])
+  const ranked = results
     .map((result) => {
       const profile = result.dimension_profile || {};
       const dot = Object.entries(profile).reduce((acc, [dim, w]) => acc + (normalized[dim] || 0) * w, 0);
@@ -102,8 +99,47 @@ function scoreGeneric(quiz, answers) {
     .sort((a, b) => b.score - a.score);
 
   const bestResult = ranked[0] || null;
-  const resultId = bestResult ? bestResult.resultId : (quiz.results[0] || {}).id;
+  const resultId = bestResult ? bestResult.resultId : (results[0] || {}).id;
   return { resultId, raw, normalized, ranked };
+}
+
+/**
+ * @param {Object} quiz
+ * @param {Array<{questionId: string, optionId?: string, sliderValue?: number}>} answers
+ * @returns {{ resultId: string, raw: Object, normalized: Object, ranked: Array }}
+ */
+function scoreGeneric(quiz, answers) {
+  const type = quiz.scoring && quiz.scoring.type;
+
+  if (type === "two-phase-archetype") {
+    const hasPhase1 = (quiz.questions || []).some((q) => q.phase === 1);
+    if (hasPhase1) {
+      return scoreTwoPhaseArchetype(quiz, answers);
+    }
+    // Mis-tagged: fall through to cosine (same as weighted-dimension body).
+  }
+
+  if (type === "big-five") {
+    return scoreBigFive(quiz, answers);
+  }
+
+  if (type === "mbti") {
+    return scoreMBTI(quiz, answers);
+  }
+
+  if (type === "bipolar-dimension") {
+    return scoreBipolarDimension(quiz, answers);
+  }
+
+  if (type === "level-band") {
+    return scoreLevelBand(quiz, answers);
+  }
+
+  if (type === "archetype-argmax") {
+    return scoreArchetypeArgmax(quiz, answers);
+  }
+
+  return scoreWeightedDimensionCosine(quiz, answers);
 }
 
 module.exports = { scoreGeneric };

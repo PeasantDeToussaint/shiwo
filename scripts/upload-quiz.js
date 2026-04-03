@@ -56,7 +56,14 @@ if (!fs.existsSync(quizPath)) {
   process.exit(1);
 }
 
-const quiz = JSON.parse(fs.readFileSync(quizPath, "utf-8"));
+let quiz = JSON.parse(fs.readFileSync(quizPath, "utf-8"));
+
+// Export shape `{ id, quiz: { title, questions, ... } }` — quizWriter expects flat fields at root for DB + catalog.
+if (quiz && typeof quiz.quiz === "object" && quiz.quiz !== null && typeof quiz.title !== "string") {
+  const inner = { ...quiz.quiz };
+  delete inner._id;
+  quiz = { ...inner, id: quiz.id || inner.id };
+}
 
 function inferFeatureId(quiz) {
   if (quiz && typeof quiz.featureId === "string" && quiz.featureId.trim()) return quiz.featureId;

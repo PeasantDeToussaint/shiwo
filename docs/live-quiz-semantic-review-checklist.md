@@ -459,7 +459,7 @@
 ### 5.30 `investment-master-style`
 
 - **气质**：每题指向 **巴菲特/索罗斯/达利欧** 等 **真实投资范式**，选项 **专业且好懂**；`reaction` **短准**（「看的是长期确定性」）。
-- **计分**：`two-phase-archetype`，维度即 **大师名** — **语义上自洽**，与通用加权 rubric **不同但合理**。
+- **计分**：**`archetype-argmax`**（`primaryDimension` + 各维度 raw 争冠，**不是** weighted 的余弦）；`dimension_profile` 仅作结果页展示锚。勿标 `two-phase-archetype`（除非真有 A/B/C 组 + 分支 phase2）。勿把本题硬标成 `weighted-dimension`。
 - **注意**：若用户 **不熟人名**，结果页需 **足够科普**，否则「我是西蒙斯」**认知门槛高**。
 
 ### 5.31 `mythical-creature-within`
@@ -708,4 +708,25 @@
 
 ---
 
-*文档生成说明：精读样本来自 `scripts/data/live_audit/*.json` 与 `live-quiz-full-audit-findings.md` 总览表；**catalog 内 79 套** 在 **§4 + §5.1–§5.76** 均有登记。若线上 catalog 已变，以当前拉取快照为准。*
+## 7. 第二阶段未修完项（跟进清单）
+
+### 7.1 已在真实题库中修补并上传的
+
+`scripts/data/pipelined_materials/` 整包多次上传；`scripts/data/lovecraftian-monster-domination.repaired.json` 单文件上传；`scripts/data/未命名文件夹/` 内如 `game-of-thrones-character-analogy.json`、`gaibang-role-play.json` 等已修编码/键名/部分矩阵后上传。低参与维度补分、题干与维度对齐、同分区分等小改已落在上述源文件。线上以最后一次成功上传为准。
+
+### 7.2 仅有 `live_audit` 快照、仓库内无同源可编辑母版
+
+下列 **quizId** 在 `pipelined_materials/`、`未命名文件夹/`、`scripts/data/*.json`（根目录单文件）中均未找到对应 JSON。要修审查结论需先 **从云或备份导出** 母版，或把题目写入上述目录之一后再跑 `upload-pipelined-materials.js` / `upload-quiz.js`。
+
+- `ancient-poet-match`、`avengers-hero-match`、`big-bang-theory-character-match`、`buendia-generation-match`、`classic-book-match`、`coffee-personality-match`、`content-creator-type`、`cthulhu-deity-match`、`flower-personality-match`、`graduate-school-fit`、`investment-master-style`、`jujutsu-kaisen-character-match`、`love-level-test`、`love-rank-test`、`mbti-16personalities`、`media-niche-test`、`ming-dynasty-role-play`、`mythical-creature-within`、`niche-sport-match`、`one-piece-character-match`、`paladin-character-match`、`pokemon-personality-match`、`post-apocalypse-role`、`rebirth-journey-to-the-west-monarch`、`red-chambers`、`republican-era-business-mindset`、`spending-personality-test`、`spirited-away-character-match`、`spiritual-homeland`、`spiritual-homeland-match`、`study-abroad-fit-test`、`tang-poets`、`temple`、`what-pet-fits-you`、`which-ancient-greek-philosopher-resonates-with-you`、`which-japanese-sengoku-daimyo-are-you`、`which-literary-giant-are-you`、`which-school-of-thought-are-you`、`which-sport-fits-your-release`、`which-tang-poet-lives-in-your-heart`、`your-aesthetic-and-which-painter`、`your-perfect-perfume-type`、`自媒体赛道人格测验`
+
+（说明：`city`、`dialect` 等在 `未命名文件夹/` 有母版，不在上表。）
+
+### 7.3 仍需「矩阵 / 结构级」处理（非单句文案可收尾）
+
+- **不可达结果**、多结果 **profile 过近**、**双极混号**、某维 **整卷缺乏得分机会**、与引擎/校验冲突的 **负分设计** 等：需逐套重算 `dimension_profile`、拆题或改题型；优先对照 `live-quiz-full-audit-findings.md` 中 **errors > 0** 或明确标「不可达 / 结构」的条目。  
+- §4 / §5 中的 rubric 在母版修完后应 **重跑机器审计** 并再次上传。
+
+---
+
+*文档生成说明：精读样本来自 `scripts/data/live_audit/*.json` 与 `live-quiz-full-audit-findings.md` 总览表；**catalog 内 79 套** 在 **§4 + §5.1–§5.76** 均有登记；**§7** 为仓库与线上对齐后的跟进清单。若线上 catalog 已变，以当前拉取快照为准。*

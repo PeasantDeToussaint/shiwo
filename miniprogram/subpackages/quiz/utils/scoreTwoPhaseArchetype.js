@@ -1,8 +1,12 @@
 /**
- * Two-phase investor archetype quiz scoring.
- * Phase 1: tally A组 / B组 / C组 (first N questions with phase === 1).
- * Phase 2: tally nine archetype dimensions (questions with phase === 2, branch injected in UI).
- * Winner group from phase 1; final archetype = max raw score within that group's three dimensions (tie: fixed order).
+ * Structured two-phase archetype scoring (rare).
+ *
+ * Phase 1: questions with phase === 1; options score **A组 / B组 / C组** only.
+ * Phase 2: questions with phase === 2 and branch A|B|C; options score archetype dimensions listed in scoring.groups.
+ * Final result = max raw dimension score within the winning branch’s three dimensions.
+ *
+ * 全程只打原型维度分、无 A/B/C 组题的套卷，应使用 **archetype-argmax**（primaryDimension + raw 争冠）
+ * 或 **weighted-dimension**（余弦 + profile），不要标 two-phase-archetype。
  */
 
 function winningBranchFromGroupRaw(groupRaw) {

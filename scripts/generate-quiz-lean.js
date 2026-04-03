@@ -1,19 +1,18 @@
 #!/usr/bin/env node
 /**
- * generate-quiz.js
+ * generate-quiz-lean.js
  *
- * Generates a brand-new quiz JSON from a topic description using AI.
+ * Lean fork of generate-quiz_副本.js: shorter prompts, lighter copy rules, validation
+ * issues are logged as warnings (non-fatal) so the model is less boxed in.
+ * Quality review (--eval) is opt-in.
  *
- * Pipeline:
- *   Phase 0 — Domain Architecture: domain expert decides resultType, dimensions, archetypes, questionCount
- *   Phase 1 — Outline: formal structure + dimension_profile + aestheticContext
- *   Phase 2 — Questions: 3 batches, count determined by Phase 0 (default 24)
- *   Phase 3 — Results: 2 batches (≤6 results) or 3 batches (>6 results)
- *   Assembly — pure JS: remap dimensions, build final JSON, upload
+ * Same pipeline: Phase 0 architecture → outline → questions → results → assemble → upload.
  *
  * Usage:
- *   node scripts/generate-quiz.js --topic="你是哪种雨"
- *   node scripts/generate-quiz.js --topic="你是哪位宋词词人" --dry-run
+ *   node scripts/generate-quiz-lean.js --topic="你是哪种雨"
+ *   node scripts/generate-quiz-lean.js --topic="..." --dry-run
+ *   node scripts/generate-quiz-lean.js --topic="..." --eval          # run post quality eval
+ *   node scripts/generate-quiz-lean.js --topic="..." --strict-warn    # treat validator warnings as fatal (optional)
  */
 
 const https = require("https");
@@ -41,11 +40,32 @@ const ENV_ID        = process.env.WX_CLOUD_ENV || "cloudbase-4gadl6qo4a9aa95d";
 const ARGS      = process.argv.slice(2);
 const DRY_RUN   = ARGS.includes("--dry-run");
 const ESTIMATE  = ARGS.includes("--estimate");
-const SKIP_EVAL = ARGS.includes("--skip-eval");
+/** Default: no AI eval pass; use --eval to enable (opposite of full script’s default). */
+const SKIP_EVAL = ARGS.includes("--skip-eval") || !ARGS.includes("--eval");
+/** If true, outline/question/result validator warnings still abort (副本 behavior). */
+const STRICT_WARN = ARGS.includes("--strict-warn");
 const TOPIC_ARG = (ARGS.find(a => a.startsWith("--topic=")) || "").replace("--topic=", "").replace(/^["']|["']$/g, "");
 const HINT_ARGS = ARGS.filter(a => a.startsWith("--hint=")).map(a => a.replace("--hint=", "").replace(/^["']|["']$/g, ""));
 const PROVIDER_ARG = (ARGS.find(a => a.startsWith("--provider=")) || "").replace("--provider=", "").replace(/^["']|["']$/g, "").toLowerCase();
 const MODEL_ARG = (ARGS.find(a => a.startsWith("--model=")) || "").replace("--model=", "").replace(/^["']|["']$/g, "");
+
+// ── Hard overrides (bypass AI decisions) ─────────────────────────
+function parseIntArg(name) {
+  const raw = (ARGS.find(a => a.startsWith(`--${name}=`)) || "").replace(`--${name}=`, "");
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+const OVERRIDE_SCORING     = (ARGS.find(a => a.startsWith("--scoring=")) || "").replace("--scoring=", "").replace(/^["']|["']$/g, "") || null;
+const OVERRIDE_ID          = (ARGS.find(a => a.startsWith("--id=")) || "").replace("--id=", "").replace(/^["']|["']$/g, "") || null;
+const OVERRIDE_RESULTS     = parseIntArg("results");
+const OVERRIDE_DIMENSIONS  = parseIntArg("dimensions");
+const OVERRIDE_QUESTIONS   = parseIntArg("questions");
+
+const VALID_SCORING_FAMILIES = new Set(["weighted-dimension", "bipolar-dimension", "level-band"]);
+if (OVERRIDE_SCORING && !VALID_SCORING_FAMILIES.has(OVERRIDE_SCORING)) {
+  console.error(`❌  Invalid --scoring="${OVERRIDE_SCORING}". Use one of: weighted-dimension, bipolar-dimension, level-band`);
+  process.exit(1);
+}
 
 const VALID_PROVIDERS = new Set(["zhipu", "gemini", "deepseek", "anthropic"]);
 if (PROVIDER_ARG && !VALID_PROVIDERS.has(PROVIDER_ARG)) {
@@ -107,15 +127,45 @@ function inferHintsFromTopic(topic) {
     autoHints.push(`resultType必须是item，每个结果是真实存在的国家或城市名称`);
   }
 
+  // Pattern 4: 亲密关系边界/忠诚/抗诱惑等 — 测的是倾向强度，不是「像哪位名人」
+  if (
+    /抗出轨|出轨倾向|忠诚测试|专一程度|婚外情|第三者|劈腿|抗诱惑|边界感|承诺感/u.test(topic) ||
+    (/(出轨|忠诚|专一|诱惑)/u.test(topic) && /(测试|测验|有多强|多强|能力)/u.test(topic))
+  ) {
+    if (!/(哪位|哪个角色|和谁最像|《[^》]+》)/u.test(topic)) {
+      autoHints.push(
+        `本主题测的是亲密关系中边界、自制与承诺倾向的强度或段位，不是历史人物或明星匹配；resultType禁止为figure；results的name禁止使用真实人物姓名（含历史、文学、神话人物），应使用程度段位或抽象关系气质的原型命名。`
+      );
+    }
+  }
+
+  // Pattern 5: 「有多强」「能力」类（非明确人物题）→ 避免 figure
+  if (/(有多强|强不强|能力有多|水平如何|段位)/u.test(topic) && !/(哪位|哪个角色|和谁最像|诗人|词人|角色|人物)/u.test(topic)) {
+    autoHints.push(
+      `主题为强度/能力/水平类测验：除非用户明确列举具体人物名单，否则resultType禁止为figure，results禁止套用与主题无关的历史或娱乐名人。`
+    );
+  }
+
   return autoHints;
 }
 
-const AUTO_HINTS  = inferHintsFromTopic(TOPIC_ARG);
+const AUTO_HINTS = inferHintsFromTopic(TOPIC_ARG);
+/** Phase 0 在 --scoring 覆盖之前执行：必须把 CLI 选定的框架提前写进提示，否则会先产出错误 resultType。 */
+const ARCH_HINTS_FROM_CLI = [];
+if (OVERRIDE_SCORING === "level-band") {
+  ARCH_HINTS_FROM_CLI.push(
+    `scoringFamily必须为level-band。resultType禁止为figure。每个结果name表示同一连续谱上从弱到强（或从低到高）的不同段位，禁止使用真实人物、神话人物或明星姓名；results建议4-6个且名称能排成清晰递增（或递减）序列。`
+  );
+}
 if (AUTO_HINTS.length > 0) {
   console.log(`📌  Auto-detected constraints:`);
   AUTO_HINTS.forEach(h => console.log(`     • ${h}`));
 }
-const ALL_HINTS   = [...AUTO_HINTS, ...HINT_ARGS];
+if (ARCH_HINTS_FROM_CLI.length > 0) {
+  console.log(`📌  CLI architecture hints (--scoring):`);
+  ARCH_HINTS_FROM_CLI.forEach(h => console.log(`     • ${h}`));
+}
+const ALL_HINTS = [...AUTO_HINTS, ...ARCH_HINTS_FROM_CLI, ...HINT_ARGS];
 const HINT_BLOCK  = ALL_HINTS.length > 0
   ? `\n### 创作者硬性约束（必须严格遵守，不得偏离）\n${ALL_HINTS.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n`
   : "";
@@ -123,7 +173,7 @@ const HINT_BLOCK  = ALL_HINTS.length > 0
 const DATA_DIR = path.resolve(__dirname, "data");
 
 if (!TOPIC_ARG) {
-  console.error("Usage: node scripts/generate-quiz.js --topic=\"topic\" [--provider=gemini|zhipu|deepseek|anthropic] [--model=\"model-name\"] [--hint=\"约束\"] [--dry-run] [--estimate] [--skip-eval]");
+  console.error("Usage: node scripts/generate-quiz-lean.js --topic=\"topic\" [--provider=gemini|zhipu|deepseek|anthropic] [--model=\"model-name\"] [--hint=\"约束\"] [--dry-run] [--estimate] [--eval] [--strict-warn]");
   process.exit(1);
 }
 if (!PROVIDER && !ESTIMATE) { console.error("❌  No AI API key in .env"); process.exit(1); }
@@ -132,78 +182,12 @@ if (PROVIDER === "zhipu" && !ZHIPU_KEY && !ESTIMATE) { console.error("❌  Missi
 if (PROVIDER === "deepseek" && !DEEPSEEK_KEY && !ESTIMATE) { console.error("❌  Missing DEEPSEEK_API_KEY for provider=deepseek"); process.exit(1); }
 if (PROVIDER === "anthropic" && !ANTHROPIC_KEY && !ESTIMATE) { console.error("❌  Missing ANTHROPIC_API_KEY for provider=anthropic"); process.exit(1); }
 
-// ── Literary style guide ─────────────────────────────────────────
+// ── Literary style guide (lean) ──────────────────────────────────
 const LITERARY_GUIDE = `
-## 文案风格指南
-
-### 参考标准
-对标 16personalities.com 的中文描述风格：直接、具体、不辩解、不堆砌。
-
-示例（好的写法）：
-- "你勇于探索现实世界，受旺盛的好奇心驱使，一心探究事物的运作原理。"
-- "你独具慧眼，天赋异禀，对复杂系统有着深刻理解。"
-- 强项：「压力下冷静——在紧张或危机时刻，你能保持镇定，确保思路清晰和工作高效。」
-- 弱项：「不擅长规划——制定计划让你感到受束缚，容易导致任务拖延和进步缓慢。」
-
-### 一、绝对禁止的句型（AI腔）
-**否定平行结构**
-- "这不仅是X，更是Y" / "不只是X，而是Y"（试图赋予平凡事物深刻意义）
-- "这不是...，而是..."（防御性开脱）
-- 禁止例：「这不仅是一次测验，更是一次自我发现的旅程。」
-
-**虚假范围**
-- "从X到Y"（X和Y牛头不对马嘴，或从具体到抽象的硬凑）
-- 禁止例：「从日常选择的工具，到人格深处的艺术表达。」
-
-**说教式免责**
-- "值得注意的是..." / "重要的是要记住..." / "需要指出的是..."
-- 任何像教科书一样指导读者该怎么想的句式
-
-**模糊归因**
-- "一些人认为..." / "观察者指出..." / "批评者认为..."（不指名道姓的假引用）
-
-**三段式排比升华**
-- 连续列举三个并列形容词或短语充数
-- 禁止例：「它融合了历史的深度、文化的丰富性与现代的活力。」
-
-**僵化结尾**
-- "总的来说..." / "综上所述..." / "整体而言..."
-- 任何像小作文最后一段的"升华"句
-
-**其他AI腔**
-- "你不是...，而是/只是..."
-- "你...比大多数人..."（靠比较定义人）
-- "这是你...的必然代价"（公式化结尾）
-- "这源于你对...的深刻理解"
-- "你会在...的瞬间，选择..."（造作假设情境）
-- "够了" / "这已经够了"（廉价煽情）
-- 连续堆砌四字成语（3个以上叠加）
-
-### 二、格式禁令
-- 禁止输出 Markdown 标记（##、**、*、- 列表符号等不得出现在文案正文里）
-- 禁止使用 emoji
-- 禁止破折号过度插入（一段话里最多一处补述破折号）
-- portrait/temperament/situation/lifeAdvice/destiny 全部输出纯文本，不加任何标题或标签
-
-### 三、Portrait 写法（三段，每段100-130字）
-1. 第一段：开门见山，直接定性。一两句具体的行为观察切入，不铺垫背景。展开核心特质，写实写活。
-2. 第二段：展开一个最有辨识度的维度，写实、写活、写具体。可以写独立性、行事方式或内在驱动力。
-3. 第三段：正面写出这个人格的局限与处境——在哪些情境下会卡住、承受什么压力、面对什么矛盾。不给答案，不安慰，但要写得具体，不能只是模糊留白。
-禁止用"总的来说"、"综上"、"整体而言"收尾。
-
-### 四、强项/弱项写法
-- 数量：强项6个，弱项6个
-- 标签（label）：3-5字，用能力或行为描述，不用形容词堆砌
-  好：「快速排查问题」「压力下冷静」「实践操作」
-  差：「独立自主的天性」「深刻的洞察力」
-- 描述（description）：1-2句，直接点出这个特质在现实中的表现和影响，不解释来源，不道歉
-  好：「重复或单调的任务容易让你失去兴趣，导致拖延和效率下降。」
-  差：「你会在重复的环境中感到窒息，这是你追求新鲜感的必然代价。」
-
-### 五、题目要求
-- 根据语境、文化、背景，有时写出写出具体场景，例如在唐诗背景下，要根据经典唐诗重现诗意场景（只是个例子），避免"你会怎么做？"这种宽泛问法
-- 每个选项代表一种真实的思维方式或行为倾向，不是对错之分
-
+## 文案（精简版）
+- 第二人称、具体场景与行为，少用套话；避免「不仅是…更是…」「总的来说」「在人生的旅途中」等空泛升华。
+- 正文不要 Markdown 标题/列表符号/emoji；portrait 用纯文本，段与段之间可用换行。
+- 题目尽量有画面感；选项是不同倾向而非对错。
 `;
 
 // ── HTTP helpers ─────────────────────────────────────────────────
@@ -440,7 +424,7 @@ function extractJSON(raw) {
       "temperament","situation","lifeAdvice","destiny",
       "token","verse","verseSource","boldQuote","title","subtitle",
       "insight","nameContext","coreIdentity","distinctiveFeature",
-      "domainInsight","figureContext","axisLabel","lowPole",
+      "domainInsight","figureContext","axisLabel","lowPole","highPole",
     ];
     for (const f of STRING_FIELDS) {
       const re = new RegExp(`("${f}"\\s*:\\s*)([^"\\s{\\[\\d\\-ntf][^"\\n]*?)(")`, "g");
@@ -471,6 +455,19 @@ function extractJSON(raw) {
   try { const r = JSON.parse(normalizeJSONCandidate(repairJSON(jsonStr))); process.stderr.write("  [json] repaired via jsonrepair\n"); return r; } catch (_) {}
   try { const r = JSON.parse(normalizeJSONCandidate(repairJSON(fixBracketMismatches(jsonStr)))); process.stderr.write("  [json] repaired via bracket fix + jsonrepair\n"); return r; } catch (e) {
     throw new Error(`JSON parse failed after repair: ${e.message}`);
+  }
+}
+
+/** 模型常把 dimensionCount / questionCount 输出成字符串 "3"，校验要求整数 — 与 quiz-generator 一致先强制转换 */
+function coerceArchitectureIntFields(architecture) {
+  if (!architecture || typeof architecture !== "object") return;
+  if (typeof architecture.dimensionCount === "string") {
+    const n = parseInt(architecture.dimensionCount, 10);
+    if (Number.isFinite(n)) architecture.dimensionCount = n;
+  }
+  if (typeof architecture.questionCount === "string") {
+    const n = parseInt(architecture.questionCount, 10);
+    if (Number.isFinite(n)) architecture.questionCount = n;
   }
 }
 
@@ -574,6 +571,7 @@ function validateOutlineStructure(outline, architecture) {
   const axes = Array.isArray(outline?.dimensionAxes) ? outline.dimensionAxes : [];
   const results = Array.isArray(outline?.results) ? outline.results : [];
   const dimSet = new Set(dimensions);
+  const isBipolar = (architecture?.scoringFamily || "weighted-dimension") === "bipolar-dimension";
 
   if (dimensions.length === 0) errors.push("outline.dimensions missing or empty");
   if (axes.length !== dimensions.length) {
@@ -582,6 +580,15 @@ function validateOutlineStructure(outline, architecture) {
   for (const axis of axes) {
     if (!dimSet.has(axis.dimension)) {
       errors.push(`dimensionAxes has unknown dimension "${axis.dimension}"`);
+    }
+    if (isBipolar) {
+      if (!String(axis.lowPole || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing lowPole`);
+      if (!String(axis.highPole || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing highPole`);
+      if (!String(axis.lowInsight || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing lowInsight`);
+      if (!String(axis.highInsight || axis.insight || "").trim()) errors.push(`dimensionAxes[${axis.dimension}]: missing highInsight`);
+      if (String(axis.lowPole || "").trim() && String(axis.highPole || "").trim() && String(axis.lowPole).trim() === String(axis.highPole).trim()) {
+        errors.push(`dimensionAxes[${axis.dimension}]: lowPole and highPole must be different`);
+      }
     }
   }
   for (const r of results) {
@@ -723,10 +730,20 @@ function collectProfileSimilarityIssues(results, dimensions) {
 function validateFinalQuiz(quiz) {
   const errors = [];
   const warnings = [];
+  const scoringType = quiz?.scoring?.type || "weighted-dimension";
 
   for (const d of (quiz?.scoring?.dimensions || [])) {
     if (!d) errors.push("empty dimension label");
     if (/(更多维度按需补足|更多维度按已确定)/.test(d)) errors.push(`invalid dimension label "${d}"`);
+  }
+
+  if (scoringType === "bipolar-dimension") {
+    for (const axis of (quiz?.scoring?.dimensionAxes || [])) {
+      if (!String(axis.lowPole || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing lowPole`);
+      if (!String(axis.highPole || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing highPole`);
+      if (!String(axis.lowInsight || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing lowInsight`);
+      if (!String(axis.highInsight || "").trim()) errors.push(`bipolar axis "${axis.dimension}": missing highInsight`);
+    }
   }
 
   for (const q of (quiz.questions || [])) {
@@ -742,7 +759,7 @@ function validateFinalQuiz(quiz) {
   for (const r of (quiz.results || [])) {
     const portrait = normalizePortraitText(r.portrait);
     if (portrait && !portrait.includes("\n\n") && portrait.length > 180) {
-      errors.push(`${r.id}: portrait still has no paragraph breaks`);
+      warnings.push(`${r.id}: portrait still has no paragraph breaks`);
     }
     for (const field of ["title", "subtitle", "token", "verse", "verseSource", "temperament", "lifeAdvice", "destiny"]) {
       const issue = findObviousTextCorruption(r[field]);
@@ -770,8 +787,7 @@ function validateFinalQuiz(quiz) {
   const profileIssues = collectProfileSimilarityIssues(quiz.results || [], quiz?.scoring?.dimensions || []);
   for (const issue of profileIssues) {
     const msg = `${issue.pair}: profiles too similar (max diff ${issue.maxDiff.toFixed(2)})`;
-    if (issue.severe) errors.push(msg);
-    else warnings.push(msg);
+    warnings.push(msg);
   }
 
   return { errors, warnings };
@@ -780,7 +796,20 @@ function validateFinalQuiz(quiz) {
 // ── Format aesthetic context from outline ─────────────────────────
 function formatAestheticContext(aestheticContext) {
   if (!aestheticContext) return "";
-  return `\n### 这道测验的场景原则（大纲）\n${aestheticContext}\n题目应服从上述原则；勿把本段当成固定场景清单照抄，情境应多样展开，避免整卷重复同一类桥段。`;
+  return `\n### 场景原则（大纲，尽量贴近）\n${aestheticContext}\n原则是边界不是清单：勿逐条照搬本段当固定场景；题目要有具体抉择感，避免空洞二选一。`;
+}
+
+function formatBipolarAxisTable(outline) {
+  const axes = Array.isArray(outline?.dimensionAxes) ? outline.dimensionAxes : [];
+  if (axes.length === 0) return "";
+  const lines = axes.map((axis) => {
+    const dim = axis.dimension || "";
+    const low = axis.lowPole || "低极";
+    const high = axis.highPole || "高极";
+    const axisLabel = axis.axisLabel ? `（${axis.axisLabel}）` : "";
+    return `- ${dim}${axisLabel}: ${low} ↔ ${high}`;
+  });
+  return `\n### 双极轴定义（正负分必须严格锚定到这组极点）\n${lines.join("\n")}\n`;
 }
 
 // ── Phase 0: Domain Architecture ─────────────────────────────────
@@ -791,91 +820,22 @@ async function generateArchitecture(topic) {
 
 这一步只关注概念和结构，不写任何正文内容。输出严格 JSON，不输出其他内容。`;
 
-  const user = `请为以下测验设计原型架构：
+  const user = `为微信小程序测验设计架构（只输出 JSON，不要解释）。
 
 主题：${topic}
 ${HINT_BLOCK}
-第一步：判断这个测验适合哪种结果类型
-- resultType = "figure"：题目明确涉及某类具体人物（如「民国女性」「宋词词人」「文艺复兴画家」），每个结果对应一个真实存在的代表人物
-- resultType = "item"：结果是真实存在的具体事物或地点。包括「你适合什么X」类型，也包括主题说明中明确指定了结果类别的情况（如「包含多个国家」「包含多个城市」「包含以下几种食物」）——只要结果是真实存在的具体事物，就选 item
-- resultType = "archetype"：题目是抽象人格映射（如「你是哪种宝石」「你的恋爱风格」），结果是有象征意味的原型名称，侧重人格隐喻而非真实事物特性
 
-【重要】如果主题或约束中明确说明结果应该是某类真实事物（国家、城市、食物、运动等），必须选 item，不能选 archetype。
+1) resultType：figure（具体人物/角色名）| item（真实事物/地点）| archetype（意象原型）。主题要求国家城市食物等 → item；明确作品角色匹配 → figure 且 name 用真名；抽象气质映射 → archetype。
+2) scoringFamily：weighted-dimension（多特质可加）| bipolar-dimension（轴有两极）| level-band（可排序段位，强度/适合度类）。
+3) dimensions：2–5 个短标签，彼此可区分；dimensionCount 与 dimensions 长度一致。
+4) results：4–9 个（bipolar 可 4+）；每个含 conceptId、primaryDimension（∈dimensions）、name、nameContext、coreIdentity、distinctiveFeature、profileHints（每维 high|medium|low）。
+5) resultFields：portrait 建议保留；其余从 strengths/weaknesses/temperament/situation/lifeAdvice/destiny 里按需选，可加 ≤2 个自定义字段 {key,label,standard:false,instruction}。
 
-第二步：基于领域知识设计维度和原型
-
-resultFields 说明：portrait 必选，其余标准字段按需选用，自定义字段 ≤2 个。以下格式仅供参考，实际字段由你在第三步决定。
-
-输出格式：
-{
-  "domainInsight": "4-6句，说明这个主题最核心的人格分化轴是什么，为什么这样划分比其他方式更准确",
-  "resultType": "figure、item 或 archetype 三选一",
-  "resultFields": [
-    { "key": "portrait", "label": "气质画像", "standard": true },
-    { "key": "lifeAdvice", "label": "行动建议", "standard": true },
-    { "key": "customFieldKey", "label": "自定义标题", "standard": false, "instruction": "说明这个字段写什么、写多少字" }
-  ],
-  "dimensionCount": "你决定的维度数量，整数。由你根据主题复杂度决定，通常为2-5个",
-  "questionCount": "你决定的题目数量，整数，建议范围：简单主题12题，中等主题16-20题，复杂多维主题22-24题",
-  "dimensions": ["维度1", "维度2", "更多维度按需补足，必须与dimensionCount数量一致"],
-  "results": [
-    {
-      "conceptId": "c1",
-      "primaryDimension": "维度A",
-      "name": "resultType=figure 时：真实人物姓名，如「林徽因」。resultType=item 时：具体事物名称，如「柴犬」「攀岩」「成都」。resultType=archetype 时：原型名称，如「翡翠」「猫系恋人」，不能是抽象性格词",
-      "nameContext": "resultType=figure 时：人物背景（1句）。resultType=item 时：该事物的核心特性（1句，说明为何能映射这种人格）。resultType=archetype 时：象征描述（1句）",
-      "coreIdentity": "这个原型的人格核心，20-30字，说清楚「这类人本质上是什么样的人」",
-      "distinctiveFeature": "与其他原型最显著的区别特质，15-20字",
-      "profileHints": {
-        "维度A": "high/medium/low",
-        "维度B": "high/medium/low",
-        "维度C": "如果存在更多维度，继续补齐。profileHints 必须覆盖所有维度"
-      }
-    }
-  ]
-}
-
-第三步：作为领域专家，自由设计每个结果应包含的内容字段
-
-你是这个领域的专家，请基于「用户最关心什么」来决定结果页的字段构成。
-
-### 标准字段（按需选用，用 standard: true 标记）
-这些字段有默认生成格式，全部可选，只选对这个主题有意义的：
-- portrait：三段深度画像（必选）
-- strengths：6条优势
-- weaknesses：6条局限
-- temperament：气质描述
-- situation：核心张力
-- lifeAdvice：给用户的行动建议
-- destiny：诗意命运收尾
-
-不要全选。对于标准字段，如果你认为默认格式对这个主题不够精准，可以额外提供 instruction 字段来覆盖默认写法。例如：
-{ "key": "portrait", "label": "气质画像", "standard": true, "instruction": "三段，第一段描述测验者与这个国家的气质共鸣，第二段写具体行为联结，第三段写挑战与代价" }
-
-### 两个或以上自定义字段（用 standard: false 标记，自行设计）
-如果这个主题的用户有标准字段以外的核心关注点，可以增加自定义字段。
-每个自定义字段需要提供：
-- key：英文 camelCase 字段名
-- label：显示给用户看的中文标题（4-8字）
-- instruction：告诉 AI 这个字段写什么、写多少字30-60字的说明）
-
-示例（仅供参考，请根据实际主题决定）：
-- 宝石测验可能有：{ key: "gemScene", label: "适合场景", instruction: "50字，描述这颗宝石最适合在什么场合佩戴、搭配什么风格" }
-- 历史人物可能有：{ key: "keyQuote", label: "代表名言", instruction: "该人物最能代表其人生哲学的一句话，附简短说明" }
-- 香水测验可能有：{ key: "scentProfile", label: "香气档案", instruction: "60字，描述这款香水的前中后调和整体香型特征" }
-
-请根据「${topic}」这个主题，从用户视角出发，设计最合适的字段组合。
-
-规则：
--【关键约束】dimensionCount 由你根据主题复杂度决定；dimensions 数量必须与 dimensionCount 严格一致。results 是6-9个（视主题而定），与 dimensions 数量无关。多个结果可以共享同一个 primaryDimension。每个 primaryDimension 必须是 dimensions 数组里的某一项。
-- 维度数量不要机械固定；重点是维度彼此独立、可解释，并且足以区分这些结果。简单主题可用2个，复杂主题可到5个。
-- resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
-- resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
-- resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
-- profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异`;
+输出 JSON 结构与原脚本相同（domainInsight、scoringFamily、resultType、resultFields、dimensionCount、questionCount、dimensions、results[]）。questionCount 建议 12–24。profileHints 在各结果之间要有差异。`;
 
   const raw = await callAI(system, user, 2500);
   const architecture = extractJSON(raw);
+  coerceArchitectureIntFields(architecture);
   const errors = validateArchitecture(architecture);
   if (errors.length > 0) throw new Error(`Architecture invalid: ${errors.join("; ")}`);
   return architecture;
@@ -908,6 +868,7 @@ ${LITERARY_GUIDE}
 
 输出严格 JSON，不输出其他内容。`;
 
+  const isBipolar = (architecture?.scoringFamily || "weighted-dimension") === "bipolar-dimension";
   const user = `请为以下测验生成完整框架：
 
 主题：${topic}
@@ -919,14 +880,16 @@ ${HINT_BLOCK}${archContext}
   "subtitle": "副标题，口语感，15字以内",
   "eyebrow": "短标签，3-8字，英文或中文",
   "description": "测验介绍，80-120字，说清楚这个测验测什么、为什么有意义",
-  "aestheticContext": "2-4句，只写原则与边界（冲突类型、抉择感、语气、是否避免道德评判、时代/意象气质等）。禁止枚举具体地点或情节梗清单。具体场景由出题阶段自由发挥。",
+  "aestheticContext": "2-4句，只写原则与边界（冲突类型、抉择感、语气等）。禁止枚举具体地点或情节梗清单。具体场景由出题自由发挥。",
   "dimensions": ["维度A", "维度B", "维度C", "维度D"],
   "dimensionAxes": [
     {
       "dimension": "维度A",
-      "axisLabel": "这个轴的分类名，2-4字，例如「词风」「处世」「情感」",
-      "lowPole": "维度A的对立面，2-4字，代表低分端的特质，例如「婉约含蓄」",
-      "insight": "描述这个维度高分端特质的一句洞察，30-50字，第二人称，具体描述这种性格倾向的表现和内在动因，语气温暖但不失锐度，禁止空泛夸奖"
+      "axisLabel": "这个轴的分类名，2-4字",
+${isBipolar ? `      "lowPole": "低分端极点，2-4字，例如「婉约含蓄」",
+      "highPole": "高分端极点，2-4字，例如「直接炽烈」",
+      "highInsight": "高分端洞察，30-50字，第二人称，描述偏高分端的行为和内在动因，语气温暖但不失锐度",
+      "lowInsight": "低分端洞察，30-50字，第二人称，描述偏低分端的行为和内在动因"` : `      "insight": "描述这个维度高分端特质的一句洞察，30-50字，第二人称，具体描述这种性格倾向的表现和内在动因，语气温暖但不失锐度，禁止空泛夸奖"`}
     }
   ],
   "results": [
@@ -948,50 +911,47 @@ ${HINT_BLOCK}${archContext}
 }
 
 规则：
-- dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，严格使用 Phase 0 的维度，数量以 Phase 0 为准）
-- results 数量 6-9个，与 dimensions 数量无关，多个结果可以共享同一个 dimension
-- dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
-- 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
-- 维度名称简洁，2-4字
-- axisLabel 是这条轴的"类别名"，lowPole 是该维度的反面特质
-- insight 必须是具体的、有画面感的描述，禁止套话如"你是个…的人"开头，禁止空洞形容词堆砌
-- aestheticContext 只写原则与边界，禁止场景条目罗列；现代题材允许现代生活，勿为去通用化硬套古风
-- 结果要有辨识度，用户看到标题就能感知「这说的是我吗」
-
-dimension_profile 规则（这是最重要的部分，直接决定结果准确性）：
-- 若 Phase 0 提供了 profileHints（high/medium/low），必须以此为基础转换为数值：high=0.60-0.80，medium=0.30-0.55，low=0.08-0.25
-- 所有维度都必须出现在每个 profile 中，key 与 dimensions 完全一致
-- 禁止任何维度设为 1.0 或 0.0（避免极端化）
-- 不同结果的 profile 必须有显著差异，确保每个结果在某几个维度上有独特的高低组合
-- 任意两个结果至少要在一个维度上拉开 ≥0.10 的差距（尽量 ≥0.15）；若某对只在 0.08–0.10 之间，优先错开「非主峰」维度
-- 结果较多（≥7）时：让次高维度在不同人物间错开，避免多只共用同一套 high/medium/low
-- profile 设计完成后自我检验：是否有两个结果过于相似？是否会导致大多数用户聚集在同一个结果？`;
+- dimensions / dimensionAxes 条数一致；与 Phase 0 维度一致。
+- results 4–9 个；dimension_profile 覆盖全部维度，数值在 (0,1)，避免全 0/1；结果之间要有区分。
+${isBipolar ? "- bipolar：每条轴 lowPole、highPole、lowInsight、highInsight 写全。" : "- weighted：每条轴 axisLabel + insight。"}
+- aestheticContext：只写原则，禁止场景梗清单罗列。
+- verse：非古典主题可用现代台词/歌词/金句；古典主题可用诗词。`;
 
   const raw = await callAI(system, user, 4500);
   const outline = normalizeOutlineToArchitecture(extractJSON(raw), architecture);
-  const errors = validateOutlineStructure(outline, architecture);
+  let errors = validateOutlineStructure(outline, architecture);
+  const simOnly = errors.filter(e => e.includes("profiles too similar"));
+  errors = errors.filter(e => !e.includes("profiles too similar"));
+  for (const s of simOnly) console.warn(`  ⚠   outline (non-fatal): ${s}`);
   if (errors.length > 0) throw new Error(`Outline invalid: ${errors.join("; ")}`);
   return outline;
 }
 
 // ── Phase 2: Generate questions ───────────────────────────────────
-async function generateQuestions(outline, startId, endId, batchLabel, total) {
+async function generateQuestions(outline, startId, endId, batchLabel, total, scoringFamily) {
+  const sf = scoringFamily || "weighted-dimension";
+  const isBipolar = sf === "bipolar-dimension";
+  const isLevelBand = sf === "level-band";
   const dimensions = outline.dimensions;
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
+  const bipolarAxisTable = isBipolar ? formatBipolarAxisTable(outline) : "";
   const count = endId - startId + 1;
 
-  const system = `你是一位中文人格测验内容专家。你的任务是为微信小程序人格测验生成题目。
+  const nonBipolarScoreRule = isLevelBand
+    ? "level-band（程度段位）：所有 scores 必须是【非负整数】0、1、2 或 3，禁止任何负分。负分只用于 bipolar-dimension，本题不是双极轴测验。用「较低的正分」表示更弱、更不成熟或更不利于边界的反应；四个选项在「各维得分总和」上要有明显梯度，便于区分段位。每个选项最多2个维度得分，主维度≤2，副维度≤1。"
+    : "weighted-dimension：所有 scores 必须为非负整数，主维度≤2分，副维度≤1分，禁止负分。";
+
+  const system = `你是测验出题人。输出仅 JSON，顶层只有 "questions"。
 
 ${LITERARY_GUIDE}
-${aestheticContext}
-
-### 输出格式
-严格输出一个 JSON 对象，只包含 "questions" 字段（${count}道题的数组，id从q${startId}到q${endId}）。不要输出其他内容，直接输出 JSON。`;
+${aestheticContext}`;
 
   const user = `测验信息：
 - 标题：${outline.title}
 - 描述：${outline.description}
 - 评分维度：${dimensions.join("、")}
+- 当前评分框架：${sf}${isLevelBand ? "（与 bipolar 不同：绝不能输出负分）" : ""}
+${bipolarAxisTable}
 
 请生成 q${startId} 到 q${endId} 共${count}道题目（共${total}道题的第${batchLabel}批）。
 
@@ -1002,21 +962,19 @@ ${aestheticContext}
       "id": "q${startId}",
       "text": "具体场景题目，不要宽泛问法",
       "options": [
-        { "id": "a", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },
-        { "id": "b", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },
-        { "id": "c", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } },
-        { "id": "d", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": 2 } }
+        { "id": "a", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? 2 : 2} } },
+        { "id": "b", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? -2 : 1} } },
+        { "id": "c", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? 1 : 1} } },
+        { "id": "d", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? -1 : 0} } }
       ]
     }
   ]
 }
 
 规则：
-1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围,例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等
-2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
-3. 每个选项最多2个维度得分，主维度≤2分，副维度≤1分
-4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
-5. 遵守 literary guide，禁止句型不能出现`;
+1. 共 ${count} 道题，id 从 q${startId} 到 q${endId}；每题 4 选项，含 reaction 短句。
+2. ${isBipolar ? "bipolar：正分偏向 highPole，负分偏向 lowPole；每选项最多 2 个维度分数，同号。" : nonBipolarScoreRule}
+3. scores 的 key 必须与维度名完全一致：${dimensions.join("、")}`;
 
   const raw = await callAI(system, user, 6000);
   fs.writeFileSync(path.join(DATA_DIR, `${outline.id}.q${batchLabel}.raw.txt`), raw);
@@ -1029,28 +987,24 @@ ${aestheticContext}
 
 // ── Result template builder ───────────────────────────────────────
 const PORTRAIT_TEMPLATE_BY_TYPE = {
-  archetype: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这类人的内在世界和核心特质；第二段：描述他们的行为模式和与他人的关系；第三段：描述核心挑战与成长方向。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
-  figure:    `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这位人物的核心精神气质；第二段：将用户与这位人物的相似之处具体化，写出共同的行为模式或内在动因；第三段：这种气质带来的挑战与可能性。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
-  item:      `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。不要描述事物本身，而要解释为什么测验者的人格与它产生共鸣。第一段：测验者身上哪些具体特质让他们与这个结果产生联结；第二段：这个结果的文化/精神特质如何与测验者的内在世界对应；第三段：这种匹配在现实中的张力与代价。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+  archetype: `  "portrait": "一个 JSON 字符串，2–3 段用 \\\\n\\\\n 分隔；具体、第二人称，避免套话。"`,
+  figure:    `  "portrait": "一个 JSON 字符串，2–3 段用 \\\\n\\\\n 分隔；人物气质 + 与用户共鸣 + 张力。"`,
+  item:      `  "portrait": "一个 JSON 字符串，2–3 段用 \\\\n\\\\n 分隔；联结用户与事物/地点，少写百科介绍。"`,
 };
 
 const STANDARD_FIELD_TEMPLATES = {
   portrait: PORTRAIT_TEMPLATE_BY_TYPE.archetype, // default, overridden in buildResultTemplate
   strengths: `  "strengths": [
-    { "label": "3-5字标签", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" }
+    { "label": "短标签", "description": "1–2句" },
+    { "label": "短标签", "description": "1–2句" },
+    { "label": "短标签", "description": "1–2句" },
+    { "label": "短标签", "description": "1–2句" }
   ]`,
   weaknesses: `  "weaknesses": [
-    { "label": "3-5字标签", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" },
-    { "label": "同上", "description": "严格2句，共40-60字" }
+    { "label": "短标签", "description": "1–2句" },
+    { "label": "短标签", "description": "1–2句" },
+    { "label": "短标签", "description": "1–2句" },
+    { "label": "短标签", "description": "1–2句" }
   ]`,
   temperament: `  "temperament": "严格2句，共40-60字"`,
   situation:   `  "situation": "严格1句，20-30字"`,
@@ -1153,15 +1107,10 @@ async function generateResults(outline, resultSubset) {
     resultFields = defaultFieldObjs[resultType] || defaultFieldObjs.archetype;
   }
 
-  const system = `你是一位中文测验内容专家，擅长写有深度、有辨识度的结果描述。结果可能是人格原型、真实人物、具体事物或适合程度段位，写作方式应与结果类型匹配，不要把所有结果都写成人格分析的口吻。
-
-【字数硬约束】严格遵守每个字段的字数要求，不得超过上限。portrait 每段严格100-150字，三段共300-450字；strengths/weaknesses 每条 description 严格2句共40-60字；其他字段按格式说明控制。宁可精炼，不可冗长。
+  const system = `你写测验结果页文案。语气随 resultType（人物/事物/原型）调整。输出仅 JSON，顶层只有 "results"。
 
 ${LITERARY_GUIDE}
-${aestheticContext}
-
-### 输出格式
-严格输出一个 JSON 对象，只包含 "results" 字段。不要输出其他内容，直接输出 JSON。`;
+${aestheticContext}`;
 
   const archResults = outline.architectureResults || [];
   const anchorLabel = { figure: "人物真实人格为准", item: "事物真实特性为准", archetype: "原型象征气质为准" }[resultType] || "原型气质为准";
@@ -1172,42 +1121,19 @@ ${aestheticContext}
 
   const hasField = key => resultFields.some(f => f.key === key);
 
-  const portraitDepthGuide = hasField("portrait") ? `
-## portrait 写作原则：让用户感到"被发现了"
-portrait 是结果页最核心的内容，必须让用户读完产生"这说的就是我"的共鸣感。
-
-### 每段字数要求
-每段严格100-150字，三段合计300-450字。禁止写空洞的概括句，每一句都必须承载具体信息。
-
-### 让用户"被发现"的写法技巧
-1. **命名内在体验**：说出用户感受到但从未能表达的内心状态。不写"你很敏感"，写"你常常在人群散去之后才意识到自己其实很疲惫，但你很少在当下说出来"。
-2. **具体行为细节**：用可视化的场景描述，不写"你注重细节"，写"你会在别人觉得差不多的时候再检查一遍，哪怕已经没有人要求你这样做"。
-3. **说出矛盾与代价**：不只写优点，也要说出这种气质在现实中造成的摩擦和孤独感，让用户感到被理解而非被夸奖。
-4. **第二人称，assertive语气**：不是"这种人格的人往往……"，而是直接对用户说"你……"。
-5. **禁止套话**：不用"你是一个xxx的人""你拥有xxx的特质"这种句式开头；不写"在人生的旅途中"之类的空泛过渡。` : "";
+  const portraitDepthGuide = hasField("portrait")
+    ? `portrait：2–3 段，第二人称，具体行为与感受；可写张力与代价，避免空泛褒奖。`
+    : "";
 
   const portraitStructure = {
-    item: `## 结构：以人格匹配为核心，而非介绍事物本身
-- portrait【第一段，100-150字】：描述测验者身上哪些具体特质——不是标签，而是行为场景和内在体验——让他们与这个结果产生联结。写得让用户感到"这说的是我"。
-- portrait【第二段，100-150字】：将这个结果（事物/国家/地方）的文化或精神特质与用户的内在世界对应起来——不是介绍它，而是解释为什么它们之间会产生共鸣，这种共鸣是什么质地的。
-- portrait【第三段，100-150字】：写出这种匹配在现实中的张力——用户在这里/与这个事物相遇会获得什么，同时又要承担什么代价或面对什么挑战。`,
-    figure: `## 结构：先介绍人物，再写人格共鸣
-- portrait【第一段，100-150字】：介绍人物的真实生平与历史定位——代表事件、名言警句、所处时代的重量。让读者感受到这个人的存在感和历史厚度。
-- portrait【第二段，100-150字】：写这个人物的内在气质与处世哲学——他/她如何面对命运、做出选择、处理关系，以及他们身上哪些东西让后人反复回望。
-- portrait【第三段，100-150字】：用"被发现了"的方式写用户与此人的精神共鸣——命名用户继承了此人的哪种内在结构，以及这种结构带来的未竟之事或无法解决的命题。`,
-    archetype: `## 结构：先介绍原型，再写人格共鸣
-- portrait【第一段，100-150字】：介绍这个原型/角色的来源、形象、在神话/文学/文化中的象征意义。即使用户不熟悉，读完也能感受到它的独特魅力。
-- portrait【第二段，100-150字】：从这个原型的象征气质出发，用具体行为场景描述拥有此人格的人——不是说他们"很xxx"，而是说他们在具体情境下会怎么做、怎么感受、怎么被他人误解。
-- portrait【第三段，100-150字】：写出这种原型气质的张力与局限，以及它赋予用户的核心命题——他们终其一生在与什么较劲？`,
+    item: `item 类：联结「用户特质 ↔ 事物/地点气质 ↔ 现实张力」。`,
+    figure: `figure 类：人物要点 + 与用户共鸣 + 代价或命题。`,
+    archetype: `archetype 类：原型意象 + 具体行为场景 + 局限。`,
   };
 
-  const swGuide = (hasField("strengths") || hasField("weaknesses")) ? ({
-    item: `- strengths label：必须从该事物的真实物理/文化特质提炼（如「折射万千」「压力成型」「历久弥新」），description 再延伸到人格含义。
-- weaknesses label：同样来自事物特质的阴影面（如「易碎于冲击」「光芒招觊觎」），description 写出这在人际或自我认知中的代价。
-- 禁止使用通用人格标签（如"共情力强""行动力强""情绪稳定"）作为 label。`,
-    figure: `- strengths/weaknesses label：基于该人物历史上真实展现的特质，用该人物的标志性意象提炼，而非抽象人格词汇。`,
-    archetype: `- strengths/weaknesses label：带有该原型/角色的独特意象，不使用完全通用的人格词汇。`,
-  }[resultType] || "") : "";
+  const swGuide = (hasField("strengths") || hasField("weaknesses"))
+    ? `strengths/weaknesses：label 短而具体；description 1–2 句即可。`
+    : "";
 
   const quoteGuide = resultFields.some(f => f.key === "keyQuote") ? `
 - 如果输出 extras 里的 keyQuote，且 label 是「代表名言」，content 必须像真实引言：优先直接引用原话，并带引号、书名号、破折号作者/出处中的至少一种格式特征。
@@ -1233,13 +1159,8 @@ ${JSON.stringify(stub, null, 2)}
 ${buildResultTemplate(resultFields, resultType)}
 
 规则：
-- 只生成上方 ${stub.length} 个结果，不多不少。
-- 只生成格式中出现的字段，不要添加其他字段。
-- strengths 和 weaknesses 必须是对象数组，每项必须有 "label"（3-5字）和 "description"（2句话）两个字段，不能是纯字符串数组。
-- lifeAdvice 必须是字符串（string），不能是数组。
-- portrait 必须是三段结构；如果不是三段，就视为不合格。
-- 不同结果的 dimension_profile 虽然由 Phase 1 决定，但你的文字必须强化区分度，不能把两个结果写成只有措辞不同、人格几乎一样。
-- 遵守 literary guide，禁止出现被列明的句型。`;
+- 只生成这 ${stub.length} 个 id，字段与模板一致；lifeAdvice 为字符串。
+- strengths/weaknesses 为 {label, description} 数组；各结果文笔要有区分。`;
 
   const raw = await callAI(system, user, 10000);
   const label = stub.map(r => r.id).join("-");
@@ -1281,8 +1202,88 @@ ${buildResultTemplate(resultFields, resultType)}
 }
 
 // ── Validation ────────────────────────────────────────────────────
-function validateQuestions(questions, dimensions) {
+function collectBipolarCoverageStats(questions, dimensions) {
+  const stats = {};
+  dimensions.forEach((dim) => {
+    stats[dim] = { posCount: 0, negCount: 0, posSum: 0, negSum: 0 };
+  });
+  for (const q of questions) {
+    for (const o of (q.options || [])) {
+      for (const [dim, val] of Object.entries(o.scores || {})) {
+        if (!stats[dim] || typeof val !== "number" || val === 0) continue;
+        if (val > 0) {
+          stats[dim].posCount += 1;
+          stats[dim].posSum += val;
+        } else {
+          stats[dim].negCount += 1;
+          stats[dim].negSum += Math.abs(val);
+        }
+      }
+    }
+  }
+  return stats;
+}
+
+function validateBipolarCoverage(questions, dimensions) {
   const warnings = [];
+  const stats = collectBipolarCoverageStats(questions, dimensions);
+  for (const [dim, row] of Object.entries(stats)) {
+    if (row.posCount === 0 || row.negCount === 0) {
+      warnings.push(`${dim}: bipolar coverage missing one side (positive ${row.posCount}, negative ${row.negCount})`);
+      continue;
+    }
+    if (row.posCount < 2 || row.negCount < 2) {
+      warnings.push(`${dim}: bipolar coverage too sparse (positive ${row.posCount}, negative ${row.negCount})`);
+    }
+    const total = row.posSum + row.negSum;
+    const weaker = Math.min(row.posSum, row.negSum);
+    if (total >= 8 && weaker / total < 0.15) {
+      warnings.push(`${dim}: bipolar coverage severely imbalanced (+${row.posSum} vs -${row.negSum})`);
+    }
+  }
+  return { warnings, stats };
+}
+
+function printBipolarCoverageStats(stats, dimensionAxes = []) {
+  const labelByDim = {};
+  dimensionAxes.forEach((axis) => {
+    labelByDim[axis.dimension] = `${axis.lowPole || "低极"} ↔ ${axis.highPole || "高极"}`;
+  });
+  console.log("  ℹ️   bipolar coverage:");
+  Object.entries(stats).forEach(([dim, row]) => {
+    console.log(`       • ${dim}${labelByDim[dim] ? ` (${labelByDim[dim]})` : ""}: +${row.posCount}/${row.posSum}  -${row.negCount}/${row.negSum}`);
+  });
+}
+
+function collectBipolarSemanticWarnings(questions, dimensionAxes = []) {
+  const warnings = [];
+  const axisMap = {};
+  dimensionAxes.forEach((axis) => {
+    axisMap[axis.dimension] = axis;
+  });
+  for (const q of questions) {
+    for (const o of (q.options || [])) {
+      const text = `${o.text || ""} ${o.reaction || ""}`;
+      for (const [dim, val] of Object.entries(o.scores || {})) {
+        const axis = axisMap[dim];
+        if (!axis || typeof val !== "number" || val === 0) continue;
+        const lowPole = String(axis.lowPole || "").trim();
+        const highPole = String(axis.highPole || "").trim();
+        if (lowPole && text.includes(lowPole) && val > 0) {
+          warnings.push(`${q.id}.${o.id}: mentions lowPole "${lowPole}" but scores positive on "${dim}"`);
+        }
+        if (highPole && text.includes(highPole) && val < 0) {
+          warnings.push(`${q.id}.${o.id}: mentions highPole "${highPole}" but scores negative on "${dim}"`);
+        }
+      }
+    }
+  }
+  return warnings;
+}
+
+function validateQuestions(questions, dimensions, scoringFamily, dimensionAxes = []) {
+  const warnings = [];
+  const isBipolar = (scoringFamily || "weighted-dimension") === "bipolar-dimension";
   const dimSet = new Set(dimensions);
   const seenIds = new Set();
 
@@ -1300,16 +1301,39 @@ function validateQuestions(questions, dimensions) {
         warnings.push(`${q.id}.${o.id}: no scores`);
         continue;
       }
+      if (isBipolar && Object.keys(o.scores).length > 2) {
+        warnings.push(`${q.id}.${o.id}: bipolar option has ${Object.keys(o.scores).length} scored dimensions (max 2)`);
+      }
+      const nonZeroValues = Object.values(o.scores).filter((v) => typeof v === "number" && v !== 0);
+      if (isBipolar && nonZeroValues.length > 1) {
+        const signSet = new Set(nonZeroValues.map((v) => Math.sign(v)));
+        if (signSet.size > 1) warnings.push(`${q.id}.${o.id}: bipolar option mixes positive and negative scores`);
+      }
       for (const [dim, val] of Object.entries(o.scores)) {
-        // Allow abbreviated dimension names (e.g. "传统" matching "传统与现代")
-        const matched = dimSet.has(dim) || dimensions.some(d => d.startsWith(dim) || dim.startsWith(d.slice(0, 2)));
+        const matched = isBipolar
+          ? dimSet.has(dim)
+          : (dimSet.has(dim) || dimensions.some(d => d.startsWith(dim) || dim.startsWith(d.slice(0, 2))));
         if (!matched) warnings.push(`${q.id}.${o.id}: unknown dimension "${dim}" (valid: ${dimensions.join(", ")})`);
-        if (typeof val !== "number" || val < 0 || val > 3) warnings.push(`${q.id}.${o.id}: score ${val} out of range [0,3] for "${dim}"`);
+        const minScore = isBipolar ? -3 : 0;
+        if (typeof val !== "number" || val < minScore || val > 3) warnings.push(`${q.id}.${o.id}: score ${val} out of range [${minScore},3] for "${dim}"`);
+        if (isBipolar && typeof val === "number" && val !== 0 && ![-2, -1, 1, 2].includes(val)) {
+          warnings.push(`${q.id}.${o.id}: bipolar score ${val} should be one of -2,-1,1,2`);
+        }
       }
     }
   }
 
-  warnings.push(...collectQuestionScoreDiscriminationWarnings(questions, dimensions, { scoringType: "weighted-dimension" }));
+  warnings.push(
+    ...collectQuestionScoreDiscriminationWarnings(questions, dimensions, {
+      scoringType: scoringFamily || "weighted-dimension",
+    }),
+  );
+
+  if (isBipolar) {
+    const { warnings: coverageWarnings } = validateBipolarCoverage(questions, dimensions);
+    warnings.push(...coverageWarnings);
+    warnings.push(...collectBipolarSemanticWarnings(questions, dimensionAxes));
+  }
 
   return warnings;
 }
@@ -1326,10 +1350,10 @@ function validateResults(results, dimensions, resultFields) {
     for (const field of requiredKeys) {
       if (!r[field]) warnings.push(`${r.id}: missing "${field}"`);
     }
-    if (requiredKeys.includes("strengths") && (r.strengths || []).length < 5)
-      warnings.push(`${r.id}: only ${r.strengths?.length ?? 0} strengths (want 6)`);
-    if (requiredKeys.includes("weaknesses") && (r.weaknesses || []).length < 5)
-      warnings.push(`${r.id}: only ${r.weaknesses?.length ?? 0} weaknesses (want 6)`);
+    if (requiredKeys.includes("strengths") && (r.strengths || []).length < 3)
+      warnings.push(`${r.id}: only ${r.strengths?.length ?? 0} strengths (lean: want ≥3)`);
+    if (requiredKeys.includes("weaknesses") && (r.weaknesses || []).length < 3)
+      warnings.push(`${r.id}: only ${r.weaknesses?.length ?? 0} weaknesses (lean: want ≥3)`);
   }
 
   return warnings;
@@ -1371,7 +1395,9 @@ function printWarnings(label, warnings) {
 
 function assertNoCriticalWarnings(label, warnings) {
   if (warnings.length === 0) return;
-  throw new Error(`${label} invalid: ${warnings.join("; ")}`);
+  if (STRICT_WARN) throw new Error(`${label} invalid: ${warnings.join("; ")}`);
+  console.warn(`  ⚠   ${label} (lean: continuing despite ${warnings.length} warning(s)):`);
+  for (const w of warnings) console.warn(`       • ${w}`);
 }
 
 function summarizeQuizForEvaluation(quiz) {
@@ -1586,7 +1612,8 @@ function inferFeatureId(outline) {
   return "psychology";
 }
 
-function assembleQuiz(outline, questions, results) {
+function assembleQuiz(outline, questions, results, architecture) {
+  const isBipolar = (architecture?.scoringFamily || "weighted-dimension") === "bipolar-dimension";
   const simplifiedDimensions = simplifyDimensions(outline.dimensions);
   const dimMap = {};
   outline.dimensions.forEach((d, i) => { dimMap[d] = simplifiedDimensions[i]; });
@@ -1663,7 +1690,7 @@ function assembleQuiz(outline, questions, results) {
     return assembled;
   });
 
-  return {
+  const assembled = {
     id:               outline.id,
     featureId:        inferFeatureId(outline),
     title:            outline.title,
@@ -1675,14 +1702,20 @@ function assembleQuiz(outline, questions, results) {
     questionPage:     "/subpackages/quiz/pages/generic-question/generic-question",
     resultPage:       "/subpackages/quiz/pages/generic-result/generic-result",
     scoring: {
-      type:       "weighted-dimension",
+      type:       isBipolar ? "bipolar-dimension" : "weighted-dimension",
       dimensions: simplifiedDimensions,
-      dimensionAxes: (outline.dimensionAxes || []).map(a => ({
-        dimension: dimMap[a.dimension] || a.dimension,
-        axisLabel: a.axisLabel,
-        lowPole:   a.lowPole,
-        insight:   a.insight || "",
-      })),
+      dimensionAxes: (outline.dimensionAxes || []).map(a => {
+        const base = { dimension: dimMap[a.dimension] || a.dimension, axisLabel: a.axisLabel };
+        if (isBipolar) {
+          base.lowPole    = a.lowPole || "";
+          base.highPole   = a.highPole || "";
+          base.highInsight = a.highInsight || "";
+          base.lowInsight  = a.lowInsight || "";
+        } else {
+          base.insight = a.insight || a.highInsight || "";
+        }
+        return base;
+      }),
       results:    outline.results.map(r => ({
         id:        r.id,
         dimension: dimMap[r.dimension] || r.dimension,
@@ -1691,6 +1724,9 @@ function assembleQuiz(outline, questions, results) {
     questions: remappedQuestions,
     results:   fullResults,
   };
+
+  if (OVERRIDE_ID) assembled.id = OVERRIDE_ID;
+  return assembled;
 }
 
 // ── Upload ────────────────────────────────────────────────────────
@@ -1746,11 +1782,21 @@ async function main() {
     return;
   }
 
-  console.log(`\n🚀  Generating quiz: 「${TOPIC_ARG}」  [provider: ${PROVIDER}, model: ${MODEL}]\n`);
+  console.log(`\n🚀  Generating quiz (lean): 「${TOPIC_ARG}」  [provider: ${PROVIDER}, model: ${MODEL}]\n`);
   if (HINT_ARGS.length > 0) {
     console.log(`📌  Hints:`);
     HINT_ARGS.forEach(h => console.log(`     • ${h}`));
     console.log();
+  }
+  const overrides = [
+    OVERRIDE_SCORING    && `scoring=${OVERRIDE_SCORING}`,
+    OVERRIDE_ID         && `id=${OVERRIDE_ID}`,
+    OVERRIDE_RESULTS    && `results=${OVERRIDE_RESULTS}`,
+    OVERRIDE_DIMENSIONS && `dimensions=${OVERRIDE_DIMENSIONS}`,
+    OVERRIDE_QUESTIONS  && `questions=${OVERRIDE_QUESTIONS}`,
+  ].filter(Boolean);
+  if (overrides.length > 0) {
+    console.log(`⚡  Hard overrides: ${overrides.join("  ")}\n`);
   }
 
   // Phase 0: Domain Architecture
@@ -1759,6 +1805,43 @@ async function main() {
   let architecture;
   try {
     architecture = await withRetry("architecture", () => generateArchitecture(TOPIC_ARG), 4, 5000);
+
+    // Apply hard overrides after AI generates architecture
+    if (OVERRIDE_SCORING) {
+      console.log(`     ⚡  scoringFamily override: ${architecture.scoringFamily || "(none)"} → ${OVERRIDE_SCORING}`);
+      architecture.scoringFamily = OVERRIDE_SCORING;
+    }
+    if (OVERRIDE_DIMENSIONS && architecture.dimensions) {
+      const current = architecture.dimensions.length;
+      if (current !== OVERRIDE_DIMENSIONS) {
+        console.log(`     ⚡  dimensions override: ${current} → ${OVERRIDE_DIMENSIONS} (trimming/padding AI output)`);
+        if (current > OVERRIDE_DIMENSIONS) {
+          architecture.dimensions = architecture.dimensions.slice(0, OVERRIDE_DIMENSIONS);
+          architecture.dimensionCount = OVERRIDE_DIMENSIONS;
+          // Remove results whose primaryDimension was trimmed away
+          const dimSet = new Set(architecture.dimensions);
+          architecture.results = (architecture.results || []).map(r => ({
+            ...r,
+            primaryDimension: dimSet.has(r.primaryDimension) ? r.primaryDimension : architecture.dimensions[0],
+          }));
+        } else {
+          // Pad: just update the count and let Phase 1 fill in
+          architecture.dimensionCount = OVERRIDE_DIMENSIONS;
+        }
+      }
+    }
+    if (OVERRIDE_RESULTS && architecture.results) {
+      const current = architecture.results.length;
+      if (current !== OVERRIDE_RESULTS) {
+        console.log(`     ⚡  results override: ${current} → ${OVERRIDE_RESULTS} (trimming AI output)`);
+        architecture.results = architecture.results.slice(0, OVERRIDE_RESULTS);
+      }
+    }
+    if (OVERRIDE_QUESTIONS) {
+      console.log(`     ⚡  questions override: ${architecture.questionCount || "(auto)"} → ${OVERRIDE_QUESTIONS}`);
+      architecture.questionCount = OVERRIDE_QUESTIONS;
+    }
+
     console.log(`     ✓  dimensions:  ${(architecture.dimensions || []).join(" / ")}`);
     console.log(`     ✓  archetypes:  ${(architecture.results || []).map(r => r.name).join(" / ")}`);
     if (architecture.domainInsight) console.log(`        insight:     ${architecture.domainInsight.slice(0, 70)}...`);
@@ -1840,12 +1923,33 @@ async function main() {
     const phaseQuestions = [];
     for (const [i, { startId, endId, label }] of Q_BATCHES.entries()) {
       console.log(`\n📝  [2/3] Questions q${startId}-q${endId} (batch ${label}/${Q_BATCHES.length})...`);
-      const qs = await withRetry(`questions-${label}`, () => generateQuestions(outline, startId, endId, label, Q_TOTAL));
+      const qs = await withRetry(`questions-${label}`, () => generateQuestions(outline, startId, endId, label, Q_TOTAL, architecture?.scoringFamily));
       phaseQuestions.push(...qs);
       console.log(`     ✓  got ${qs.length} questions`);
       if (i < Q_BATCHES.length - 1) await sleep(4000);
     }
-    const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions);
+    // weighted / level-band 与小程序 scoreLevelBand、scoreGeneric 一致：只累计非负分；模型常误用 bipolar 负分
+    const qSf = architecture?.scoringFamily || "weighted-dimension";
+    if (qSf !== "bipolar-dimension") {
+      let clamped = 0;
+      for (const q of phaseQuestions) {
+        for (const opt of (q.options || [])) {
+          if (!opt.scores) continue;
+          for (const [dim, val] of Object.entries(opt.scores)) {
+            if (typeof val === "number" && val < 0) {
+              opt.scores[dim] = 0;
+              clamped++;
+            }
+          }
+        }
+      }
+      if (clamped > 0) console.log(`     [repair] clamped ${clamped} negative score(s) to 0 (scoringFamily: ${qSf})`);
+    }
+    const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions, architecture?.scoringFamily, outline.dimensionAxes);
+    if ((architecture?.scoringFamily || "weighted-dimension") === "bipolar-dimension") {
+      const { stats } = validateBipolarCoverage(phaseQuestions, outline.dimensions);
+      printBipolarCoverageStats(stats, outline.dimensionAxes);
+    }
     printWarnings("questions", questionWarnings);
     assertNoCriticalWarnings("questions", questionWarnings);
     return phaseQuestions;
@@ -1890,7 +1994,7 @@ async function main() {
 
   // Assemble + save
   startPhase("4-assemble");
-  const quiz = assembleQuiz(outline, allQuestions, dedupedResults);
+  const quiz = assembleQuiz(outline, allQuestions, dedupedResults, architecture);
 
   // Final validation on assembled quiz
   const finalProfileWarnings = validateDimensionProfiles(quiz.results, quiz.scoring.dimensions);
@@ -1925,7 +2029,7 @@ async function main() {
     }
     console.log(`     (${endPhase("4.5-eval")}s)`);
   } else if (SKIP_EVAL) {
-    console.log("\n⏭   Skipped quality evaluation (--skip-eval)");
+    console.log("\n⏭   Skipped quality evaluation (lean default; pass --eval to run)");
   }
 
   // Upload
