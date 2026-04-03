@@ -1136,7 +1136,13 @@ ${bipolarAxisTable}
 3. ${isBipolar ? "bipolar-dimension：正分=偏 highPole，负分=偏 lowPole。每个选项最多2个维度得分，主维度 ±2，副维度 ±1；同一选项的维度分数正负方向必须一致。给分必须严格根据该轴的 lowPole ↔ highPole 语义来判定，不能只按“勇敢/消极/激烈/保守”这类情绪色彩随意打分" : nonBipolarScoreRule}
 4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
 5. ${isBipolar ? "如果某个选项体现的是“观察、退后、记录、保持距离、拒绝介入”这类 lowPole 行为，就不能误打成高分端；如果体现的是“主动投入、深入参与、直接承受风险”这类 highPole 行为，就不能误打成负分" : "遵守 literary guide，禁止句型不能出现"}
-6. 遵守 literary guide，禁止句型不能出现${!isBipolar && dimensions.length >= 2 ? "\n7. 多维度且非 bipolar：同一题四个选项的 scores 向量必须两两不同；至少有一个选项在两个已打分维度上的数值不完全相同——禁止整题只有「两维同分」的档位（例如全是 2,2 / 1,1 / 0,0）。" : ""}`;
+6. 遵守 literary guide，禁止句型不能出现${
+    !isBipolar && dimensions.length >= 2
+      ? isLevelBand
+        ? "\n7. level-band 多维度：四个选项 scores 向量必须两两不同；允许每选项只标一维或两维，不必强行同一选项两维不同分。"
+        : "\n7. weighted 多维度：四个选项 scores 向量两两不同；至少有一选项两维得分数值不同——禁止整题只有两维同分的档位（如全是 2,2/1,1/0,0）。"
+      : ""
+  }`;
 
   const raw = await callAI(system, user, 6000);
   fs.writeFileSync(path.join(DATA_DIR, `${outline.id}.q${batchLabel}.raw.txt`), raw);

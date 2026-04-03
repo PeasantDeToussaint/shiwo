@@ -244,6 +244,50 @@ describe("validation", () => {
     expect(warnings.some((w) => w.includes("do not differentiate dimensions"))).toBe(false);
   });
 
+  it("skips dimensional-spread for level-band but still enforces distinct vectors", () => {
+    const ok = validateQuestions(
+      [
+        {
+          id: "q1",
+          text: "题目",
+          options: [
+            { id: "a", scores: { A: 2 } },
+            { id: "b", scores: { A: 1 } },
+            { id: "c", scores: { B: 2 } },
+            { id: "d", scores: { B: 1 } },
+          ],
+        },
+      ],
+      ["A", "B"],
+      { scoringType: "level-band" }
+    );
+
+    expect(ok.some((w) => w.includes("do not differentiate dimensions"))).toBe(false);
+    expect(ok.some((w) => w.includes("duplicate score vectors"))).toBe(false);
+  });
+
+  it("level-band still flags duplicate score vectors (e.g. two 0,0 options)", () => {
+    const warnings = validateQuestions(
+      [
+        {
+          id: "q1",
+          text: "题目",
+          options: [
+            { id: "a", scores: { A: 2, B: 2 } },
+            { id: "b", scores: { A: 1, B: 1 } },
+            { id: "c", scores: { A: 0, B: 0 } },
+            { id: "d", scores: { A: 0, B: 0 } },
+          ],
+        },
+      ],
+      ["A", "B"],
+      { scoringType: "level-band" }
+    );
+
+    expect(warnings.some((w) => w.includes("duplicate score vectors"))).toBe(true);
+    expect(warnings.some((w) => w.includes("do not differentiate dimensions"))).toBe(false);
+  });
+
   it("rejects corrupted final output and fake quotes", () => {
     const longPortrait = "没有分段也没有句号的超长画像".repeat(12);
     const result = validateFinalQuiz({

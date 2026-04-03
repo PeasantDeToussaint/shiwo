@@ -495,17 +495,17 @@ function questionHasDimensionalSpread(q, dimensions) {
 }
 
 /**
- * Per-question discrimination: distinct option vectors; for weighted/level-band with ≥2 dims,
- * at least one option must split weight across dimensions (not same number on every scored dim).
+ * Per-question discrimination: distinct option vectors always (non-bipolar).
+ * Dimensional spread (≥1 option with two unequal dimension scores) only for weighted-dimension:
+ * level-band often uses one primary dimension per option or tier totals — requiring split scores
+ * rejects valid GLM / DeepSeek outputs.
  */
 function collectQuestionScoreDiscriminationWarnings(questions, dimensions, options = {}) {
   const warnings = [];
   const scoringType = options.scoringType || "weighted-dimension";
   const isBipolar = scoringType === "bipolar-dimension";
   const wantSpread =
-    !isBipolar &&
-    dimensions.length >= 2 &&
-    (scoringType === "weighted-dimension" || scoringType === "level-band");
+    !isBipolar && dimensions.length >= 2 && scoringType === "weighted-dimension";
 
   for (const q of questions) {
     const opts = q.options || [];

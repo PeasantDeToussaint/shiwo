@@ -796,10 +796,16 @@ ${literaryGuideBlock()}${aestheticContext}
     ? `将以下 ${count} 个出题计划扩写为完整题目（共${total}道题的第${batchLabel}批，id q${startId}~q${endId}）：`
     : `请生成 q${startId} 到 q${endId} 共${count}道全新场景题目（共${total}道题的第${batchLabel}批）：`;
 
-  const discriminationRule =
-    dimensions.length >= 2 && scoringFamily !== "bipolar-dimension"
-      ? "\n13. 非 bipolar 且多维度：同一题四个选项的 scores 向量必须两两不同；至少有一个选项在两个已打分维度上的数值不完全相同——禁止整题只有「两维同分」的档位（例如全是 2,2 / 1,1 / 0,0）。"
-      : "";
+  let discriminationRule = "";
+  if (dimensions.length >= 2 && scoringFamily !== "bipolar-dimension") {
+    if (scoringFamily === "level-band") {
+      discriminationRule =
+        "\n13. level-band 且多维度：四个选项的 scores 向量（按测验维度顺序看的分项组合）必须两两不同；可分项只标主维或拆成两维，不必强行「同一选项两维不同分」。";
+    } else {
+      discriminationRule =
+        "\n13. weighted-dimension 且多维度：四个选项 scores 向量必须两两不同；至少有一个选项在两个已打分维度上的数值不完全相同——禁止整题只有「两维同分」档位（如全是 2,2 / 1,1 / 0,0）。";
+    }
+  }
 
   const user = `测验信息：
 - 标题：${outline.title}
