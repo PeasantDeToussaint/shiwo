@@ -13,7 +13,15 @@ const path = require("path");
 const config = require("./lib/config");
 const { createClient, configure: configureAI } = require("./lib/ai");
 const { sleep, withRetry } = require("./lib/http");
-const { inferHintsFromTopic, generateArchitecture, generateOutline, generateQuestions, generateResults } = require("./lib/prompts");
+const prompts = require("./lib/prompts");
+const {
+  inferHintsFromTopic,
+  generateArchitecture,
+  generateOutline,
+  generateQuestions,
+  generateResults,
+  setPromptOptions,
+} = prompts;
 const { simplifyDimensions, normalizeOutlineToArchitecture, assembleQuiz, applyProfilesFromHints } = require("./lib/assemble");
 const { validateDimensionProfiles, validateFinalQuiz, validateQuestions, validateResults, validateScoreMap, printWarnings, assertNoCriticalWarnings } = require("./lib/validate");
 const { evaluateQuiz, printEvalReport } = require("./lib/eval");
@@ -33,9 +41,15 @@ const HINT_ARGS = ARGS.filter(a => a.startsWith("--hint=")).map(a => a.replace("
 const PROVIDER_ARG = (ARGS.find(a => a.startsWith("--provider=")) || "").replace("--provider=", "").replace(/^["']|["']$/g, "").toLowerCase();
 const MODEL_ARG = (ARGS.find(a => a.startsWith("--model=")) || "").replace("--model=", "").replace(/^["']|["']$/g, "");
 const MIN_SCORE = Number((ARGS.find(a => a.startsWith("--min-score=")) || "").replace("--min-score=", "")) || 7;
+const SKIP_LITERARY_GUIDE = ARGS.includes("--skip-literary-guide");
+
+if (SKIP_LITERARY_GUIDE) {
+  setPromptOptions({ skipLiteraryGuide: true });
+  console.log("⏭   已关闭文案风格指南（--skip-literary-guide），outline/出题/结果生成不注入 LITERARY_GUIDE\n");
+}
 
 if (!TOPIC_ARG) {
-  console.error("Usage: node quiz-generator/generate.js --topic=\"topic\" [--provider=zhipu|gemini|deepseek|anthropic] [--model=name] [--hint=\"约束\"] [--dry-run] [--estimate] [--skip-eval] [--resume] [--clean] [--force]");
+  console.error("Usage: node quiz-generator/generate.js --topic=\"topic\" [--provider=zhipu|gemini|deepseek|anthropic] [--model=name] [--hint=\"约束\"] [--dry-run] [--estimate] [--skip-eval] [--skip-literary-guide] [--resume] [--clean] [--force]");
   process.exit(1);
 }
 

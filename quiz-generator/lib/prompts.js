@@ -8,6 +8,19 @@ const {
 } = require('./validate');
 const { normalizeOutlineToArchitecture, spreadProfiles } = require('./assemble');
 
+/** 为 false 时 outline / 出题 / 结果生成不注入 LITERARY_GUIDE，便于试验表达是否更自由 */
+let skipLiteraryGuide = false;
+
+function setPromptOptions(opts = {}) {
+  if (opts && Object.prototype.hasOwnProperty.call(opts, "skipLiteraryGuide")) {
+    skipLiteraryGuide = !!opts.skipLiteraryGuide;
+  }
+}
+
+function literaryGuideBlock() {
+  return skipLiteraryGuide ? "" : LITERARY_GUIDE;
+}
+
 function inferHintsFromTopic(topic) {
   const autoHints = [];
 
@@ -513,7 +526,7 @@ ${ resultType === "figure" ? `- verse 的来源必须与该人物强绑定——
 
   const system = `你是一位测验产品策划专家，同时对「${topic}」这个领域有深入的专业知识。你的任务是为一道新测验设计整体框架，包括维度体系和每个结果的精准权重分布。这个测验的结果可能是人格原型、真实人物、具体事物、国家、或适合程度段位——你需要遵循 Phase 0 确定的 resultType 和结果名称，不要擅自改为别的人格类型。
 
-${LITERARY_GUIDE}
+${literaryGuideBlock()}
 
 输出严格 JSON，不输出其他内容。`;
 
@@ -697,8 +710,7 @@ async function generateQuestionPlan(outline, total, dataDir, callAIImpl = callAI
 
   const system = `你是一位中文测验内容专家。你的任务是为一套测验设计 ${total} 道题的「出题计划」——只需要决定每道题主要测哪个维度，以及大致的价值冲突或观察角度。
 
-${LITERARY_GUIDE}
-${aestheticContext}
+${literaryGuideBlock()}${aestheticContext}
 
 ### 输出格式
 严格输出一个 JSON 对象，只包含 "plan" 字段（${total} 个骨架的数组）。不要输出其他内容，直接输出 JSON。`;
@@ -761,8 +773,7 @@ async function generateQuestions(outline, startId, endId, batchLabel, total, dat
 
   const system = `你是一位中文测验内容专家。你的任务是为微信小程序测验生成题目。
 
-${LITERARY_GUIDE}
-${aestheticContext}
+${literaryGuideBlock()}${aestheticContext}
 
 ### 输出格式
 严格输出一个 JSON 对象，只包含 "questions" 字段（${count}道题的数组，id从q${startId}到q${endId}）。不要输出其他内容，直接输出 JSON。`;
@@ -818,7 +829,7 @@ ${optionTemplateA}
 6. 每道题的高分选项应尽量贴合维度语义锚点，避免偷换概念
 7. 如果 scoringFamily = level-band，四个选项总分梯度必须明显拉开
 8. 如果 scoringFamily = bipolar-dimension，负分只能表示朝 lowDefinition 一侧移动
-9. 遵守 literary guide，尽量避免出现已列明的 AI 腔句型
+9. ${skipLiteraryGuide ? "文案追求具体、有画面与选择张力，避免空洞套话与说教口吻" : "遵守 literary guide，尽量避免出现已列明的 AI 腔句型"}
 10. 不要为了“有氛围”而堆砌光线、气味、眼神、月色等细节；删掉一句若题意不变，就不要那句
 11. 简单冲突题可以很短，诗意/特殊题材题可以稍长，但都必须信息有效，不能凑字数
 12. 每道题的主测维度（计划已标注）：最好让至少 2 个选项给该维度打正分（≥1分），否则这题对主测维度的区分会偏弱`;
@@ -932,8 +943,7 @@ async function generateResults(outline, resultSubset, dataDir, callAIImpl = call
 
 【字数建议】尽量控制在各字段的建议字数内，信息密度优先，不要为凑字数灌水。portrait 每段建议100-150字，三段合计约300-450字；strengths/weaknesses 每条 description 建议2-3句、约60-90字；其他字段也按格式说明大致控制。宁可精炼，不可冗长。
 
-${LITERARY_GUIDE}
-${aestheticContext}
+${literaryGuideBlock()}${aestheticContext}
 
 ### 输出格式
 严格输出一个 JSON 对象，只包含 "results" 字段。不要输出其他内容，直接输出 JSON。`;
@@ -1057,7 +1067,7 @@ ${buildResultTemplate(resultFields, resultType)}
 - portrait 以三段结构为宜；如果明显不是三段，系统会视为不合格。
 - 不同结果的 dimension_profile 虽然由 Phase 1 决定，但你的文字应强化区分度，不能把两个结果写成只有措辞不同、人格几乎一样。
 - resultType=figure 时，如果你拿不准某句是否是原作台词，就不要伪装成原句；宁可写成气质归纳，也不要编造出处。
-- 遵守 literary guide，禁止出现被列明的句型。`;
+${skipLiteraryGuide ? "- 文案自然、有辨识度即可，避免空洞套话。" : "- 遵守 literary guide，禁止出现被列明的句型。"}`;
 
   const raw = await callAIImpl(system, user, 10000);
   const label = stub.map(r => r.id).join("-");
@@ -1106,4 +1116,5 @@ module.exports = {
   generateQuestionPlan, generateQuestions,
   generateResultsPlan, generateResults,
   PORTRAIT_TEMPLATE_BY_TYPE, STANDARD_FIELD_TEMPLATES,
+  setPromptOptions,
 };
