@@ -1083,11 +1083,17 @@ ${isBipolar ? `- bipolar-dimension 的 profile 值以 0.5 为中心：偏高分�
 
 // ── Phase 2: Generate questions ───────────────────────────────────
 async function generateQuestions(outline, startId, endId, batchLabel, total, scoringFamily) {
-  const isBipolar = (scoringFamily || "weighted-dimension") === "bipolar-dimension";
+  const sf = scoringFamily || "weighted-dimension";
+  const isBipolar = sf === "bipolar-dimension";
+  const isLevelBand = sf === "level-band";
   const dimensions = outline.dimensions;
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const bipolarAxisTable = isBipolar ? formatBipolarAxisTable(outline) : "";
   const count = endId - startId + 1;
+
+  const nonBipolarScoreRule = isLevelBand
+    ? "level-band（程度段位）：所有 scores 必须是【非负整数】0、1、2 或 3，禁止任何负分。负分只用于 bipolar-dimension，本题不是双极轴测验。用「较低的正分」表示更弱、更不成熟或更不利于边界的反应；四个选项在「各维得分总和」上要有明显梯度，便于区分段位。每个选项最多2个维度得分，主维度≤2，副维度≤1。"
+    : "weighted-dimension：所有 scores 必须为非负整数，主维度≤2分，副维度≤1分，禁止负分。";
 
   const system = `你是一位中文人格测验内容专家。你的任务是为微信小程序人格测验生成题目。
 
@@ -1101,6 +1107,7 @@ ${aestheticContext}
 - 标题：${outline.title}
 - 描述：${outline.description}
 - 评分维度：${dimensions.join("、")}
+- 当前评分框架：${sf}${isLevelBand ? "（与 bipolar 不同：绝不能输出负分）" : ""}
 ${bipolarAxisTable}
 
 请生成 q${startId} 到 q${endId} 共${count}道题目（共${total}道题的第${batchLabel}批）。
@@ -1113,9 +1120,9 @@ ${bipolarAxisTable}
       "text": "具体场景题目，不要宽泛问法",
       "options": [
         { "id": "a", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? 2 : 2} } },
-        { "id": "b", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? -2 : 2} } },
+        { "id": "b", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? -2 : 1} } },
         { "id": "c", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? 1 : 1} } },
-        { "id": "d", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? -1 : 1} } }
+        { "id": "d", "text": "选项文本", "reaction": "2-10字短句", "scores": { "维度": ${isBipolar ? -1 : 0} } }
       ]
     }
   ]
@@ -1124,7 +1131,7 @@ ${bipolarAxisTable}
 规则：
 1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围,例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等
 2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
-3. ${isBipolar ? "bipolar-dimension：正分=偏 highPole，负分=偏 lowPole。每个选项最多2个维度得分，主维度 ±2，副维度 ±1；同一选项的维度分数正负方向必须一致。给分必须严格根据该轴的 lowPole ↔ highPole 语义来判定，不能只按“勇敢/消极/激烈/保守”这类情绪色彩随意打分" : "每个选项最多2个维度得分，主维度≤2分，副维度≤1分"}
+3. ${isBipolar ? "bipolar-dimension：正分=偏 highPole，负分=偏 lowPole。每个选项最多2个维度得分，主维度 ±2，副维度 ±1；同一选项的维度分数正负方向必须一致。给分必须严格根据该轴的 lowPole ↔ highPole 语义来判定，不能只按“勇敢/消极/激烈/保守”这类情绪色彩随意打分" : nonBipolarScoreRule}
 4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
 5. ${isBipolar ? "如果某个选项体现的是“观察、退后、记录、保持距离、拒绝介入”这类 lowPole 行为，就不能误打成高分端；如果体现的是“主动投入、深入参与、直接承受风险”这类 highPole 行为，就不能误打成负分" : "遵守 literary guide，禁止句型不能出现"}
 6. 遵守 literary guide，禁止句型不能出现`;
@@ -2087,12 +2094,13 @@ async function main() {
 
   await sleep(3000);
 
-  // Phase 2: Questions — split into 3 batches based on architecture's questionCount
+  // Phase 2: Questions — one API call for all items (set Q_NUM_BATCHES=3 for smaller chunks)
+  const Q_NUM_BATCHES = 1;
   const Q_TOTAL = (architecture && architecture.questionCount && Number.isInteger(Number(architecture.questionCount)))
     ? Math.max(12, Math.min(36, Number(architecture.questionCount)))
     : 24;
-  const Q_BATCH_SIZE = Math.ceil(Q_TOTAL / 3);
-  const Q_BATCHES = Array.from({ length: 3 }, (_, i) => {
+  const Q_BATCH_SIZE = Math.ceil(Q_TOTAL / Q_NUM_BATCHES);
+  const Q_BATCHES = Array.from({ length: Q_NUM_BATCHES }, (_, i) => {
     const startId = i * Q_BATCH_SIZE + 1;
     const endId   = Math.min((i + 1) * Q_BATCH_SIZE, Q_TOTAL);
     return { startId, endId, label: String(i + 1) };
@@ -2108,6 +2116,23 @@ async function main() {
       phaseQuestions.push(...qs);
       console.log(`     ✓  got ${qs.length} questions`);
       if (i < Q_BATCHES.length - 1) await sleep(4000);
+    }
+    // weighted / level-band 与小程序 scoreLevelBand、scoreGeneric 一致：只累计非负分；模型常误用 bipolar 负分
+    const qSf = architecture?.scoringFamily || "weighted-dimension";
+    if (qSf !== "bipolar-dimension") {
+      let clamped = 0;
+      for (const q of phaseQuestions) {
+        for (const opt of (q.options || [])) {
+          if (!opt.scores) continue;
+          for (const [dim, val] of Object.entries(opt.scores)) {
+            if (typeof val === "number" && val < 0) {
+              opt.scores[dim] = 0;
+              clamped++;
+            }
+          }
+        }
+      }
+      if (clamped > 0) console.log(`     [repair] clamped ${clamped} negative score(s) to 0 (scoringFamily: ${qSf})`);
     }
     const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions, architecture?.scoringFamily, outline.dimensionAxes);
     if ((architecture?.scoringFamily || "weighted-dimension") === "bipolar-dimension") {

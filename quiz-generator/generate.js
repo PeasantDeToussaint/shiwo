@@ -225,12 +225,13 @@ async function main() {
 
   await sleep(3000);
 
-  // Phase 2: Questions
+  // Phase 2: Questions — one API call for all items (set Q_NUM_BATCHES=3 for smaller chunks)
+  const Q_NUM_BATCHES = 1;
   const Q_TOTAL = (architecture && architecture.questionCount && Number.isInteger(Number(architecture.questionCount)))
     ? Math.max(12, Math.min(36, Number(architecture.questionCount)))
     : 24;
-  const Q_BATCH_SIZE = Math.ceil(Q_TOTAL / 3);
-  const Q_BATCHES = Array.from({ length: 3 }, (_, i) => {
+  const Q_BATCH_SIZE = Math.ceil(Q_TOTAL / Q_NUM_BATCHES);
+  const Q_BATCHES = Array.from({ length: Q_NUM_BATCHES }, (_, i) => {
     const startId = i * Q_BATCH_SIZE + 1;
     const endId   = Math.min((i + 1) * Q_BATCH_SIZE, Q_TOTAL);
     return { startId, endId, label: String(i + 1) };
