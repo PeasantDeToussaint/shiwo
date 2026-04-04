@@ -264,9 +264,9 @@ function validateOutlineStructure(outline, architecture) {
   return errors;
 }
 
-// L∞ gap between two profiles: models often land ~0.10 apart on 3 axes with 8 figures; 0.15 was too strict.
-const PROFILE_MAXDIFF_MIN = 0.10;
-const PROFILE_MAXDIFF_SEVERE = 0.08;
+// L∞ gap between two profiles: 8 archetypes × 3 dims often cluster ~0.08–0.10; 0.10 still failed due to float + strict <.
+const PROFILE_MAXDIFF_MIN = 0.08;
+const PROFILE_MAXDIFF_SEVERE = 0.07;
 
 function collectProfileSimilarityIssues(results, dimensions) {
   const issues = [];

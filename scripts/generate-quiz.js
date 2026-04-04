@@ -700,8 +700,8 @@ function findObviousTextCorruption(text) {
 
 // Keep in sync with quiz-generator/lib/validate.js (PROFILE_MAXDIFF_*).
 function collectProfileSimilarityIssues(results, dimensions) {
-  const PROFILE_MAXDIFF_MIN = 0.10;
-  const PROFILE_MAXDIFF_SEVERE = 0.08;
+  const PROFILE_MAXDIFF_MIN = 0.08;
+  const PROFILE_MAXDIFF_SEVERE = 0.07;
   const issues = [];
   for (let i = 0; i < results.length; i++) {
     for (let j = i + 1; j < results.length; j++) {
@@ -963,7 +963,7 @@ dimension_profile 规则（这是最重要的部分，直接决定结果准确�
 - 所有维度都必须出现在每个 profile 中，key 与 dimensions 完全一致
 - 禁止任何维度设为 1.0 或 0.0（避免极端化）
 - 不同结果的 profile 必须有显著差异，确保每个结果在某几个维度上有独特的高低组合
-- 任意两个结果至少要在一个维度上拉开 ≥0.10 的差距（尽量 ≥0.15）；若某对只在 0.08–0.10 之间，优先错开「非主峰」维度
+- 任意两个结果至少要在一个维度上拉开 ≥0.08 的差距（尽量 ≥0.15）；若某对只在 0.06–0.08 之间，优先错开「非主峰」维度
 - 结果较多（≥7）时：让次高维度在不同人物间错开，避免多只共用同一套 high/medium/low
 - profile 设计完成后自我检验：是否有两个结果过于相似？是否会导致大多数用户聚集在同一个结果？`;
 

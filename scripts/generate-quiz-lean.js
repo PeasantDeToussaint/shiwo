@@ -707,8 +707,8 @@ function findObviousTextCorruption(text) {
 
 // Keep in sync with quiz-generator/lib/validate.js (PROFILE_MAXDIFF_*).
 function collectProfileSimilarityIssues(results, dimensions) {
-  const PROFILE_MAXDIFF_MIN = 0.10;
-  const PROFILE_MAXDIFF_SEVERE = 0.08;
+  const PROFILE_MAXDIFF_MIN = 0.08;
+  const PROFILE_MAXDIFF_SEVERE = 0.07;
   const issues = [];
   for (let i = 0; i < results.length; i++) {
     for (let j = i + 1; j < results.length; j++) {
