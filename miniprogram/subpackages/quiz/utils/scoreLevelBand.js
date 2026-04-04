@@ -114,9 +114,17 @@ function scoreLevelBand(quiz, answers) {
     bands = defaultBandsFromResults(quiz);
   }
   bands.sort((a, b) => (a.rank || 0) - (b.rank || 0));
-  const matchedBand = bands.find((band) => overall >= (band.min || 0) && overall <= (band.max == null ? 1 : band.max))
-    || bands[bands.length - 1]
+  let matchedBand = bands.find((band) => overall >= (band.min || 0) && overall <= (band.max == null ? 1 : band.max))
     || null;
+  if (!matchedBand && bands.length > 0) {
+    matchedBand = bands.reduce((best, band) => {
+      const lo = band.min || 0;
+      const hi = band.max == null ? 1 : band.max;
+      const mid = (lo + hi) / 2;
+      const bestMid = ((best.min || 0) + (best.max == null ? 1 : best.max)) / 2;
+      return Math.abs(overall - mid) < Math.abs(overall - bestMid) ? band : best;
+    }, bands[0]);
+  }
 
   const ranked = bands.map((band) => {
     const center = ((band.min || 0) + (band.max == null ? 1 : band.max)) / 2;
