@@ -6,6 +6,28 @@ function getDimensions(quiz) {
   return (quiz?.scoring?.dimensions || []).map((dim) => typeof dim === "string" ? dim : dim.id).filter(Boolean);
 }
 
+/**
+ * When scoring.bands is missing (e.g. legacy upload), derive tier cutoffs from
+ * results order — same rule as quiz-generator assembleQuiz for level-band.
+ */
+function defaultBandsFromResults(quiz) {
+  let results = (quiz.results || []).slice();
+  if (results.some((r) => typeof r.levelRank === "number")) {
+    results.sort((a, b) => (a.levelRank || 0) - (b.levelRank || 0));
+  }
+  const count = Math.max(1, results.length);
+  return results.map((r, idx) => {
+    const min = parseFloat((idx / count).toFixed(2));
+    const max = idx === count - 1 ? 1 : parseFloat((((idx + 1) / count) - 0.01).toFixed(2));
+    return {
+      resultId: r.id,
+      rank: idx,
+      min,
+      max: idx === count - 1 ? 1 : Math.max(min, max),
+    };
+  });
+}
+
 function getQuestionMaxima(quiz, dimensions) {
   const maxPerDim = {};
   dimensions.forEach((dim) => { maxPerDim[dim] = 0; });
@@ -87,7 +109,11 @@ function scoreLevelBand(quiz, answers) {
   });
 
   const overall = maxTotal > 0 ? clamp01(achievedTotal / maxTotal) : 0;
-  const bands = (quiz?.scoring?.bands || []).slice().sort((a, b) => (a.rank || 0) - (b.rank || 0));
+  let bands = (quiz?.scoring?.bands || []).slice();
+  if (bands.length === 0 && (quiz.results || []).length > 0) {
+    bands = defaultBandsFromResults(quiz);
+  }
+  bands.sort((a, b) => (a.rank || 0) - (b.rank || 0));
   const matchedBand = bands.find((band) => overall >= (band.min || 0) && overall <= (band.max == null ? 1 : band.max))
     || bands[bands.length - 1]
     || null;

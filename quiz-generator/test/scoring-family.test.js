@@ -83,4 +83,33 @@ describe("scoring families", () => {
     expect(result.resultId).toBe("r4");
     expect(result.overallScore).toBeGreaterThanOrEqual(0.75);
   });
+
+  it("level-band without scoring.bands infers cutoffs from results (avoids always-first result)", () => {
+    const quiz = {
+      scoring: {
+        type: "level-band",
+        dimensions: ["X"],
+      },
+      questions: [
+        {
+          id: "q1",
+          options: [
+            { id: "hi", scores: { X: 3 } },
+            { id: "lo", scores: { X: 0 } },
+          ],
+        },
+      ],
+      results: [
+        { id: "low", title: "低", levelRank: 1 },
+        { id: "high", title: "高", levelRank: 2 },
+      ],
+    };
+
+    const low = scoreGeneric(quiz, [{ questionId: "q1", optionId: "lo" }]);
+    expect(low.resultId).toBe("low");
+
+    const high = scoreGeneric(quiz, [{ questionId: "q1", optionId: "hi" }]);
+    expect(high.resultId).toBe("high");
+    expect(high.overallScore).toBe(1);
+  });
 });

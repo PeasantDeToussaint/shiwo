@@ -1096,6 +1096,15 @@ async function generateQuestions(outline, startId, endId, batchLabel, total, sco
   const aestheticContext = formatAestheticContext(outline.aestheticContext);
   const bipolarAxisTable = isBipolar ? formatBipolarAxisTable(outline) : "";
   const count = endId - startId + 1;
+  const dimA = dimensions[0] || "维度甲";
+  const dimB = dimensions[1] || "维度乙";
+  const bipolarHardConstraint = isBipolar && dimensions.length >= 2
+    ? `
+【bipolar 硬约束 — 违反会导致整批题目被拒收】
+- 若同一选项里有两个维度都是非零分，两分数必须**同号**（都为正或都为负）。**绝对禁止**一正一负，例如禁止 {"${dimA}":2,"${dimB}":-1}、禁止 {"${dimA}":-1,"${dimB}":2}。
+- **允许**：只标一维，如 {"${dimA}":-2}；或两维同号，如 {"${dimA}":1,"${dimB}":2}、{"${dimA}":-2,"${dimB}":-1}。
+- 文案若明显贴近某轴的 lowPole，该轴分数必须为负；贴近 highPole 则为正。`
+    : "";
 
   const nonBipolarScoreRule = isLevelBand
     ? "level-band（程度段位）：所有 scores 必须是【非负整数】0、1、2 或 3，禁止任何负分。负分只用于 bipolar-dimension，本题不是双极轴测验。用「较低的正分」表示更弱、更不成熟或更不利于边界的反应；四个选项在「各维得分总和」上要有明显梯度，便于区分段位。每个选项最多2个维度得分，主维度≤2，副维度≤1。"
@@ -1114,7 +1123,7 @@ ${aestheticContext}
 - 描述：${outline.description}
 - 评分维度：${dimensions.join("、")}
 - 当前评分框架：${sf}${isLevelBand ? "（与 bipolar 不同：绝不能输出负分）" : ""}
-${bipolarAxisTable}
+${bipolarAxisTable}${bipolarHardConstraint}
 
 请生成 q${startId} 到 q${endId} 共${count}道题目（共${total}道题的第${batchLabel}批）。
 
@@ -1137,7 +1146,7 @@ ${bipolarAxisTable}
 规则：
 1. ${count}道全新场景题，场景必须契合测验的历史/文化/美学氛围,例如：唐诗场景下每道题要模拟经典古诗里的场景，诗词意境，人物情绪，背景氛围等
 2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
-3. ${isBipolar ? "bipolar-dimension：正分=偏 highPole，负分=偏 lowPole。每个选项最多2个维度得分，主维度 ±2，副维度 ±1；同一选项的维度分数正负方向必须一致。给分必须严格根据该轴的 lowPole ↔ highPole 语义来判定，不能只按“勇敢/消极/激烈/保守”这类情绪色彩随意打分" : nonBipolarScoreRule}
+3. ${isBipolar ? `bipolar-dimension：正分=偏 highPole，负分=偏 lowPole。每个选项最多2个维度非零，主维度 ±2，副维度 ±1。**同一选项里所有非零分必须同号**（全正或全负）；两维一正一负视为错误输出。给分必须按各轴 lowPole ↔ highPole 语义，禁止只按笼统“积极/消极”猜分` : nonBipolarScoreRule}
 4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
 5. ${isBipolar ? "如果某个选项体现的是“观察、退后、记录、保持距离、拒绝介入”这类 lowPole 行为，就不能误打成高分端；如果体现的是“主动投入、深入参与、直接承受风险”这类 highPole 行为，就不能误打成负分" : "遵守 literary guide，禁止句型不能出现"}
 6. 遵守 literary guide，禁止句型不能出现${
@@ -1462,6 +1471,71 @@ function printBipolarCoverageStats(stats, dimensionAxes = []) {
   Object.entries(stats).forEach(([dim, row]) => {
     console.log(`       • ${dim}${labelByDim[dim] ? ` (${labelByDim[dim]})` : ""}: +${row.posCount}/${row.posSum}  -${row.negCount}/${row.negSum}`);
   });
+}
+
+/**
+ * If option text clearly names lowPole but that dimension is scored positive (or highPole with negative), flip sign.
+ * Runs before repairBipolarMixedSignScores so we don't drop a dimension that only needed sign fix.
+ */
+function repairBipolarPoleSemantics(questions, dimensionAxes = []) {
+  const axisMap = Object.fromEntries(
+    (dimensionAxes || []).filter((a) => a && a.dimension).map((a) => [a.dimension, a]),
+  );
+  let fixed = 0;
+  for (const q of questions || []) {
+    for (const o of q.options || []) {
+      if (!o.scores) continue;
+      const text = `${o.text || ""}${o.reaction || ""}`;
+      for (const [dim, val] of Object.entries(o.scores)) {
+        if (typeof val !== "number" || val === 0) continue;
+        const axis = axisMap[dim];
+        if (!axis) continue;
+        const low = String(axis.lowPole || "").trim();
+        const high = String(axis.highPole || "").trim();
+        if (low.length >= 2 && text.includes(low) && val > 0) {
+          o.scores[dim] = -Math.abs(val);
+          fixed++;
+        } else if (high.length >= 2 && text.includes(high) && val < 0) {
+          o.scores[dim] = Math.abs(val);
+          fixed++;
+        }
+      }
+    }
+  }
+  return fixed;
+}
+
+/**
+ * LLM often scores two dimensions with opposite signs in one option; our validator requires same sign.
+ * Keep the dimension with the largest |score| and zero the others (still one coherent "push").
+ */
+function repairBipolarMixedSignScores(questions) {
+  let fixed = 0;
+  for (const q of questions || []) {
+    for (const o of q.options || []) {
+      if (!o.scores || typeof o.scores !== "object") continue;
+      const entries = Object.entries(o.scores).filter(([, v]) => typeof v === "number" && v !== 0);
+      if (entries.length < 2) continue;
+      const signs = new Set(entries.map(([, v]) => Math.sign(v)));
+      if (signs.size <= 1) continue;
+      let bestDim = entries[0][0];
+      let bestAbs = -1;
+      for (const [dim, v] of entries) {
+        const a = Math.abs(v);
+        if (a > bestAbs) {
+          bestAbs = a;
+          bestDim = dim;
+        }
+      }
+      for (const dim of Object.keys(o.scores)) {
+        if (dim === bestDim) continue;
+        const v = o.scores[dim];
+        if (typeof v === "number" && v !== 0) o.scores[dim] = 0;
+      }
+      fixed++;
+    }
+  }
+  return fixed;
 }
 
 function collectBipolarSemanticWarnings(questions, dimensionAxes = []) {
@@ -2151,6 +2225,12 @@ async function main() {
         }
       }
       if (clamped > 0) console.log(`     [repair] clamped ${clamped} negative score(s) to 0 (scoringFamily: ${qSf})`);
+    }
+    if (qSf === "bipolar-dimension") {
+      const poleFixed = repairBipolarPoleSemantics(phaseQuestions, outline.dimensionAxes);
+      if (poleFixed > 0) console.log(`     [repair] flipped ${poleFixed} score(s) to match lowPole/highPole wording`);
+      const mixedFixed = repairBipolarMixedSignScores(phaseQuestions);
+      if (mixedFixed > 0) console.log(`     [repair] cleared weaker dimension on ${mixedFixed} option(s) that mixed +/- across dimensions`);
     }
     const questionWarnings = validateQuestions(phaseQuestions, outline.dimensions, architecture?.scoringFamily, outline.dimensionAxes);
     if ((architecture?.scoringFamily || "weighted-dimension") === "bipolar-dimension") {

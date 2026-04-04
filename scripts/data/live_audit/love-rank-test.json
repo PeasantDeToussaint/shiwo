@@ -1187,6 +1187,13 @@
       "自我中心程度"
     ],
     "levelLabel": "恋爱段位",
+    "bands": [
+      { "resultId": "r1", "rank": 0, "min": 0, "max": 0.19 },
+      { "resultId": "r2", "rank": 1, "min": 0.2, "max": 0.39 },
+      { "resultId": "r3", "rank": 2, "min": 0.4, "max": 0.59 },
+      { "resultId": "r4", "rank": 3, "min": 0.6, "max": 0.79 },
+      { "resultId": "r5", "rank": 4, "min": 0.8, "max": 1 }
+    ],
     "results": [
       {
         "dimension": "情绪觉察",
