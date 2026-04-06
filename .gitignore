@@ -13,3 +13,6 @@ miniprogram/.tea/
 # Quiz generator checkpoints
 scripts/data/.checkpoints/
 scripts/data/*.raw.txt
+
+# CI / local Zhipu review report (single-file output)
+scripts/quiz-review-zhipu-report.md

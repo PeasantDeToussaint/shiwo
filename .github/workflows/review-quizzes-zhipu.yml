@@ -1,0 +1,104 @@
+# 在 CI 中调用智谱 API，对 scripts/22newquizes 下全部测验 JSON 逐套审稿，
+# 合并为一份 Markdown 报告并作为 Artifact 下载。
+#
+# 配置：在仓库 Settings → Secrets → Actions 中设置 ZHIPU_API_KEY。
+# 可选：ZHIPU_REVIEW_MODEL 通过 workflow 输入 model 传入（写入环境变量）。
+
+name: 智谱审稿（测验合集）
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "模型名（留空则脚本默认 glm-4-flash，或设仓库变量 ZHIPU_REVIEW_MODEL）"
+        required: false
+        default: ""
+      delay_ms:
+        description: "每套测验请求之间的间隔（毫秒，略降速可减少限流）"
+        required: false
+        default: "1200"
+      full:
+        description: "在摘要中包含 results portrait 预览（--full）"
+        required: false
+        type: boolean
+        default: false
+      only:
+        description: "仅审稿指定 quiz id，逗号分隔；留空则全部"
+        required: false
+        default: ""
+
+env:
+  REPORT_FILE: scripts/quiz-review-zhipu-report.md
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 运行智谱审稿
+        shell: bash
+        env:
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          ZHIPU_REVIEW_MODEL: ${{ github.event.inputs.model != '' && github.event.inputs.model || vars.ZHIPU_REVIEW_MODEL }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${ZHIPU_API_KEY:-}" ]]; then
+            echo "::error::未配置 ZHIPU_API_KEY。请在仓库 Secrets 中添加。"
+            exit 1
+          fi
+
+          ARGS=( "--dir=scripts/22newquizes" "--out=${{ env.REPORT_FILE }}" )
+          ARGS+=( "--delay=${{ github.event.inputs.delay_ms }}" )
+
+          if [[ -n "${{ github.event.inputs.only }}" ]]; then
+            ARGS+=( "--only=${{ github.event.inputs.only }}" )
+          fi
+
+          if [[ "${{ github.event.inputs.full }}" == "true" ]]; then
+            ARGS+=( "--full" )
+          fi
+
+          MODEL_RAW="${ZHIPU_REVIEW_MODEL:-}"
+          if [[ -n "$MODEL_RAW" ]]; then
+            ARGS+=( "--model=$MODEL_RAW" )
+          fi
+
+          echo "Running: node scripts/review-quizzes-zhipu.js ${ARGS[*]}"
+          node scripts/review-quizzes-zhipu.js "${ARGS[@]}"
+
+      - name: 写入工作流摘要
+        if: success()
+        shell: bash
+        run: |
+          {
+            echo "## 智谱审稿完成"
+            echo
+            echo "报告为单文件：\`${{ env.REPORT_FILE }}\`（见下方 Artifact **zhipu-quiz-review**）。"
+            echo
+            echo "| 参数 | 值 |"
+            echo "|---|---|"
+            echo "| model | ${{ github.event.inputs.model != '' && github.event.inputs.model || vars.ZHIPU_REVIEW_MODEL || '<脚本默认>' }} |"
+            echo "| delay_ms | ${{ github.event.inputs.delay_ms }} |"
+            echo "| full | ${{ github.event.inputs.full }} |"
+            echo "| only | ${{ github.event.inputs.only != '' && github.event.inputs.only || '<全部>' }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 上传审稿报告（单文件）
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zhipu-quiz-review
+          path: ${{ env.REPORT_FILE }}
+          if-no-files-found: error
+          retention-days: 30
