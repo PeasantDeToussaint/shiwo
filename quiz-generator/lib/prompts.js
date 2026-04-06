@@ -82,8 +82,8 @@ function formatDimensionSpecs(specs) {
 }
 
 const SCORING_FAMILY_GUIDANCE = {
-  "weighted-dimension": "适合“你像谁 / 你是哪种类型 / 你更接近哪个角色”的匹配题。核心是把用户映射到多个结果中的一个，结果之间靠维度组合差异区分，不靠总分高低排段位。",
-  "bipolar-dimension": "适合每个维度都有清晰正反两极的题，例如“公义优先 vs 自我为本”。也适合由 2-3 条正交坐标形成 4-8 个象限结果的题，如学院/阵营/门派/四象限分类。出题时允许正负分去表达向哪一极偏移。",
+  "weighted-dimension": "适合“你像谁 / 你是哪种类型 / 你更接近哪个角色”的匹配题。核心是把用户映射到多个结果中的一个，结果之间靠维度组合差异区分，不靠总分高低排段位。results 为 6–12 个（与校验一致）；主题若有固定全集须取满，禁止无主题理由默认 6。",
+  "bipolar-dimension": "适合每个维度都有清晰正反两极的题，例如“公义优先 vs 自我为本”。也适合由 2-3 条正交坐标形成象限/阵营结果的题，如学院/门派/四象限分类（常见 4–8 个，最多 12）。出题时允许正负分去表达向哪一极偏移。",
   "level-band": "适合“你的程度 / 等级 / 段位 / 适合度”这类连续层级题。结果是从低到高的阶段，不是彼此平行的原型；核心是看总体成熟度或适配度落在哪个区间。",
 };
 
@@ -480,6 +480,7 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 - weighted-dimension：结果之间是并列的“谁更像谁”；不同结果应主要靠 profileHints 组合拉开，而不是高低顺序。
 - bipolar-dimension：dimensionSpecs 的 highDefinition / lowDefinition 必须构成真正对立；禁止把 lowPole 写成“只是更弱一点的 highPole”。
 - level-band：results 必须能清楚排成从低到高的阶段序列；相邻结果是程度递进，而不是完全不同的人格阵营。results 数量建议 4-6 个，不宜过多。
+- 【results 个数】须与后端校验一致：weighted-dimension **6–12**；bipolar-dimension **4–12**；level-band **4–6**。若主题本身有固定分类全集（十二星座、十二生肖、四学院、八卦方位等），results **必须取满该全集**；仅当主题无天然固定个数时再在对应区间内按区分度决定数量，**禁止**图省事一律输出 6。
 -【关键约束】dimensionCount 和 questionCount 必须是纯整数，不能是字符串。dimensionCount 由主题复杂度、结果数量和结果之间真正需要区分的语义轴决定：可以是 3-6，不要默认 5。只有当结果之间确实存在足够多的独立分化轴时才增加维度，能用 4 个维度说清楚就不要硬上 5 或 6。
 - questionCount 由你根据主题复杂度决定；
 - 维度之间应尽量独立，避免把同一特质拆成两种说法（如「理性」和「逻辑性」高度相关，不应同时作为维度）。
@@ -618,7 +619,7 @@ ${hintBlock}${archContext}${weightedTraitNamingOutline}
 
 规则：
 - dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，优先使用 Phase 0 的维度，数量以 Phase 0 为准）
-- weighted-dimension 的 results 通常 6-12 个；bipolar-dimension 可为 4-12 个（四象限/分学院类允许 4 个）；level-band 的 results 通常 4-6 个
+- weighted-dimension 的 results **6–12** 个（非「通常」下界：有固定全集须取满，**禁止**无主题理由默认 6）；bipolar-dimension **4–12** 个（四象限/分学院类允许 4 个）；level-band 的 results **4–6** 个
 - 如果 scoringFamily = level-band，results 必须按从低到高的阶段顺序排列，不能写成互不相干的平行人格
 - 多个结果可以共享同一个 dimension；results越多则dimensions应越多（每2-3个结果需要1个独立维度）
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致

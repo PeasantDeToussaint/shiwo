@@ -613,6 +613,15 @@ function validateArchitecture(architecture) {
   if (results.length === 0) {
     errors.push("results missing or empty");
   }
+  if (scoringFamily === "level-band" && (results.length < 4 || results.length > 6)) {
+    errors.push(`level-band results.length should be 4-6 (got ${results.length})`);
+  }
+  if (scoringFamily === "weighted-dimension" && (results.length < 6 || results.length > 12)) {
+    errors.push(`weighted-dimension results.length should be 6-12 (got ${results.length})`);
+  }
+  if (scoringFamily === "bipolar-dimension" && (results.length < 4 || results.length > 12)) {
+    errors.push(`bipolar-dimension results.length should be 4-12 (got ${results.length})`);
+  }
 
   const needsNameContext = rt14.NAME_CONTEXT_REQUIRED.has(resultType);
   if (needsNameContext) {
@@ -1068,12 +1077,12 @@ scoringFamily 选择规则：
 - weighted-dimension（特质权重）：不是维度，而是"特质成分"——每条特质是单向积累，高分=这类特质更突出，多条特质可以同时都高。类似大五人格里的"开放性"——只有多少之分，没有对立端。这里"dimension"是技术字段名，实际概念是「特质」。
 - level-band（程度段位）：结果是同一维度上从弱到强、从低到高或可排序的「阶段/层级」，不是彼此无关的平行名人或平行物品。适合「有多强」「是否适合」「抗X能力」「准备度」等。禁止用真实人物姓名当结果名。
 
-- 选 bipolar-dimension：轴两端有对立的极点，用户的回答天然是"偏哪边"的选择。适合价值观冲突型（理性vs感性、秩序vs自由）、人格两极型、立场对立型。结果通常 4-8 个，按象限或对角组合设计。
-- 选 weighted-dimension：每条特质是单向积累，高分代表"这类特质更突出"，特质之间可以同时都高。适合多元能力型、气质成分型（你更像哪朵花、哪种咖啡）、兴趣偏向型。results 6-9 个。
-- 选 level-band：结果 4-6 个，名称体现同一连续谱上的不同档位，必须可排序；resultType 必须为 tier_level，不得为 figure_character。
+- 选 bipolar-dimension：轴两端有对立的极点，用户的回答天然是"偏哪边"的选择。适合价值观冲突型（理性vs感性、秩序vs自由）、人格两极型、立场对立型。results **4–12** 个（四象限/四学院等常见 4 个；坐标组合多时可达 12），按象限或对角组合设计。
+- 选 weighted-dimension：每条特质是单向积累，高分代表"这类特质更突出"，特质之间可以同时都高。适合多元能力型、气质成分型（你更像哪朵花、哪种咖啡）、兴趣偏向型。results **6–12** 个，须与后端校验一致；若主题有**固定全集**（十二星座、十二生肖、四学院、八卦八维等），**必须取满**，不得合并或无故压到 6；无固定全集时再按区分度在 6–12 内选个数，**禁止**无主题理由默认输出 6。
+- 选 level-band：结果 **4–6** 个，名称体现同一连续谱上的不同档位，必须可排序；resultType 必须为 tier_level，不得为 figure_character。
 
 规则：
--【关键约束】dimensionCount 由你根据主题复杂度决定；dimensions 数量必须与 dimensionCount 严格一致。results 4-9 个（bipolar 可少至4个），与 dimensions 数量无关。多个结果可以共享同一个 primaryDimension。每个 primaryDimension 必须是 dimensions 数组里的某一项。
+-【关键约束】dimensionCount 由你根据主题复杂度决定；dimensions 数量必须与 dimensionCount 严格一致。**results 个数依 scoringFamily：weighted-dimension 须 6–12；bipolar-dimension 须 4–12；level-band 须 4–6。**与 dimensions 数量无关。多个结果可以共享同一个 primaryDimension。每个 primaryDimension 必须是 dimensions 数组里的某一项。
 - 维度数量不要机械固定；重点是维度彼此独立、可解释，并且足以区分这些结果。简单主题可用2个，复杂主题可到5个。
 - resultType=figure_character 时：name 为真实人物姓名或可识别 IP 角色名；两两不同；禁止自创象征名顶替角色
 - resultType=animal_creature 时：name 为物种或种族通用名；禁止纯隐喻四字格
@@ -1165,7 +1174,7 @@ ${isBipolar ? `      "lowPole": "低分端极点，2-4字，例如「婉约含�
 
 规则：
 - dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，严格使用 Phase 0 的维度，数量以 Phase 0 为准）
-- results 数量 4-9 个，与 dimensions 数量无关，多个结果可以共享同一个 dimension
+- results 数量必须与 Phase 0 已确定原型个数完全一致，不得增删、合并或化名重复占位。与 dimensions 数量无关。区间自检：weighted-dimension **6–12**（固定全集须取满、禁止无理由默认 6）；bipolar-dimension **4–12**；level-band **4–6**。多个结果可以共享同一个 dimension
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
 - ${isBipolar ? "bipolar-dimension 的 axisLabel 是这条轴的类别名；dimension 只是轴名，不是高分端极点" : "weighted-dimension 的特质名（dimension 字段）命名要体现该特质的内容，2-4字，如「创造力」「共情力」「执行力」——不要写成两极对立的形式，因为这是单向特质"}

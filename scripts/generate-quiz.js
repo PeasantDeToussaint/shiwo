@@ -492,6 +492,9 @@ function validateArchitecture(architecture) {
   if (results.length === 0) {
     errors.push("results missing or empty");
   }
+  if (results.length > 0 && (results.length < 6 || results.length > 12)) {
+    errors.push(`results.length should be 6-12 (got ${results.length})`);
+  }
 
   const dimSet = new Set(dimensions);
   for (const r of results) {
@@ -867,7 +870,7 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 请根据「${topic}」这个主题，从用户视角出发，设计最合适的字段组合。
 
 规则：
--【关键约束】dimensionCount 由你根据主题复杂度决定；dimensions 数量必须与 dimensionCount 严格一致。results 是6-9个（视主题而定），与 dimensions 数量无关。多个结果可以共享同一个 primaryDimension。每个 primaryDimension 必须是 dimensions 数组里的某一项。
+-【关键约束】dimensionCount 由你根据主题复杂度决定；dimensions 数量必须与 dimensionCount 严格一致。results **6–12** 个（与加权型管线校验一致；若主题为固定分类全集如十二星座12、四学院4、八卦8，须取满枚举；**禁止**无主题理由默认 6），与 dimensions 数量无关。多个结果可以共享同一个 primaryDimension。每个 primaryDimension 必须是 dimensions 数组里的某一项。
 - 维度数量不要机械固定；重点是维度彼此独立、可解释，并且足以区分这些结果。简单主题可用2个，复杂主题可到5个。
 - resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
 - resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
@@ -949,7 +952,7 @@ ${HINT_BLOCK}${archContext}
 
 规则：
 - dimensions 和 dimensionAxes 数量相等（若 Phase 0 已给出，严格使用 Phase 0 的维度，数量以 Phase 0 为准）
-- results 数量 6-9个，与 dimensions 数量无关，多个结果可以共享同一个 dimension
+- results 数量 **6–12** 个，须与 Phase 0 架构一致，与 dimensions 数量无关，多个结果可以共享同一个 dimension
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
 - 维度名称简洁，2-4字
