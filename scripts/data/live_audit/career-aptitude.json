@@ -6,9 +6,9 @@
     "accent": "#5b7fa6",
     "bgImage": "cloud://cloudbase-4gadl6qo4a9aa95d.636c-cloudbase-4gadl6qo4a9aa95d-1415990507/classicals4.png",
     "description": "本测试基于心理学家约翰·霍兰德提出的 RIASEC 模型——职业咨询领域最被广泛应用的理论框架之一。它将职业兴趣分为六种类型：现实型（动手操作与技术）、研究型（分析与探索）、艺术型（创意与表达）、社会型（助人与服务）、企业型（领导与决策）、事务型（系统与管理）。每个人的兴趣通常是其中 2-3 种的组合，这个组合指向你天然有能量持续投入的工作方向。\n\n测的不是你能做什么，而是你对什么真正感兴趣——后者才是职业满足感的真正来源。",
-    "displayTitleZh": "职业能力倾向",
+    "displayTitleZh": "霍兰德六型：你的职业兴趣更像哪一类？",
     "estimatedMinutes": 8,
-    "eyebrow": "Career Aptitude",
+    "eyebrow": "职业兴趣",
     "featureId": "career",
     "id": "career-aptitude",
     "isAvailable": true,
@@ -1490,8 +1490,8 @@
       "scale": 5,
       "type": "big-five"
     },
-    "subtitle": "找到你真正有能量投入的工作方向",
+    "subtitle": "现实、研究、艺术、社会、经营、事务倾向（趣味版）",
     "themeKey": "default",
-    "title": "职业能力倾向"
+    "title": "霍兰德六型：你的职业兴趣更像哪一类？"
   }
 }

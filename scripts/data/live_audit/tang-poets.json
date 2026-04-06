@@ -6,7 +6,7 @@
     "accent": "#c9a96a",
     "description": "唐诗是汉语文学的顶峰。八道场景，测出你骨子里藏着哪位诗人的气质——是李白的狂放、杜甫的悲悯、王维的禅意，还是白居易的通透？",
     "estimatedMinutes": 5,
-    "eyebrow": "Tang Dynasty Poets",
+    "eyebrow": "唐诗人格",
     "featureId": "aesthetics",
     "id": "tang-poets",
     "isAvailable": true,
@@ -276,8 +276,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "你是哪位唐代诗人的灵魂？",
+    "subtitle": "从气质与表达习惯，贴近李白、杜甫、王维等一路",
     "themeKey": "default",
-    "title": "盛唐诗魂"
+    "title": "盛唐诗人里，谁的诗心更像你？",
+    "displayTitleZh": "盛唐诗人里，谁的诗心更像你？"
   }
 }

@@ -5,7 +5,7 @@
     "_id": "b3c6c3d569ccdb7c027da20a137054ba",
     "description": "三国时代,智者云集。通过五个关键维度,揭示你最与哪位谋士心灵相通,探索你内心深处的战略思维与处世哲学。",
     "estimatedMinutes": 8,
-    "eyebrow": "三国智者",
+    "eyebrow": "三国谋士",
     "featureId": "ip",
     "id": "three-kingdoms-strategist-match",
     "isAvailable": true,
@@ -1423,8 +1423,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "在情义与算计之间,你会如何选择",
-    "title": "权谋之心,你是哪种"
+    "subtitle": "信息、风险与道义之间的决策偏好",
+    "title": "三国谋士里，你最像谁的谋略风格？",
+    "displayTitleZh": "三国谋士里，你最像谁的谋略风格？"
   },
   "featureId": "history"
 }

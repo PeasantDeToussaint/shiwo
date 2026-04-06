@@ -4,9 +4,9 @@
   "description": "",
   "disclaimer": "方言分布复杂，结果仅供参考。城市化和教育背景会影响词汇使用习惯。",
   "displayTitleEn": "Dialect Origins",
-  "displayTitleZh": "方言溯源",
+  "displayTitleZh": "听你的用词习惯，你更像哪片方言气质？",
   "estimatedMinutes": 4,
-  "eyebrow": "Dialect Origins",
+  "eyebrow": "方言气质",
   "featureId": "city",
   "id": "dialect",
   "isAvailable": true,
@@ -1275,11 +1275,11 @@
     ],
     "type": "dialect"
   },
-  "subtitle": "你的日常用词，藏着你来自哪里。",
+  "subtitle": "用语选择映射地域亲缘（趣味溯源，非严谨语言学鉴定）",
   "tags": [
     "方言",
     "地域"
   ],
   "themeKey": "dialect",
-  "title": "方言溯源"
+  "title": "听你的用词习惯，你更像哪片方言气质？"
 }

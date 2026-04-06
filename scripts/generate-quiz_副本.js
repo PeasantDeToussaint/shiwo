@@ -34,6 +34,10 @@ const DEEPSEEK_KEY  = process.env.DEEPSEEK_API_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const GEMINI_KEY    = process.env.GEMINI_API_KEY;
 const ZHIPU_KEY     = process.env.ZHIPU_API_KEY;
+const QWEN_KEY      = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
+const QWEN_API_BASE = (
+  process.env.QWEN_API_BASE || "https://dashscope.aliyuncs.com/compatible-mode/v1"
+).replace(/\/$/, "");
 const APPID         = process.env.WX_APPID;
 const APPSECRET     = process.env.WX_APPSECRET;
 const ENV_ID        = process.env.WX_CLOUD_ENV || "cloudbase-4gadl6qo4a9aa95d";
@@ -65,9 +69,9 @@ if (OVERRIDE_SCORING && !VALID_SCORING_FAMILIES.has(OVERRIDE_SCORING)) {
   process.exit(1);
 }
 
-const VALID_PROVIDERS = new Set(["zhipu", "gemini", "deepseek", "anthropic"]);
+const VALID_PROVIDERS = new Set(["zhipu", "qwen", "gemini", "deepseek", "anthropic"]);
 if (PROVIDER_ARG && !VALID_PROVIDERS.has(PROVIDER_ARG)) {
-  console.error(`❌  Invalid --provider="${PROVIDER_ARG}". Use one of: zhipu, gemini, deepseek, anthropic`);
+  console.error(`❌  Invalid --provider="${PROVIDER_ARG}". Use one of: zhipu, qwen, gemini, deepseek, anthropic`);
   process.exit(1);
 }
 
@@ -76,15 +80,27 @@ function inferProviderFromModel(model) {
   if (!m) return null;
   if (m.startsWith("gemini")) return "gemini";
   if (m.startsWith("glm") || m.startsWith("zhipu")) return "zhipu";
+  if (m.startsWith("qwen")) return "qwen";
   if (m.startsWith("deepseek")) return "deepseek";
   if (m.startsWith("claude")) return "anthropic";
   return null;
 }
 
-const AUTO_PROVIDER = ZHIPU_KEY ? "zhipu" : GEMINI_KEY ? "gemini" : DEEPSEEK_KEY ? "deepseek" : ANTHROPIC_KEY ? "anthropic" : null;
+const AUTO_PROVIDER = ZHIPU_KEY
+  ? "zhipu"
+  : QWEN_KEY
+    ? "qwen"
+    : GEMINI_KEY
+      ? "gemini"
+      : DEEPSEEK_KEY
+        ? "deepseek"
+        : ANTHROPIC_KEY
+          ? "anthropic"
+          : null;
 const PROVIDER      = PROVIDER_ARG || inferProviderFromModel(MODEL_ARG) || AUTO_PROVIDER;
 const MODEL_DEFAULT = {
   zhipu: "glm-4-plus",
+  qwen: "qwen3.6-plus",
   gemini: "gemini-3-flash-preview",
   deepseek: "deepseek-chat",
   anthropic: "claude-opus-4-5",
@@ -171,12 +187,13 @@ const HINT_BLOCK  = ALL_HINTS.length > 0
 const DATA_DIR = path.resolve(__dirname, "data");
 
 if (!TOPIC_ARG) {
-  console.error("Usage: node scripts/generate-quiz.js --topic=\"topic\" [--provider=gemini|zhipu|deepseek|anthropic] [--model=\"model-name\"] [--hint=\"约束\"] [--dry-run] [--estimate] [--skip-eval]");
+  console.error("Usage: node scripts/generate-quiz_副本.js --topic=\"topic\" [--provider=gemini|zhipu|qwen|deepseek|anthropic] [--model=\"model-name\"] [--hint=\"约束\"] [--dry-run] [--estimate] [--skip-eval]");
   process.exit(1);
 }
 if (!PROVIDER && !ESTIMATE) { console.error("❌  No AI API key in .env"); process.exit(1); }
 if (PROVIDER === "gemini" && !GEMINI_KEY && !ESTIMATE) { console.error("❌  Missing GEMINI_API_KEY for provider=gemini"); process.exit(1); }
 if (PROVIDER === "zhipu" && !ZHIPU_KEY && !ESTIMATE) { console.error("❌  Missing ZHIPU_API_KEY for provider=zhipu"); process.exit(1); }
+if (PROVIDER === "qwen" && !QWEN_KEY && !ESTIMATE) { console.error("❌  Missing DASHSCOPE_API_KEY or QWEN_API_KEY for provider=qwen"); process.exit(1); }
 if (PROVIDER === "deepseek" && !DEEPSEEK_KEY && !ESTIMATE) { console.error("❌  Missing DEEPSEEK_API_KEY for provider=deepseek"); process.exit(1); }
 if (PROVIDER === "anthropic" && !ANTHROPIC_KEY && !ESTIMATE) { console.error("❌  Missing ANTHROPIC_API_KEY for provider=anthropic"); process.exit(1); }
 
@@ -314,6 +331,25 @@ async function callAI(systemPrompt, userPrompt, maxTokens = 8000) {
     );
     if (res.error) throw new Error(`Zhipu: ${JSON.stringify(res.error)}`);
     return res.choices[0].message.content;
+  }
+
+  if (PROVIDER === "qwen") {
+    const qwenMax = Math.min(maxTokens, 8192);
+    const res = await httpPost(
+      `${QWEN_API_BASE}/chat/completions`,
+      {
+        model: MODEL,
+        max_tokens: qwenMax,
+        temperature: 0.85,
+        messages,
+        stream: false,
+      },
+      { Authorization: `Bearer ${QWEN_KEY}` }
+    );
+    if (res.error) throw new Error(`Qwen: ${JSON.stringify(res.error)}`);
+    const text = res.choices?.[0]?.message?.content;
+    if (!text) throw new Error(`Qwen: empty response: ${JSON.stringify(res).slice(0, 400)}`);
+    return text;
   }
 
   if (PROVIDER === "deepseek") {
@@ -2059,6 +2095,7 @@ async function main() {
     if (PROVIDER === "deepseek") console.log(`    Est. cost:        ~¥0.05–0.15 (deepseek-chat)`);
     if (PROVIDER === "anthropic") console.log(`    Est. cost:        ~$1.50–3.00 (claude-opus-4-5)`);
     if (PROVIDER === "gemini") console.log(`    Est. cost:        ~$0.01–0.05 (gemini-1.5-flash)`);
+    if (PROVIDER === "qwen") console.log(`    Est. cost:        见百炼 / DashScope 按量计费（qwen3.6-plus 等）`);
     console.log(`    Est. time:        ~3–6 minutes\n`);
     return;
   }

@@ -5,7 +5,7 @@
     "_id": "dde8ef4869ccf4b7027f19ea249447bb",
     "description": "每个人心中都住着一个《小王子》角色。通过探索纯真感、责任感等维度,揭示你在爱与自由、理想与现实间的独特选择。",
     "estimatedMinutes": 8,
-    "eyebrow": "宇宙心语",
+    "eyebrow": "小王子",
     "featureId": "ip",
     "id": "little-prince-character-match",
     "isAvailable": true,
@@ -1282,8 +1282,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "在纯真与责任间,找到你的人生底色",
-    "title": "心之所向,你是哪种小王子角色"
+    "subtitle": "玫瑰、狐狸与飞行员式的孤独与眷恋",
+    "title": "《小王子》里，你更像书中哪位？",
+    "displayTitleZh": "《小王子》里，你更像书中哪位？"
   },
   "featureId": "ip"
 }

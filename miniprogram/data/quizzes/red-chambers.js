@@ -4,10 +4,10 @@ const CLOUD_RC =
 module.exports = {
   id: "red-chambers",
   catalog: {
-    title: "红楼梦气质画像",
-    subtitle: "你身上，住着哪一位红楼女子？",
+    title: "《红楼梦》气质画像：你更像哪位女子？",
+    subtitle: "借大观园里的选择与心境，照见你的情感与坚持",
     bgImage: CLOUD_RC + "red-chambers-card.jpg",
-    displayTitleZh: "红楼梦气质画像",
+    displayTitleZh: "《红楼梦》气质画像：你更像哪位女子？",
     displayTitleEn: "Red Chamber Soul Mirror",
     tags: ["气质画像", "人格探索"],
     estimatedMinutes: 6,

@@ -1,7 +1,7 @@
 {
   "description": "通过分析你的创意表达、知识深度和互动连接特质，精准匹配最适合的自媒体赛道，让你的创作天赋得以充分发挥。",
   "estimatedMinutes": 8,
-  "eyebrow": "自媒体赛道匹配",
+  "eyebrow": "赛道匹配",
   "featureId": null,
   "id": "自媒体赛道人格测验",
   "isAvailable": true,
@@ -1494,6 +1494,7 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "找到你的创作密码",
-  "title": "内容人格"
+  "subtitle": "按表达、深度与互动习惯，看哪类内容方向更顺手",
+  "title": "你适合哪条自媒体赛道？",
+  "displayTitleZh": "你适合哪条自媒体赛道？"
 }

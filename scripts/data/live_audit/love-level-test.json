@@ -1,7 +1,7 @@
 {
   "description": "探索你在恋爱关系中的表现水平，从情感投入到自我认知，了解你在情场中的真实成熟度与成长空间。",
   "estimatedMinutes": 8,
-  "eyebrow": "情感成熟度",
+  "eyebrow": "恋爱模式",
   "featureId": null,
   "id": "love-level-test",
   "isAvailable": true,
@@ -1289,6 +1289,7 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "你在情场中的真实段位",
-  "title": "恋爱等级"
+  "subtitle": "从沟通、边界与安全感看亲密模式",
+  "title": "恋爱里，你容易卡在哪一关？",
+  "displayTitleZh": "恋爱里，你容易卡在哪一关？"
 }

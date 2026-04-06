@@ -1,7 +1,7 @@
 [
   {
     "id": "media-niche-test",
-    "title": "自媒体赛道测验",
+    "title": "你的创作习惯，更适合哪类自媒体方向？",
     "dims": 2,
     "results": 9,
     "groups": {
@@ -15,7 +15,7 @@
   },
   {
     "id": "spiritual-homeland",
-    "title": "你的精神故乡",
+    "title": "哪里最让你有「精神返乡」的感觉？",
     "dims": 4,
     "results": 12,
     "groups": {
@@ -43,7 +43,7 @@
   },
   {
     "id": "study-abroad-fit-test",
-    "title": "留学适配度测试",
+    "title": "去留学的话，哪种环境更适合你长大？",
     "dims": 3,
     "results": 8,
     "groups": {
@@ -57,7 +57,7 @@
   },
   {
     "id": "自媒体赛道人格测验",
-    "title": "内容人格",
+    "title": "你适合哪条自媒体赛道？",
     "dims": 3,
     "results": 8,
     "groups": {
@@ -113,7 +113,7 @@
   },
   {
     "id": "post-apocalypse-role",
-    "title": "末世角色",
+    "title": "末世设定下，你更可能站哪种生存位？",
     "dims": 3,
     "results": 8,
     "groups": {
@@ -169,7 +169,7 @@
   },
   {
     "id": "love-level-test",
-    "title": "恋爱等级",
+    "title": "恋爱里，你容易卡在哪一关？",
     "dims": 4,
     "results": 5,
     "groups": {
@@ -183,7 +183,7 @@
   },
   {
     "id": "ming-dynasty-persona",
-    "title": "明末乱世,你会是谁",
+    "title": "明末乱世的夹缝里，你更可能变成谁？",
     "dims": 5,
     "results": 10,
     "groups": {
@@ -253,7 +253,7 @@
   },
   {
     "id": "literary-soul-resonance",
-    "title": "文心所向,你是谁",
+    "title": "你与哪位世界文豪最像？",
     "dims": 5,
     "results": 8,
     "groups": {
@@ -267,7 +267,7 @@
   },
   {
     "id": "tang-song-masters",
-    "title": "文心墨韵,你是哪位",
+    "title": "唐宋八大家里，你更接近哪一位？",
     "dims": 5,
     "results": 8,
     "groups": {
@@ -309,7 +309,7 @@
   },
   {
     "id": "your-perfect-perfume-type",
-    "title": "最符合你气质的香水类型",
+    "title": "若用一支香水形容你，会是什么气质？",
     "dims": 6,
     "results": 6,
     "groups": {
@@ -323,7 +323,7 @@
   },
   {
     "id": "graduate-school-fit",
-    "title": "学术探索者",
+    "title": "你适合读研这条路吗？",
     "dims": 4,
     "results": 5,
     "groups": {

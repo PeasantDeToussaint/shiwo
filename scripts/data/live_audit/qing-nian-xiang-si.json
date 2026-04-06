@@ -10,7 +10,7 @@
       "_updatedAt": "2026-04-01T07:05:31.244Z",
       "description": "通过价值观、处世态度、权力观、情感表达和成长动机五个维度,解析你在权谋世界中的真实面貌,揭示你最像庆余年中的哪位角色。",
       "estimatedMinutes": 8,
-      "eyebrow": "权谋本色",
+      "eyebrow": "庆余年",
       "featureId": "psychology",
       "id": "qing-nian-xiang-si",
       "isAvailable": true,
@@ -1126,8 +1126,9 @@
         ],
         "type": "weighted-dimension"
       },
-      "subtitle": "在情义与算计之间,你会如何选择",
-      "title": "庆余年：你是哪种权谋之心"
+      "subtitle": "权谋与情义之间，你的取舍更像谁",
+      "title": "《庆余年》里，你最像哪位角色？",
+      "displayTitleZh": "《庆余年》里，你最像哪位角色？"
     }
   },
   "featureId": "ip"

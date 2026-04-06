@@ -1,7 +1,7 @@
 {
   "description": "通过生活方式、价值观和艺术偏好的选择，探索你内心深处最契合的精神家园，揭示潜意识中对某种生活方式和精神气质的向往。",
   "estimatedMinutes": 7,
-  "eyebrow": "灵魂地图",
+  "eyebrow": "精神故乡",
   "featureId": null,
   "id": "spiritual-homeland",
   "isAvailable": true,
@@ -1143,6 +1143,7 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "找到你的文化归属",
-  "title": "你的精神故乡"
+  "subtitle": "空间、人情与节奏里的心灵落点",
+  "title": "哪里最让你有「精神返乡」的感觉？",
+  "displayTitleZh": "哪里最让你有「精神返乡」的感觉？"
 }

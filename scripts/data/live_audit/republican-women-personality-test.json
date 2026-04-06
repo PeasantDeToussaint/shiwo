@@ -5,7 +5,7 @@
     "_id": "6a0a1fb669cce8ad027eb4183de8d6dc",
     "description": "在变革年代的风云中,你的性格特质与哪位民国女性最为契合？穿越时空,寻找与你灵魂共鸣的那份风骨与情怀。",
     "estimatedMinutes": 8,
-    "eyebrow": "民国女性谱系",
+    "eyebrow": "民国女性",
     "featureId": "history",
     "id": "republican-women-personality-test",
     "isAvailable": true,
@@ -1191,8 +1191,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "时代浪潮中的你,与哪位女性灵魂共鸣",
-    "title": "民国风骨,你是谁"
+    "subtitle": "独立、才情与时代夹缝中的自我姿态",
+    "title": "民国知识女性里，你最像谁？",
+    "displayTitleZh": "民国知识女性里，你最像谁？"
   },
   "featureId": "history"
 }

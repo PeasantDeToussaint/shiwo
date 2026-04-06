@@ -5,7 +5,7 @@
     "_id": "1fa8f55169ccef54027cf1b063cff624",
     "description": "探索你在情感表达、处世态度、价值取向、人际关系与内在韧性五大维度上的特质,解锁你心中最像的金庸笔下奇女子。",
     "estimatedMinutes": 8,
-    "eyebrow": "奇女子心法",
+    "eyebrow": "金庸武侠",
     "featureId": "ip",
     "id": "jin-female-archetypes",
     "isAvailable": true,
@@ -1252,8 +1252,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "情义与算计之间,你会如何选择",
-    "title": "江湖奇女子"
+    "subtitle": "刚柔、情义与江湖规训之间的你",
+    "title": "金庸笔下的奇女子，你最像谁？",
+    "displayTitleZh": "金庸笔下的奇女子，你最像谁？"
   },
   "featureId": "ip"
 }

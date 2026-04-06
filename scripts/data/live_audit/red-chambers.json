@@ -8,9 +8,9 @@
     "description": "",
     "disclaimer": "测试结果仅供参考，不代表完整的人格判断。",
     "displayTitleEn": "Red Chamber Soul Mirror",
-    "displayTitleZh": "红楼梦气质画像",
+    "displayTitleZh": "《红楼梦》气质画像：你更像哪位女子？",
     "estimatedMinutes": 6,
-    "eyebrow": "Dream of the Red Chamber",
+    "eyebrow": "红楼人物",
     "featureId": "ip",
     "id": "red-chambers",
     "isAvailable": true,
@@ -2867,13 +2867,13 @@
       "subTypeThreshold": 0.7,
       "type": "red-chambers"
     },
-    "subtitle": "你是大观园里的谁？",
+    "subtitle": "借大观园里的选择与心境，照见你的情感与坚持",
     "tags": [
       "气质画像",
       "人格探索"
     ],
     "themeKey": "red-chambers",
-    "title": "大观园·三十年梦回"
+    "title": "《红楼梦》气质画像：你更像哪位女子？"
   },
   "featureId": "ip"
 }

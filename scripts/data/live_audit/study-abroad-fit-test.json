@@ -1,7 +1,7 @@
 {
   "description": "通过评估文化开放度、独立自主性与结构化偏好，精准匹配最适合你的留学环境，让异国求学成为成长而非挑战。",
   "estimatedMinutes": 7,
-  "eyebrow": "留学方向指南",
+  "eyebrow": "留学匹配",
   "featureId": null,
   "id": "study-abroad-fit-test",
   "isAvailable": true,
@@ -1427,6 +1427,7 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "找到你的留学国度",
-  "title": "留学适配度测试"
+  "subtitle": "学习风格与生活、社交节奏的综合匹配",
+  "title": "去留学的话，哪种环境更适合你长大？",
+  "displayTitleZh": "去留学的话，哪种环境更适合你长大？"
 }

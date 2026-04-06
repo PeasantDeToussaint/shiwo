@@ -1,7 +1,7 @@
 {
   "description": "通过分析你的学术人格特质，评估你是否具备研究生所需的核心能力与心理素质，帮助你找到最适合自己的学术道路。",
   "estimatedMinutes": 8,
-  "eyebrow": "研究生适合度",
+  "eyebrow": "读研适配",
   "featureId": null,
   "id": "graduate-school-fit",
   "isAvailable": true,
@@ -1272,6 +1272,7 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "深度思考的求索者",
-  "title": "学术探索者"
+  "subtitle": "从思辨方式到节奏与抗压，看你和长期学术训练是否合拍",
+  "title": "你适合读研这条路吗？",
+  "displayTitleZh": "你适合读研这条路吗？"
 }

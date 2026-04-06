@@ -8,9 +8,9 @@
     "description": "",
     "disclaimer": "仅供参考与文化体验",
     "displayTitleEn": "Temple Origins",
-    "displayTitleZh": "寺庙缘分",
+    "displayTitleZh": "你的内心气质，更贴近哪一座庙的意境？",
     "estimatedMinutes": 4,
-    "eyebrow": "Temple Origins",
+    "eyebrow": "寺庙意境",
     "featureId": "festival",
     "id": "temple",
     "isAvailable": true,
@@ -830,14 +830,14 @@
       ],
       "type": "temple"
     },
-    "subtitle": "全国哪座寺庙最旺你？",
+    "subtitle": "禅意小测，仅供文化与自我觉察",
     "tags": [
       "禅学",
       "五行",
       "风水"
     ],
     "themeKey": "temple",
-    "title": "寺庙之缘"
+    "title": "你的内心气质，更贴近哪一座庙的意境？"
   },
   "featureId": "lifestyle"
 }

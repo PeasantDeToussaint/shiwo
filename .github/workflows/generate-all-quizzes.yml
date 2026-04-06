@@ -22,6 +22,21 @@ on:
         required: true
         default: false
         type: boolean
+      provider:
+        description: "AI 提供商（与 scripts/generate-quiz_副本.js 一致）"
+        required: true
+        default: "zhipu"
+        type: choice
+        options:
+          - zhipu
+          - qwen
+          - deepseek
+          - gemini
+          - anthropic
+      qwen_api_base:
+        description: "可选：DashScope 兼容根 URL（国际站 Key）；留空则用脚本默认"
+        required: false
+        default: ""
 
 jobs:
   generate-all:
@@ -42,12 +57,15 @@ jobs:
       - name: 顺序生成所有测验
         env:
           ZHIPU_API_KEY:    ${{ secrets.ZHIPU_API_KEY }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          QWEN_API_BASE: ${{ github.event.inputs.qwen_api_base }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           GEMINI_API_KEY:   ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           WX_APPID:         ${{ secrets.WX_APPID }}
           WX_APPSECRET:     ${{ secrets.WX_APPSECRET }}
           WX_CLOUD_ENV:     ${{ secrets.WX_CLOUD_ENV }}
+          PROVIDER:  ${{ github.event.inputs.provider }}
           QUIZZES:   ${{ github.event.inputs.quizzes }}
           DRY_RUN:   ${{ github.event.inputs.dry_run }}
           ESTIMATE:  ${{ github.event.inputs.estimate }}

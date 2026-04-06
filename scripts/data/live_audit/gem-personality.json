@@ -5,7 +5,7 @@
     "_id": "f6fcfb9c69cce49402796dfe5336ef2b",
     "description": "每种宝石都有独特的能量场和物理特性,映射到人格上,形成你独特的能量流动方式。探索你的宝石人格,发现隐藏在能量背后的真实自我。",
     "estimatedMinutes": 8,
-    "eyebrow": "宝石能量场",
+    "eyebrow": "宝石隐喻",
     "featureId": "archetype",
     "id": "gem-personality",
     "isAvailable": true,
@@ -1522,8 +1522,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "能量的流动方式,揭示你的本质",
-    "title": "你的宝石人格是什么？"
+    "subtitle": "稳定、通透与锋芒等人格维度的隐喻",
+    "title": "若用一颗宝石形容你，会是哪一种？",
+    "displayTitleZh": "若用一颗宝石形容你，会是哪一种？"
   },
   "featureId": "archetype"
 }

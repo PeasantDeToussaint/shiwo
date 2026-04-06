@@ -5,7 +5,7 @@
     "_updatedAt": "2026-04-01T17:56:28.841Z",
     "description": "深宫之中,每个人都在以独特方式生存。测试你的权力欲望、情感表达、权谋策略与道德坚守,找到你最像的甄嬛传角色。",
     "estimatedMinutes": 5,
-    "eyebrow": "宫廷人格",
+    "eyebrow": "甄嬛传",
     "featureId": "ip",
     "id": "zhenhuan-character-match",
     "isAvailable": true,
@@ -818,8 +818,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "在权力与情感的博弈中,你最像谁？",
-    "title": "你是哪位甄嬛传角色"
+    "subtitle": "深宫处境中的生存策略与真心",
+    "title": "《甄嬛传》里，你像哪位嫔妃？",
+    "displayTitleZh": "《甄嬛传》里，你像哪位嫔妃？"
   },
   "featureId": "ip"
 }

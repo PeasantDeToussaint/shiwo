@@ -1,7 +1,7 @@
 {
   "description": "了解你的内容创作风格偏好和受众互动需求，精准匹配最适合的自媒体赛道，让你的创作事半功倍。",
   "estimatedMinutes": 6,
-  "eyebrow": "内容创作者定位",
+  "eyebrow": "自媒体方向",
   "featureId": null,
   "id": "media-niche-test",
   "isAvailable": true,
@@ -1409,6 +1409,7 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "找到你的内容创作之路",
-  "title": "自媒体赛道测验"
+  "subtitle": "表达、深度与受众连接三维匹配",
+  "title": "你的创作习惯，更适合哪类自媒体方向？",
+  "displayTitleZh": "你的创作习惯，更适合哪类自媒体方向？"
 }

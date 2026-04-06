@@ -2,9 +2,9 @@
   "accent": "#6b5fa6",
   "bgImage": "cloud://cloudbase-4gadl6qo4a9aa95d.636c-cloudbase-4gadl6qo4a9aa95d-1415990507/classicals1.png",
   "description": "MBTI 由凯瑟琳·布里格斯和伊莎贝尔·迈尔斯基于荣格的认知类型理论开发，是目前全球使用最广的人格分类系统。它从四个维度描述你处理信息和做决定的默认方式——外倾/内倾（你从哪里获取能量）、实感/直觉（你如何接收信息）、思考/情感（你如何做决定）、判断/知觉（你如何安排生活）——最终组合出 16 种类型，每种类型都有其典型的思维模式和行为风格。\n\n测试没有好或差的类型。选最符合你平时真实状态的选项，不用猜什么是更好的答案——你在意识到之前的第一反应，往往是最准确的。",
-  "displayTitleZh": "十六人格测试",
+  "displayTitleZh": "十六型偏好：你的能量与决策更像哪一类？",
   "estimatedMinutes": 12,
-  "eyebrow": "MBTI",
+  "eyebrow": "十六型",
   "featureId": "classics",
   "id": "mbti-16personalities",
   "isAvailable": true,
@@ -3289,7 +3289,7 @@
     "scale": 5,
     "type": "mbti"
   },
-  "subtitle": "16 种人格类型，找到属于你的那一个",
+  "subtitle": "MBTI 四轴娱乐自测（非医疗或职业结论）",
   "themeKey": "default",
-  "title": "十六人格测试"
+  "title": "十六型偏好：你的能量与决策更像哪一类？"
 }

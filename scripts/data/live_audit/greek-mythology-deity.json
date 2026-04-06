@@ -5,7 +5,7 @@
     "_id": "dde8ef4869ccf272027ef59e255b9efb",
     "description": "探索你内在的神性特质,在权威、冲突、忠诚、智慧与情感中,找到与你灵魂共鸣的希腊神祇原型。",
     "estimatedMinutes": 8,
-    "eyebrow": "神性映射",
+    "eyebrow": "希腊神话",
     "featureId": "archetype",
     "id": "greek-mythology-deity",
     "isAvailable": true,
@@ -1302,8 +1302,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "在神性与人欲之间,你的灵魂最接近哪位神明",
-    "title": "神祇之心,你属于谁"
+    "subtitle": "欲望、秩序与命运观映射奥林匹斯原型",
+    "title": "希腊神话里，你是哪位神的气质？",
+    "displayTitleZh": "希腊神话里，你是哪位神的气质？"
   },
   "featureId": "archetype"
 }

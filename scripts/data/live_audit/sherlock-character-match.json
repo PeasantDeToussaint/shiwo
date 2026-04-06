@@ -5,7 +5,7 @@
     "_id": "b3c6c3d569ccf9b202818aea4b2be6a3",
     "description": "在理性与感性、独立与协作、细节与宏观、传统与创新、行动与思考之间,探寻你最接近的福尔摩斯角色原型。",
     "estimatedMinutes": 8,
-    "eyebrow": "伦敦迷雾中的你",
+    "eyebrow": "神夏角色",
     "featureId": "ip",
     "id": "sherlock-character-match",
     "isAvailable": true,
@@ -1271,8 +1271,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "真相与人性之间,你如何抉择",
-    "title": "推理之心,你是哪种"
+    "subtitle": "推理节奏、社交距离与冒险感",
+    "title": "《神探夏洛克》里，你更像谁？",
+    "displayTitleZh": "《神探夏洛克》里，你更像谁？"
   },
   "featureId": "ip"
 }

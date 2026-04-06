@@ -1,9 +1,10 @@
 {
   "id": "lovecraftian-monster-domination",
   "featureId": "psychology",
-  "title": "克苏鲁支配者",
-  "subtitle": "你将被谁支配",
-  "eyebrow": "宇宙恐怖测验",
+  "title": "面对不可名状的未知，你是哪种反应类型？",
+  "subtitle": "借克苏鲁式情境，照见面对未知与失控时的心智反应（娱乐向）",
+  "eyebrow": "宇宙恐怖情境",
+  "displayTitleZh": "面对不可名状的未知，你是哪种反应类型？",
   "description": "探索你面对宇宙未知时的心理机制，揭示你内在被哪种克苏鲁怪物所支配，理解你在不可名状之物前的真实反应。",
   "isAvailable": true,
   "estimatedMinutes": 8,

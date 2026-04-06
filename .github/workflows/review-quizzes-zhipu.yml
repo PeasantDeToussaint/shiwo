@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       model:
-        description: "模型名（留空则脚本默认 glm-4-flash，或设仓库变量 ZHIPU_REVIEW_MODEL）"
+        description: "模型名（留空则脚本默认 glm-4-plus，或设仓库变量 ZHIPU_REVIEW_MODEL）"
         required: false
         default: ""
       delay_ms:

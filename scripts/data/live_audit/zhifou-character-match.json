@@ -5,7 +5,7 @@
     "_updatedAt": "2026-04-01T07:05:35.353Z",
     "description": "通过五维测评,揭示你在家族利益、情感表达、处世哲学、价值取舍和自我实现上的倾向,找出你在《知否》世界中的人物对应。",
     "estimatedMinutes": 8,
-    "eyebrow": "深宅心法",
+    "eyebrow": "知否",
     "featureId": "ip",
     "id": "zhifou-character-match",
     "isAvailable": true,
@@ -1297,8 +1297,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "在情义与算计之间,你的底色如何显现",
-    "title": "家族棋局,你是哪种心性"
+    "subtitle": "家族棋局中的分寸、隐忍与底线",
+    "title": "《知否》里，你在盛家最像谁？",
+    "displayTitleZh": "《知否》里，你在盛家最像谁？"
   },
   "featureId": "ip"
 }

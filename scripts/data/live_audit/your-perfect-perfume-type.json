@@ -3,7 +3,7 @@
   "bgImage": "cloud://cloudbase-4gadl6qo4a9aa95d.636c-cloudbase-4gadl6qo4a9aa95d-1415990507/perfume-card.png",
   "description": "香水是性格的延伸。每个人的气息，是内心世界在空气中留下的印记。22道题，帮你找到那瓶与你最相称的香调。",
   "estimatedMinutes": 10,
-  "eyebrow": "Perfume Personality",
+  "eyebrow": "气质香型",
   "featureId": "lifestyle",
   "id": "your-perfect-perfume-type",
   "isAvailable": true,
@@ -1284,7 +1284,8 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "找到与内在气质最契合的香调",
+  "subtitle": "从日常选择映射香调与性格侧写",
   "themeKey": "default",
-  "title": "最符合你气质的香水类型"
+  "title": "若用一支香水形容你，会是什么气质？",
+  "displayTitleZh": "若用一支香水形容你，会是什么气质？"
 }

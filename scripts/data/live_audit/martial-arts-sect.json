@@ -5,7 +5,7 @@
     "_updatedAt": "2026-04-01T07:05:29.368Z",
     "description": "八大门派,八种人生。通过测试揭示你的江湖心法,找到最适合你的武侠门派,看清你内心深处的价值取向与处世之道。",
     "estimatedMinutes": 8,
-    "eyebrow": "门派抉择",
+    "eyebrow": "金庸门派",
     "featureId": "archetype",
     "id": "martial-arts-sect",
     "isAvailable": true,
@@ -1270,8 +1270,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "在义与权之间,你会如何选择",
-    "title": "江湖心法测"
+    "subtitle": "心法、招式观与江湖道义偏好",
+    "title": "金庸武侠八大门派，你最适合哪一派？",
+    "displayTitleZh": "金庸武侠八大门派，你最适合哪一派？"
   },
   "featureId": "ip"
 }

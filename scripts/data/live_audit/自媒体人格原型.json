@@ -5,7 +5,7 @@
     "_id": "dde8ef4869cce26c027d2e6425eefc29",
     "description": "在自媒体的多元赛道中,每个人独特的创作风格与运营策略决定了影响力边界。本次测验将揭示你最匹配的内容创作原型,助你找准自媒体定位。",
     "estimatedMinutes": 8,
-    "eyebrow": "内容人格",
+    "eyebrow": "自媒体人格",
     "featureId": "career",
     "id": "自媒体人格原型",
     "isAvailable": true,
@@ -1141,8 +1141,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "找到最适合你特质的自媒体道路",
-    "title": "内容江湖,你属于哪一派"
+    "subtitle": "打法、受众与变现气质，测你更贴近哪一类创作者",
+    "title": "做自媒体，你更像哪种创作原型？",
+    "displayTitleZh": "做自媒体，你更像哪种创作原型？"
   },
   "featureId": "career"
 }

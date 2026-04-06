@@ -19,6 +19,7 @@ on:
         type: choice
         options:
           - zhipu
+          - qwen
           - deepseek
           - gemini
           - anthropic
@@ -62,6 +63,10 @@ on:
         required: true
         default: false
         type: boolean
+      qwen_api_base:
+        description: "可选：DashScope OpenAI 兼容根 URL（国际站 Key 时填写）；留空则用北京默认"
+        required: false
+        default: ""
 
 jobs:
   generate:
@@ -83,6 +88,8 @@ jobs:
         shell: bash
         env:
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          QWEN_API_BASE: ${{ github.event.inputs.qwen_api_base }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

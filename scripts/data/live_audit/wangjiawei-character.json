@@ -5,7 +5,7 @@
     "_id": "93abbbd769ccf637027e944b3e616aed",
     "description": "通过王家卫电影人物的特质,探索你在情感表达、时间观念、自我边界、现实态度和连接方式上的深层取向。",
     "estimatedMinutes": 8,
-    "eyebrow": "光影中的灵魂",
+    "eyebrow": "王家卫电影",
     "featureId": "ip",
     "id": "wangjiawei-character",
     "isAvailable": true,
@@ -1287,8 +1287,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "在情感与现实中,你如何自处",
-    "title": "心之所向,你是谁"
+    "subtitle": "时间、疏离与执念的都市心境",
+    "title": "王家卫电影里，你最像哪位角色？",
+    "displayTitleZh": "王家卫电影里，你最像哪位角色？"
   },
   "featureId": "aesthetics"
 }

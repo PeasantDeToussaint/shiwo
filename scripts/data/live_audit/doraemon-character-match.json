@@ -5,7 +5,7 @@
     "_updatedAt": "2026-04-01T07:05:24.572Z",
     "description": "通过面对困境时的本能选择,揭示你与《哆啦A梦》中哪个角色最为相似,探索你内心深处的处事模式与价值取向。",
     "estimatedMinutes": 8,
-    "eyebrow": "哆啦A梦里的你",
+    "eyebrow": "哆啦A梦",
     "featureId": "ip",
     "id": "doraemon-character-match",
     "isAvailable": true,
@@ -1263,8 +1263,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "每个选择都在暴露你的真实面貌",
-    "title": "内心选择决定你的角色"
+    "subtitle": "友谊、怯懦与勇气里的站位",
+    "title": "《哆啦A梦》里，你更像谁？",
+    "displayTitleZh": "《哆啦A梦》里，你更像谁？"
   },
   "featureId": "ip"
 }

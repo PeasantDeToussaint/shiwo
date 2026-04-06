@@ -5,7 +5,7 @@
     "_id": "c25002a969ccebc2027ecef930eeefbf",
     "description": "迪士尼公主不仅是童话角色,更是不同价值观的化身。通过选择,探索你内心的主导力量,找到与你共鸣的公主原型。",
     "estimatedMinutes": 8,
-    "eyebrow": "童话心测",
+    "eyebrow": "迪士尼公主",
     "featureId": "ip",
     "id": "disney-princess-archetype",
     "isAvailable": true,
@@ -1381,8 +1381,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "每个选择都在暴露你的价值观底色",
-    "title": "公主心性,你是哪种"
+    "subtitle": "勇气、自洽与亲密关系里的默认模式",
+    "title": "十二位迪士尼公主里，你更像哪一位？",
+    "displayTitleZh": "十二位迪士尼公主里，你更像哪一位？"
   },
   "featureId": "ip"
 }

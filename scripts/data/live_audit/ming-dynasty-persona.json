@@ -1,7 +1,7 @@
 {
   "description": "穿越明朝末年,在王朝将倾的乱世中,你的选择将决定你的身份与命运。是成为权力猎手,还是道德坚守者,抑或变革先锋？",
   "estimatedMinutes": 8,
-  "eyebrow": "明朝末年身份图谱",
+  "eyebrow": "明末乱世",
   "featureId": "history",
   "id": "ming-dynasty-persona",
   "isAvailable": true,
@@ -1365,6 +1365,7 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "权力、生存与道义之间的抉择",
-  "title": "明末乱世,你会是谁"
+  "subtitle": "权力、生存与道义撕扯下的选择",
+  "title": "明末乱世的夹缝里，你更可能变成谁？",
+  "displayTitleZh": "明末乱世的夹缝里，你更可能变成谁？"
 }

@@ -5,7 +5,7 @@
     "_id": "33956e3d69ccf10c027a3eff742046bd",
     "description": "宫崎骏的世界里,每个角色都在理想与现实、自然与技术之间寻找平衡。探索你内心深处的驱动力量,找到属于你的那一笔色彩。",
     "estimatedMinutes": 8,
-    "eyebrow": "心之所向",
+    "eyebrow": "宫崎骏宇宙",
     "featureId": "ip",
     "id": "miyazaki-character-archetype",
     "isAvailable": true,
@@ -1402,8 +1402,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "在理想与现实的夹缝中,找到你的位置",
-    "title": "风起之时,你是谁"
+    "subtitle": "飞行、成长与自然观里的选择",
+    "title": "宫崎骏动画里，你最像谁？",
+    "displayTitleZh": "宫崎骏动画里，你最像谁？"
   },
   "featureId": "ip"
 }

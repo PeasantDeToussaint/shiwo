@@ -5,7 +5,7 @@
     "_id": "3bef321d69ccf74e027e6b18592f246e",
     "description": "穿越1920年代浮华世界,探寻你是谁。在理想与现实、阶层与爱情、道德与欲望的十字路口,你的选择揭示灵魂深处的秘密。",
     "estimatedMinutes": 8,
-    "eyebrow": "爵士时代的灵魂",
+    "eyebrow": "盖茨比",
     "featureId": "ip",
     "id": "gatsby-character-match",
     "isAvailable": true,
@@ -1147,8 +1147,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "每个选择都映射你的灵魂底色",
-    "title": "浮华与幻灭之间"
+    "subtitle": "欲望、阶级面具与幻灭感",
+    "title": "《了不起的盖茨比》里，你像他笔下的谁？",
+    "displayTitleZh": "《了不起的盖茨比》里，你像他笔下的谁？"
   },
   "featureId": "aesthetics"
 }

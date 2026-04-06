@@ -1,22 +1,19 @@
 #!/usr/bin/env node
 /**
- * review-quizzes-zhipu.js
+ * review-quizzes-openai.js
  *
- * Calls Zhipu (智谱) GLM chat API to review quiz JSON files one by one as an editor:
- * suitability (topic match, ethics, clarity) and variety (question overlap, option balance, scoring sanity).
+ * Same editorial rubric as review-quizzes-zhipu.js, but calls OpenAI Chat Completions
+ * (default model gpt-5 — override with OPENAI_REVIEW_MODEL or --model=).
  *
  * Prerequisites:
- *   export ZHIPU_API_KEY=...   (or put in repo-root .env)
+ *   export OPENAI_API_KEY=...   (or repo-root .env)
  *
  * Usage:
- *   node scripts/review-quizzes-zhipu.js
- *   node scripts/review-quizzes-zhipu.js --dir=scripts/22newquizes --out=scripts/quiz-review-zhipu.md
- *   node scripts/review-quizzes-zhipu.js --only=imperial-examination-simulation,bird-personality-test
- *   node scripts/review-quizzes-zhipu.js --full --delay=2000 --model=glm-4-plus
- *   node scripts/review-quizzes-zhipu.js --dry-run
- *
- * GitHub Actions: 仓库工作流「智谱审稿（测验合集）」会跑本脚本，将全套意见写入
- * scripts/quiz-review-zhipu-report.md 并作为 Artifact「zhipu-quiz-review」上传（需配置 Secrets.ZHIPU_API_KEY）。
+ *   node scripts/review-quizzes-openai.js
+ *   node scripts/review-quizzes-openai.js --dir=scripts/22newquizes --out=scripts/quiz-review-openai.md
+ *   node scripts/review-quizzes-openai.js --only=imperial-examination-simulation
+ *   node scripts/review-quizzes-openai.js --model=gpt-5-mini --delay=2000
+ *   node scripts/review-quizzes-openai.js --dry-run
  */
 
 const https = require("https");
@@ -35,11 +32,11 @@ const {
 
 loadRepoEnv();
 
-const ZHIPU_KEY = process.env.ZHIPU_API_KEY;
+const OPENAI_KEY = process.env.OPENAI_API_KEY;
 const HTTP_TIMEOUT_MS = 180000;
 const DEFAULT_DIR = path.resolve(__dirname, "22newquizes");
-const DEFAULT_OUT = path.resolve(__dirname, "quiz-review-zhipu.md");
-const DEFAULT_MODEL = process.env.ZHIPU_REVIEW_MODEL || "glm-4-plus";
+const DEFAULT_OUT = path.resolve(__dirname, "quiz-review-openai.md");
+const DEFAULT_MODEL = process.env.OPENAI_REVIEW_MODEL || "gpt-5";
 const DEFAULT_DELAY_MS = 1500;
 
 const ARGS = process.argv.slice(2);
@@ -65,26 +62,26 @@ const HELP = ARGS.includes("--help") || ARGS.includes("-h");
 
 if (HELP) {
   console.log(`
-review-quizzes-zhipu.js — Zhipu API editorial review for quiz JSON files
+review-quizzes-openai.js — OpenAI Chat Completions editorial review for quiz JSON
 
-Env:  ZHIPU_API_KEY (required unless --dry-run)
-      ZHIPU_REVIEW_MODEL optional default for --model
+Env:  OPENAI_API_KEY (required unless --dry-run)
+      OPENAI_REVIEW_MODEL optional default for --model
 
 Args:
   --dir=PATH       Folder of quiz JSON (default: scripts/22newquizes)
   --glob=PATTERN   Filename glob filter (default: *.json)
-  --out=FILE       Markdown report path (default: scripts/quiz-review-zhipu.md)
-  --model=NAME     e.g. glm-4-plus (default), glm-4-flash
+  --out=FILE       Markdown report (default: scripts/quiz-review-openai.md)
+  --model=NAME     e.g. gpt-5 (default), gpt-5-mini, gpt-4o, …
   --delay=MS       Pause between API calls (default: ${DEFAULT_DELAY_MS})
-  --only=id1,id2   Limit to quiz id(s) matching JSON "id" field
-  --full           Include longer result excerpts (portrait preview)
-  --dry-run        Print payloads only, no API calls
+  --only=id1,id2   Limit to quiz id(s)
+  --full           Longer portrait previews in payload
+  --dry-run        No API calls
   --help           This help
 `);
   process.exit(0);
 }
 
-function httpPost(url, payload, extraHeaders = {}) {
+function httpPostJson(url, payload, headers) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
     const urlObj = new URL(url);
@@ -96,7 +93,7 @@ function httpPost(url, payload, extraHeaders = {}) {
         headers: {
           "Content-Type": "application/json",
           "Content-Length": Buffer.byteLength(body),
-          ...extraHeaders,
+          ...headers,
         },
       },
       (res) => {
@@ -104,7 +101,7 @@ function httpPost(url, payload, extraHeaders = {}) {
         res.on("data", (c) => (data += c));
         res.on("end", () => {
           if (res.statusCode >= 400) {
-            return reject(new Error(`HTTP ${res.statusCode}: ${data.slice(0, 500)}`));
+            return reject(new Error(`HTTP ${res.statusCode}: ${data.slice(0, 800)}`));
           }
           try {
             resolve(JSON.parse(data));
@@ -124,33 +121,44 @@ function httpPost(url, payload, extraHeaders = {}) {
   });
 }
 
-async function callZhipu(userContent) {
+/** Newer OpenAI models often expect max_completion_tokens; older use max_tokens + temperature. */
+function chatCompletionBody(model, messages) {
+  const m = (model || "").toLowerCase();
+  const useCompletionCap = /^(gpt-5|o[134]|o1|o3)/i.test(m) || m.includes("gpt-5");
+  if (useCompletionCap) {
+    return {
+      model,
+      messages,
+      max_completion_tokens: 8192,
+    };
+  }
+  return {
+    model,
+    messages,
+    max_tokens: 8192,
+    temperature: 0.35,
+  };
+}
+
+async function callOpenAI(userContent) {
   const messages = [
     { role: "system", content: SYSTEM_PROMPT },
     { role: "user", content: userContent },
   ];
-  const res = await httpPost(
-    "https://open.bigmodel.cn/api/paas/v4/chat/completions",
-    {
-      model: MODEL,
-      max_tokens: 4096,
-      temperature: 0.35,
-      messages,
-      stream: false,
-    },
-    { Authorization: `Bearer ${ZHIPU_KEY}` }
-  );
-  if (res.error) {
-    throw new Error(`Zhipu: ${JSON.stringify(res.error)}`);
-  }
+  const body = chatCompletionBody(MODEL, messages);
+  const res = await httpPostJson("https://api.openai.com/v1/chat/completions", body, {
+    Authorization: `Bearer ${OPENAI_KEY}`,
+  });
   const msg = res.choices?.[0]?.message?.content;
-  if (!msg) throw new Error(`Zhipu: empty choices: ${JSON.stringify(res).slice(0, 300)}`);
+  if (!msg) {
+    throw new Error(`OpenAI: empty choices: ${JSON.stringify(res).slice(0, 400)}`);
+  }
   return msg;
 }
 
 async function main() {
-  if (!DRY && !ZHIPU_KEY) {
-    console.error("Missing ZHIPU_API_KEY. Set env or add to .env at repo root.");
+  if (!DRY && !OPENAI_KEY) {
+    console.error("Missing OPENAI_API_KEY. Set env or add OPENAI_API_KEY to repo-root .env");
     process.exit(1);
   }
 
@@ -173,7 +181,7 @@ async function main() {
   }
 
   console.log(`Review ${files.length} file(s) → ${OUT}`);
-  const header = `# 智谱审稿报告\n\n- 模型: \`${MODEL}\`\n- 目录: \`${DIR}\`\n- 生成: ${new Date().toISOString()}\n- full=${FULL}\n\n---\n\n`;
+  const header = `# OpenAI 审稿报告\n\n- 模型: \`${MODEL}\`\n- 目录: \`${DIR}\`\n- 生成: ${new Date().toISOString()}\n- full=${FULL}\n\n---\n\n`;
   fs.writeFileSync(OUT, header, "utf8");
 
   for (let i = 0; i < files.length; i++) {
@@ -196,7 +204,7 @@ async function main() {
       review = "_(dry-run — no API call)_\n\n" + truncate(userBlock, 800);
     } else {
       try {
-        review = await callZhipu(userBlock);
+        review = await callOpenAI(userBlock);
       } catch (e) {
         review = `**API 错误**: ${e.message}`;
         console.error(e.message);

@@ -5,7 +5,7 @@
     "_updatedAt": "2026-04-01T07:05:25.653Z",
     "description": "在政治博弈与个人情感的十字路口,你的选择将揭示你最接近鹤唳华亭中的哪位角色。通过五个核心维度,精准匹配你的处事之道与内心坚守。",
     "estimatedMinutes": 8,
-    "eyebrow": "宫廷心法",
+    "eyebrow": "鹤唳华亭",
     "featureId": "ip",
     "id": "he-li-hua-ting-character-match",
     "isAvailable": true,
@@ -1255,8 +1255,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "每个选择都在显露你的底色",
-    "title": "权谋与情义之间"
+    "subtitle": "权谋与情义对撞时的你",
+    "title": "《鹤唳华亭》里，你像哪位角色？",
+    "displayTitleZh": "《鹤唳华亭》里，你像哪位角色？"
   },
   "featureId": "ip"
 }

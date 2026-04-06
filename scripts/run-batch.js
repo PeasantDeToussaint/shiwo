@@ -7,6 +7,7 @@
  *   DRY_RUN   "true" / "false"，默认 true
  *   ESTIMATE  "true" / "false"，默认 false
  *   SKIP_EVAL "true" / "false"，默认 false
+ *   PROVIDER  zhipu | qwen | deepseek | gemini | anthropic，默认 zhipu
  */
 
 const { spawnSync } = require("child_process");
@@ -17,6 +18,7 @@ const quizzesInput = (process.env.QUIZZES || "all").trim();
 const dryRun  = process.env.DRY_RUN  !== "false";
 const estimate = process.env.ESTIMATE === "true";
 const skipEval = process.env.SKIP_EVAL === "true";
+const provider = (process.env.PROVIDER || "zhipu").trim().toLowerCase();
 
 // Select quizzes
 let selected;
@@ -34,7 +36,7 @@ if (quizzesInput === "all") {
 const scriptPath = path.join(__dirname, "generate-quiz_副本.js");
 
 console.log(`\n🚀  批量生成 ${selected.length} 个测验（顺序执行）`);
-console.log(`    dry-run=${dryRun}  estimate=${estimate}  skip-eval=${skipEval}\n`);
+console.log(`    provider=${provider}  dry-run=${dryRun}  estimate=${estimate}  skip-eval=${skipEval}\n`);
 
 let passed = 0, failed = 0;
 
@@ -55,7 +57,7 @@ for (let i = 0; i < selected.length; i++) {
     `--results=${q.results}`,
     `--dimensions=${q.dimensions}`,
     `--questions=${q.questions}`,
-    `--provider=zhipu`,
+    `--provider=${provider}`,
   ];
 
   if (q.scoring) args.push(`--scoring=${q.scoring}`);

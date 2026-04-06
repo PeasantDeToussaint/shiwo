@@ -3,10 +3,10 @@ const CLOUD = "cloud://cloudbase-4gadl6qo4a9aa95d.636c-cloudbase-4gadl6qo4a9aa95
 module.exports = {
   id: "dialect",
   catalog: {
-    title: "方言溯源",
-    subtitle: "你的日常用词，藏着你来自哪里。",
+    title: "听你的用词习惯，你更像哪片方言气质？",
+    subtitle: "用语选择映射地域亲缘（趣味溯源，非严谨语言学鉴定）",
     bgImage: CLOUD + "city-card.jpg",
-    displayTitleZh: "方言溯源",
+    displayTitleZh: "听你的用词习惯，你更像哪片方言气质？",
     displayTitleEn: "Dialect Origins",
     tags: ["方言", "地域"],
     estimatedMinutes: 4,

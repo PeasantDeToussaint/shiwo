@@ -1,7 +1,7 @@
 {
   "description": "揭示你在末世环境中的生存策略和社会定位，探索极端情境下最真实的自我。",
   "estimatedMinutes": 7,
-  "eyebrow": "生存策略映射",
+  "eyebrow": "末世设定",
   "featureId": null,
   "id": "post-apocalypse-role",
   "isAvailable": true,
@@ -1432,6 +1432,7 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "危机中的自我定位",
-  "title": "末世角色"
+  "subtitle": "资源、信任与规则崩坏时的默认反应",
+  "title": "末世设定下，你更可能站哪种生存位？",
+  "displayTitleZh": "末世设定下，你更可能站哪种生存位？"
 }

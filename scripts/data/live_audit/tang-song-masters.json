@@ -1,7 +1,7 @@
 {
   "description": "唐宋八大家代表了不同的文学风格与人格特质。通过五大维度解析,揭示你最接近哪位文学巨匠的精神世界。",
   "estimatedMinutes": 8,
-  "eyebrow": "文坛风骨",
+  "eyebrow": "唐宋八大家",
   "featureId": "history",
   "id": "tang-song-masters",
   "isAvailable": true,
@@ -1261,6 +1261,7 @@
     ],
     "type": "weighted-dimension"
   },
-  "subtitle": "在文道与性情之间,你会如何选择",
-  "title": "文心墨韵,你是哪位"
+  "subtitle": "文脉气质与入世方式的粗测",
+  "title": "唐宋八大家里，你更接近哪一位？",
+  "displayTitleZh": "唐宋八大家里，你更接近哪一位？"
 }

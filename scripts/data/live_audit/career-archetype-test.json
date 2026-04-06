@@ -5,7 +5,7 @@
     "_id": "da3d566169cce03d027627b40dd4404c",
     "description": "探索你的思维模式、工作动机与风险偏好,发现最适合的职业原型。这不是简单的职业兴趣测试,而是基于行为特质的职业适配度分析。",
     "estimatedMinutes": 8,
-    "eyebrow": "职业原型图谱",
+    "eyebrow": "职场原型",
     "featureId": "career",
     "id": "career-archetype-test",
     "isAvailable": true,
@@ -1570,8 +1570,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "在结构与创新之间,你的天性指向何方",
-    "title": "职场原型:你的职业天赋"
+    "subtitle": "协作方式、目标感与风险承受侧写",
+    "title": "职场里，你更像哪种工作原型？",
+    "displayTitleZh": "职场里，你更像哪种工作原型？"
   },
   "featureId": "career"
 }

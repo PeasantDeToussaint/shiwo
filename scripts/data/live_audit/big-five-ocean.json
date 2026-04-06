@@ -2,9 +2,9 @@
   "accent": "#7a8fa6",
   "bgImage": "cloud://cloudbase-4gadl6qo4a9aa95d.636c-cloudbase-4gadl6qo4a9aa95d-1415990507/classicals2.png",
   "description": "大五人格（Big Five，也称 OCEAN 模型）是当代心理学中实证支持最充分的人格框架，被广泛用于学术研究、职业评估和心理咨询。它从五个相互独立的维度描述你的性格：开放性（对新经验的好奇心）、尽责性（自律与计划性）、外倾性（社交能量来源）、亲和性（对他人的关注与共情）、情绪稳定性（面对压力的反应方式）。\n\n每个维度都是连续的谱系，高低各有优劣，没有理想分数。测试结果是你当前真实状态的快照，按照你现在的实际样子作答，比选理想答案更有参考价值。",
-  "displayTitleZh": "大五人格",
+  "displayTitleZh": "大五人格：五个维度上你长什么样？",
   "estimatedMinutes": 10,
-  "eyebrow": "Big Five OCEAN",
+  "eyebrow": "大五人格",
   "featureId": "classics",
   "id": "big-five-ocean",
   "isAvailable": true,
@@ -1880,7 +1880,7 @@
     "scale": 5,
     "type": "big-five"
   },
-  "subtitle": "五个维度，描绘你性格最真实的轮廓",
+  "subtitle": "开放性、尽责、外向、宜人、情绪敏感（科普自测）",
   "themeKey": "default",
-  "title": "大五人格"
+  "title": "大五人格：五个维度上你长什么样？"
 }

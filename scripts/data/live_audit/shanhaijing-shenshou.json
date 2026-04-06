@@ -5,7 +5,7 @@
     "_updatedAt": "2026-04-01T07:05:32.119Z",
     "description": "通过一系列选择,揭示你内心深处的山海经神兽原型,探索你的精神特质与神话象征的匹配。",
     "estimatedMinutes": 8,
-    "eyebrow": "神兽原型",
+    "eyebrow": "山海经",
     "featureId": "archetype",
     "id": "shanhaijing-shenshou",
     "isAvailable": true,
@@ -1160,8 +1160,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "选择揭示你的内在力量",
-    "title": "神兽之心,你是哪种"
+    "subtitle": "从反应与气质映射神话原型",
+    "title": "你是《山海经》里的哪种神兽？",
+    "displayTitleZh": "你是《山海经》里的哪种神兽？"
   },
   "featureId": "archetype"
 }

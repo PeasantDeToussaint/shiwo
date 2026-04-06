@@ -5,7 +5,7 @@
     "_id": "8d2e20b369ccd9b00279f959158a376b",
     "description": "在恋爱综艺的舞台上,每个人都会展现独特的情感处理方式。探索你在镜头下的恋爱人格,找到你最真实的情感表达模式。",
     "estimatedMinutes": 8,
-    "eyebrow": "恋爱场域",
+    "eyebrow": "恋综设定",
     "featureId": "relationship",
     "id": "love-show-personality",
     "isAvailable": true,
@@ -1284,8 +1284,9 @@
       ],
       "type": "weighted-dimension"
     },
-    "subtitle": "你的情感表达策略会如何被镜头捕捉",
-    "title": "恋爱真人秀人格"
+    "subtitle": "镜头、规则与修罗场下的亲密反应",
+    "title": "恋爱真人秀里，你会是哪种人设？",
+    "displayTitleZh": "恋爱真人秀里，你会是哪种人设？"
   },
   "featureId": "relationship"
 }
