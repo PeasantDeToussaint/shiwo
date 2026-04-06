@@ -190,7 +190,7 @@ async function main() {
       }
       if (architecture && architecture.results) {
         outline.architectureResults = architecture.results;
-        outline.architectureResultType = architecture.resultType || "archetype";
+        outline.architectureResultType = architecture.resultType || "abstract_psychology";
         outline.architectureResultFields = architecture.resultFields || null;
         outline.architectureDimensionSpecs = architecture.dimensionSpecs || null;
         outline.architectureScoringFamily = architecture.scoringFamily || "weighted-dimension";

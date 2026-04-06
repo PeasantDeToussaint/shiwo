@@ -1,0 +1,871 @@
+{
+  "exportedAt": "2026-04-06T15:18:56.874Z",
+  "env": "cloudbase-4gadl6qo4a9aa95d",
+  "count": 96,
+  "catalog": [
+    {
+      "id": "ancient-poet-match",
+      "featureId": "aesthetics",
+      "title": "你和哪位古代诗人心有灵犀？",
+      "subtitle": "寻找灵魂共鸣的诗意知己",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "anti-affair-resilience-test",
+      "featureId": "relationship",
+      "title": "关系稳定度",
+      "subtitle": "测测你的抗出轨能力",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "avengers-hero-match",
+      "featureId": "ip",
+      "title": "你是《复仇者联盟》里的哪位英雄？",
+      "subtitle": "找到你的英雄本色",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "big-bang-theory-character-match",
+      "featureId": "ip",
+      "title": "你和生活大爆炸中的谁最像？",
+      "subtitle": "谁最像你？",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "big-five-ocean",
+      "featureId": "classics",
+      "title": "大五人格",
+      "subtitle": "五个维度，描绘你性格最真实的轮廓",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "bird-personality-test",
+      "featureId": "lifestyle",
+      "title": "鸟性格测试",
+      "subtitle": "发现你的鸟之灵魂",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "buendia-generation-match",
+      "featureId": "ip",
+      "title": "你是《百年孤独》里的哪一代布恩迪亚？",
+      "subtitle": "家族宿命的回响",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "car-personality-test",
+      "featureId": "lifestyle",
+      "title": "你最适合开什么样的车",
+      "subtitle": "找到你的灵魂座驾",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "career-aptitude",
+      "featureId": "classics",
+      "title": "职业能力倾向",
+      "subtitle": "找到你真正有能量投入的工作方向",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "career-archetype-test",
+      "featureId": "career",
+      "title": "职场原型:你的职业天赋",
+      "subtitle": "在结构与创新之间,你的天性指向何方",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "city",
+      "featureId": "lifestyle",
+      "title": "中国哪座城市，最适合你的生活？",
+      "subtitle": "中国哪座城市，最适合你的生活？",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/city-question/city-question",
+      "resultPage": "/subpackages/quiz/pages/city-result/city-result"
+    },
+    {
+      "id": "classic-book-match",
+      "featureId": "aesthetics",
+      "title": "如果你是一本经典名著，你的书名是什么？",
+      "subtitle": "你与哪本经典共鸣",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "coffee-personality-match",
+      "featureId": "lifestyle",
+      "title": "你更像哪种咖啡？",
+      "subtitle": "一杯咖啡，一面镜子",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "content-creator-type",
+      "featureId": "aesthetics",
+      "title": "你最适合做什么自媒体？",
+      "subtitle": "找到你的创作天职",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "cthulhu-deity-match",
+      "featureId": "history",
+      "title": "你是哪种克苏鲁古神？",
+      "subtitle": "探索你的宇宙本质",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "detective-conan-character-match",
+      "featureId": "ip",
+      "title": "《名侦探柯南》里，你像哪位角色？",
+      "subtitle": "从逻辑力、正义感、行动力与社交方式，对齐工藤新一、服部平次、毛利兰、灰原哀等柯南世界角色",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "dialect",
+      "featureId": "lifestyle",
+      "title": "方言溯源",
+      "subtitle": "你的日常用词，藏着你来自哪里。",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/dialect-question/dialect-question",
+      "resultPage": "/subpackages/quiz/pages/dialect-result/dialect-result"
+    },
+    {
+      "id": "disney-princess-archetype",
+      "featureId": "ip",
+      "title": "十二位迪士尼公主里，你更像哪一位？",
+      "subtitle": "勇气、自立与爱情观的分野，匹配灰姑娘、木兰、艾莎、贝尔等迪士尼公主原型中的哪一款",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "doraemon-character-match",
+      "featureId": "ip",
+      "title": "《哆啦A梦》里，你更像谁？",
+      "subtitle": "面对麻烦、友谊与勇气的日常反应，看大雄、静香、胖虎、哆啦A梦等谁最贴近你的处事与性格底色",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "egyptian-mythology-figures",
+      "featureId": "archetype",
+      "title": "埃及神话角色",
+      "subtitle": "你的神格原型",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "enneagram-classic",
+      "featureId": "classics",
+      "title": "九型人格",
+      "subtitle": "Enneagram · 找到你真正的驱动核心",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "entrepreneur-suitability",
+      "featureId": "career",
+      "title": "创业原型",
+      "subtitle": "发现你的创业天赋",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "flower-personality-match",
+      "featureId": "lifestyle",
+      "title": "你是哪一种花？",
+      "subtitle": "发现你的花语人格",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "gaibang-role-play",
+      "featureId": "history",
+      "title": "如果加入丐帮，你会扮演什么样的角色？",
+      "subtitle": "金庸武侠丐帮群像对照",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "game-of-thrones-character-analogy",
+      "featureId": "history",
+      "title": "你在《权力的游戏》中哪个角色性格类似？",
+      "subtitle": "维斯特洛人物对照",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "gatsby-character-match",
+      "featureId": "aesthetics",
+      "title": "《了不起的盖茨比》里，你像他笔下的谁？",
+      "subtitle": "阶层跃迁、旧爱与执念，看盖茨比、黛西、尼克等《了不起的盖茨比》人物谁映出你对美国梦的追逐与幻灭",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "gem-personality",
+      "featureId": "archetype",
+      "title": "你的宝石人格是什么？",
+      "subtitle": "能量的流动方式,揭示你的本质",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "graduate-school-fit",
+      "featureId": "",
+      "title": "学术探索者",
+      "subtitle": "深度思考的求索者",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "greek-mythology-deity",
+      "featureId": "archetype",
+      "title": "希腊神话里，你是哪位神？",
+      "subtitle": "权威、爱情、秩序与智慧等维度，对应宙斯、赫拉、雅典娜、阿波罗等希腊神祇原型中的哪一类",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "he-li-hua-ting-character-match",
+      "featureId": "ip",
+      "title": "《鹤唳华亭》里，你像哪位角色？",
+      "subtitle": "皇权压力与师友伦理之下，萧定权、陆文普、齐王等《鹤唳华亭》人物中谁最接近你的处境与选择",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "ideal-dog-breed-match",
+      "featureId": "lifestyle",
+      "title": "理想犬种匹配",
+      "subtitle": "找到你的完美毛孩子",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "ideal-partner-match",
+      "featureId": "relationship",
+      "title": "灵魂伴侣图鉴",
+      "subtitle": "探索你的情感需求密码",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "imperial-examination-simulation",
+      "featureId": "history",
+      "title": "科举测验",
+      "subtitle": "模拟场屋墨义，按卷面定功名",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "inner-fear-archetype",
+      "featureId": "archetype",
+      "title": "恐惧原型",
+      "subtitle": "探索内心的恐惧密码",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "inner-voice-whisper",
+      "featureId": "personality",
+      "title": "你内心的声音",
+      "subtitle": "在安静时，它到底在说什么？",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "investment-master-style",
+      "featureId": "career",
+      "title": "你的投资方法和哪位投资大师最相似？",
+      "subtitle": "九位大师气质对照",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "jin-female-archetypes",
+      "featureId": "ip",
+      "title": "金庸笔下的奇女子，你最像谁？",
+      "subtitle": "情爱之烈与侠义之执，看黄蓉、小龙女、赵敏、郭襄等金庸奇女子谁最像你行走江湖的方式",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "jujutsu-kaisen-character-match",
+      "featureId": "ip",
+      "title": "你和《咒术回战》中的谁最像？",
+      "subtitle": "找到你的咒术回战原型",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "langyabang-character-match",
+      "featureId": "ip",
+      "title": "你像琅琊榜中的哪个角色？",
+      "subtitle": "权谋江湖，你是哪位",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "life-philosophy-archetype",
+      "featureId": "archetype",
+      "title": "你更认同哪种人生哲学？",
+      "subtitle": "日常道德、苦难观与幸福定义，在斯多葛、功利主义、存在主义、儒家、道家等流派中找最贴近你默认答案的一套",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "literary-soul-resonance",
+      "featureId": "aesthetics",
+      "title": "你与哪位世界文豪最像？",
+      "subtitle": "创作观、悲观与希望感、语言与道德立场，测你与鲁迅、海明威、张爱玲、马尔克斯等哪位作家最同频",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "little-prince-character-match",
+      "featureId": "ip",
+      "title": "《小王子》里，你更像书中哪位？",
+      "subtitle": "孤独、依恋与成人世界规则感，对应小王子、狐狸、玫瑰、点灯人等意象所代表的心理位置",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "lord-of-the-rings-race-test",
+      "featureId": "ip",
+      "title": "中土种族",
+      "subtitle": "寻找你的中土身份",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "love-level-test",
+      "featureId": "",
+      "title": "恋爱等级",
+      "subtitle": "你在情场中的真实段位",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "love-rank-test",
+      "featureId": "relationship",
+      "title": "你的恋爱等级是青铜还是王者？",
+      "subtitle": "青铜到王者的恋爱段位",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "love-show-personality",
+      "featureId": "relationship",
+      "title": "恋爱真人秀人格",
+      "subtitle": "你的情感表达策略会如何被镜头捕捉",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "lovecraftian-monster-domination",
+      "featureId": "psychology",
+      "title": "克苏鲁支配者",
+      "subtitle": "你将被谁支配",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "martial-arts-sect",
+      "featureId": "ip",
+      "title": "金庸武侠八大门派，你最适合哪一派？",
+      "subtitle": "正邪观、自由与门派规矩感，测少林、武当、丐帮、日月神教等金庸式门派心法哪一派最合你",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "mbti-16personalities",
+      "featureId": "classics",
+      "title": "十六人格测试",
+      "subtitle": "16 种人格类型，找到属于你的那一个",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/mbti-result/mbti-result"
+    },
+    {
+      "id": "middle-earth-character",
+      "featureId": "ip",
+      "title": "中土世界角色",
+      "subtitle": "探索你的中土灵魂",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "ming-dynasty-role-play",
+      "featureId": "history",
+      "title": "你穿越到明朝会扮演什么样的角色？",
+      "subtitle": "历史人物气质对照",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "miyazaki-character-archetype",
+      "featureId": "ip",
+      "title": "宫崎骏动画里，你最像谁？",
+      "subtitle": "自然观、孤独感与勇气的组合，靠近娜乌西卡、哈尔、千寻、龙猫等哪类宫崎骏式人物气质",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "mythical-creature-within",
+      "featureId": "archetype",
+      "title": "你体内，栖居着哪一种神话生灵",
+      "subtitle": "十二道文明倒影，照见灵魂原型",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "niche-sport-match",
+      "featureId": "lifestyle",
+      "title": "有哪些适合你的小众运动？",
+      "subtitle": "找到你的专属运动",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "nightclub-personality",
+      "featureId": "lifestyle",
+      "title": "你的夜店人格",
+      "subtitle": "解码你的夜店行为密码",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "one-piece-character-match",
+      "featureId": "ip",
+      "title": "你和《海贼王》中的谁最像？",
+      "subtitle": "找到你的航海伙伴",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "paladin-character-match",
+      "featureId": "ip",
+      "title": "你更像《仙剑奇侠传》里的谁？",
+      "subtitle": "你是谁，谁又是你",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "pokemon-personality-match",
+      "featureId": "ip",
+      "title": "你是哪种精灵宝可梦？",
+      "subtitle": "哪种精灵最像你",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "qing-nian-xiang-si",
+      "featureId": "ip",
+      "title": "《庆余年》里，你像哪位角色？",
+      "subtitle": "围绕权力观、成长动机、情义与自保策略，匹配范闲、庆帝、陈萍萍等剧中人物的行为逻辑与价值取向",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "rebirth-journey-to-the-west-monarch",
+      "featureId": "history",
+      "title": "重生之西游记中当妖怪，你会加入哪位大王？",
+      "subtitle": "妖王势力气质对照",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "red-chambers",
+      "featureId": "ip",
+      "title": "大观园·三十年梦回",
+      "subtitle": "你是大观园里的谁？",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/rc-question/rc-question",
+      "resultPage": "/subpackages/quiz/pages/rc-result/rc-result"
+    },
+    {
+      "id": "relationship-fidelity-test",
+      "featureId": "relationship",
+      "title": "抗出轨能力",
+      "subtitle": "你的关系边界有多坚固",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "relationship-trap-assessment",
+      "featureId": "relationship",
+      "title": "感情陷阱图谱",
+      "subtitle": "发现你的关系雷区",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "republican-era-business-mindset",
+      "featureId": "history",
+      "title": "你和民国哪位富商经商思维相同？",
+      "subtitle": "测测你的经商思维像哪位民国实业家",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "republican-women-personality-test",
+      "featureId": "history",
+      "title": "民国知识女性里，你最像谁？",
+      "subtitle": "独立、婚恋观与公共角色，对照宋庆龄、林徽因、张爱玲、秋瑾等民国知识女性气质谱系",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "romantic-scene-desire",
+      "featureId": "relationship",
+      "title": "浪漫场景偏好测验",
+      "subtitle": "激情或安稳、精神或物质、公开或私密",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "runeterra-origin",
+      "featureId": "ip",
+      "title": "符文之地起源",
+      "subtitle": "探索你的心灵故乡",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "shanhaijing-shenshou",
+      "featureId": "archetype",
+      "title": "你是《山海经》里的哪种神兽？",
+      "subtitle": "据性情与处世倾向，对应青龙、朱雀、玄武、白虎、麒麟、凤凰六种神兽象征与神话气质",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "sherlock-character-match",
+      "featureId": "ip",
+      "title": "《神探夏洛克》里，你更像谁？",
+      "subtitle": "测推理习惯、人际距离与规则观，对应夏洛克、华生、莫里亚蒂、艾德勒等伦敦角色原型",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "spending-personality-test",
+      "featureId": "aesthetics",
+      "title": "你会为了什么毫不犹豫的掏钱？",
+      "subtitle": "你的消费价值观",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "spirited-away-character-match",
+      "featureId": "ip",
+      "title": "你更像《千与千寻》里的谁？",
+      "subtitle": "你在异世界中像谁？",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "spiritual-homeland-match",
+      "featureId": "lifestyle",
+      "title": "哪里是你的精神故乡？",
+      "subtitle": "寻找心灵的栖息地",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "study-abroad-fit-test",
+      "featureId": "",
+      "title": "留学适配度测试",
+      "subtitle": "找到你的留学国度",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "tang-poets",
+      "featureId": "literature",
+      "title": "盛唐诗魂",
+      "subtitle": "你是哪位唐代诗人的灵魂？",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "tang-song-masters",
+      "featureId": "history",
+      "title": "唐宋八大家里，你更接近哪位？",
+      "subtitle": "韩愈之刚、苏轼之旷、柳宗元之郁等，从文章气骨与人生态度看，你更贴近唐宋八大家中的哪一脉精神世界",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "tarot-card-type",
+      "featureId": "archetype",
+      "title": "你是哪一种塔罗牌",
+      "subtitle": "探索你的内在原型",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "temple",
+      "featureId": "lifestyle",
+      "title": "寺庙之缘",
+      "subtitle": "全国哪座寺庙最旺你？",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/temple-question/temple-question",
+      "resultPage": "/subpackages/quiz/pages/temple-result/temple-result"
+    },
+    {
+      "id": "three-kingdoms-character-similarity",
+      "featureId": "history",
+      "title": "三国群雄里，你更像谁？",
+      "subtitle": "结合战略观、领导方式、情义取舍与危机反应，对齐曹操、关羽、诸葛亮等人物，测你更接近三国群英中的哪一款气质",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "three-kingdoms-strategist-match",
+      "featureId": "history",
+      "title": "你最像三国里的哪位谋士？",
+      "subtitle": "从谋略、隐忍、情义与权变等维度，对照诸葛亮、司马懿、郭嘉等军师，看谁最贴近你的决策气质",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "tian-court-figure",
+      "featureId": "ip",
+      "title": "你是天庭中的谁",
+      "subtitle": "你的神话原型是什么",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "wangjiawei-character",
+      "featureId": "aesthetics",
+      "title": "王家卫电影里，你最像哪位角色？",
+      "subtitle": "疏离、执念、暧昧与时间感，对照何宝荣、苏丽珍、周慕云等王家卫镜头下常见的情感结构与孤独方式",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "warcraft-race-test",
+      "featureId": "ip",
+      "title": "魔兽种族",
+      "subtitle": "找到你的艾泽拉斯归属",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "what-pet-fits-you",
+      "featureId": "lifestyle",
+      "title": "你适合养哪种宠物",
+      "subtitle": "测测你的生活里，缺了哪个它",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "which-ancient-greek-philosopher-resonates-with-you",
+      "featureId": "history",
+      "title": "你和哪位古希腊哲学家心有灵犀？",
+      "subtitle": "在当代生活的岔路口，看见两千年前的灵魂回响",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "which-japanese-sengoku-daimyo-are-you",
+      "featureId": "history",
+      "title": "你和日本战国哪位诸侯性格最近？",
+      "subtitle": "乱世抉择，映照你的处世底色",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "which-literary-giant-are-you",
+      "featureId": "aesthetics",
+      "title": "你和哪位文学巨匠性格相似？",
+      "subtitle": "从日常抉择，窥见灵魂的笔触",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "which-school-of-thought-are-you",
+      "featureId": "history",
+      "title": "你在春秋战国属于诸子百家中哪一派？",
+      "subtitle": "穿越乱世，你的抉择会开出怎样的思想之花",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "which-sport-fits-your-release",
+      "featureId": "lifestyle",
+      "title": "你适合哪种运动释放自己",
+      "subtitle": "你的身体里，住着哪种运动灵魂",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "which-tang-poet-lives-in-your-heart",
+      "featureId": "history",
+      "title": "你内心住着哪位盛唐诗人？",
+      "subtitle": "用十次日常选择，看见你的诗魂",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "who-in-les-miserables",
+      "featureId": "ip",
+      "title": "悲惨世界角色",
+      "subtitle": "你像谁？",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "wow-survival-philosophy-quiz",
+      "featureId": "ip",
+      "title": "测测你是魔兽世界中的哪个种族",
+      "subtitle": "艾泽拉斯种族测试",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "your-aesthetic-and-which-painter",
+      "featureId": "aesthetics",
+      "title": "你的审美和哪位画家最相似？",
+      "subtitle": "从日常选择，看见你的视觉灵魂",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "your-perfect-perfume-type",
+      "featureId": "lifestyle",
+      "title": "最符合你气质的香水类型",
+      "subtitle": "找到与内在气质最契合的香调",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/perfume-result/perfume-result"
+    },
+    {
+      "id": "zhenhuan-character-match",
+      "featureId": "ip",
+      "title": "《甄嬛传》里，你像哪位嫔妃？",
+      "subtitle": "结盟底线、隐忍度与情感取舍，匹配甄嬛、华妃、眉庄、安陵容等《甄嬛传》嫔妃人格类型",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "zhifou-character-match",
+      "featureId": "ip",
+      "title": "《知否》里，你在盛家最像谁？",
+      "subtitle": "宅院规则、联姻算计与自保策略，看齐明兰、顾廷烨、盛老太太等《知否》人物与你的处事是否同型",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    },
+    {
+      "id": "zootopia-character-match",
+      "featureId": "ip",
+      "title": "《疯狂动物城》里，你像哪位角色？",
+      "subtitle": "野心、街头智慧与规则感，对应朱迪、尼克、闪电等角色所代表的社会位置与性格配方",
+      "isAvailable": true,
+      "questionPage": "/subpackages/quiz/pages/generic-question/generic-question",
+      "resultPage": "/subpackages/quiz/pages/generic-result/generic-result"
+    }
+  ]
+}

@@ -3,6 +3,8 @@
  * Computes section groups for the Home and Explore pages.
  */
 
+const { sortCatalogByRecency } = require("./catalogSort");
+
 const FEATURE_LABELS = {
   classics:     '经典测试',
   history:      '历史人物',
@@ -10,17 +12,17 @@ const FEATURE_LABELS = {
   archetype:    '原型探索',
   aesthetics:   '审美坐标',
   lifestyle:    '生活方式',
-  city:         '城市与方言',
   relationship: '情感关系',
   cognition:    '思维认知',
+  psychology:   '行为心理',
   festival:     '节日专题',
   career:       '职场成长',
 };
 
 const FEATURE_ORDER = [
   'classics', 'ip', 'history', 'archetype',
-  'cognition', 'aesthetics', 'relationship',
-  'career', 'lifestyle', 'festival', 'city',
+  'cognition', 'psychology', 'aesthetics', 'relationship',
+  'career', 'lifestyle', 'festival',
 ];
 
 function takeUnique(items, limit, excluded) {
@@ -36,20 +38,19 @@ function takeUnique(items, limit, excluded) {
 
 function computeHomeSections(catalog) {
   const avail = catalog.filter(i => i.isAvailable !== false);
-  const latest = [...avail]
-    .sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
+  const latest = sortCatalogByRecency(avail);
 
   const featured = latest[0] || null;
   const excluded = new Set(featured ? [featured.id] : []);
 
   const spotlight = takeUnique(latest.slice(1), 2, excluded);
   const quick = takeUnique(
-    avail.filter(i => (i.estimatedMinutes || 99) <= 5),
+    sortCatalogByRecency(avail.filter(i => (i.estimatedMinutes || 99) <= 5)),
     6,
     excluded
   );
 
-  const classics = avail.filter(i => i.featureId === 'classics').slice(0, 4);
+  const classics = sortCatalogByRecency(avail.filter(i => i.featureId === 'classics')).slice(0, 4);
 
   const sections = [
     {
@@ -84,8 +85,9 @@ function computeExploreSections(catalog) {
 
   const groups = {};
   for (const item of avail) {
-    const fid = item.featureId;
+    let fid = item.featureId;
     if (!fid || fid === '?') continue;
+    if (fid === 'city') fid = 'lifestyle';
     if (!groups[fid]) groups[fid] = [];
     groups[fid].push(item);
   }
@@ -94,8 +96,7 @@ function computeExploreSections(catalog) {
   const sections = [];
 
   for (const fid of FEATURE_ORDER) {
-    const items = [...(groups[fid] || [])]
-      .sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
+    const items = sortCatalogByRecency(groups[fid] || []);
     sections.push({
       id:              fid,
       title:           FEATURE_LABELS[fid] || fid,

@@ -19,6 +19,7 @@
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
+const rt14 = require("../quiz-generator/lib/resultType14");
 
 // ── Load .env ─────────────────────────────────────────────────
 const envPath = path.resolve(__dirname, "../.env");
@@ -67,6 +68,18 @@ if (quiz && typeof quiz.quiz === "object" && quiz.quiz !== null && typeof quiz.t
 
 function inferFeatureId(quiz) {
   if (quiz && typeof quiz.featureId === "string" && quiz.featureId.trim()) return quiz.featureId;
+  const rtRaw = quiz?.architectureResultType || quiz?.resultType;
+  if (rtRaw) {
+    return rt14.inferFeatureIdFromOutline({
+      architectureResultType: rtRaw,
+      id: quiz?.id,
+      title: quiz?.title,
+      subtitle: quiz?.subtitle,
+      eyebrow: quiz?.eyebrow,
+      description: quiz?.description,
+      aestheticContext: quiz?.aestheticContext,
+    });
+  }
   const text = [
     quiz?.id, quiz?.title, quiz?.subtitle, quiz?.eyebrow, quiz?.description,
   ].filter(Boolean).join(" ").toLowerCase();

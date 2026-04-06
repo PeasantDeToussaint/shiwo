@@ -41,7 +41,7 @@
 }
 
 .ed-card--grid {
-  min-height: 320rpx;
+  min-height: 260rpx;
 }
 
 .ed-card--compact {
@@ -172,6 +172,18 @@
 
 .ed-card--text .ed-card-title {
   max-width: 85%;
+}
+
+/* Explore / feature-quiz 列表：单列卡片用略小标题，避免长标题占满视觉 */
+.ed-card--grid .ed-card-title {
+  font-size: 28rpx;
+  line-height: 1.22;
+  letter-spacing: 0.02em;
+}
+
+.ed-card--grid .ed-card-subtitle {
+  font-size: 20rpx;
+  line-height: 1.45;
 }
 
 .ed-card--compact .ed-card-title {

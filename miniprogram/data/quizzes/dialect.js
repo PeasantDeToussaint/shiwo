@@ -13,7 +13,7 @@ module.exports = {
     questionCount: 25,
     isAvailable: true,
     themeKey: "dialect",
-    featureId: "city",
+    featureId: "lifestyle",
   },
   themeKey: "dialect",
   questionPage: "/subpackages/quiz/pages/dialect-question/dialect-question",

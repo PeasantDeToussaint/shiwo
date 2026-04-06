@@ -84,6 +84,7 @@ function buildPayload(raw, { full }) {
       id: o.id,
       text: o.text,
       reaction: o.reaction,
+      bandPoints: typeof o.bandPoints === "number" ? o.bandPoints : undefined,
       scores: o.scores && typeof o.scores === "object" ? o.scores : undefined,
     })),
   }));
@@ -140,7 +141,8 @@ const SYSTEM_PROMPT = `你是「微信小程序 / H5 互动测验」的资深中
 - scoring.type：计分逻辑类型（如 level-band、weighted-match、cosine 等）；须与导语承诺一致。
 - scoring.dimensions：维度 id 列表。
 - scoring.dimensionAxes：每个维度一条轴，含 lowPole / highPole（语义两极）；题干与选项应能支撑「沿该轴区分用户」，且加分方向与轴语义不可明显反向。
-- scoring.bands：level-band 时常用，含 resultId、rank、min、max；须检查区间是否合理（不重叠或故意重叠是否有说明）、rank 与结果梯度是否一致。
+- scoring.bands：level-band 时常用，含 resultId、rank、min、max；对「归一化可达分 t」的 0～1 分档须与导语一致；卷面原始分档须覆盖宣称满分。禁止导语暗示「科学测评」「临床级」；趣味自测应写清仅供参考。
+- options[].bandPoints：level-band 若存在，与 scores 一并检查梯度；bandPoints 优先于多维度分数之和参与分档逻辑。
 - questions[].id：题目 id，你指出问题时必须优先引用此 id（如 q_imperial_03）。
 - questions[].options[].scores：若存在，为各维度或结果 id 的数值权重；用于判断「选项区分度」「是否某选项在多数维度上全面碾压」「同一题各选项分桶是否过近」。**声称「区分度不足」时须引用至少一题的 scores 原文片段，禁止对 q1～q5 套用相同套话。**
 - resultsSummary：结果档位或原型标题；须与导语 tone、敏感话题表述匹配。

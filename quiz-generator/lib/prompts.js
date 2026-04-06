@@ -7,6 +7,7 @@ const {
   validateArchitecture, validateOutlineStructure,
 } = require('./validate');
 const { normalizeOutlineToArchitecture, spreadProfiles } = require('./assemble');
+const rt14 = require('./resultType14');
 
 /** 为 false 时 outline / 出题 / 结果生成不注入 LITERARY_GUIDE，便于试验表达是否更自由 */
 let skipLiteraryGuide = false;
@@ -37,7 +38,7 @@ function inferHintsFromTopic(topic) {
       .filter(s => s.length > 0 && s.length <= 10);
     if (items.length >= 3) {
       autoHints.push(
-        `resultType必须是item，results必须严格使用以下名称，不得自创原型名：${items.join("、")}`
+        `resultType必须是object_accessory（或 food_beverage / plant 若更贴切），results必须严格使用以下名称，不得自创原型名：${items.join("、")}`
       );
     }
   }
@@ -45,13 +46,19 @@ function inferHintsFromTopic(topic) {
   // Pattern 2: "给出适合程度" → spectrum results
   if (/适合程度|适合度|程度|段位/.test(topic)) {
     autoHints.push(
-      `结果必须是「适合程度」的不同段位，从最适合到最不适合排列，名称要体现程度差异，不能是通用人格原型名称`
+      `scoringFamily 建议为 level-band，resultType 必须为 tier_level：结果名称须为同一连续谱上可排序的档位，从弱到强或从低到高，禁止历史人物/明星姓名`
+    );
+  }
+
+  if (/浪漫场景|约会场面|情境偏好|哪种时刻|哪种场合|场面偏好/.test(topic)) {
+    autoHints.push(
+      `resultType 建议为 behavior_pattern：每个结果是用户能想象的具体场面标题（场合+活动/环境），禁止纯隐喻四字恋语如「××之恋」`
     );
   }
 
   // Pattern 3: "哪个国家/城市/地方" → item type
   if (/哪个国家|哪个城市|哪座城市|哪个地方|哪个地区/.test(topic) && !listMatch) {
-    autoHints.push(`resultType必须是item，每个结果是真实存在的国家或城市名称`);
+    autoHints.push(`resultType必须是place_domain（或 object_accessory），每个结果是真实存在的国家或城市名称`);
   }
 
   return autoHints;
@@ -95,7 +102,16 @@ const PORTRAIT_TEMPLATE_BY_TYPE = {
   archetype: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这类人的内在世界和核心特质；第二段：描述他们的行为模式和与他人的关系；第三段：描述核心挑战与成长方向。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
   figure:    `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：描述这位人物的核心精神气质；第二段：将用户与这位人物的相似之处具体化，写出共同的行为模式或内在动因；第三段：这种气质带来的挑战与可能性。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
   item:      `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。不要描述事物本身，而要解释为什么测验者的人格与它产生共鸣。第一段：测验者身上哪些具体特质让他们与这个结果产生联结；第二段：这个结果的文化/精神特质如何与测验者的内在世界对应；第三段：这种匹配在现实中的张力与代价。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+  scene: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔。每段严格100-150字，合计300-450字。第一段：用可感的细节描绘这个「场面」里发生什么、光线与节奏如何——让读者能想象自己置身其中；第二段：写什么样的内在需求与关系节奏会让用户最渴望停在这个场面里（第二人称）；第三段：只待在这个场面里的代价或盲区——例如逃避冲突、过度理想化、难以落地等。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+  fictional_figure: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔，绝对不能拆成多个 portrait 键。每段严格100-150字，合计300-450字，不得超过。第一段：该虚构角色在作品中的处境、选择与标志性气质（可带一句作品语境）；第二段：将用户与这位角色的相似之处具体化——共同的行为模式或内在动因，避免百科式剧情复述；第三段：这种共鸣带来的张力：用户从角色身上借到什么力量、又容易踩什么坑。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
+  band: `  "portrait": "【重要】portrait 必须是一个 JSON 字符串，三段之间用 \\\\n\\\\n 分隔。每段严格100-150字，合计300-450字。第一段：这一档位在连续谱上的含义——用户在相关情境里通常如何表现、核心需求是什么；第二段：具体行为与关系中的可观察细节（第二人称），避免抽象段位词堆砌；第三段：从这一档向上成长的杠杆、以及滑落时的典型诱因。格式：「第一段\\\\n\\\\n第二段\\\\n\\\\n第三段」"`,
 };
+
+/** Title + verse rules injected into generateOutline archContext（14-type resultType） */
+function formatOutlineResultTypeRules(resultType) {
+  const rt = rt14.normalizeResultType(resultType) || resultType || "abstract_psychology";
+  return rt14.outlineRulesForResultType14(rt);
+}
 
 const STANDARD_FIELD_TEMPLATES = {
   portrait: PORTRAIT_TEMPLATE_BY_TYPE.archetype, // default, overridden in buildResultTemplate
@@ -341,7 +357,7 @@ function repairArchitectureAnchors(architecture) {
 async function generateArchitecture(topic, hintBlock, callAIImpl = callAI) {
   const system = `你是「${topic}」领域的资深专家。你的任务是为一道微信小程序测验设计结果架构——决定测验应该输出哪些结果、为什么这样划分、每个结果的核心定位是什么。
 
-这个测验不一定是人格测验。结果可能是：具体国家/城市/事物（item 类）、适合程度的不同段位（archetype 类但以程度命名）、真实人物（figure 类）、或有象征意味的人格原型（archetype 类）。你需要先判断这个测验属于哪种类型，再基于该类型设计结果，而不是一律套用「人格原型」框架。
+这个测验不一定是人格测验。结果交付物由且仅由下列 15 种 resultType（英文 slug）之一决定；输出 JSON 时必须使用这些 slug 之一，不得使用旧名 figure/item/scene/band。
 
 你还需要先判断这个题应该用哪种 scoringFamily。不同 family 的设计目标不同，不能混用：
 ${formatScoringFamilyMenu()}
@@ -367,12 +383,22 @@ scoringFamily 选择捷径（优先按题意判断，不要偷懒一律选 weigh
 每种 scoringFamily 的 guidance：
 ${formatScoringFamilyMenu()}
 
-第二步：判断这个测验适合哪种结果类型
-- resultType = "figure"：题目明确涉及某类具体人物（如「民国女性」「宋词词人」「文艺复兴画家」），每个结果对应一个真实存在的代表人物
-- resultType = "item"：结果是真实存在的具体事物或地点。包括「你适合什么X」类型，也包括主题说明中明确指定了结果类别的情况（如「包含多个国家」「包含多个城市」「包含以下几种食物」）——只要结果是真实存在的具体事物，就选 item
-- resultType = "archetype"：题目是抽象人格映射（如「你是哪种宝石」「你的恋爱风格」），结果是有象征意味的原型名称，侧重人格隐喻而非真实事物特性
+第二步：判断这个测验适合哪种结果类型（十五选一，resultType 必须为下列之一）
+- figure_character：真实人物、公众人物，或 IP 中有姓名的角色（统一用此类型；name 为真名或可识别角色名）
+- animal_creature：真实物种或作品内种族/神兽通用名
+- plant / food_beverage / object_accessory：植物、食物饮品、物品配饰等真实具体名
+- color / nature_celestial：颜色色系、自然现象与天象等
+- abstract_psychology：抽象人格/心理原型意象名
+- place_domain：真实地名或作品内公认领域/分院名
+- occupation_role / style_type / occult_symbol：职业身份、风格类型、玄学符号阵营等
+- organization_brand：真实或作品内的**机构/组织/品牌**可识别名称（公司、社团、品牌、IP 内组织等）
+- behavior_pattern：可想象的**具体场面**标题（场合+活动+环境）
+- tier_level：**仅当** scoringFamily = "level-band" 时选用；可排序档位名
 
-【重要】如果主题或约束中明确说明结果应该是某类真实事物（国家、城市、食物、运动等），必须选 item，不能选 archetype。
+【重要】若主题为场景/情境/约会画面 → 优先 behavior_pattern，不要用 abstract_psychology 敷衍成「××之恋」式隐喻。
+【重要】若主题为作品角色或历史人物匹配 → figure_character。
+【重要】若主题或约束明确结果应是真实事物（国家、城市、食物等）→ object_accessory / food_beverage / place_domain 等，不能滥用 abstract_psychology。
+【重要】tier_level 必须与 level-band 同时使用；非 level-band 禁止 tier_level。
 
 第三步：基于领域知识设计维度和原型
 
@@ -382,7 +408,7 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 {
   "domainInsight": "4-6句，说明这个主题最核心的人格分化轴是什么，为什么这样划分比其他方式更准确",
   "scoringFamily": "weighted-dimension、bipolar-dimension 或 level-band 三选一",
-  "resultType": "figure、item 或 archetype 三选一",
+  "resultType": "${rt14.phase0ResultTypeEnumLine()}（tier_level 仅配合 level-band）",
   "resultFields": [
     { "key": "portrait", "label": "气质画像", "standard": true },
     { "key": "lifeAdvice", "label": "行动建议", "standard": true },
@@ -405,8 +431,8 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
     {
       "conceptId": "c1",
       "primaryDimension": "可省略；若填写，应是这个结果最强的维度。系统会基于 profileHints 自动校正",
-      "name": "resultType=figure 时：真实人物姓名，如「林徽因」。resultType=item 时：具体事物名称，如「柴犬」「攀岩」「成都」。resultType=archetype 时：原型名称，如「翡翠」「猫系恋人」，不能是抽象性格词",
-      "nameContext": "resultType=figure 时：人物背景（1句）。resultType=item 时：该事物的核心特性（1句，说明为何能映射这种人格）。resultType=archetype 时：象征描述（1句）",
+      "name": "figure_character：姓名。animal_creature：物种/种族通用名。plant/food/object_accessory：具体名。place_domain：地名或领域名。organization_brand：机构/品牌/组织名。behavior_pattern：场面短语。abstract_psychology 等：意象名。tier_level：档位名",
+      "nameContext": "每种结果均须 1 句：人物/角色背景、物或地或物种要点、场面要点、原型象征、或该档含义",
       "coreIdentity": "这个原型的人格核心，20-30字，说清楚「这类人本质上是什么样的人」",
       "distinctiveFeature": "与其他原型最显著的区别特质，15-20字",
       "profileHints": {
@@ -463,14 +489,17 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 - highDefinition / lowDefinition 必须写成“做决定时优先看什么、遇事时先保什么、为了什么可以付代价”的行为原则，不能只是“更成熟”“更有魅力”这种评价词。
 - profileHints 是这一步最核心的语义地图。请先把每个结果在每个维度上的 high/medium/low 判断清楚；highAnchorResults / lowAnchorResults 和 primaryDimension 都会优先由系统根据 profileHints 统一推导，避免多套定义互相打架。
 - forbiddenInterpretations 应明确写出这个维度不能被偷换成什么。例如：若维度是“公义优先”，则禁止误读成“有野心”“有立场”“行动果断”。
-- resultType=figure 时：name 必须是真实人物，领域代表性强，不同人物人格差异显著，应覆盖不同性格倾向和背景（如性别、年代、风格）
-- resultType=figure 时：所有结果 name 必须两两不同，严禁重复同一人物；必须使用该作品/领域里公认的标准写法，禁止错别字、昵称替代、近似拼写（如把「沈眉庄」写成「沈眉眉」）
-- resultType=figure 时：只能使用该作品/题材中真实存在、受众能识别的人物；不确定的人物宁可不用，也绝不能自创名字、拼接名字或用“看起来像真名”的泛化姓名
-- resultType=item 时：name 必须是该类别中真实存在的具体事物，选择依据是该事物的真实特性能映射特定人格
-- resultType=archetype 时：name 是有质感的意象或角色名，不能叫「外向型」「理性型」
+- resultType=figure_character 时：name 为真实人物或可识别 IP 角色名；两两不同；禁止自创象征名顶替角色
+- resultType=animal_creature 时：name 为物种或种族通用名；禁止纯隐喻四字格
+- resultType=plant / food_beverage / object_accessory 时：name 为真实具体名
+- resultType=place_domain 时：name 为真实地名或作品内公认领域名
+- resultType=behavior_pattern 时：name 为具体场面短语，禁止纯抽象恋语四字格
+- resultType=abstract_psychology 等抽象类时：name 是有质感的意象名，禁止「外向型」「理性型」等性格词
+- resultType=organization_brand 时：name 须为可识别的机构/组织/品牌名（或作品内组织通用名）
+- resultType=tier_level 时：name 须体现程度差异且整体可排序；禁止真实人物姓名
 - profileHints 必须覆盖所有维度，high/medium/low 在不同原型之间要有明显差异，并且必须服从 dimensionSpecs 的高低定义，不可自行偷换维度含义
 - 如果两个结果的核心动机、代价和行为逻辑没有本质区别，就不要硬拆成两个结果；同一作品中的人物不能只靠“更强/更弱”来区分。
-- resultType=figure 时，请为每个结果自检一句：为什么偏偏是这个人物，而不是另一个人物？如果换个角色名也成立，说明区分还不够。
+- resultType=figure_character 时：请为每个结果自检一句——为什么偏偏是这个人物/角色？若换名也成立则区分不足
 - 结果自检：把 profileHints 当成唯一主语义图来检查。生成前请再检查 5 件事：
   1. 有没有哪个维度其实只是另一个维度的改写？
   2. 有没有哪个维度只是“听起来合理”，但没有角色真正以它为核心？
@@ -499,14 +528,15 @@ resultFields 说明：portrait 必选，其余标准字段按需选用，自定�
 }
 
 async function generateOutline(topic, architecture, hintBlock, dataDir, callAIImpl = callAI) {
-  const resultType = architecture && architecture.resultType || "archetype";
+  const resultType = architecture && architecture.resultType || "abstract_psychology";
   const scoringFamily = architecture && architecture.scoringFamily || "weighted-dimension";
   const scoringFamilyGuide = formatScoringFamilyGuidance(scoringFamily);
+  const outlineRt = formatOutlineResultTypeRules(resultType);
   const archContext = architecture ? `
 ### 领域架构（Phase 0 已确定，必须以此为基础）
 领域洞察：${architecture.domainInsight || ""}
 评分框架：${scoringFamily}${scoringFamilyGuide ? `\n框架 guidance：${scoringFamilyGuide}` : ""}
-结果类型：${{ figure: "代表人物（figure）", item: "具体事物（item）", archetype: "人格原型（archetype）" }[resultType] || resultType}
+结果类型：${outlineRt.typeLabel}
 已确定维度：${(architecture.dimensions || []).join("、")}
 维度语义锚点：
 ${formatDimensionSpecs(architecture.dimensionSpecs || [])}
@@ -516,24 +546,39 @@ ${(architecture.results || []).map(r =>
 ).join("\n")}
 
 你的任务是将上述原型转化为正式测验结构：
-- title 以原型名称为核心${ resultType === "figure" ? "（可以是「林徽因式」或直接是人物名）" : resultType === "item" ? "（直接使用事物名称，如「柴犬」「攀岩」）" : "（如「翡翠」「猫系恋人」）" }
-- token 是与该原型强关联的意象或象征物
-${ resultType === "figure" ? `- verse 的来源必须与该人物强绑定——有两种合规路径：\n  路径A（优先）：该人物在作品中说过的原话/台词，或该人物自己写的诗词/文字（verseSource 填角色名或 IP 名）\n  路径B（备选）：历史上真实评价过该人物的名言，或能精准描述该人物气质的经典句（verseSource 必须填真实出处）\n  ❌ 严禁：把佛教偈语、哲学名言、泛人生格言挂在角色名下当 verse——这类句子谁都能用，毫无辨识度\n  ❌ 严禁：如果人物是戏剧/小说虚构角色，不可将该 IP 以外的古诗词当作该角色的 verse，除非该角色在剧中有引用这句诗的情节` : resultType === "item" ? "- verse 是一句与该事物直接相关的 quote：可以是现代诗、科学家/作家/设计师的名言、电影台词、歌词、甚至一句能精准描绘该事物特质的文学句子——来源不限，但内容必须与该具体事物高度相关，禁止使用泛人生感怀的句子。除非主题明确涉及古典文化，否则禁止使用古诗词" : "- verse 是一句与该原型气质高度契合的 quote：优先选现代名言、电影台词、歌词、现代诗、作家金句，来源不限但必须贴合原型气质。除非主题明确涉及古典文化（如唐诗、宋词、古代人物），否则禁止使用古诗词" }
+${outlineRt.titleHint}
+- token 是与该结果强关联的意象或象征物（behavior_pattern 类型可用极短氛围词）
+${outlineRt.verseBlock}
 - dimension_profile 必须基于 profileHints 数值化（high=0.60-0.80，medium=0.30-0.55，low=0.08-0.25）
 - 不要改变原型对应的维度划分和核心身份
-- 【强制】results 数组必须与 Phase 0 已确定原型一一对应，结果数量相同，每个结果的 title 必须是 Phase 0 原型的姓名（可缩短，如"霓凰郡主"→"霓凰"，但不能换成 Phase 0 没有的人物）。禁止自行替换或新增角色
+- 【强制】results 数组必须与 Phase 0 已确定结果一一对应、数量相同；每个结果的 title 必须与 Phase 0 的 name 对应（可合理缩短，不得替换为 Phase 0 未出现的名称）
 ` : "";
 
-  const system = `你是一位测验产品策划专家，同时对「${topic}」这个领域有深入的专业知识。你的任务是为一道新测验设计整体框架，包括维度体系和每个结果的精准权重分布。这个测验的结果可能是人格原型、真实人物、具体事物、国家、或适合程度段位——你需要遵循 Phase 0 确定的 resultType 和结果名称，不要擅自改为别的人格类型。
+  const isBipolarOutline = scoringFamily === "bipolar-dimension";
+  const outlineFraming = isBipolarOutline
+    ? "你的任务是为该测验设计整体框架：**双极轴体系**（每条轴有 lowPole / highPole；dimension 只是轴名），并给出每个结果在各轴上的结构。"
+    : "你的任务是为该测验设计整体框架：**多特质累计体系**（weighted-dimension / level-band：用户在若干条特质上分别累加分，不是互斥「类型」或「风格」三选一）。JSON 键名仍为 dimensions / dimension / dimensionAxes；dimensions 中每一项必须是**可行为化的单向特质名**（分越高 = 该倾向越强），须遵守下方【特质命名】。";
+
+  const system = `你是一位测验产品策划专家，同时对「${topic}」这个领域有深入的专业知识。${outlineFraming}这个测验的结果可能是人格原型、真实人物、具体事物、国家、或适合程度段位——你需要遵循 Phase 0 确定的 resultType 和结果名称，不要擅自改为别的人格类型。
 
 ${literaryGuideBlock()}
 
 输出严格 JSON，不输出其他内容。`;
 
+  const weightedTraitNamingOutline = !isBipolarOutline
+    ? `
+【特质命名 — weighted-dimension / level-band 必须遵守；JSON 键名仍为 dimensions / dimension】
+- dimensions 中每项为特质名（建议 2～4 字）：累计得分越高 = 该行为或心理倾向越强。
+- 禁止单独或主要依靠：「价值」「态度」「风格」「方式」「类型」「模式」「取向」「领导风格」等空壳词；管理相关用「主动性」「授权」「决断」「亲和」「规则导向」「风险承担」等可累计倾向。
+- 禁止互斥「选边」式分类；每条是同一倾向由弱到强的量。
+- 自检：「多拿分意味着用户更 ______？」填不出则改名。
+`
+    : "";
+
   const user = `请为以下测验生成完整框架：
 
 主题：${topic}
-${hintBlock}${archContext}
+${hintBlock}${archContext}${weightedTraitNamingOutline}
 输出格式：
 {
   "id": "kebab-case英文id，与主题语义对应",
@@ -578,8 +623,8 @@ ${hintBlock}${archContext}
 - 多个结果可以共享同一个 dimension；results越多则dimensions应越多（每2-3个结果需要1个独立维度）
 - dimensionAxes 中每个 dimension 必须与 dimensions 数组里的值完全一致
 - 每个 result 必须标注一个主导 dimension，id 从 r1 开始；多个 results 可以共享同一个 dimension
-- 维度名称简洁，2-4字
-- axisLabel 是这条轴的“类别名”，2-4字；insight 描述高分端特质行为
+- 维度名称简洁，2-4字；若 scoringFamily 为 weighted-dimension 或 level-band，则每项须为可累计特质名（见【特质命名】），禁止「价值」「领导风格」等范畴词
+- axisLabel：bipolar 下是这条轴的类别名；weighted/level-band 下是这条特质的展示类目名（可与 dimension 同义或更短）；insight 描述「该特质偏高」时的行为，勿写成互斥风格二选一
 - weighted-dimension 和 level-band 的 dimensionAxes 只输出 dimension / axisLabel / insight，禁止出现 lowPole / highPole / highInsight / lowInsight
 - bipolar-dimension 的 dimensionAxes 必须输出 lowPole / highPole / highInsight / lowInsight，不用输出 insight
 - bipolar-dimension 中，dimension 只是轴名；真正显示在结果页左右两端的是 lowPole / highPole，禁止把 highPole 省略成 dimension 名
@@ -752,7 +797,16 @@ ${dimensionSpecBlock}
   return parsed.plan.slice(0, total);
 }
 
-async function generateQuestions(outline, startId, endId, batchLabel, total, dataDir, callAIImpl = callAI, questionPlan = []) {
+function buildQuestionBatchCarryover(phaseQuestions, maxLen = 320) {
+  if (!Array.isArray(phaseQuestions) || phaseQuestions.length === 0) return "";
+  const last = phaseQuestions[phaseQuestions.length - 1];
+  const t = last && typeof last.text === "string" ? last.text.trim() : "";
+  if (!t) return "";
+  const snippet = t.length > maxLen ? `${t.slice(0, maxLen)}…` : t;
+  return `【与上一批衔接（可选）】若自然合理，可让本批开头 1～2 题延续同一场景弧（时间/地点/人物关系/任务主线不变，仅推进抉择）；若不合理则本批从新弧起笔。\n上一批最后一题题干摘要：${snippet}`;
+}
+
+async function generateQuestions(outline, startId, endId, batchLabel, total, dataDir, callAIImpl = callAI, questionPlan = [], prevBatchCarryover = "") {
   const dimensions = outline.dimensions;
   const aestheticContext = formatAestheticContext(outline.aestheticContext, outline.writingVoice);
   const count = endId - startId + 1;
@@ -769,7 +823,7 @@ async function generateQuestions(outline, startId, endId, batchLabel, total, dat
   const scoreRule = scoringFamily === "bipolar-dimension"
     ? "每个选项最多2个维度得分；允许负分，单维度范围 -2 到 2。只有在表达“朝 lowDefinition 一侧移动”时才使用负分，不能把负分当作惩罚项乱扣；同一选项里的非零分必须同号，不能一边往 highDefinition 走一边又往另一个维度的 lowDefinition 走"
     : scoringFamily === "level-band"
-      ? "每个选项最多2个维度得分，全部使用非负分。单维度范围 0 到 3；更成熟/更适配当前主题的选项，应拿到更高总分"
+      ? "推荐单一维度 + 整数 bandPoints 0～3（与 scores 同键同值）；分档按全卷可达 min/max 归一。四选项 bandPoints 须两两不同并含低高档。若仅用 scores，则各选项得分总和须拉开，禁止四选项总和全相同"
       : "每个选项最多2个维度得分，主维度≤2分，副维度≤1分，禁止负分";
 
   const system = `你是一位中文测验内容专家。你的任务是为微信小程序测验生成题目。
@@ -792,18 +846,20 @@ ${literaryGuideBlock()}${aestheticContext}
       batchPlan.map(p => `- ${p.id} 主测维度「${p.dimension}」；切口：${p.angle || ""}${p.contrast ? `；避免：${p.contrast}` : ""}`).join("\n") + "\n"
     : "";
 
+  const carryBlock = prevBatchCarryover ? `\n${prevBatchCarryover}\n` : "";
+
   const taskLine = hasPlan
     ? `将以下 ${count} 个出题计划扩写为完整题目（共${total}道题的第${batchLabel}批，id q${startId}~q${endId}）：`
-    : `请生成 q${startId} 到 q${endId} 共${count}道全新场景题目（共${total}道题的第${batchLabel}批）：`;
+    : `请生成 q${startId} 到 q${endId} 共${count}道题目（共${total}道题的第${batchLabel}批）：`;
 
   let discriminationRule = "";
   if (dimensions.length >= 2 && scoringFamily !== "bipolar-dimension") {
     if (scoringFamily === "level-band") {
       discriminationRule =
-        "\n13. level-band 且多维度：四个选项的 scores 向量（按测验维度顺序看的分项组合）必须两两不同；可分项只标主维或拆成两维，不必强行「同一选项两维不同分」。";
+        "\n14. level-band：四选项 bandPoints（若无则用各维 scores 之和）必须两两不同，且 min≠max，避免随机作答与认真作答落在同一档。";
     } else {
       discriminationRule =
-        "\n13. weighted-dimension 且多维度：四个选项 scores 向量必须两两不同；至少有一个选项在两个已打分维度上的数值不完全相同——禁止整题只有「两维同分」档位（如全是 2,2 / 1,1 / 0,0）。";
+        "\n14. weighted-dimension 且多维度：四个选项 scores 向量必须两两不同；至少有一个选项在两个已打分维度上的数值不完全相同——禁止整题只有「两维同分」档位（如全是 2,2 / 1,1 / 0,0）。";
     }
   }
 
@@ -811,10 +867,10 @@ ${literaryGuideBlock()}${aestheticContext}
 - 标题：${outline.title}
 - 描述：${outline.description}
 - 评分维度：${dimensions.join("、")}
-${scoringGuideBlock}
+${scoringFamily === "weighted-dimension" ? "- weighted 打分语义：scores 的 key 须与上述特质名一致；加分表示该选项更体现「该特质更强」，勿把整题写成互斥风格/价值类型三选一。\n" : ""}${scoringGuideBlock}
 ${dimensionSpecBlock}
 ${planBlock}
-${taskLine}
+${carryBlock}${taskLine}
 
 输出格式：
 {
@@ -833,18 +889,19 @@ ${optionTemplateA}
 }
 
 规则：
-1. id 严格从 q${startId} 到 q${endId}，不能多也不能少
-2. ${scoreRule}
-3. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
-4. 若 scoringFamily = bipolar-dimension，打分方向必须严格遵守 dimensionSpecs 的 highDefinition / lowDefinition，不能只按“更勇敢”“更激烈”“更消极”这类情绪色彩随意判正负
-5. 维度覆盖：本批 ${count} 道题，每个维度大致均匀出现（共 ${dimensions.length} 个维度，每维度约 ${Math.round(count / dimensions.length * 10) / 10} 道信号量）
-6. 每道题的高分选项应尽量贴合维度语义锚点，避免偷换概念
-7. 如果 scoringFamily = level-band，四个选项总分梯度必须明显拉开
-8. 如果 scoringFamily = bipolar-dimension，负分只能表示朝 lowDefinition 一侧移动
-9. ${skipLiteraryGuide ? "文案追求具体、有画面与选择张力，避免空洞套话与说教口吻" : "遵守 literary guide，尽量避免出现已列明的 AI 腔句型"}
-10. 不要为了“有氛围”而堆砌光线、气味、眼神、月色等细节；删掉一句若题意不变，就不要那句
-11. 简单冲突题可以很短，诗意/特殊题材题可以稍长，但都必须信息有效，不能凑字数
-12. 每道题的主测维度（计划已标注）：最好让至少 2 个选项给该维度打正分（≥1分），否则这题对主测维度的区分会偏弱${discriminationRule}`;
+1. **场景弧**：将本批 ${count} 道题划分为若干「场景弧」。同一弧内连续 **2～4** 道题共用时间、地点、关键人物关系与任务主线，只在剧情上递进（冲突升级、抉择加码或信息披露），不要每题从零重写世界观；换弧须换设定，单弧不得超过 4 道题。每道题仍是独立一条 text，禁止整段复制上一题；同弧后续题可一两句承接，但必须有新的抉择点。
+2. id 严格从 q${startId} 到 q${endId}，不能多也不能少
+3. ${scoreRule}
+4. scores 中的维度 key 必须与以下完全一致，不得缩写、拆分或改写：「${dimensions.join("」「")}」
+5. 若 scoringFamily = bipolar-dimension，打分方向必须严格遵守 dimensionSpecs 的 highDefinition / lowDefinition，不能只按“更勇敢”“更激烈”“更消极”这类情绪色彩随意判正负
+6. 维度覆盖：本批 ${count} 道题，每个维度大致均匀出现（共 ${dimensions.length} 个维度，每维度约 ${Math.round(count / dimensions.length * 10) / 10} 道信号量）
+7. 每道题的高分选项应尽量贴合维度语义锚点，避免偷换概念
+8. 如果 scoringFamily = level-band，四个选项总分梯度必须明显拉开
+9. 如果 scoringFamily = bipolar-dimension，负分只能表示朝 lowDefinition 一侧移动
+10. ${skipLiteraryGuide ? "文案追求具体、有画面与选择张力，避免空洞套话与说教口吻" : "遵守 literary guide，尽量避免出现已列明的 AI 腔句型"}
+11. 不要为了“有氛围”而堆砌光线、气味、眼神、月色等细节；删掉一句若题意不变，就不要那句
+12. 简单冲突题可以很短，诗意/特殊题材题可以稍长，但都必须信息有效，不能凑字数
+13. 每道题的主测维度（计划已标注）：最好让至少 2 个选项给该维度打正分（≥1分），否则这题对主测维度的区分会偏弱${discriminationRule}`;
 
   const raw = await callAIImpl(system, user, 6000);
   fs.writeFileSync(path.join(dataDir, `${outline.id}.q${batchLabel}.raw.txt`), raw);
@@ -909,11 +966,15 @@ async function generateResults(outline, resultSubset, dataDir, callAIImpl = call
     token: r.token, verse: r.verse, verseSource: r.verseSource,
   }));
 
-  const resultType = outline.architectureResultType || "archetype";
+  const resultType =
+    rt14.normalizeResultType(outline.architectureResultType) ||
+    outline.architectureResultType ||
+    "abstract_psychology";
+  const templateKey = rt14.templateStem(resultType);
   const scoringFamily = outline.architectureScoringFamily || "weighted-dimension";
 
   // resultFields from Phase 0: array of {key, label, standard, instruction?} objects
-  // Fallback: defaults based on resultType
+  // Fallback: defaults based on legacy template stem
   const defaultFieldObjs = {
     item: [
       { key: "portrait",     label: "气质画像",   standard: true },
@@ -930,6 +991,31 @@ async function generateResults(outline, resultSubset, dataDir, callAIImpl = call
       { key: "situation",    label: "核心张力",   standard: true },
       { key: "lifeAdvice",   label: "人物寄语",   standard: true },
       { key: "destiny",      label: "命运收尾",   standard: true },
+    ],
+    fictional_figure: [
+      { key: "portrait",     label: "角色画像",   standard: true },
+      { key: "strengths",    label: "核心特质",   standard: true },
+      { key: "weaknesses",   label: "内在局限",   standard: true },
+      { key: "temperament",  label: "气质描述",   standard: true },
+      { key: "situation",    label: "核心张力",   standard: true },
+      { key: "lifeAdvice",   label: "角色寄语",   standard: true },
+      { key: "destiny",      label: "命运收尾",   standard: true },
+    ],
+    scene: [
+      { key: "portrait",     label: "场面画像",   standard: true },
+      { key: "strengths",    label: "在这一刻的你", standard: true },
+      { key: "weaknesses",   label: "易忽略的代价", standard: true },
+      { key: "temperament",  label: "关系节奏",   standard: true },
+      { key: "situation",    label: "适合与警惕", standard: true },
+      { key: "lifeAdvice",   label: "相处建议",   standard: true },
+    ],
+    band: [
+      { key: "portrait",     label: "档位画像",   standard: true },
+      { key: "strengths",    label: "这一档的长处", standard: true },
+      { key: "weaknesses",   label: "这一档的短板", standard: true },
+      { key: "temperament",  label: "典型表现",   standard: true },
+      { key: "situation",    label: "进退之间",   standard: true },
+      { key: "lifeAdvice",   label: "提升建议",   standard: true },
     ],
     archetype: [
       { key: "portrait",     label: "人格画像",   standard: true },
@@ -948,7 +1034,7 @@ async function generateResults(outline, resultSubset, dataDir, callAIImpl = call
   if (Array.isArray(rawFields) && rawFields.length > 0 && typeof rawFields[0] === "object") {
     resultFields = rawFields;
   } else {
-    resultFields = defaultFieldObjs[resultType] || defaultFieldObjs.archetype;
+    resultFields = defaultFieldObjs[templateKey] || defaultFieldObjs.archetype;
   }
 
   const system = `你是一位中文测验内容专家，擅长写有深度、有辨识度的结果描述。结果可能是人格原型、真实人物、具体事物或适合程度段位，写作方式应与结果类型匹配，不要把所有结果都写成人格分析的口吻。
@@ -961,7 +1047,14 @@ ${literaryGuideBlock()}${aestheticContext}
 严格输出一个 JSON 对象，只包含 "results" 字段。不要输出其他内容，直接输出 JSON。`;
 
   const archResults = outline.architectureResults || [];
-  const anchorLabel = { figure: "人物真实人格为准", item: "事物真实特性为准", archetype: "原型象征气质为准" }[resultType] || "原型气质为准";
+  const anchorLabel = {
+    figure: "人物真实人格为准",
+    fictional_figure: "角色在作品中的气质与处境为准",
+    item: "事物真实特性为准",
+    scene: "场面氛围与用户关系需求为准",
+    band: "该档在连续谱上的典型表现为准",
+    archetype: "原型象征气质为准",
+  }[templateKey] || "原型气质为准";
   const figureContext = archResults.length > 0
     ? `\n### 各结果的原型锚点（请以此为核心写内容，${anchorLabel}）\n` +
       archResults.map(r => `- 主导维度「${r.primaryDimension}」→ 【${r.name}】：${r.nameContext || ""} / 核心：${r.coreIdentity || ""}`).join("\n")
@@ -1034,6 +1127,18 @@ portrait 是结果页最核心的内容，应尽量让用户读完产生"这说�
 - portrait【第一段，100-150字】：介绍人物的真实生平与历史定位——代表事件、关键处境、所处时代的重量。让读者感受到这个人的存在感和历史厚度。
 - portrait【第二段，100-150字】：写这个人物的内在气质与处世哲学——他/她如何面对命运、做出选择、处理关系，以及哪些东西构成其最稳定的精神骨架。
 - portrait【第三段，100-150字】：写用户为何会与此人产生共鸣，但避免把用户直接写成“你就是一个很X的人”。要写成“你和此人的相似处在于……”，点出这种共鸣带来的代价与命题。`,
+    fictional_figure: `## 结构：先锚定作品语境，再写角色与用户
+- portrait【第一段，100-150字】：该角色在作品中的关键处境与选择——不必复述全剧情，写出最能定义其气质的矛盾与坚持。
+- portrait【第二段，100-150字】：角色的内在逻辑与关系模式——他/她如何对待信任、冲突、失去、野心；哪些细节让读者记住这个人。
+- portrait【第三段，100-150字】：用户与角色的共鸣点与错位点——相似处要落到具体行为与情绪，不要写成“你很像他”；写出这种认同带来的力量与风险。`,
+    scene: `## 结构：场面即镜子
+- portrait【第一段，100-150字】：把这个场面写活——环境、节奏、两人（或独处）之间未说破的气氛；让读者能“看见”自己在里面。
+- portrait【第二段，100-150字】：第二人称写用户为何渴望停在这里——关系里被满足的核心需求（安全感、刺激、被看见、私密感等）要具体。
+- portrait【第三段，100-150字】：只沉溺于这个场面时的盲点或代价——不是道德说教，而是用户可能没意识到的关系摩擦或自我消耗。`,
+    band: `## 结构：档位是过程，不是标签
+- portrait【第一段，100-150字】：这一档在连续谱上的位置——用户在相关情境里通常如何反应、优先保护什么。
+- portrait【第二段，100-150字】：可观察的行为与关系细节（第二人称）——别人会怎么感知处于这一档的你。
+- portrait【第三段，100-150字】：向上一档的杠杆、以及最常见的回落诱因——语气鼓励但诚实。`,
     archetype: `## 结构：先介绍原型，再写人格共鸣
 - portrait【第一段，100-150字】：介绍这个原型/角色的来源、形象、在神话/文学/文化中的象征意义。即使用户不熟悉，读完也能感受到它的独特魅力。
 - portrait【第二段，100-150字】：从这个原型的象征气质出发，用具体行为场景描述拥有此人格的人——不是说他们"很xxx"，而是说他们在具体情境下会怎么做、怎么感受、怎么被他人误解。
@@ -1045,8 +1150,11 @@ portrait 是结果页最核心的内容，应尽量让用户读完产生"这说�
 - weaknesses label：同样来自事物特质的阴影面（如「易碎于冲击」「光芒招觊觎」），description 写出这在人际或自我认知中的代价。
 - 禁止使用通用人格标签（如"共情力强""行动力强""情绪稳定"）作为 label。`,
     figure: `- strengths/weaknesses label：基于该人物历史上真实展现的特质，用该人物的标志性意象提炼，而非抽象人格词汇。label 允许 2-7 字，不必硬凑四字成语。`,
+    fictional_figure: `- strengths/weaknesses label：从该角色在剧情中的标志性选择、关系模式、台词气质提炼；避免与原作无关的泛化人格词。`,
+    scene: `- strengths label：写在这个场面里你会发光的具体方式（如「把沉默变成安全」「把喧闹变成亲密」）；weaknesses 写只待在这种场面里时容易忽略的代价（如回避深层冲突）。`,
+    band: `- strengths/weaknesses 要体现「这一档相对相邻档」的差异：label 避免空泛「成熟/幼稚」，description 写可观察行为与关系后果。`,
     archetype: `- strengths/weaknesses label：带有该原型/角色的独特意象，不使用完全通用的人格词汇。`,
-  }[resultType] || "") : "";
+  }[templateKey] || "") : "";
 
   const quoteGuide = resultFields.some(f => f.key === "keyQuote") ? `
 - 如果输出 extras 里的 keyQuote，且 label 是「代表名言」，content 必须像真实引言：优先直接引用原话，并带引号、书名号、破折号作者/出处中的至少一种格式特征。
@@ -1054,7 +1162,7 @@ portrait 是结果页最核心的内容，应尽量让用户读完产生"这说�
 
   const contentGuide = [
     portraitDepthGuide,
-    hasField("portrait") ? (portraitStructure[resultType] || "") : "",
+    hasField("portrait") ? (portraitStructure[templateKey] || "") : "",
     swGuide,
     quoteGuide,
   ].filter(Boolean).join("\n\n");
@@ -1069,7 +1177,7 @@ ${contentGuide}
 ${JSON.stringify(stub, null, 2)}
 
 每个结果的输出格式如下；字段名和数据类型不要更改：
-${buildResultTemplate(resultFields, resultType)}
+${buildResultTemplate(resultFields, templateKey)}
 
 规则：
 - 只生成上方 ${stub.length} 个结果，不多不少。
@@ -1078,7 +1186,7 @@ ${buildResultTemplate(resultFields, resultType)}
 - lifeAdvice 必须是字符串（string），不能是数组。
 - portrait 以三段结构为宜；如果明显不是三段，系统会视为不合格。
 - 不同结果的 dimension_profile 虽然由 Phase 1 决定，但你的文字应强化区分度，不能把两个结果写成只有措辞不同、人格几乎一样。
-- resultType=figure 时，如果你拿不准某句是否是原作台词，就不要伪装成原句；宁可写成气质归纳，也不要编造出处。
+- resultType=figure_character 时，如果你拿不准某句是否是原作/史实台词，就不要伪装成原句；宁可写成气质归纳，也不要编造出处。
 ${skipLiteraryGuide ? "- 文案自然、有辨识度即可，避免空洞套话。" : "- 遵守 literary guide，禁止出现被列明的句型。"}`;
 
   const raw = await callAIImpl(system, user, 10000);

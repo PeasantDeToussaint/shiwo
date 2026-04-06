@@ -56,7 +56,7 @@ describe("validation", () => {
         { id: "r2", title: "进阶", dimension: "自知", dimension_profile: { 自知: 0.22, 行动: 0.21 } },
       ],
     };
-    const arch = { scoringFamily: "level-band", resultType: "archetype", dimensions: ["自知", "行动"] };
+    const arch = { scoringFamily: "level-band", resultType: "tier_level", dimensions: ["自知", "行动"] };
     const errors = validateOutlineStructure(outline, arch);
     expect(errors.some((e) => e.includes("profiles too similar"))).toBe(false);
   });
@@ -112,6 +112,37 @@ describe("validation", () => {
     });
 
     expect(errors.some(err => err.includes('highAnchorResults contains unknown result "不存在的人"'))).toBe(true);
+  });
+
+  it("rejects resultType tier_level when scoringFamily is not level-band", () => {
+    const errors = validateArchitecture({
+      scoringFamily: "bipolar-dimension",
+      resultType: "tier_level",
+      dimensionCount: 1,
+      dimensions: ["情感基调"],
+      resultFields: [
+        { key: "portrait", label: "画像", standard: true },
+        { key: "extraA", label: "扩展甲", standard: false },
+        { key: "extraB", label: "扩展乙", standard: false },
+      ],
+      dimensionSpecs: [
+        {
+          dimension: "情感基调",
+          highDefinition: "更热烈",
+          lowDefinition: "更克制",
+          highAnchorResults: ["档甲", "档丙"],
+          lowAnchorResults: ["档乙", "档丁"],
+          forbiddenInterpretations: ["不是外向内向"],
+        },
+      ],
+      results: [
+        { conceptId: "c1", name: "档甲", nameContext: "高之一", profileHints: { 情感基调: "high" } },
+        { conceptId: "c2", name: "档乙", nameContext: "低之一", profileHints: { 情感基调: "low" } },
+        { conceptId: "c3", name: "档丙", nameContext: "高之二", profileHints: { 情感基调: "high" } },
+        { conceptId: "c4", name: "档丁", nameContext: "低之二", profileHints: { 情感基调: "low" } },
+      ],
+    });
+    expect(errors.some((e) => e.includes("tier_level") && e.includes("level-band"))).toBe(true);
   });
 
   it("allows negative scores for bipolar-dimension", () => {

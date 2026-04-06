@@ -6,6 +6,7 @@ const {
   mergeLocalAndCloud,
   resolveCatalogCardHero,
 } = require("../../utils/catalogPresentation");
+const { sortCatalogByRecency } = require("../../utils/catalogSort");
 
 const FEATURE_SUBHEADS = {
   classics: "从最稳定、最成熟的题开始。",
@@ -15,10 +16,10 @@ const FEATURE_SUBHEADS = {
   aesthetics: "从审美和创作偏好慢慢靠近你。",
   relationship: "关于情感、连接与亲密方式。",
   cognition: "看见你的思维、判断和倾向。",
+  psychology: "恋爱、职场与日常选择里，看见你的倾向。",
   career: "把职业风格与成长路径讲清楚。",
   lifestyle: "日常选择，也是人格的一部分。",
   festival: "节令与情境里的你会怎么选。",
-  city: "城市、方言与地方感的题都在这里。",
 };
 
 Page({
@@ -35,9 +36,11 @@ Page({
 
   onLoad(options) {
     const { statusBarHeight } = wx.getWindowInfo();
-    this._featureId = options.featureId || "";
+    let fid = options.featureId || "";
+    if (fid === "city") fid = "lifestyle";
+    this._featureId = fid;
     this.setData({
-      featureId: this._featureId,
+      featureId: fid,
       featureLabel: FEATURE_LABELS[this._featureId] || "分类浏览",
       featureSubhead: FEATURE_SUBHEADS[this._featureId] || "在这一组题里慢慢挑。",
       statusBarHeight,
@@ -57,9 +60,10 @@ Page({
     const localCatalog = getCatalog(featureId);
 
     fetchCloudCatalog(featureId).then((cloudItems) => {
-      const merged = cloudItems.length
+      const mergedRaw = cloudItems.length
         ? mergeLocalAndCloud(localCatalog, cloudItems, decorateCatalogItem)
         : localCatalog.map((item) => decorateCatalogItem(item));
+      const merged = sortCatalogByRecency(mergedRaw);
 
       this.setData({ catalog: merged });
       this._resolveImages(merged, 0);

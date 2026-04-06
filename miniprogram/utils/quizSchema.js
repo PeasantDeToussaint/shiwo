@@ -83,6 +83,8 @@
  * @property {"weighted-dimension"|"archetype-argmax"|"bipolar-dimension"|"level-band"|"two-phase-archetype"|"big-five"|"mbti"} type
  * @property {string[]=} dimensions  — 须与 options[].scores 键一致
  * @property {Object<string,string[]>=} groups — 仅 structured two-phase：branch → 维度名列表
+ *
+ * level-band：options[].bandPoints（非负整数，优先）参与档位总分；缺省时用该选项 scores 非负分之和。scoring.bands 的 min/max 对「归一化可达分 t」或原始总分（卷面分）见 scoreLevelBand。
  */
 
 module.exports = {};

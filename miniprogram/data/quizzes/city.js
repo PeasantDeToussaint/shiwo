@@ -16,7 +16,7 @@ module.exports = {
     questionCount:    25,
     isAvailable:      true,
     themeKey:         "city",
-    featureId:        "city",
+    featureId:        "lifestyle",
   },
   title:        "中国哪座城市，最适合你生活？",
   subtitle:     "从节奏、气候、物价与人际偏好，一步步缩小答案",

@@ -1,5 +1,8 @@
 // Normalize and assembly helpers extracted from generate-quiz.js
 
+const { buildEqualTBands } = require("../../miniprogram/subpackages/quiz/utils/levelBandMetrics");
+const rt14 = require("./resultType14");
+
 const DIMENSION_MAP = {
   "豪放不羁": "豪放", "沉郁顿挫": "沉郁", "清丽自然": "清丽",
   "雄奇险怪": "奇崛", "恬淡隐逸": "恬淡", "华美秾丽": "华美",
@@ -143,30 +146,13 @@ function normalizeStrengthsWeaknesses(raw, fieldName, resultId) {
   return raw;
 }
 
+/**
+ * Catalog bucket for Explore / feature-quiz. Must stay aligned with
+ * miniprogram/utils/catalogSections.js FEATURE_LABELS + FEATURE_ORDER (no separate city bucket; city-like → lifestyle).
+ * First matching rule wins — keep narrower topics before broad buckets.
+ */
 function inferFeatureId(outline) {
-  const resultType = outline?.architectureResultType || "archetype";
-  const text = [
-    outline?.id, outline?.title, outline?.subtitle, outline?.eyebrow,
-    outline?.description, outline?.aestheticContext,
-  ].filter(Boolean).join(" ").toLowerCase();
-
-  const has = (re) => re.test(text);
-
-  if (has(/mbti|16人格|十六人格|大五|九型|enneagram|career|职业倾向|aptitude/)) {
-    return "classics";
-  }
-  if (has(/审美|艺术|画家|绘画|电影|戏剧|舞蹈|音乐|诗人|词人|作家|文学|香水|perfume|literary/)) {
-    return "aesthetics";
-  }
-  if (has(/恋爱|关系|依恋|心理|人格|性格|冲突|友谊|人生哲学|价值观|原型|philosophy|psychology/)) {
-    return "psychology";
-  }
-  if (has(/城市|旅行|宠物|运动|方言|寺庙|厨房|美食|天气|生活方式|sport|pet|city|dialect|temple/)) {
-    return "lifestyle";
-  }
-  if (resultType === "figure") return "history";
-  if (resultType === "item") return "lifestyle";
-  return "psychology";
+  return rt14.inferFeatureIdFromOutline(outline);
 }
 
 function normalizeDimensionKey(s) {
@@ -335,17 +321,12 @@ function assembleQuiz(outline, questions, results) {
   };
 
   if (scoringType === "level-band") {
-    const count = Math.max(1, outline.results.length);
-    scoring.bands = outline.results.map((r, idx) => {
-      const min = parseFloat((idx / count).toFixed(2));
-      const max = idx === count - 1 ? 1 : parseFloat((((idx + 1) / count) - 0.01).toFixed(2));
-      return {
-        resultId: r.id,
-        rank: idx,
-        min,
-        max: idx === count - 1 ? 1 : Math.max(min, max),
-      };
-    });
+    let orderedResults = (outline.results || []).slice();
+    if (orderedResults.some((r) => typeof r.levelRank === "number")) {
+      orderedResults.sort((a, b) => (a.levelRank || 0) - (b.levelRank || 0));
+    }
+    // Bands are cutoffs on normalized attainable score t in [0,1] (see scoreLevelBand + levelBandMetrics).
+    scoring.bands = buildEqualTBands(orderedResults);
   } else {
     scoring.results = outline.results.map(r => ({
       id:        r.id,
@@ -356,6 +337,10 @@ function assembleQuiz(outline, questions, results) {
   return {
     id:               outline.id,
     featureId:        inferFeatureId(outline),
+    architectureResultType:
+      rt14.normalizeResultType(outline.architectureResultType) ||
+      outline.architectureResultType ||
+      "abstract_psychology",
     title:            outline.title,
     subtitle:         outline.subtitle,
     eyebrow:          outline.eyebrow,
@@ -662,4 +647,5 @@ module.exports = {
   normalizeResultExtras, findObviousTextCorruption,
   normalizeStrengthsWeaknesses, normalizeDimensionKey,
   normalizeOutlineToArchitecture, assembleQuiz,
+  inferFeatureId,
 };

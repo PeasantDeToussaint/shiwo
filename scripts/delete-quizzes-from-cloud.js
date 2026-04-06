@@ -68,6 +68,16 @@ const IDS_TO_DELETE = [
   "sheng-tang-chuan-yue-jue-ze",
   "song-dynasty-time-travel",
   "three-kingdoms-decision-style",
+  // Merged into sibling (see removedQuizIds.js); content-creator-type absorbs we-media duplicates; ancient-poet / lotr-race / warcraft-race / relationship-fidelity / love-rank survive
+  "tang-poets",
+  "which-tang-poet-lives-in-your-heart",
+  "middle-earth-character",
+  "wow-survival-philosophy-quiz",
+  "anti-affair-resilience-test",
+  "love-level-test",
+  "自媒体赛道人格测验",
+  "自媒体人格原型",
+  "ming-dynasty-persona",
 ];
 
 function get(url) {

@@ -6,6 +6,7 @@ const {
   mergeLocalAndCloud,
   resolveCatalogCardHero,
 } = require("../../utils/catalogPresentation");
+const { sortCatalogByRecency } = require("../../utils/catalogSort");
 
 Page({
   data: {
@@ -84,17 +85,19 @@ Page({
   _runSearch(raw) {
     const q = raw.trim().toLowerCase();
     if (!q) return;
-    const searchResults = this._allItems.filter((item) => {
-      const fields = [
-        item.title,
-        item.displayTitleZh,
-        item.subtitle,
-        item.eyebrow,
-        item.primaryTag,
-        ...(item.tags || []),
-      ];
-      return fields.some((field) => field && String(field).toLowerCase().includes(q));
-    });
+    const searchResults = sortCatalogByRecency(
+      this._allItems.filter((item) => {
+        const fields = [
+          item.title,
+          item.displayTitleZh,
+          item.subtitle,
+          item.eyebrow,
+          item.primaryTag,
+          ...(item.tags || []),
+        ];
+        return fields.some((field) => field && String(field).toLowerCase().includes(q));
+      })
+    );
     this.setData({ isSearching: true, searchResults, searchDone: true, lastQuery: raw.trim() });
     this._resolveSearchImages(searchResults);
   },

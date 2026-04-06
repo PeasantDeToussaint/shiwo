@@ -112,4 +112,76 @@ describe("scoring families", () => {
     expect(high.resultId).toBe("high");
     expect(high.overallScore).toBe(1);
   });
+
+  it("level-band uses attainable-normalized t when minTotal > 0 (not legacy overall)", () => {
+    const quiz = {
+      scoring: {
+        type: "level-band",
+        dimensions: ["恋爱成熟"],
+        bands: [
+          { resultId: "r1", rank: 0, min: 0, max: 0.19 },
+          { resultId: "r2", rank: 1, min: 0.2, max: 0.39 },
+          { resultId: "r3", rank: 2, min: 0.4, max: 0.59 },
+          { resultId: "r4", rank: 3, min: 0.6, max: 0.79 },
+          { resultId: "r5", rank: 4, min: 0.8, max: 1 },
+        ],
+      },
+      questions: [
+        {
+          id: "q1",
+          options: [
+            { id: "a", bandPoints: 0, scores: { 恋爱成熟: 0 } },
+            { id: "b", bandPoints: 1, scores: { 恋爱成熟: 1 } },
+            { id: "c", bandPoints: 2, scores: { 恋爱成熟: 2 } },
+            { id: "d", bandPoints: 3, scores: { 恋爱成熟: 3 } },
+          ],
+        },
+      ],
+      results: [
+        { id: "r1", title: "低" },
+        { id: "r2", title: "中低" },
+        { id: "r3", title: "中" },
+        { id: "r4", title: "中高" },
+        { id: "r5", title: "高" },
+      ],
+    };
+
+    const low = scoreGeneric(quiz, [{ questionId: "q1", optionId: "a" }]);
+    expect(low.resultId).toBe("r1");
+    expect(low.overallScore).toBe(0);
+
+    const high = scoreGeneric(quiz, [{ questionId: "q1", optionId: "d" }]);
+    expect(high.resultId).toBe("r5");
+    expect(high.overallScore).toBe(1);
+  });
+
+  it("level-band raw point bands still match achieved total (exam-style)", () => {
+    const quiz = {
+      scoring: {
+        type: "level-band",
+        dimensions: ["经学造诣", "文学素养", "史学见识"],
+        bands: [
+          { resultId: "r0", rank: 0, min: 0, max: 2 },
+          { resultId: "r1", rank: 1, min: 3, max: 3 },
+        ],
+      },
+      questions: [
+        {
+          id: "q1",
+          options: [
+            { id: "w", scores: {} },
+            { id: "c", scores: { 经学造诣: 1, 文学素养: 1, 史学见识: 1 } },
+          ],
+        },
+      ],
+      results: [{ id: "r0", title: "低" }, { id: "r1", title: "高" }],
+    };
+
+    const wrong = scoreGeneric(quiz, [{ questionId: "q1", optionId: "w" }]);
+    expect(wrong.resultId).toBe("r0");
+
+    const right = scoreGeneric(quiz, [{ questionId: "q1", optionId: "c" }]);
+    expect(right.resultId).toBe("r1");
+    expect(right.overallScore).toBe(1);
+  });
 });

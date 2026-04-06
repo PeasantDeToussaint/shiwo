@@ -40,6 +40,7 @@ on:
 
 jobs:
   generate-all:
+    # GitHub-Hosted 单 job 最长 360 分钟（硬顶）。批量极多时请分多次 workflow、自托管或本地。
     runs-on: ubuntu-latest
     timeout-minutes: 360
     permissions:
@@ -56,6 +57,7 @@ jobs:
 
       - name: 顺序生成所有测验
         env:
+          QUIZ_GEN_HTTP_TIMEOUT_MS: "900000"
           ZHIPU_API_KEY:    ${{ secrets.ZHIPU_API_KEY }}
           DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
           QWEN_API_BASE: ${{ github.event.inputs.qwen_api_base }}

@@ -938,7 +938,7 @@ async function generateQuestions(outline, startId, endId, batchLabel, total, sco
   const count = endId - startId + 1;
 
   const nonBipolarScoreRule = isLevelBand
-    ? "level-band（程度段位）：所有 scores 必须是【非负整数】0、1、2 或 3，禁止任何负分。负分只用于 bipolar-dimension，本题不是双极轴测验。用「较低的正分」表示更弱、更不成熟或更不利于边界的反应；四个选项在「各维得分总和」上要有明显梯度，便于区分段位。每个选项最多2个维度得分，主维度≤2，副维度≤1。"
+    ? "level-band：**优先**单一维度 + 整数 bandPoints（0～3）表示档位；或与 scores 同值。四选项须两两不同且含低高档。小程序按全卷可达 min/max 归一分档。禁止负分。"
     : "weighted-dimension：所有 scores 必须为非负整数，主维度≤2分，副维度≤1分，禁止负分。";
 
   const system = `你是测验出题人。输出仅 JSON，顶层只有 "questions"。

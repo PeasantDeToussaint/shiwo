@@ -1,0 +1,140 @@
+name: 按云目录重做测验（副本生成器）
+
+# 依赖仓库内 catalog JSON；运行前请本地执行:
+#   node scripts/list-cloud-catalog.js --out scripts/data/live_audit/catalog-from-cloud.json
+# 并提交该文件，或改 workflow 的 catalog_path。
+#
+# 跳过: featureId=classics、id= red-chambers | city | temple
+# 使用: scripts/generate-quiz_副本.js
+#
+# 分片: matrix.shard 与 SHARD_COUNT 必须一致。条目多且单测很慢时多分片，避免单 job 超过 360min。
+# 粗算: 每分片条数 ≈ ceil( manifest 条数 / SHARD_COUNT )；单 job 时间 ≈ 该分片条数 × 单测耗时。
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true=只写本地 scripts/data、不上传云"
+        required: true
+        default: true
+        type: boolean
+      estimate:
+        description: "true=只估算成本，不生成"
+        required: true
+        default: false
+        type: boolean
+      skip_eval:
+        description: "跳过生成后 AI 评估"
+        required: true
+        default: true
+        type: boolean
+      provider:
+        description: "AI 提供商"
+        required: true
+        default: "zhipu"
+        type: choice
+        options:
+          - zhipu
+          - qwen
+          - deepseek
+          - gemini
+          - anthropic
+      qwen_api_base:
+        description: "可选 DashScope 兼容根 URL"
+        required: false
+        default: ""
+      catalog_path:
+        description: "catalog JSON 相对仓库根路径"
+        required: true
+        default: "scripts/data/live_audit/catalog-from-cloud.json"
+      topic_manifest:
+        description: "寓意主题清单 regenerate-topics.manifest.json 路径"
+        required: true
+        default: "scripts/data/regenerate-topics.manifest.json"
+      shard_count:
+        description: "分片总数（须与下方 matrix.shard 数量一致，默认 30）"
+        required: true
+        default: "30"
+
+jobs:
+  regenerate:
+    # 单分片 job：GitHub-Hosted 最长 360 分钟（硬顶）。更长请自托管 runner 或拆 catalog。
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        shard:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 17
+          - 18
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 26
+          - 27
+          - 28
+          - 29
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 分片重做
+        env:
+          QUIZ_GEN_HTTP_TIMEOUT_MS: "900000"
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          QWEN_API_BASE: ${{ github.event.inputs.qwen_api_base }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WX_APPID: ${{ secrets.WX_APPID }}
+          WX_APPSECRET: ${{ secrets.WX_APPSECRET }}
+          WX_CLOUD_ENV: ${{ secrets.WX_CLOUD_ENV }}
+          CATALOG_PATH: ${{ github.event.inputs.catalog_path }}
+          TOPIC_MANIFEST: ${{ github.event.inputs.topic_manifest }}
+          SHARD: ${{ matrix.shard }}
+          SHARD_COUNT: ${{ github.event.inputs.shard_count }}
+          PROVIDER: ${{ github.event.inputs.provider }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          ESTIMATE: ${{ github.event.inputs.estimate }}
+          SKIP_EVAL: ${{ github.event.inputs.skip_eval }}
+        run: node scripts/run-regenerate-cloud-catalog.js
+
+      - name: 上传本分片产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regen-shard-${{ matrix.shard }}
+          path: scripts/data/*.json
+          if-no-files-found: ignore
+          retention-days: 14

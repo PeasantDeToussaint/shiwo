@@ -1,79 +1,34 @@
-function clamp01(v) {
-  return Math.max(0, Math.min(1, v));
-}
+const {
+  optionLevelWeight,
+  computeLevelMinMaxTotals,
+  getQuestionMaxima,
+  buildEqualTBands,
+  bandsUseRawAchieved,
+  normalizedTFromAchieved,
+  clamp01,
+} = require("./levelBandMetrics");
 
 function getDimensions(quiz) {
-  return (quiz?.scoring?.dimensions || []).map((dim) => typeof dim === "string" ? dim : dim.id).filter(Boolean);
+  return (quiz?.scoring?.dimensions || []).map((dim) => (typeof dim === "string" ? dim : dim.id)).filter(Boolean);
 }
 
 /**
- * When scoring.bands is missing (e.g. legacy upload), derive tier cutoffs from
- * results order — same rule as quiz-generator assembleQuiz for level-band.
+ * When scoring.bands is missing (e.g. legacy upload), derive tier cutoffs on normalized t.
  */
 function defaultBandsFromResults(quiz) {
   let results = (quiz.results || []).slice();
   if (results.some((r) => typeof r.levelRank === "number")) {
     results.sort((a, b) => (a.levelRank || 0) - (b.levelRank || 0));
   }
-  const count = Math.max(1, results.length);
-  return results.map((r, idx) => {
-    const min = parseFloat((idx / count).toFixed(2));
-    const max = idx === count - 1 ? 1 : parseFloat((((idx + 1) / count) - 0.01).toFixed(2));
-    return {
-      resultId: r.id,
-      rank: idx,
-      min,
-      max: idx === count - 1 ? 1 : Math.max(min, max),
-    };
-  });
-}
-
-function getQuestionMaxima(quiz, dimensions) {
-  const maxPerDim = {};
-  dimensions.forEach((dim) => { maxPerDim[dim] = 0; });
-  let maxTotal = 0;
-
-  (quiz.questions || []).forEach((question) => {
-    const qType = question.type || question.interaction;
-    if (qType === "likert-slider" || qType === "slider-likert" || qType === "slider") {
-      const sliderScores = question.sliderScores || question.scores || {};
-      let sliderTotal = 0;
-      Object.entries(sliderScores).forEach(([dim, base]) => {
-        const safe = Math.max(0, base || 0);
-        if (maxPerDim[dim] !== undefined) maxPerDim[dim] += safe;
-        sliderTotal += safe;
-      });
-      maxTotal += sliderTotal;
-      return;
-    }
-
-    let questionMaxTotal = 0;
-    const questionMaxPerDim = {};
-    dimensions.forEach((dim) => { questionMaxPerDim[dim] = 0; });
-
-    (question.options || []).forEach((option) => {
-      let optionTotal = 0;
-      Object.entries(option.scores || {}).forEach(([dim, val]) => {
-        const safe = Math.max(0, val || 0);
-        if (questionMaxPerDim[dim] !== undefined) {
-          questionMaxPerDim[dim] = Math.max(questionMaxPerDim[dim], safe);
-        }
-        optionTotal += safe;
-      });
-      questionMaxTotal = Math.max(questionMaxTotal, optionTotal);
-    });
-
-    dimensions.forEach((dim) => { maxPerDim[dim] += questionMaxPerDim[dim]; });
-    maxTotal += questionMaxTotal;
-  });
-
-  return { maxPerDim, maxTotal };
+  return buildEqualTBands(results);
 }
 
 function scoreLevelBand(quiz, answers) {
   const dimensions = getDimensions(quiz);
   const raw = {};
-  dimensions.forEach((dim) => { raw[dim] = 0; });
+  dimensions.forEach((dim) => {
+    raw[dim] = 0;
+  });
   let achievedTotal = 0;
 
   answers.forEach(({ questionId, optionId, sliderValue }) => {
@@ -94,45 +49,72 @@ function scoreLevelBand(quiz, answers) {
     }
 
     const option = (question.options || []).find((o) => o.id === optionId);
-    if (!option || !option.scores) return;
-    Object.entries(option.scores).forEach(([dim, val]) => {
-      const safe = Math.max(0, val || 0);
-      if (raw[dim] !== undefined) raw[dim] += safe;
-      achievedTotal += safe;
-    });
+    if (!option) return;
+
+    achievedTotal += optionLevelWeight(option);
+
+    if (option.scores && Object.keys(option.scores).length > 0) {
+      Object.entries(option.scores).forEach(([dim, val]) => {
+        const safe = Math.max(0, val || 0);
+        if (raw[dim] !== undefined) raw[dim] += safe;
+      });
+    } else if (typeof option.bandPoints === "number" && dimensions.length > 0) {
+      const d0 = dimensions[0];
+      raw[d0] += Math.max(0, option.bandPoints);
+    }
   });
 
-  const { maxPerDim, maxTotal } = getQuestionMaxima(quiz, dimensions);
+  const { maxPerDim, maxTotal: maxDimGrandTotal } = getQuestionMaxima(quiz, dimensions);
+  const { minTotal, maxTotal } = computeLevelMinMaxTotals(quiz, dimensions);
+
   const normalized = {};
   dimensions.forEach((dim) => {
     normalized[dim] = maxPerDim[dim] > 0 ? clamp01(raw[dim] / maxPerDim[dim]) : 0;
   });
 
-  const overall = maxTotal > 0 ? clamp01(achievedTotal / maxTotal) : 0;
+  const legacyOverall = maxDimGrandTotal > 0 ? clamp01(achievedTotal / maxDimGrandTotal) : 0;
+  const t = normalizedTFromAchieved(achievedTotal, minTotal, maxTotal);
+
   let bands = (quiz?.scoring?.bands || []).slice();
   if (bands.length === 0 && (quiz.results || []).length > 0) {
     bands = defaultBandsFromResults(quiz);
   }
   bands.sort((a, b) => (a.rank || 0) - (b.rank || 0));
-  let matchedBand = bands.find((band) => overall >= (band.min || 0) && overall <= (band.max == null ? 1 : band.max))
-    || null;
+
+  const useRaw = bandsUseRawAchieved(bands, maxTotal);
+  const metric = useRaw ? achievedTotal : t;
+  const metricMax = useRaw ? maxTotal : 1;
+
+  let matchedBand = bands.find((band) => {
+    const lo = band.min || 0;
+    const hi = band.max == null ? metricMax : band.max;
+    return metric >= lo && metric <= hi;
+  }) || null;
+
   if (!matchedBand && bands.length > 0) {
     matchedBand = bands.reduce((best, band) => {
       const lo = band.min || 0;
-      const hi = band.max == null ? 1 : band.max;
+      const hi = band.max == null ? metricMax : band.max;
       const mid = (lo + hi) / 2;
-      const bestMid = ((best.min || 0) + (best.max == null ? 1 : best.max)) / 2;
-      return Math.abs(overall - mid) < Math.abs(overall - bestMid) ? band : best;
+      const bestLo = best.min || 0;
+      const bestHi = best.max == null ? metricMax : best.max;
+      const bestMid = (bestLo + bestHi) / 2;
+      return Math.abs(metric - mid) < Math.abs(metric - bestMid) ? band : best;
     }, bands[0]);
   }
 
+  const bandDistanceMetric = useRaw ? legacyOverall : t;
   const ranked = bands.map((band) => {
-    const center = ((band.min || 0) + (band.max == null ? 1 : band.max)) / 2;
+    const loN = useRaw ? (band.min || 0) / maxTotal : band.min || 0;
+    const hiN = useRaw
+      ? (band.max == null ? 1 : band.max) / maxTotal
+      : (band.max == null ? 1 : band.max);
+    const center = (loN + hiN) / 2;
     const result = (quiz.results || []).find((item) => item.id === band.resultId);
     return {
       resultId: band.resultId,
       title: result ? result.title : band.resultId,
-      score: 1 - Math.abs(overall - center),
+      score: 1 - Math.abs(bandDistanceMetric - center),
     };
   }).sort((a, b) => b.score - a.score);
 
@@ -141,7 +123,15 @@ function scoreLevelBand(quiz, answers) {
     raw,
     normalized,
     ranked,
-    overallScore: overall,
+    overallScore: useRaw ? legacyOverall : t,
+    levelBandMeta: {
+      achievedTotal,
+      minTotal,
+      maxTotal,
+      normalizedT: t,
+      legacyOverall,
+      bandsMetric: useRaw ? "raw" : "normalized-t",
+    },
   };
 }
 

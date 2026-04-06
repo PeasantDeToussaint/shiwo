@@ -81,6 +81,7 @@
             </view>
           </view>
         </view>
+        <text class="gr-subnote gr-subnote-tight">档位按本题最低—最高可能得分归一后划分，趣味自测仅供参考。</text>
       </view>
 
       <!-- Radar (conditional) -->

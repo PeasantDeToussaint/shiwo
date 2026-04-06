@@ -1,0 +1,500 @@
+{
+  "version": 2,
+  "description": "批量重做专用：每条 id + 短 topic（作 --topic）。topic 由 scripts/data/live_audit/catalog-from-cloud.json 的 title/subtitle 派生为一句问句；更新云目录快照后可用同目录脚本重新对齐。探索分区由 generate-quiz_副本 assemble 推断，不必在此写分区字段。可在 entries 末尾追加 { \"id\", \"topic\" }。",
+  "entries": [
+    {
+      "id": "ancient-poet-match",
+      "topic": "你和哪位唐宋诗词大家心有灵犀？"
+    },
+    {
+      "id": "avengers-hero-match",
+      "topic": "你是《复仇者联盟》里的哪位英雄？"
+    },
+    {
+      "id": "big-bang-theory-character-match",
+      "topic": "你和生活大爆炸中的谁最像？"
+    },
+    {
+      "id": "bird-personality-test",
+      "topic": "你是什么类型的鸟类？"
+    },
+    {
+      "id": "buendia-generation-match",
+      "topic": "你是《百年孤独》里的哪一代布恩迪亚？"
+    },
+    {
+      "id": "car-personality-test",
+      "topic": "你最适合开什么样的车？"
+    },
+    {
+      "id": "career-archetype-test",
+      "topic": "你的职业天赋是什么？"
+    },
+    {
+      "id": "classic-book-match",
+      "topic": "你适合读哪本经典名著？"
+    },
+    {
+      "id": "coffee-personality-match",
+      "topic": "你更像哪种咖啡？"
+    },
+    {
+      "id": "content-creator-type",
+      "topic": "你最适合做什么自媒体？"
+    },
+    {
+      "id": "cthulhu-deity-match",
+      "topic": "你是哪种克苏鲁古神？"
+    },
+    {
+      "id": "detective-conan-character-match",
+      "topic": "《名侦探柯南》里，你像哪位角色？"
+    },
+    {
+      "id": "dialect",
+      "topic": "你的日常用词，藏着你来自哪里？"
+    },
+    {
+      "id": "disney-princess-archetype",
+      "topic": "你和《十二位迪士尼公主》里的谁最像？"
+    },
+    {
+      "id": "doraemon-character-match",
+      "topic": "你和《哆啦A梦》里的谁最像？"
+    },
+    {
+      "id": "egyptian-mythology-figures",
+      "topic": "你最像埃及神话中的哪位神？"
+    },
+    {
+      "id": "entrepreneur-suitability",
+      "topic": "你适合创业吗？"
+    },
+    {
+      "id": "flower-personality-match",
+      "topic": "你是哪一种花？"
+    },
+    {
+      "id": "gaibang-role-play",
+      "topic": "如果加入丐帮，你会扮演哪个角色？"
+    },
+    {
+      "id": "game-of-thrones-character-analogy",
+      "topic": "你在《权力的游戏》中最像哪个角色？"
+    },
+    {
+      "id": "gatsby-character-match",
+      "topic": "你和《了不起的盖茨比》里的谁最像？"
+    },
+    {
+      "id": "gem-personality",
+      "topic": "你的宝石人格是什么？"
+    },
+    {
+      "id": "graduate-school-fit",
+      "topic": "你适合读研究生吗？"
+    },
+    {
+      "id": "greek-mythology-deity",
+      "topic": "你最像希腊神话中的哪位神？"
+    },
+    {
+      "id": "he-li-hua-ting-character-match",
+      "topic": "《鹤唳华亭》里，你像哪位角色？"
+    },
+    {
+      "id": "ideal-dog-breed-match",
+      "topic": " 你最适合养哪种狗狗？"
+    },
+    {
+      "id": "ideal-partner-match",
+      "topic": "你理想伴侣的特质是什么？"
+    },
+    {
+      "id": "inner-fear-archetype",
+      "topic": "你的恐惧原型是什么？"
+    },
+    {
+      "id": "inner-voice-whisper",
+      "topic": "你内心的声音在说什么？"
+    },
+    {
+      "id": "investment-master-style",
+      "topic": "你的投资方法和哪位投资大师最相似？"
+    },
+    {
+      "id": "jin-female-archetypes",
+      "topic": "你像金庸笔下的哪位奇女子？"
+    },
+    {
+      "id": "jujutsu-kaisen-character-match",
+      "topic": "你和《咒术回战》中的谁最像？"
+    },
+    {
+      "id": "langyabang-character-match",
+      "topic": "你像琅琊榜中的哪个角色？"
+    },
+    {
+      "id": "life-philosophy-archetype",
+      "topic": "你更认同哪种人生哲学？"
+    },
+    {
+      "id": "literary-soul-resonance",
+      "topic": "你与哪位世界文豪最像？"
+    },
+    {
+      "id": "little-prince-character-match",
+      "topic": "你和《小王子》里的谁最像？"
+    },
+    {
+      "id": "lord-of-the-rings-race-test",
+      "topic": "你在中土世界里属于哪个种族？"
+    },
+    {
+      "id": "love-rank-test",
+      "topic": "你的恋爱等级是青铜还是王者？"
+    },
+    {
+      "id": "love-show-personality",
+      "topic": "你的恋爱真人秀人格是什么样的？"
+    },
+    {
+      "id": "lovecraftian-monster-domination",
+      "topic": "你你会被哪种克苏鲁怪物支配？"
+    },
+    {
+      "id": "martial-arts-sect",
+      "topic": "金庸武侠八大门派，你最适合哪一派？"
+    },
+    {
+      "id": "ming-dynasty-role-play",
+      "topic": "你穿越到明朝会扮演什么样的角色？"
+    },
+    {
+      "id": "miyazaki-character-archetype",
+      "topic": "宫崎骏动画里，你最像谁？"
+    },
+    {
+      "id": "mythical-creature-within",
+      "topic": "你体内，栖居着哪一种神话生物？"
+    },
+    {
+      "id": "niche-sport-match",
+      "topic": "有哪些适合你的小众运动？"
+    },
+    {
+      "id": "nightclub-personality",
+      "topic": "你的夜店人格？"
+    },
+    {
+      "id": "one-piece-character-match",
+      "topic": "你和《海贼王》中的谁最像？"
+    },
+    {
+      "id": "paladin-character-match",
+      "topic": "你更像《仙剑奇侠传》里的谁？"
+    },
+    {
+      "id": "pokemon-personality-match",
+      "topic": "你是哪种精灵宝可梦？"
+    },
+    {
+      "id": "qing-nian-xiang-si",
+      "topic": "《庆余年》里，你像哪位角色？"
+    },
+    {
+      "id": "rebirth-journey-to-the-west-monarch",
+      "topic": "重生之西游记中当妖怪，你会加入哪位大王？"
+    },
+    {
+      "id": "relationship-fidelity-test",
+      "topic": "你抗出轨能力有多强？"
+    },
+    {
+      "id": "relationship-trap-assessment",
+      "topic": "你会中哪种感情陷阱？"
+    },
+    {
+      "id": "republican-era-business-mindset",
+      "topic": "你和民国哪位富商经商思维相同？"
+    },
+    {
+      "id": "republican-women-personality-test",
+      "topic": "你和民国哪位女性最相似？"
+    },
+    {
+      "id": "romantic-scene-desire",
+      "topic": "你会喜欢什么样的恋爱场景？"
+    },
+    {
+      "id": "runeterra-origin",
+      "topic": "探索你的心灵故乡？"
+    },
+    {
+      "id": "shanhaijing-shenshou",
+      "topic": "你是《山海经》里的哪种神兽？"
+    },
+    {
+      "id": "sherlock-character-match",
+      "topic": "《神探夏洛克》里，你更像谁？"
+    },
+    {
+      "id": "spending-personality-test",
+      "topic": "你的金钱观是什么样的？"
+    },
+    {
+      "id": "spirited-away-character-match",
+      "topic": "你更像《千与千寻》里的谁？"
+    },
+    {
+      "id": "spiritual-homeland-match",
+      "topic": "你的精神故乡是哪里？"
+    },
+    {
+      "id": "study-abroad-fit-test",
+      "topic": "去哪里留学适合你？"
+    },
+    {
+      "id": "tang-song-masters",
+      "topic": "唐宋八大家里，你更接近哪位？"
+    },
+    {
+      "id": "tarot-card-type",
+      "topic": "你和哪一张塔罗牌最相似？"
+    },
+    {
+      "id": "three-kingdoms-character-similarity",
+      "topic": "三国群雄里，你更像谁？"
+    },
+    {
+      "id": "three-kingdoms-strategist-match",
+      "topic": "你最像三国里的哪位谋士？"
+    },
+    {
+      "id": "tian-court-figure",
+      "topic": "你是天庭中的谁？"
+    },
+    {
+      "id": "wangjiawei-character",
+      "topic": "王家卫电影里，你最像哪位角色？"
+    },
+    {
+      "id": "warcraft-race-test",
+      "topic": "找到你的艾泽拉斯归属？"
+    },
+    {
+      "id": "what-pet-fits-you",
+      "topic": "你适合养哪种宠物？"
+    },
+    {
+      "id": "which-ancient-greek-philosopher-resonates-with-you",
+      "topic": "你和哪位古希腊哲学家心有灵犀？"
+    },
+    {
+      "id": "which-japanese-sengoku-daimyo-are-you",
+      "topic": "你和日本战国哪位诸侯性格最近？"
+    },
+    {
+      "id": "which-literary-giant-are-you",
+      "topic": "你和哪位文学巨匠性格相似？"
+    },
+    {
+      "id": "which-school-of-thought-are-you",
+      "topic": "你在春秋战国属于诸子百家中哪一派？"
+    },
+    {
+      "id": "which-sport-fits-your-release",
+      "topic": "你适合做哪种运动？"
+    },
+    {
+      "id": "who-in-les-miserables",
+      "topic": "你像悲惨世界中的谁？"
+    },
+    {
+      "id": "your-aesthetic-and-which-painter",
+      "topic": "你的审美和哪位画家最相似？"
+    },
+    {
+      "id": "your-perfect-perfume-type",
+      "topic": "最符合你气质的香水类型？"
+    },
+    {
+      "id": "zhenhuan-character-match",
+      "topic": "《甄嬛传》里，你像哪位嫔妃？"
+    },
+    {
+      "id": "zhifou-character-match",
+      "topic": "《知否》里，你在盛家最像谁？"
+    },
+    {
+      "id": "zootopia-character-match",
+      "topic": "《疯狂动物城》里，你像哪位角色？"
+    },
+      { "id": "harry-potter-house-match", "topic": "你是霍格沃茨哪个学院的？" },
+      { "id": "star-wars-fate-match", "topic": "你在《星球大战》里是哪一派？" },
+      { "id": "stranger-things-character-match", "topic": "你像《怪奇物语》里的谁？" },
+      { "id": "hunger-games-district-match", "topic": "你属于《饥饿游戏》里的哪个区？" },
+      { "id": "shakespeare-tragedy-role", "topic": "你是莎士比亚悲剧里的哪种人物？" },
+      { "id": "friends-character-match", "topic": "你像《老友记》里的谁？" },  
+      { "id": "norse-god-match", "topic": "你是北欧神话里的哪位神？" },
+      { "id": "vampire-bloodline-match", "topic": "你属于哪个吸血鬼家族？" },
+      { "id": "vikings-ragnarok-character-match", "topic": "你在《维京传奇》里是哪个角色？" },
+      { "id": "witcher-character-match", "topic": "你像《巫师》里的谁？" },
+      { "id": "x-men-mutant-match", "topic": "你是X战警里的哪个变种人？" },
+      { "id": "yakuza-gang-match", "topic": "你属于哪个黑帮家族？" },
+      { "id": "zombie-apocalypse-survival-match", "topic": "你在《僵尸世界大战》里是哪个角色？" },
+      { "id": "fairy-tale-role-archetype", "topic": "你活在哪个童话故事里？" },
+      { "id": "dinosaur-personality", "topic": "你像哪种恐龙？" },
+      { "id": "cat-breed-match", "topic": "你的性格像哪种猫？" },
+      { "id": "tree-personality-test", "topic": "你像哪种树？" },
+      { "id": "weather-personality", "topic": "你是哪种天气？" },
+      { "id": "planet-personality", "topic": "你是太阳系里的哪颗行星？" },
+      { "id": "coffee-shop-order", "topic": "你去咖啡店会点什么？" },
+      { "id": "weekend-archetype", "topic": "你的周末人设是什么？" },
+      { "id": "travel-style-match", "topic": "你适合哪种旅行方式？" },
+      { "id": "cleaning-habit-personality", "topic": "你的整理习惯像谁？" },
+      { "id": "color-personality-test", "topic": "你是哪种颜色？" },
+      { "id": "breakdown-recovery-type", "topic": "你失恋后是什么状态？" },
+      { "id": "sandwich-personality", "topic": "你是哪种三明治？" },
+    { "id": "conflict-style-test", "topic": "吵架时你是哪种类型？" },
+    { "id": "friendship-role-test", "topic": "你在朋友里扮演什么角色？" },
+    { "id": "font-personality", "topic": "你像哪种字体？" },
+    { "id": "music-genre-match", "topic": "你的灵魂是哪种音乐风格？" },
+    { "id": "attachment-style-test", "topic": "你的依恋类型是什么？" },
+{ "id": "breakup-recovery-type", "topic": "分手后你是哪种恢复类型？" },
+{ "id": "confession-courage-level", "topic": "你有多少表白的勇气？" },
+{ "id": "crush-behavior-pattern", "topic": "暗恋时你会怎么做？" },
+{ "id": "love-language-match", "topic": "你的主要恋爱语言是什么？" },
+{ "id": "emotional-trigger-test", "topic": "什么事最容易引爆你的情绪？" },
+{ "id": "trust-issue-test", "topic": "你在感情里容易信任别人吗？" },
+{ "id": "jealousy-reaction-type", "topic": "吃醋时你是哪种反应类型？" },
+{ "id": "ex-back-attitude", "topic": "你对复合持什么态度？" },
+{ "id": "flirting-style-match", "topic": "你的撩人风格像谁？" },
+{ "id": "relationship-decision-style", "topic": "你做感情决定时是什么风格？" },
+{ "id": "heartbreak-healing-archetype", "topic": "你疗愈情伤的方式是哪一种？" },
+{ "id": "long-distance-suitability", "topic": "你有多适合异地恋？" },
+{ "id": "emotional-independence-test", "topic": "你在感情里有多独立？" },
+{ "id": "partner-conflict-style", "topic": "你和伴侣吵架时是什么模式？" },
+{ "id": "romantic-expectation-test", "topic": "你对爱情的期待有多现实？" },
+{ "id": "sweet-moment-addiction", "topic": "你最吃哪一套甜蜜攻势？" },
+{ "id": "relationship-sacrifice-tendency", "topic": "你愿意为感情牺牲多少？" },
+{ "id": "emotional-wall-test", "topic": "你心里有没有一堵墙？" },
+{ "id": "first-move-or-wait", "topic": "心动后你会主动还是等待？" },
+{ "id": "love-at-first-sight-belief", "topic": "你相信一见钟情吗？" },
+{ "id": "relationship-red-flag-detector", "topic": "你能多快识别感情里的危险信号？" },
+{ "id": "emotional-needs-test", "topic": "你在感情里最需要什么？" },
+{ "id": "rebound-tendency", "topic": "你容易开启一段反弹式关系吗？" },
+{ "id": "jealousy-trigger-type", "topic": "什么最容易让你吃醋？" },
+{ "id": "vulnerability-comfort-level", "topic": "你有多敢在爱人面前示弱？" },
+{ "id": "breakup-decision-style", "topic": "决定分手时你是哪种风格？" },
+{ "id": "post-breakup-contact-rule", "topic": "分手后你会删联系方式吗？" },
+{ "id": "emotional-maturity-level", "topic": "你的情感成熟度在哪个阶段？" },
+{ "id": "relationship-equality-test", "topic": "你追求平等的恋爱关系吗？" },
+{ "id": "partner-idealization-tendency", "topic": "你容易把伴侣理想化吗？" },
+{ "id": "conflict-avoidance-test", "topic": "感情里你习惯回避冲突吗？" },
+{ "id": "emotional-support-style", "topic": "你安慰伴侣的方式是什么？" },
+{ "id": "trust-rebuilding-test", "topic": "背叛后你愿意重建信任吗？" },
+{ "id": "loneliness-coping-mechanism", "topic": "孤独时你会做什么？" },
+{ "id": "relationship-identity-loss-risk", "topic": "恋爱中你会失去自我吗？" },
+{ "id": "tarot-archetype-test", "topic": "你是塔罗牌里的哪一张？" },
+{ "id": "zodiac-element-match", "topic": "你的灵魂属于哪种四元素？" },
+{ "id": "moon-phase-personality", "topic": "你是月相里的哪一种？" },
+{ "id": "astrology-house-ruler", "topic": "你的命主星是哪颗？" },
+{ "id": "iching-hexagram-personality", "topic": "你是《易经》里的哪一卦？" },
+{ "id": "rune-match-test", "topic": "你是哪一颗如尼文？" },
+{ "id": "numerology-life-path", "topic": "你的生命灵数透露出什么？" },
+{ "id": "witch-coven-role", "topic": "你在女巫集会里是什么角色？" },
+{ "id": "divination-tool-affinity", "topic": "哪种占卜工具和你最有缘？" },
+{ "id": "aura-color-test", "topic": "你的气场是什么颜色？" },
+{ "id": "spirit-animal-oracle", "topic": "你的灵性向导动物是什么？" },
+{ "id": "chakra-dominant-type", "topic": "你的哪个脉轮最活跃？" },
+{ "id": "feng-shui-element-match", "topic": "你的五行主导是哪一个？" },
+{ "id": "work-role-archetype", "topic": "你在团队里是什么角色？" },
+{ "id": "leadership-style-test", "topic": "你的领导风格像谁？" },
+{ "id": "remote-work-suitability", "topic": "你适合远程办公吗？" },
+{ "id": "office-politics-style", "topic": "面对职场政治你是哪种人？" },
+{ "id": "job-hop-tendency", "topic": "你有跳槽体质吗？" },
+{ "id": "work-life-balance-type", "topic": "你的工作生活平衡是哪一型？" },
+{ "id": "productivity-personality", "topic": "你的高效工作模式是什么？" },
+{ "id": "meeting-behavior-pattern", "topic": "开会时你是哪种人？" },
+{ "id": "feedback-reaction-style", "topic": "你如何面对批评和反馈？" },
+{ "id": "side-hustle-suitability", "topic": "你适合搞副业吗？" },
+{ "id": "retirement-lifestyle-test", "topic": "退休后你会过哪种生活？" },
+{ "id": "home-decor-style", "topic": "你的家居布置风格像什么？" },
+{ "id": "daily-routine-archetype", "topic": "你的日常节奏是哪一种？" },
+{ "id": "social-energy-source", "topic": "你的社交能量从哪里来？" },
+{ "id": "weekend-warrior-type", "topic": "周末你是哪种战士？" },
+{ "id": "cooking-personality", "topic": "你的下厨风格像谁？" },
+{ "id": "fitness-mindset-test", "topic": "你健身时是哪一种心态？" },
+{ "id": "procrastination-style", "topic": "你是哪种拖延症患者？" },
+{ "id": "mbti-romantic-match", "topic": "你和哪种MBTI谈恋爱最合拍？" },
+{ "id": "college-major-match", "topic": "你的性格适合读什么大学专业？" },
+{ "id": "industry-suitability", "topic": "你最适合进入哪个行业？" },
+{ "id": "company-culture-fit", "topic": "哪种公司文化最适合你？" },
+{ "id": "startup-vs-corporate", "topic": "你适合创业公司还是大厂？" },
+{ "id": "relocation-readiness", "topic": "你适合换城市发展吗？" },
+{ "id": "diet-approach-fit", "topic": "哪种饮食方式最适合你的生活习惯？" },
+{ "id": "time-management-technique", "topic": "哪种时间管理方法对你最有效？" },
+{ "id": "decision-making-framework", "topic": "你做重大决定时适合用哪种决策模型？" },
+{ "id": "stress-coping-strategy", "topic": "哪种减压方式对你的效果最好？" },
+{ "id": "creative-hobby-match", "topic": "哪种创意爱好最能让你放松？" },
+{ "id": "volunteer-work-fit", "topic": "哪种志愿者活动最适合你？" },
+{ "id": "side-hustle-direction", "topic": "你的副业适合往哪个方向做？" },
+{ "id": "which-language-fits-you", "topic": "你的适合学哪门外语？" },
+{ "id": "second-language-career-boost", "topic": "学哪门外语对你的职业帮助最大？" },
+{ "id": "happiness-definition-test", "topic": "对你来说幸福最重要的是什么？" },
+{ "id": "life-goals-test", "topic": "你的终极人生目标是什么？" },
+{ "id": "fashion-aesthetic-match", "topic": "你的穿搭美学属于哪种风格？" },
+{ "id": "wardrobe-capsule-color", "topic": "你的衣橱应该主打哪种颜色？" },
+{ "id": "shopping-decision-style", "topic": "你买衣服时最看重什么？" },
+{ "id": "accessory-personality", "topic": "你最适合戴哪种配饰？" },
+{ "id": "group-dynamic-role", "topic": "你在小团体里通常扮演什么角色？" },
+{ "id": "birth-chart-dominant-planet", "topic": "你的星盘里哪颗行星能量最强？" },
+{ "id": "rising-sign-guess", "topic": "你给人的第一印象像哪个上升星座？" },
+{ "id": "astrology-house-dominant", "topic": "你人生中最关注的领域是哪个宫位？" },
+{ "id": "color-psychology-match", "topic": "你的性格最接近哪种心理颜色？" },
+{ "id": "learning-environment-preference", "topic": "你最适合在哪个环境里学习？" },
+{ "id": "study-session-length", "topic": "你的专注周期适合多长的学习时段？" },
+{ "id": "mistake-learning-style", "topic": "你从错误中学习的方式是什么？" },
+{ "id": "handbag-style-match", "topic": "你的第一只大牌包该选什么款？" },
+{ "id": "candle-scent-mood", "topic": "哪种香薰蜡烛最能代表你的气质？" },
+{ "id": "proposal-scene-fantasy", "topic": "你心中最想要的求婚场景是什么？" },
+{ "id": "bouquet-style-match", "topic": "你最喜欢收到哪种花束风格？" },
+{ "id": "journaling-habit-type", "topic": "你写日记/手帐是哪种风格？" },
+{ "id": "instagram-feed-style", "topic": "你的朋友圈/小红书画风是哪一种？" },
+{ "id": "boyfriend-type-match", "topic": "你最适合哪种类型的男朋友？" },
+{ "id": "husband-material-test", "topic": "哪种男生是结婚潜力股？" },
+{ "id": "player-identifier-test", "topic": "你的渣男探测雷达灵敏吗？" },
+{ "id": "k-drama-character-match", "topic": "你像哪部韩剧里的女主角？" },
+{ "id": "k-pop-bias-type", "topic": "你的追星本命通常是什么担当？" },
+{ "id": "impulse-buy-trigger", "topic": "什么东西最容易让你冲动消费？" },
+{ "id": "cognitive-bias-type", "topic": "你最容易出现哪种认知偏差？" },
+{ "id": "regret-test", "topic": "你未来最后悔没做的一件事可能是什么？" },
+{ "id": "happiness-definition", "topic": "你定义的幸福更接近哪种？" },
+{ "id": "nihilism-response", "topic": "面对世界无意义的感觉你通常会怎样应对？" },
+{ "id": "shame-trigger", "topic": "什么事最容易让你感到羞耻？" },
+{ "id": "guilt-trigger", "topic": "什么事最容易让你感到内疚？" },
+{ "id": "habit-breaking-trigger", "topic": "什么最有可能让你改掉一个坏习惯？" },
+{ "id": "creativity-trigger", "topic": "你最容易在什么情况下产生灵感？" },
+{ "id": "emotional-invest-trigger", "topic": "什么情绪最容易让你做出错误投资决策？" },
+{ "id": "overconfidence-area", "topic": "你在哪类投资上最容易过度自信？" },
+{ "id": "healthy-food-category-fit", "topic": "你最适合吃哪一类健康食品？" },
+{ "id": "fastest-fat-loss-method", "topic": "你用什么方法减脂最快？" },
+{ "id": "most-stickable-workout", "topic": "最容易让你坚持的训练方法是什么？" },
+{ "id": "content-format-fit", "topic": "你做自媒体最适合哪种内容形式？" },
+{ "id": "unexpected-career-fit", "topic": "哪种你从没想过的职业其实最适合你？" },
+{ "id": "hidden-talent-type", "topic": "你身上最容易被忽略的天赋是什么？" },
+{ "id": "stress-personality-reveal", "topic": "你在压力下会变成哪种人格？" },
+{ "id": "unexpected-lucky-item", "topic": "能给你带来好运的小物件有什么？" },
+{ "id": "flower-language-match", "topic": "你的气质对应哪一种花语？" },
+{ "id": "partner-fidelity-test", "topic": "你的另一半心里有没有别人？" },
+{ "id": "reunion-chance", "topic": "你和前任复合的可能性有多高？" },
+{ "id": "soulmate-arrival-time", "topic": "你什么时候能遇到正缘？" },
+{ "id": "fairy-tale-prince-match", "topic": "你是童话里的哪位王子？" },
+{ "id": "fairy-tale-villain-match", "topic": "你像童话里的哪位反派？" }
+
+
+
+  ],
+  "_append_hint": "新增测验：写 id + 短问句 topic；或先更新 catalog-from-cloud.json 再用仓库脚本从 title/subtitle 批量对齐 topic。"
+}

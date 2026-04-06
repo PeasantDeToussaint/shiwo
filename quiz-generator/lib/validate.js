@@ -4,6 +4,13 @@ const {
   normalizeResultExtras, findObviousTextCorruption,
   normalizeStrengthsWeaknesses,
 } = require('./assemble');
+const {
+  questionLevelMinMax,
+  computeLevelMinMaxTotals,
+  bandsUseRawAchieved,
+} = require('../../miniprogram/subpackages/quiz/utils/levelBandMetrics');
+const { scoreLevelBand } = require('../../miniprogram/subpackages/quiz/utils/scoreLevelBand');
+const rt14 = require('./resultType14');
 
 const STANDARD_FIELD_KEYS = new Set([
   'portrait', 'strengths', 'weaknesses', 'temperament',
@@ -36,7 +43,9 @@ function nameSimilarity(a, b) {
 function validateArchitecture(architecture) {
   const errors = [];
   const scoringFamily = architecture?.scoringFamily;
-  const resultType = architecture?.resultType || "archetype";
+  errors.push(...rt14.normalizeArchitectureResultTypeInPlace(architecture));
+  const resultType = architecture?.resultType || "abstract_psychology";
+  errors.push(...rt14.validateResultType14WithScoring(resultType, scoringFamily));
   const dimensionCount = architecture?.dimensionCount;
   const dimensions = Array.isArray(architecture?.dimensions) ? architecture.dimensions : [];
   const dimensionSpecs = Array.isArray(architecture?.dimensionSpecs) ? architecture.dimensionSpecs : [];
@@ -89,10 +98,12 @@ function validateArchitecture(architecture) {
   if (duplicateNames.length > 0) {
     errors.push(`results contain duplicate names: ${Array.from(new Set(duplicateNames)).join('、')}`);
   }
-  if (resultType === "figure") {
+  if (rt14.NAME_CONTEXT_REQUIRED.has(resultType)) {
     for (const r of results) {
-      if (!String(r?.name || "").trim()) errors.push(`figure result missing name`);
-      if (!String(r?.nameContext || "").trim()) errors.push(`${r?.name || r?.conceptId || "figure result"}: nameContext missing`);
+      if (!String(r?.name || "").trim()) errors.push(`${resultType} result missing name`);
+      if (!String(r?.nameContext || "").trim()) {
+        errors.push(`${r?.name || r?.conceptId || `${resultType} result`}: nameContext missing`);
+      }
     }
   }
   for (const [i, spec] of dimensionSpecs.entries()) {
@@ -153,7 +164,7 @@ function validateOutlineStructure(outline, architecture) {
   const title = String(outline?.title || "").trim();
   const subtitle = String(outline?.subtitle || "").trim();
   const eyebrow = String(outline?.eyebrow || "").trim();
-  const resultType = architecture?.resultType || "archetype";
+  const resultType = rt14.normalizeResultType(architecture?.resultType) || architecture?.resultType || "abstract_psychology";
   const scoringFamily = architecture?.scoringFamily || "weighted-dimension";
   const isBipolar = scoringFamily === "bipolar-dimension";
 
@@ -232,7 +243,7 @@ function validateOutlineStructure(outline, architecture) {
   if (architecture?.results?.length && results.length > 0) {
     const archNames = architecture.results.map(r => String(r?.name || "")).filter(Boolean);
     const outlineTitles = results.map(r => String(r?.title || "")).filter(Boolean);
-    const matchThreshold = resultType === "figure" ? 0.75 : 0.6;
+    const matchThreshold = rt14.nameSimilarityMatchThresholdForResultType(resultType);
     const unmatched = outlineTitles.filter(title => {
       return !archNames.some(archName => nameSimilarity(archName, title) >= matchThreshold);
     });
@@ -382,7 +393,97 @@ function validateFinalQuiz(quiz) {
     }
   }
 
+  if (scoringType === "level-band") {
+    const lb = collectLevelBandIssues(quiz);
+    for (const e of lb.errors) errors.push(e);
+    for (const w of lb.warnings) warnings.push(w);
+  }
+
   return { errors, warnings };
+}
+
+/** Min spread (max−min) of total level weight across the whole quiz; below this, random play barely moves the needle. */
+const LEVEL_BAND_MIN_TOTAL_SPREAD = 12;
+
+/** Monte Carlo: if top tier exceeds this share under uniform random, scores may be inflated. */
+const LEVEL_BAND_MONTE_CARLO_TOP_SHARE_WARN = 0.35;
+
+const LEVEL_BAND_MONTE_CARLO_ITERATIONS = 7000;
+
+function collectLevelBandIssues(quiz) {
+  const errors = [];
+  const warnings = [];
+  const dimensions = (quiz.scoring?.dimensions || []).map((d) => (typeof d === "string" ? d : d.id)).filter(Boolean);
+
+  for (const q of quiz.questions || []) {
+    const qType = q.type || q.interaction;
+    if (qType === "likert-slider" || qType === "slider-likert" || qType === "slider") {
+      continue;
+    }
+    const opts = q.options || [];
+    if (opts.length < 2) continue;
+
+    const { min: qMin, max: qMax } = questionLevelMinMax(q, dimensions);
+    if (qMax - qMin < 1) {
+      errors.push(
+        `${q.id}: level-band needs option weight spread ≥1 per question (max option sum/bandPoints ${qMax}, min ${qMin})`,
+      );
+    }
+  }
+
+  const { minTotal, maxTotal } = computeLevelMinMaxTotals(quiz, dimensions);
+  if (maxTotal - minTotal < LEVEL_BAND_MIN_TOTAL_SPREAD) {
+    warnings.push(
+      `level-band total spread small (maxTotal−minTotal=${maxTotal - minTotal}; recommend ≥${LEVEL_BAND_MIN_TOTAL_SPREAD}) — random answers may cluster in few tiers`,
+    );
+  }
+
+  const bands = quiz.scoring?.bands || [];
+  const useRaw = bandsUseRawAchieved(bands, maxTotal);
+  if (bands.length > 0 && !useRaw) {
+    const last = bands[bands.length - 1];
+    if (typeof last?.max === "number" && last.max <= 1) {
+      try {
+        const counts = monteCarloLevelBandResultCounts(quiz, LEVEL_BAND_MONTE_CARLO_ITERATIONS);
+        const n = LEVEL_BAND_MONTE_CARLO_ITERATIONS;
+        const topId = bands[bands.length - 1]?.resultId;
+        if (topId) {
+          const topShare = (counts[topId] || 0) / n;
+          if (topShare > LEVEL_BAND_MONTE_CARLO_TOP_SHARE_WARN) {
+            warnings.push(
+              `level-band: top tier (${topId}) wins ${(topShare * 100).toFixed(1)}% under uniform random (${n} trials) — likely insufficient option weight spread vs maxTotal`,
+            );
+          }
+        }
+      } catch (_) {
+        warnings.push("level-band Monte Carlo check skipped (scoring error)");
+      }
+    }
+  }
+
+  return { errors, warnings };
+}
+
+function monteCarloLevelBandResultCounts(quiz, iterations) {
+  const questions = quiz.questions || [];
+  const counts = {};
+  for (let i = 0; i < iterations; i++) {
+    const answers = [];
+    for (const q of questions) {
+      const qType = q.type || q.interaction;
+      if (qType === "likert-slider" || qType === "slider-likert" || qType === "slider") {
+        answers.push({ questionId: q.id, sliderValue: Math.floor(Math.random() * 101) });
+        continue;
+      }
+      const opts = q.options || [];
+      if (opts.length === 0) continue;
+      const pick = opts[Math.floor(Math.random() * opts.length)];
+      answers.push({ questionId: q.id, optionId: pick.id });
+    }
+    const { resultId } = scoreLevelBand(quiz, answers);
+    if (resultId) counts[resultId] = (counts[resultId] || 0) + 1;
+  }
+  return counts;
 }
 
 function collectBipolarCoverageStats(questions, dimensions) {

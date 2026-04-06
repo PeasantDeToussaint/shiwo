@@ -41,6 +41,16 @@ const REMOVED = new Set([
   "sheng-tang-chuan-yue-jue-ze",
   "song-dynasty-time-travel",
   "three-kingdoms-decision-style",
+  // Merged into sibling quiz (2026-04); keep one id per theme, cloud rows deleted
+  "tang-poets",
+  "which-tang-poet-lives-in-your-heart",
+  "middle-earth-character",
+  "wow-survival-philosophy-quiz",
+  "anti-affair-resilience-test",
+  "love-level-test",
+  "自媒体赛道人格测验",
+  "自媒体人格原型",
+  "ming-dynasty-persona",
 ]);
 
 function isRemovedQuizId(id) {

@@ -76,7 +76,7 @@ function formatAestheticContext(aestheticContext, writingVoice) {
   const blocks = [];
   if (aestheticContext) {
     blocks.push(
-      `### 这道测验的场景原则（大纲）\n${aestheticContext}\n题目应服从上述原则与边界；不要把本段当成固定场景或情节清单逐条照抄。具体情境应多样展开，避免整卷重复使用同一类戏剧梗。`,
+      `### 这道测验的场景原则（大纲）\n${aestheticContext}\n题目应服从上述原则与边界；不要把本段当成固定场景或情节清单逐条照抄。叙事上采用「场景弧」：同一弧内可连续多题共用设定并递进冲突；弧与弧之间须换设定、保持多样，避免整卷只有单一重复桥段。`,
     );
   }
   if (writingVoice) {

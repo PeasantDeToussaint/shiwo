@@ -67,11 +67,23 @@ on:
         description: "可选：DashScope OpenAI 兼容根 URL（国际站 Key 时填写）；留空则用北京默认"
         required: false
         default: ""
+      runner:
+        description: "ubuntu-latest（单 job 最长 360 分钟，平台硬顶）；self-hosted 需在仓库注册自托管机，可设更长超时"
+        type: choice
+        default: ubuntu-latest
+        options:
+          - ubuntu-latest
+          - self-hosted
+      job_timeout_minutes:
+        description: "仅 self-hosted 生效（分钟）。ubuntu-latest 时仍固定 360。例：4320≈3 天"
+        required: false
+        default: "4320"
 
 jobs:
   generate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # GitHub-Hosted：单 job 最长 360 分钟（硬顶）。更长：选 workflow 输入 runner=self-hosted，或本地跑、分片。
+    runs-on: ${{ github.event.inputs.runner }}
+    timeout-minutes: ${{ github.event.inputs.runner == 'self-hosted' && fromJSON(github.event.inputs.job_timeout_minutes || '4320') || 360 }}
     permissions:
       contents: read
 
@@ -87,6 +99,7 @@ jobs:
       - name: 运行 generate-quiz_副本
         shell: bash
         env:
+          QUIZ_GEN_HTTP_TIMEOUT_MS: "900000"
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
           DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
           QWEN_API_BASE: ${{ github.event.inputs.qwen_api_base }}
